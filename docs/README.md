@@ -1,1 +1,2 @@
-# project diagrams and documenting
+# Interlink
+second Year software development group project Syncx
