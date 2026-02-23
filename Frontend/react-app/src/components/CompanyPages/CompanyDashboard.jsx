@@ -2,7 +2,7 @@ import "./CompanyDashboard.css";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 
-// ✅ IMPORT ICONS
+// IMPORT ICONS
 import jobIcon from "../../assets/icons/job.png";
 import applyIcon from "../../assets/icons/apply.png";
 import handIcon from "../../assets/icons/hand.png";
