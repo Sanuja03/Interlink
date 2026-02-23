@@ -24,7 +24,7 @@ export default function CreateJob() {
     <DashboardLayout>
       <div className="cj-page">
         <div className="cj-container">
-          {/* ❌ Removed Back button + Horizon Global */}
+          {/* Removed Back button + Horizon Global */}
 
           <h2 className="cj-title">Create new job</h2>
 
