@@ -95,13 +95,15 @@ const allJobs = [
 ];
 
 const JobPosts = () => {
-    const [keyword, setKeyword] = useState('');
+    // Read initial values from URL query params (passed from Home page Searchbar)
+    const urlParams = new URLSearchParams(window.location.search);
+    const [keyword, setKeyword] = useState(urlParams.get('keyword') || '');
     const [visibleCount, setVisibleCount] = useState(5);
     const [filterExpanded, setFilterExpanded] = useState(false);
     const [filters, setFilters] = useState({
-        category: '',
-        experience: '',
-        techStack: '',
+        category: urlParams.get('category') || '',
+        experience: urlParams.get('experience') || '',
+        techStack: urlParams.get('techStack') || '',
         mode: '',
     });
 
@@ -147,7 +149,16 @@ const JobPosts = () => {
                     <Searchbar
                         keyword={keyword}
                         onKeywordChange={(val) => { setKeyword(val); setVisibleCount(5); }}
-                        onSearch={({ keyword: kw }) => { setKeyword(kw); setVisibleCount(5); }}
+                        onSearch={({ keyword: kw, category, experience, techStack }) => {
+                            setKeyword(kw);
+                            setFilters((prev) => ({
+                                ...prev,
+                                ...(category !== undefined && { category }),
+                                ...(experience !== undefined && { experience }),
+                                ...(techStack !== undefined && { techStack }),
+                            }));
+                            setVisibleCount(5);
+                        }}
                     />
                 </div>
 

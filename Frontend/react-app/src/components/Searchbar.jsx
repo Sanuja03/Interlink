@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
-    // If props are provided, use controlled mode; otherwise manage own state
+    // If a keyword prop is passed in, let the parent control it — otherwise we'll track it ourselves
     const [localKeyword, setLocalKeyword] = useState('');
     const [category, setCategory] = useState('');
     const [experience, setExperience] = useState('');
@@ -21,7 +21,14 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
         if (onSearch) {
             onSearch({ keyword, category, experience, techStack });
         } else {
-            console.log({ keyword, category, experience, techStack });
+            // We're on the Home page with no parent handler, so just redirect to the job posts page with the search filters in the URL
+            const params = new URLSearchParams();
+            if (keyword) params.set('keyword', keyword);
+            if (category) params.set('category', category);
+            if (experience) params.set('experience', experience);
+            if (techStack) params.set('techStack', techStack);
+            const query = params.toString();
+            window.location.href = `/job-posts${query ? '?' + query : ''}`;
         }
     };
 
