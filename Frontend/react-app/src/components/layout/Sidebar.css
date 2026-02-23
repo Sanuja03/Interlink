@@ -1,0 +1,178 @@
+/* Sidebar container */
+.sb {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  gap: 14px;
+  overflow: hidden;
+
+  /* ✅ Style guide font */
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Logo area */
+.sb-top {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+}
+
+.sb-logo {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Links area */
+.sb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Main links + dropdown button */
+.sb-link,
+.sb-dropBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  text-decoration: none;
+
+  /* ✅ Typography updated */
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+
+  color: #000000; /* Body text color */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sb-link:hover,
+.sb-dropBtn:hover {
+  background: #f3f4f6;
+}
+
+.sb-active {
+  background: #e5e7eb;
+  color: #24698B; /* Heading color */
+}
+
+/* icon */
+.sb-ico {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* arrow rotate */
+.sb-arrow {
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.15s ease;
+}
+
+.sb-arrowOpen {
+  transform: rotate(90deg);
+}
+
+/* Dropdown sub links */
+.sb-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.sb-sublink {
+  text-decoration: none;
+
+  /* ✅ Typography */
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+
+  color: #374151;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.sb-sublink:hover {
+  background: #f3f4f6;
+}
+
+.sb-subActive {
+  background: #e5e7eb;
+  color: #24698B;
+}
+
+/* Bottom company info (stick bottom) */
+.sb-bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+/* avatar */
+.sb-bottomAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+/* name + email */
+.sb-bottomText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sb-bottomName {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: #0c3e56; /* Footer color tone */
+  line-height: 1.2;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-bottomMail {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Icon images */
+.sb-iconImg {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}

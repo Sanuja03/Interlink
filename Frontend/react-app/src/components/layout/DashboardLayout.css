@@ -1,0 +1,57 @@
+.dl-root {
+  min-height: 100vh;
+  background: #f5f6f8;
+}
+
+.dl-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  z-index: 50;
+}
+
+.dl-main {
+  min-height: 100vh;
+}
+
+.dl-top {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+}
+
+.dl-noti {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.dl-company {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dl-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #d1d5db;
+}
+
+.dl-companyName {
+  font-weight: 700;
+  color: #0c3e56;
+}
+
+.dl-content {
+  padding: 10px 24px 40px;
+}
