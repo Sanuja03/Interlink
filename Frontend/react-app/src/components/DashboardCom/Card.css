@@ -1,0 +1,66 @@
+
+.dashboard-card {
+    background: linear-gradient(
+      135deg,
+      #24698b 0%,
+      #0c3e56 70%
+    );
+  
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+  
+    width: 240px;
+    padding: 20px;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+  
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Pending Requests */
+  .card-danger {
+    background: linear-gradient(
+      #990000 0%,
+      #cc0000 100%
+    );
+  }
+  
+  /* Typography */
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e6f2f8;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  
+  .card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+  }
+  
+  
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    margin: 2px 0;
+    opacity: 0.95;
+  }
+  
+  
+  

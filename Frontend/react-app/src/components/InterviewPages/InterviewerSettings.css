@@ -1,0 +1,28 @@
+/* TITLE */
+
+/* Same spacing as your dashboard page */
+.settings-page {
+    padding: 8px 24px 32px;
+  }
+  
+.settings-title {
+    font-size: 24px;       /* text-2xl */
+    font-weight: 700;      /* font-bold */
+    color: #111827;        /* gray-900 */
+    margin-bottom: 16px;  /* mb-4 */
+  }
+  
+  /* CARD */
+  .settings-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb; /* gray-200 */
+    border-radius: 16px;       /* rounded-2xl */
+    padding: 24px;             /* p-6 */
+  }
+  
+  /* TEXT */
+  .settings-text {
+    color: #4b5563; /* gray-600 */
+    font-size: 14px;
+  }
+  

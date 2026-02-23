@@ -1,0 +1,181 @@
+
+.next-card {
+    width: 360px;
+    background: #e5e7eb; 
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  
+  /* next interview container */
+  .next-card-header {
+    padding: 20px 20px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .next-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937; 
+  }
+  
+  /* status -confirmed or pending */
+  .status-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 600;
+  }
+  
+  .status-confirmed {
+    background: #dcfce7; 
+    color: #15803d;     
+  }
+  
+  .status-pending {
+    background: #fef9c3; 
+    color: #a16207;      
+  }
+  
+  /* interviewer details container */
+  .next-card-body {
+    padding: 0 20px 20px;
+  }
+  
+  /* details  */
+  .interview-details {
+    background: #f3f4f6; 
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  
+  .detail-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .label {
+    color: #6b7280; /* gray-500 */
+  }
+  
+  .value {
+    font-weight: 600;
+  }
+  
+  .job-title {
+    text-align: right;
+  }
+  
+  /* join button */
+  .join-btn {
+    display: block;
+    text-align: center;
+    background: #2563eb; /* blue-600 */
+    color: #ffffff;
+    font-weight: 600;
+    padding: 8px 0;
+    border-radius: 12px;
+    font-size: 14px;
+    text-decoration: none;
+    margin-bottom: 16px;
+  }
+  
+  .join-btn:hover {
+    background: #1d4ed8; 
+  }
+  
+  /* line divider */
+  .divider {
+    height: 1px;
+    background: #d1d5db; 
+    margin-bottom: 16px;
+  }
+  
+  /* candidate area */
+  .candidate {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .candidate-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .candidate-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .candidate-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .candidate-id {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+  
+  .candidate-links {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+  }
+  
+  .cv-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .profile-link {
+    color: #2563eb;
+    text-decoration: none;
+  }
+  
+  .profile-link:hover {
+    text-decoration: underline;
+  }
+  
+  .candidate-note {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 8px;
+  
+    display: -webkit-box;
+    overflow: hidden;
+  }
+
+  /* empty ststae */
+.next-empty {
+    padding: 32px 8px;
+    text-align: center;
+    color: #6b7280;
+  }
+  
+
+  
+  .next-empty-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+  }
+  
+  .next-empty-sub {
+    font-size: 12px;
+  }
+  

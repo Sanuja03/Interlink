@@ -1,7 +1,11 @@
 import './Signup.css'
-import interlink from '../../assets/interlink.jpeg'
+
+import interlink from '../../assets/interlink.png'
+import homeicon from '../../assets/homeicon.png'
+
 import { useForm } from 'react-hook-form'
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom" //avoids refreshing browser
+
 
 const Signup = () => {
   const {
@@ -11,12 +15,18 @@ const Signup = () => {
   } = useForm({ mode: "onTouched" })
 
   const onSubmit = (data) => {
-    console.log("✅ Signup form data:", data)
-    // TODO: call backend signup API here
+    // call backend signup API here
   }
 
   return (
     <div className='page'>
+
+      <div className="home-button">
+              <a href="/">
+                <img src={homeicon} alt="Home" />
+              </a>
+      </div>
+
       <div className='container'>
         <div className='header'>
           <div className='text'>
@@ -29,14 +39,15 @@ const Signup = () => {
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
 
           <div className='Name-group'>
-            {/* ✅ FIRST NAME */}
+            {/*first name */}
             <div className='input-group'>
               {errors.firstName && <p className="error-text">{errors.firstName.message}</p>}
               <label>first name</label>
+              {/*if tehres an error put input-error style*/ }
               <input
                 type="text"
-                placeholder='Enter your first name'
-                className={`input-field ${errors.firstName ? "input-error" : ""}`}
+                placeholder='Enter your first name' 
+                className={`input-field ${errors.firstName ? "input-error" : ""}`} 
                 {...register("firstName", {
                   required: "First name is required",
                   minLength: { value: 2, message: "must be at least 2 characters" },
@@ -45,7 +56,7 @@ const Signup = () => {
               />
             </div>
 
-            {/* ✅ LAST NAME */}
+            {/*last name */}
             <div className='input-group'>
               {errors.lastName && <p className="error-text">{errors.lastName.message}</p>}
               <label>last name</label>
@@ -62,7 +73,7 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* ✅ EMAIL */}
+          {/*email */}
           <div className='input-group'>
             {errors.email && <p className="error-text">{errors.email.message}</p>}
             <label>email address</label>
@@ -80,7 +91,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* ✅ PASSWORD */}
+          {/*Password */}
           <div className='input-group'>
             {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>

@@ -1,0 +1,41 @@
+
+.profile-page {
+    padding: 8px 24px 32px;
+  }
+  
+
+  .profile-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+  
+  
+  .profile-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+  }
+  
+ 
+
+  
+ 
+  @media (max-width: 1024px) {
+    .profile-card {
+      padding: 16px;
+    }
+  
+    .profile-left {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .profile-page {
+      padding: 8px 12px 20px;
+    }
+  }
+  

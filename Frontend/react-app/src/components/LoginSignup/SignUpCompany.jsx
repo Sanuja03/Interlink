@@ -1,7 +1,11 @@
 import './SignUpCompany.css'
-import interlink from '../../assets/interlink.jpeg'
+
+import interlink from '../../assets/interlink.png'
+import homeicon from '../../assets/homeicon.png'
+
 import { useForm } from 'react-hook-form'
 import {Link} from "react-router-dom"
+
 
 const SignUpCompany = () => {
   const {
@@ -11,11 +15,15 @@ const SignUpCompany = () => {
   } = useForm({ mode: "onTouched" })
 
   const onSubmit = (data) => {
-    console.log("✅ Company signup data:", data)
   }
 
   return (
     <div className='page'>
+      <div className="home-button">
+                    <a href="/">
+                      <img src={homeicon} alt="Home" />
+                    </a>
+      </div>
       <div className='container'>
         <div className='header'>
           <div className='text'>
@@ -27,7 +35,7 @@ const SignUpCompany = () => {
 
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
 
-          {/* COMPANY NAME */}
+          {/*compnay name */}
           <div className='input-group'>
             {errors.companyName && <p className="error-text">{errors.companyName.message}</p>}
             <label>company name</label>
@@ -45,7 +53,7 @@ const SignUpCompany = () => {
             />
           </div>
 
-          {/* COMPANY EMAIL */}
+          {/* compnay email */}
           <div className='input-group'>
             {errors.companyEmail && <p className="error-text">{errors.companyEmail.message}</p>}
             <label>company email</label>
@@ -63,7 +71,7 @@ const SignUpCompany = () => {
             />
           </div>
 
-          {/* INDUSTRY */}
+          {/* industry */}
           <div className='select-group'>
             {errors.industry && <p className="error-text">{errors.industry.message}</p>}
             <label>industry</label>
@@ -80,7 +88,7 @@ const SignUpCompany = () => {
             </select>
           </div>
 
-          {/* COMPANY SIZE */}
+          {/* size */}
           <div className='select-group'>
             {errors.companySize && <p className="error-text">{errors.companySize.message}</p>}
             <label>size</label>
@@ -97,7 +105,7 @@ const SignUpCompany = () => {
             </select>
           </div>
 
-          {/* PASSWORD */}
+          {/* password */}
           <div className='input-group'>
             {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
