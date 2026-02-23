@@ -1,28 +1,26 @@
-/* TITLE */
 
-/* Same spacing as your dashboard page */
 .calendar-page {
     padding: 8px 24px 32px;
   }
   
 .calendar-title {
-    font-size: 24px;       /* text-2xl */
-    font-weight: 700;      /* font-bold */
-    color: #111827;        /* gray-900 */
-    margin-bottom: 16px;  /* mb-4 */
+    font-size: 24px;       
+    font-weight: 700;     
+    color: #111827;        
+    margin-bottom: 16px; 
   }
   
-  /* CARD */
+  
   .calendar-card {
     background: #ffffff;
-    border: 1px solid #e5e7eb; /* gray-200 */
-    border-radius: 16px;       /* rounded-2xl */
-    padding: 24px;             /* p-6 */
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;      
+    padding: 24px;             
   }
   
-  /* TEXT */
+
   .calendar-text {
-    color: #4b5563; /* gray-600 */
+    color: #4b5563;
     font-size: 14px;
   }
   
