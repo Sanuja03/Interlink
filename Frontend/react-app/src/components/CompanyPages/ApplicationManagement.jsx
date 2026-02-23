@@ -11,12 +11,10 @@ export default function ApplicationManagement() {
   ];
 
   return (
-    <DashboardLayout>   {/* ✅ THIS ADDS SIDEBAR + NAV */}
+    <DashboardLayout>   {/* THIS ADDS SIDEBAR + NAV */}
 
       <div className="am-page">
         <div className="am-container">
-
-          {/* ❌ Removed Back Button + Horizon Global */}
 
           {/* Stats */}
           <div className="am-stats">
