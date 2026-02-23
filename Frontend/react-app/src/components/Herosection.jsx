@@ -25,7 +25,7 @@ const HeroSection = () => {
                     <button
                         className="w-full py-5 text-white font-bold text-2xl tracking-wide rounded-lg shadow-lg active:scale-95 transition-all duration-200"
                         style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)' }}
-                        onClick={() => console.log('Find Your Job clicked')}
+                        onClick={() => window.location.href = '/job-posts'}
                     >
                         Find Your Job
                     </button>

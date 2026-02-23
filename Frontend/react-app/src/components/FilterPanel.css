@@ -1,0 +1,218 @@
+/* FilterPanel.css */
+
+.fp-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    position: sticky;
+    top: 20px;
+    overflow: hidden;
+    transition: width 0.25s ease;
+    flex-shrink: 0;
+}
+
+.fp-expanded {
+    width: 220px;
+}
+
+.fp-collapsed {
+    width: 52px;
+}
+
+/* ── Header ─────────────────────────────────────── */
+
+.fp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 14px 14px;
+    min-height: 52px;
+}
+
+.fp-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a3f5c;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.fp-title-text {
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+}
+
+.fp-collapsed .fp-title-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Toggle button — same style as sidebar-toggle */
+.fp-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    color: #6b7280;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+
+.fp-toggle:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* ── Collapsible body ────────────────────────────── */
+
+.fp-body {
+    padding: 0 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: opacity 0.2s ease;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.fp-collapsed .fp-body {
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    padding: 0;
+}
+
+/* Clear all */
+.fp-reset {
+    background: none;
+    border: none;
+    font-size: 12px;
+    color: #1a6a82;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0;
+    text-decoration: underline;
+    transition: color 0.2s;
+    text-align: left;
+    margin-bottom: 12px;
+}
+
+.fp-reset:hover {
+    color: #e53e3e;
+}
+
+/* ── Sections ────────────────────────────────────── */
+
+.fp-section {
+    margin-bottom: 18px;
+}
+
+.fp-section:last-child {
+    margin-bottom: 0;
+}
+
+.fp-section::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: #f1f5f9;
+    margin-top: 16px;
+}
+
+.fp-section:last-child::after {
+    display: none;
+}
+
+.fp-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin: 0 0 10px 0;
+}
+
+/* ── Pills (Work Mode) ───────────────────────────── */
+
+.fp-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.fp-pill {
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1.5px solid #cbd5e1;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.fp-pill:hover {
+    border-color: #1a6a82;
+    color: #1a6a82;
+    background: #e0f2f7;
+}
+
+.fp-pill--active {
+    background: linear-gradient(135deg, #1a6a82, #1a3f5c);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.fp-pill--active:hover {
+    opacity: 0.88;
+    color: #ffffff;
+    background: linear-gradient(135deg, #1a6a82, #1a3f5c);
+}
+
+/* ── Radio list ──────────────────────────────────── */
+
+.fp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fp-check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+}
+
+.fp-check-row span {
+    transition: color 0.15s;
+}
+
+.fp-check-row:hover span {
+    color: #1a6a82;
+}
+
+.fp-radio {
+    accent-color: #1a6a82;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+}

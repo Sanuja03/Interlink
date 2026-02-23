@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo.jpeg';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -27,18 +27,20 @@ const Navbar = () => {
                 </div>
 
                 {/* Desktop Links */}
-                <ul className="hidden md:flex items-center gap-8">
-                    {navLinks.map((link) => (
-                        <li key={link.label}>
-                            <Link
-                                to={link.path}
-                                className="text-gray-700 font-medium text-sm hover:text-blue-700 transition-colors duration-200"
-                            >
-                                {link.label}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
+                <div className="hidden md:flex items-center gap-4">
+                    <Link
+                        to="/help"
+                        className="text-gray-700 font-medium text-sm hover:text-blue-700 transition-colors duration-200"
+                    >
+                        Help
+                    </Link>
+                    <Link
+                        to="/signin"
+                        className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors duration-200"
+                    >
+                        Sign In
+                    </Link>
+                </div>
 
                 {/* Mobile hamburger */}
                 <button
@@ -58,19 +60,22 @@ const Navbar = () => {
             {/* Mobile Menu */}
             {menuOpen && (
                 <div className="md:hidden bg-gray-100 px-6 pb-4">
-                    <ul className="flex flex-col gap-3">
-                        {navLinks.map((link) => (
-                            <li key={link.label}>
-                                <Link
-                                    to={link.path}
-                                    className="text-gray-700 font-medium text-sm hover:text-blue-700 transition-colors"
-                                    onClick={() => setMenuOpen(false)}
-                                >
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="flex flex-col gap-3">
+                        <Link
+                            to="/help"
+                            className="text-gray-700 font-medium text-sm hover:text-blue-700 transition-colors"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Help
+                        </Link>
+                        <Link
+                            to="/signin"
+                            className="text-blue-700 font-semibold text-sm hover:text-blue-900 transition-colors"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Sign In
+                        </Link>
+                    </div>
                 </div>
             )}
         </nav>

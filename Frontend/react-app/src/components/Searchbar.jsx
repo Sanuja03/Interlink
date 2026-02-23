@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
 
-const Searchbar = () => {
-    const [keyword, setKeyword] = useState('');
+const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
+    // If props are provided, use controlled mode; otherwise manage own state
+    const [localKeyword, setLocalKeyword] = useState('');
     const [category, setCategory] = useState('');
     const [experience, setExperience] = useState('');
     const [techStack, setTechStack] = useState('');
+
+    const isControlled = keywordProp !== undefined;
+    const keyword = isControlled ? keywordProp : localKeyword;
+    const setKeyword = isControlled
+        ? (val) => onKeywordChange && onKeywordChange(val)
+        : setLocalKeyword;
 
     const categories = ['Engineering', 'Design', 'Marketing', 'Finance', 'Healthcare'];
     const experiences = ['Entry Level', 'Mid Level', 'Senior Level', 'Director', 'Executive'];
     const techStacks = ['React', 'Node.js', 'Python', 'Java', 'Flutter', 'Django'];
 
     const handleSearch = () => {
-        console.log({ keyword, category, experience, techStack });
+        if (onSearch) {
+            onSearch({ keyword, category, experience, techStack });
+        } else {
+            console.log({ keyword, category, experience, techStack });
+        }
     };
 
     return (
@@ -28,6 +39,7 @@ const Searchbar = () => {
                         placeholder="Search jobs..."
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         className="w-full py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                     />
                 </div>
@@ -77,7 +89,10 @@ const Searchbar = () => {
                 {/* Search Button */}
                 <button
                     onClick={handleSearch}
-                    className="bg-blue-800 hover:bg-blue-900 text-white font-semibold text-sm px-8 py-3 transition-colors duration-200"
+                    className="text-white font-semibold text-sm px-8 py-3 transition-colors duration-200"
+                    style={{ background: '#1a3f5c' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#142d42'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#1a3f5c'}
                 >
                     Search
                 </button>

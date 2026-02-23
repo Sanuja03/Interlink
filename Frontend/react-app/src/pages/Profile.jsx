@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import React from 'react';
+import Sidebar from '../components/Sidebar';
 
 // Edit icon SVG
 const EditIcon = () => (
@@ -50,10 +49,10 @@ const Profile = () => {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-            <Navbar />
+        <div className="min-h-screen flex bg-gray-50" style={{ gap: "2.5rem" }}>
+            <Sidebar />
 
-            <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6">
+            <main className="flex-1 max-w-3xl w-full px-6 py-6 overflow-y-auto">
 
                 {/* Profile Header Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
@@ -71,7 +70,7 @@ const Profile = () => {
                                 <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white"></span>
                             </div>
                             <div>
-                                <h1 className="text-lg font-bold text-gray-800">Daniel Perera</h1>
+                                <h1 className="text-lg font-bold text-gray-800">kamal Perera</h1>
                                 <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
                                     <svg className="w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M20 14H4a2 2 0 00-2 2v4a2 2 0 002 2h16a2 2 0 002-2v-4a2 2 0 00-2-2zM4 2a2 2 0 00-2 2v4a2 2 0 002 2h16a2 2 0 002-2V4a2 2 0 00-2-2H4z" />
@@ -112,7 +111,7 @@ const Profile = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <InfoField
                             label="Email Address"
-                            value="daniel.perera@mail.com"
+                            value="kamal.perera@mail.com"
                             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
                         />
                         <InfoField
@@ -199,7 +198,7 @@ const Profile = () => {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-gray-700">Daniel_Perera_CV.pdf</p>
+                                <p className="text-sm font-medium text-gray-700">kamal_Perera_CV.pdf</p>
                                 <p className="text-xs text-gray-400">Last Updated: 15 June 2025</p>
                             </div>
                         </div>
@@ -243,8 +242,6 @@ const Profile = () => {
                 </SectionCard>
 
             </main>
-
-            <Footer />
         </div>
     );
 };
