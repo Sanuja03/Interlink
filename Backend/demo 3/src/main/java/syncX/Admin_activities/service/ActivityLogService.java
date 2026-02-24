@@ -1,7 +1,5 @@
 package syncX.Admin_activities.service;
 
-
-
 import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
@@ -9,10 +7,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import syncX.Admin_activities.entity.ActivityLog;
 import syncX.Admin_activities.repository.ActivityLogRepository;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

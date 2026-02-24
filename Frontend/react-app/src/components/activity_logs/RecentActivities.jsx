@@ -29,7 +29,7 @@ return (
 
       <button
         onClick={onViewAll}
-        className="text-sm text-blue-600 font-medium hover:bg-blue-100 border border-blue-600 rounded-md px-3 py-1 transition duration-200"
+        className="text-sm text-white font-medium bg-[#24698B] hover:bg-[#24698B]/90 border border-blue-600 rounded-md px-3 py-1 transition duration-200"
       >
         View All
       </button>

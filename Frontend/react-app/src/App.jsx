@@ -1,13 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AdminDashboardPage from "./modules/activity_logs/SAdminDashboard";
-import AllActivitiesPage from "./modules/activity_logs/AllActivitiesPage";
+import AllActivitiesPage from "./pages/AllActivities";
+import DashboardLayout from "./components/Layout/Dashboardlayout";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import SuperAdminCompanies from "./pages/SuperAdminCompanies";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/SuperAdmin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/SuperAdmin/AllActivities" element={<AllActivitiesPage />} />
+        <Route path="/SuperAdmin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
+        <Route path="/SuperAdmin/AllActivities" element={<DashboardLayout><AllActivitiesPage /></DashboardLayout>} />
+        <Route path="/SuperAdmin/Companies" element={<DashboardLayout><SuperAdminCompanies /></DashboardLayout>} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchActivityLogs } from "../../api/ActivityLogsApi";
+import { fetchActivityLogs } from "../api/ActivityLogsApi";
 import { useNavigate } from "react-router-dom";
 
 export default function AllActivitiesPage() {
@@ -26,12 +26,12 @@ export default function AllActivitiesPage() {
           All Activities
         </h2>
 
-        <button
+        {/*<button
           onClick={() => navigate(-1)}
           className="text-sm text-blue-600 font-medium hover:bg-blue-100 border border-blue-600 rounded-md px-3 py-1 transition duration-200"
         >
           Back to Dashboard
-        </button>
+        </button>*/}
       </div>
 
       {/* Filters Card */}
