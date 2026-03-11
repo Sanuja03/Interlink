@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import FilterPanel from '../components/FilterPanel';
 import Searchbar from '../components/Searchbar';
 
-const allJobs = [
+export const allJobs = [
     {
         id: 1,
         title: 'Software Engineer',
@@ -94,9 +94,12 @@ const allJobs = [
     },
 ];
 
+import { useNavigate } from 'react-router-dom';
+
 const JobPosts = () => {
     // Read initial values from URL query params (passed from Home page Searchbar)
     const urlParams = new URLSearchParams(window.location.search);
+    const navigate = useNavigate();
     const [keyword, setKeyword] = useState(urlParams.get('keyword') || '');
     const [visibleCount, setVisibleCount] = useState(5);
     const [filterExpanded, setFilterExpanded] = useState(false);
@@ -236,9 +239,11 @@ const JobPosts = () => {
                                     </div>
                                 </div>
 
-                                {/* Buttons */}
                                 <div className="flex items-center gap-3 shrink-0">
-                                    <button className="border border-white text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-white hover:text-blue-800 transition-colors duration-200">
+                                    <button
+                                        onClick={() => navigate(`/job-posts/${job.id}`)}
+                                        className="border border-white text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-white hover:text-blue-800 transition-colors duration-200"
+                                    >
                                         View Details
                                     </button>
                                     <button className="border border-white text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-white hover:text-blue-800 transition-colors duration-200">
