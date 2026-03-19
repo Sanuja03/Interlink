@@ -1,7 +1,9 @@
 import DashboardLayout from "../layout/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 import "./ApplicationManagement.css";
 
 export default function ApplicationManagement() {
+  const navigate = useNavigate();
 
   const rows = [
     { name: "Amal Dissanayaka", title: "UI/UX Designer", score: "80%", status: "Shortlisted", color: "green" },
@@ -11,11 +13,9 @@ export default function ApplicationManagement() {
   ];
 
   return (
-    <DashboardLayout>   {/* THIS ADDS SIDEBAR + NAV */}
-
+    <DashboardLayout>
       <div className="am-page">
         <div className="am-container">
-
           {/* Stats */}
           <div className="am-stats">
             <div className="am-statCard">
@@ -67,19 +67,28 @@ export default function ApplicationManagement() {
                     </td>
 
                     <td className="am-td">
-                      <button className="am-btn am-view">View Profile</button>
-                      <button className="am-btn am-shortlist">Shortlist</button>
-                      <button className="am-btn am-reject">Reject</button>
+                      <button
+                        className="am-btn am-view"
+                        onClick={() => navigate("/candidate-profile")}
+                      >
+                        View Profile
+                      </button>
+
+                      <button className="am-btn am-shortlist">
+                        Shortlist
+                      </button>
+
+                      <button className="am-btn am-reject">
+                        Reject
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
           </div>
         </div>
       </div>
-
     </DashboardLayout>
   );
 }

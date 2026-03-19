@@ -1,0 +1,255 @@
+.ic-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 32px 30px;
+  min-height: 100%;
+  background: #dadee0;
+  font-family: "Outfit", sans-serif;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+.ic-companyBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ic-companyLogo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.ic-companyName {
+  font-size: 17px;
+  font-weight: 600;
+  color: #174e6d;
+}
+
+.ic-title {
+  margin: 0 0 26px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #24698b;
+}
+
+.ic-summaryCard {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 12px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1.5px solid rgba(36, 105, 139, 0.2);
+  border-radius: 20px;
+  padding: 20px 26px 24px;
+  box-shadow: 0 8px 18px rgba(12, 62, 86, 0.08);
+}
+
+.ic-summaryGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ic-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.ic-rowFull {
+  grid-template-columns: 1fr 1fr;
+}
+
+.ic-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #24698b;
+  text-align: center;
+}
+
+.ic-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2a2a2a;
+  text-align: left;
+}
+
+.ic-editRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 24px;
+}
+
+.ic-editIconBtn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(12, 62, 86, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ic-editIconBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(12, 62, 86, 0.16);
+}
+
+.ic-editIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.ic-editText {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222222;
+}
+
+.ic-formSection {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(36, 105, 139, 0.14);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  box-shadow: 0 8px 18px rgba(12, 62, 86, 0.06);
+}
+
+.ic-field {
+  margin-bottom: 14px;
+}
+
+.ic-fieldLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 17px;
+  font-weight: 500;
+  color: #222222;
+}
+
+.ic-input,
+.ic-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(36, 105, 139, 0.22);
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  color: #111111;
+  outline: none;
+}
+
+.ic-input {
+  height: 48px;
+  padding: 0 12px;
+}
+
+.ic-textarea {
+  min-height: 115px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.ic-input:focus,
+.ic-textarea:focus {
+  border-color: #24698b;
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}
+
+.ic-input::placeholder,
+.ic-textarea::placeholder {
+  color: #aaaaaa;
+}
+
+.ic-error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #e12626;
+  font-weight: 500;
+}
+
+.ic-actions {
+  display: flex;
+  justify-content: center;
+  gap: 34px;
+  margin-top: 26px;
+}
+
+.ic-btn {
+  min-width: 185px;
+  height: 54px;
+  border: none;
+  border-radius: 999px;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(12, 62, 86, 0.14);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ic-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(12, 62, 86, 0.16);
+}
+
+.ic-btnConfirm {
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+}
+
+.ic-btnCancel {
+  background: #ff1e1e;
+}
+
+.ic-btnCancel:hover {
+  background: #eb1b1b;
+}
+
+@media (max-width: 760px) {
+  .ic-page {
+    padding: 18px 16px 24px;
+  }
+
+  .ic-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ic-label,
+  .ic-value {
+    text-align: left;
+  }
+
+  .ic-formSection {
+    padding: 18px 16px 16px;
+  }
+
+  .ic-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .ic-btn {
+    width: 100%;
+    max-width: 320px;
+  }
+}
