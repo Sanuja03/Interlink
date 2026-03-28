@@ -49,6 +49,11 @@
     min-width: 0;
     max-width: 100%;
   }
+
+  .pending-link{
+    cursor: pointer;
+    text-decoration: none;
+  }
   
   /* Wrap long text, URLs, filenames, notes */
   .dash-right a,

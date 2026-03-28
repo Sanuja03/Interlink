@@ -10,6 +10,8 @@ import Card from "../DashboardCom/Card";
 import TodaySchedule from "../DashboardCom/TodaySchedule";
 import NextInterviewCard from "../DashboardCom/NextInterviewCard";
 
+import { Link } from "react-router-dom";
+
 const Dashboard = () => {
   
   /* dummy data */
@@ -48,12 +50,17 @@ const Dashboard = () => {
               value={stats.scheduled}
               icon={interviewscheduled}
             />
+
+            <Link to = "/PendingRequests" className = "pending-link" >
             <Card
               title="Pending Requests"
               value={stats.pending}
               icon={pendingrequests}
               variant="danger"
             />
+
+            </Link>
+
             <Card
               title="Completed Interviews"
               value={stats.completed}

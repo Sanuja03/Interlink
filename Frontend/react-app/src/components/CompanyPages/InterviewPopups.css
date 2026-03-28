@@ -1,0 +1,390 @@
+:root {
+    --heading: #24698b;
+    --dot1: rgba(36, 105, 139, 0.18);
+    --dot2: rgba(36, 105, 139, 0.22);
+    --dot3: rgba(217, 217, 217, 0.34);
+  }
+  
+  .ip-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  
+  .ip-modal {
+    width: min(900px, 96vw);
+    max-height: 94vh;
+    overflow-y: auto;
+    border-radius: 18px;
+    padding: 28px 24px 32px;
+    font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background-color: #f3f4f6;
+    background-image:
+      radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
+      radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
+      radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
+    background-size: 56px 56px, 80px 80px, 110px 110px;
+    background-position: 0 0, 18px 22px, 40px 10px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  }
+  
+  .ip-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 6px 0 18px;
+    color: #000;
+  }
+  
+  .ip-card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  
+  .ip-info-grid {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .ip-info-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ip-info-box {
+    background: #f9fafb;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  
+  .ip-info-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+  
+  .ip-info-value {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .ip-field {
+    margin-bottom: 16px;
+  }
+  
+  .ip-label {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #000;
+  }
+  
+  .ip-input,
+  .ip-select {
+    width: 100%;
+    height: 52px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    padding: 10px 14px;
+    font-size: 18px;
+    outline: none;
+    background: #fff;
+    box-sizing: border-box;
+  }
+  
+  .ip-textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    padding: 12px 14px;
+    font-size: 18px;
+    outline: none;
+    background: #fff;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  .ip-input::placeholder,
+  .ip-textarea::placeholder {
+    color: rgba(0, 0, 0, 0.35);
+  }
+  
+  .ip-input:disabled,
+  .ip-select:disabled,
+  .ip-textarea:disabled,
+  .ip-dropdown-btn:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+  
+  .ip-person-list,
+  .ip-status-list,
+  .ip-selected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .ip-person-card,
+  .ip-status-card,
+  .ip-selected-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #ffffff;
+    flex-wrap: wrap;
+  }
+  
+  .ip-person-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+  }
+  
+  .ip-person-role {
+    font-size: 15px;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ip-status-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .ip-badge {
+    min-width: 100px;
+    text-align: center;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  
+  .ip-accepted {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .ip-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .ip-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .ip-timeout {
+    background: #e5e7eb;
+    color: #374151;
+  }
+  
+  .ip-small-btn {
+    border: none;
+    border-radius: 10px;
+    background: var(--heading);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  
+  .ip-remove-btn,
+  .ip-remove-mini-btn {
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .ip-remove-btn {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 14px;
+  }
+  
+  .ip-remove-mini-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .ip-note-box {
+    margin-top: 16px;
+    border-radius: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    font-size: 15px;
+    color: #374151;
+  }
+  
+  .ip-actions {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    margin-top: 22px;
+  }
+  
+  .ip-primary-btn {
+    width: 280px;
+    min-height: 58px;
+    border-radius: 18px;
+    border: none;
+    background: var(--heading);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 14px 26px rgba(36, 105, 139, 0.28);
+  }
+  
+  .ip-primary-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .ip-danger-btn {
+    width: 220px;
+    min-height: 58px;
+    border-radius: 18px;
+    border: none;
+    background: #ff0000;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 14px 26px rgba(255, 0, 0, 0.25);
+  }
+  
+  .ip-dropdown-btn {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    padding: 10px 14px;
+    font-size: 18px;
+    outline: none;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .ip-dropdown-panel {
+    margin-top: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 14px;
+  }
+  
+  .ip-group-block + .ip-group-block {
+    margin-top: 18px;
+  }
+  
+  .ip-group-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #24698b;
+    margin: 0 0 10px;
+  }
+  
+  .ip-dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  @media (max-width: 700px) {
+    .ip-info-grid-2 {
+      grid-template-columns: 1fr;
+    }
+  
+    .ip-actions {
+      flex-direction: column;
+      gap: 14px;
+    }
+  
+    .ip-primary-btn,
+    .ip-danger-btn {
+      width: 100%;
+    }
+  }
+
+  .ip-panel-top {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .ip-panel-box {
+    background: #f9fafb;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  
+  .ip-primary-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .ip-status-accepted {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .ip-status-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .ip-status-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .ip-status-timeout {
+    background: #e5e7eb;
+    color: #374151;
+  }

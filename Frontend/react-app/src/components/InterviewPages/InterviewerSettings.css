@@ -25,4 +25,193 @@
     color: #4b5563; 
     font-size: 14px;
   }
+  :root {
+    --heading: #24698b; /* style guide */
+    --dot1: rgba(36, 105, 139, 0.18);
+    --dot2: rgba(36, 105, 139, 0.22);
+    --dot3: rgba(217, 217, 217, 0.34);
+    --footer: #0c3e56;  /* style guide */
+  }
+  
+  .cas-page {
+    font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    background-image:
+      radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
+      radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
+      radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
+    background-size: 56px 56px, 80px 80px, 110px 110px;
+    background-position: 0 0, 18px 22px, 40px 10px;
+  }
+  
+  .cas-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  
+  /* top row */
+  .cas-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .cas-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--heading);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(36, 105, 139, 0.25);
+  }
+  
+  .cas-bell {
+    font-size: 28px;
+  }
+  
+  /* title + profile */
+  .cas-title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+    margin: 18px 0 14px;
+    color: #000;
+  }
+  
+  .cas-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  
+  .cas-avatar {
+    width: 92px;
+    height: 92px;
+    border-radius: 999px;
+    background: #fff;
+    border: 2px solid rgba(0,0,0,0.10);
+    box-shadow: 0 16px 34px rgba(0,0,0,0.10);
+    display: grid;
+    place-items: center;
+    font-size: 34px;
+  }
+  
+  .cas-editPic {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: none;
+    background: var(--heading);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 18px rgba(36,105,139,0.22);
+    font-size: 14px;
+  }
+  
+  .cas-companyName {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--footer);
+  }
+  
+  /* ✅ cards list */
+  .cas-list {
+    display: grid;
+    gap: 22px;
+    max-width: 920px;      /* ✅ prevents huge full-width look */
+    margin: 0 auto;        /* ✅ center like screenshot */
+  }
+  
+  /* ✅ card = flex (no grid stretching) */
+  .cas-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  
+    padding: 18px 18px;
+    border-radius: 18px;
+    background: rgba(204, 236, 255, 0.6);
+  
+    border: 1px solid rgba(0,0,0,0.10);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.08);
+    cursor: pointer;
+  
+    text-align: left;
+  }
+  
+  .cas-card:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* left vertical bar */
+  .cas-bar {
+    width: 10px;
+    height: 64px;          /* ✅ short bar like screenshot */
+    border-radius: 999px;
+    background: var(--heading);
+    box-shadow: 0 12px 20px rgba(36,105,139,0.25);
+    flex: 0 0 auto;
+  }
+  
+  /* icon box */
+  .cas-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.08);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    flex: 0 0 auto;
+  }
+  
+  /* text area */
+  .cas-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;               /* ✅ takes remaining space */
+    min-width: 0;
+  }
+  
+  .cas-cardTitle {
+    font-size: 20px;
+    font-weight: 800;
+    color: #000;
+  }
+  
+  .cas-cardDesc {
+    font-size: 14px;
+    opacity: 0.75;
+    color: #000;
+  }
+  
+  /* arrow on right */
+  .cas-arrow {
+    font-size: 26px;
+    font-weight: 900;
+    opacity: 0.7;
+    flex: 0 0 auto;
+  }
+  
+  @media (max-width: 700px) {
+    .cas-companyName { font-size: 28px; }
+    .cas-card { padding: 16px; }
+    .cas-bar { height: 54px; }
+  }
   

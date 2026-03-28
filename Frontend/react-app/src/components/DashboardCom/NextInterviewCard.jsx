@@ -10,6 +10,7 @@ const NextInterviewCard = ({ interview }) => {
       <div className="next-card-header">
         <h3 className="next-card-title">Next Interview</h3>
 
+        {/* to cjnage colour of the badge */}
         <span
           className={`status-badge ${
             isEmpty

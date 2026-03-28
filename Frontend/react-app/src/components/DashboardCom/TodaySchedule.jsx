@@ -47,7 +47,7 @@ const TodaySchedule = () => {
 
   return (
     <div className="schedule-card">
-      <h2 className="schedule-title">Today schedule</h2>
+      <h2 className="schedule-title">Today Schedule</h2>
 
       {hasSchedule ? (
         <div className="table-wrapper">
