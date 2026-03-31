@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 export default {
   corePlugins: {
     preflight: false,
@@ -6,3 +7,4 @@ export default {
   theme: { extend: {} },
   plugins: [],
 }
+
