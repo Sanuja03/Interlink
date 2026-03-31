@@ -3,17 +3,17 @@ import Sidebar from "./Sidebar";
 import Footer from "../layout/Footer";
 
 import notificationicon from "../../assets/notificationicon.png";
-import availabilityicon from "../../assets/availability.png"; 
-import defaultAvatar from "../../assets/default-avatar.png";
+
+
 
 import { Link } from "react-router-dom";
-import AvailabilityPopup from "./AvailabilityPopup";
+
 
 const SIDEBAR_WIDTH = 240;
 
 const DashboardLayout = ({ children }) => {
 
-  const [showAvailability, setShowAvailability] = useState(false);
+
 
   return (
     <div className="relative min-h-screen bg-gray-50">
@@ -35,14 +35,6 @@ const DashboardLayout = ({ children }) => {
         {/* top bar */}
         <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
 
-          {/* Availability Icon */}
-          <img
-          src={availabilityicon}
-          alt="Availability"
-          onClick={() => setShowAvailability(true)}
-          className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100"
-        />
-
         {/* Notification */}
         <img
           src={notificationicon}
@@ -52,11 +44,24 @@ const DashboardLayout = ({ children }) => {
 
     
     
+      <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+                        bg-red-50 text-red-600 text-xs font-semibold
+                        hover:bg-red-100 transition duration-200
+                        cursor-pointer
+                        focus:outline-none focus:ring-0 active:outline-none
+                        outline-none border-none">
 
-          <span className="text-sm font-semibold text-red-800">
-            Logout
-          </span>
+        <svg xmlns="http://www.w3.org/2000/svg" 
+            className="w-3.5 h-3.5" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M17 16l4-4m0 0l-4-4m4 4H7" />
+        </svg>
 
+        Logout
+      </button>
         </div>
 
         {/* page specific content */}
@@ -69,12 +74,8 @@ const DashboardLayout = ({ children }) => {
 
       </div>
 
-      {/* Availability Popup */}
-      {showAvailability && (
-        <AvailabilityPopup
-          onClose={() => setShowAvailability(false)}
-        />
-      )}
+     
+      
 
     </div>
   );
