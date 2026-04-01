@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 const inputStyle = {

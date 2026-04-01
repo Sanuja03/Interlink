@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
+import Footer from '../components/CandidateDashboard/Footer';
 import { allJobs } from './JobPosts';
 
 const JobPostDetails = () => {
@@ -127,7 +127,7 @@ const JobPostDetails = () => {
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                     {[
                                         'Basic to intermediate knowledge of JavaScript and web development concepts',
-                                        `Experience or familiarity with ${job.techStack} or similar frontend frameworks`,
+                                        `Experience or familiarity with modern frontend frameworks`,
                                         'Understanding of REST APIs and backend integration',
                                         'Basic knowledge of databases such as MySQL or MongoDB',
                                         'Good problem-solving and analytical skills',

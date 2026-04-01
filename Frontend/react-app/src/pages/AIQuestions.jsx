@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
+import Footer from '../components/CandidateDashboard/Footer';
 
 const mockQuestions = [
     "Can you explain the difference between state and props in React?",
@@ -29,6 +29,22 @@ const AIQuestions = () => {
     const [answer, setAnswer] = useState('');
     const [submitted, setSubmitted] = useState(Array(mockQuestions.length).fill(false));
     const [showFeedback, setShowFeedback] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(120);
+
+    React.useEffect(() => {
+        if (showFeedback) return;
+        const timer = setInterval(() => {
+            setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [showFeedback, currentQ]);
+
+    React.useEffect(() => {
+        if (timeLeft === 0 && !showFeedback) {
+            handleSubmit();
+        }
+    // eslint-disable-next-line
+    }, [timeLeft, showFeedback]);
 
     const handleSubmit = () => {
         const updated = [...submitted];
@@ -40,7 +56,8 @@ const AIQuestions = () => {
                 setCurrentQ(q => q + 1);
                 setAnswer('');
                 setShowFeedback(false);
-            }, 1500);
+                setTimeLeft(120);
+            }, 3000);
         }
     };
 
@@ -58,13 +75,36 @@ const AIQuestions = () => {
                 <div style={{
                     background: '#4a4a4a',
                     padding: '16px 24px',
-                    textAlign: 'center',
-                    fontSize: '18px',
-                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                     color: '#ffffff',
-                    letterSpacing: '0.5px',
                 }}>
-                    AI Generated Questions
+                    <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
+                    <div style={{
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        letterSpacing: '0.5px',
+                        textAlign: 'center',
+                        flex: 1
+                    }}>
+                        AI Generated Questions
+                    </div>
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        minWidth: '120px'
+                    }}>
+                        <span>⏳</span> 2 days left
+                    </div>
                 </div>
 
                 <main style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '28px 20px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -122,8 +162,24 @@ const AIQuestions = () => {
                             <div style={{ fontSize: '13px', fontWeight: '800', color: '#111', letterSpacing: '0.5px' }}>
                                 AI INTERVIEW SIMULATOR
                             </div>
-                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#00b09b' }}>
-                                Question {currentQ + 1} of {mockQuestions.length}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <div style={{ 
+                                    fontSize: '13px', 
+                                    fontWeight: '700', 
+                                    color: timeLeft <= 15 ? '#e53e3e' : '#1a6a82',
+                                    background: timeLeft <= 15 ? '#fee2e2' : '#e0f2f7',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.3s ease'
+                                }}>
+                                    <span>⏱️</span> {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                                </div>
+                                <div style={{ fontSize: '12px', fontWeight: '700', color: '#00b09b' }}>
+                                    Question {currentQ + 1} of {mockQuestions.length}
+                                </div>
                             </div>
                         </div>
 

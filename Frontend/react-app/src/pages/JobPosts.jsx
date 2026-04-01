@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import FilterPanel from '../components/FilterPanel';
-import Searchbar from '../components/Searchbar';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
+import FilterPanel from '../components/CandidateJobPosts/FilterPanel';
+import Searchbar from '../components/CandidateJobPosts/Searchbar';
 
 export const allJobs = [
     {
@@ -106,7 +106,6 @@ const JobPosts = () => {
     const [filters, setFilters] = useState({
         category: urlParams.get('category') || '',
         experience: urlParams.get('experience') || '',
-        techStack: urlParams.get('techStack') || '',
         mode: '',
     });
 
@@ -116,7 +115,7 @@ const JobPosts = () => {
     };
 
     const handleReset = () => {
-        setFilters({ category: '', experience: '', techStack: '', mode: '' });
+        setFilters({ category: '', experience: '', mode: '' });
         setKeyword('');
         setVisibleCount(5);
     };
@@ -133,10 +132,9 @@ const JobPosts = () => {
 
         const matchesCategory = !filters.category || job.category === filters.category;
         const matchesExperience = !filters.experience || job.experience === filters.experience;
-        const matchesTechStack = !filters.techStack || job.techStack === filters.techStack;
         const matchesMode = !filters.mode || job.mode === filters.mode;
 
-        return matchesKeyword && matchesCategory && matchesExperience && matchesTechStack && matchesMode;
+        return matchesKeyword && matchesCategory && matchesExperience && matchesMode;
     });
 
     const visible = filtered.slice(0, visibleCount);
@@ -152,13 +150,12 @@ const JobPosts = () => {
                     <Searchbar
                         keyword={keyword}
                         onKeywordChange={(val) => { setKeyword(val); setVisibleCount(5); }}
-                        onSearch={({ keyword: kw, category, experience, techStack }) => {
+                        onSearch={({ keyword: kw, category, experience }) => {
                             setKeyword(kw);
                             setFilters((prev) => ({
                                 ...prev,
                                 ...(category !== undefined && { category }),
                                 ...(experience !== undefined && { experience }),
-                                ...(techStack !== undefined && { techStack }),
                             }));
                             setVisibleCount(5);
                         }}
@@ -233,20 +230,22 @@ const JobPosts = () => {
                                         <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
                                             {job.experience}
                                         </span>
-                                        <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
-                                            {job.techStack}
-                                        </span>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-3 shrink-0">
                                     <button
                                         onClick={() => navigate(`/job-posts/${job.id}`)}
-                                        className="border border-white text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-white hover:text-blue-800 transition-colors duration-200"
+                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
+                                        style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
                                     >
                                         View Details
                                     </button>
-                                    <button className="border border-white text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-white hover:text-blue-800 transition-colors duration-200">
+                                    <button
+                                        onClick={() => navigate(`/job-apply/${job.id}`)}
+                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
+                                        style={{ background: 'linear-gradient(135deg, #0C3E56, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+                                    >
                                         Apply Now
                                     </button>
                                 </div>
@@ -259,7 +258,7 @@ const JobPosts = () => {
                                 <button
                                     onClick={() => setVisibleCount((v) => v + 5)}
                                     className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md hover:opacity-90 transition-opacity"
-                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)' }}
+                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', outline: 'none', border: 'none' }}
                                 >
                                     Load more..
                                 </button>

@@ -4,12 +4,12 @@
    ============================================================ */
 
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-import StatCard from "../components/StatCard";
-import UpcomingInterviews from "../components/UpcomingInterviews";
-import ApplicationTracker from "../components/ApplicationTracker";
-import Searchbar from "../components/Searchbar";
+import Sidebar from "../components/CandidateDashboard/Sidebar";
+import Footer from "../components/CandidateDashboard/Footer";
+import StatCard from "../components/CandidateDashboard/StatCard";
+import UpcomingInterviews from "../components/CandidateDashboard/UpcomingInterviews";
+import ApplicationTracker from "../components/CandidateDashboard/ApplicationTracker";
+import Searchbar from "../components/CandidateJobPosts/Searchbar";
 
 /* ── Data ──────────────────────────────────────────────── */
 const stats = [
@@ -210,12 +210,11 @@ const Dashboard = () => {
                         <Searchbar
                             keyword={keyword}
                             onKeywordChange={setKeyword}
-                            onSearch={({ keyword: kw, category, experience, techStack }) => {
+                            onSearch={({ keyword: kw, category, experience }) => {
                                 const params = new URLSearchParams();
                                 if (kw) params.set('keyword', kw);
                                 if (category) params.set('category', category);
                                 if (experience) params.set('experience', experience);
-                                if (techStack) params.set('techStack', techStack);
                                 const query = params.toString();
                                 window.location.href = `/job-posts${query ? '?' + query : ''}`;
                             }}

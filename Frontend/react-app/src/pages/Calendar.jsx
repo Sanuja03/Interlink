@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
-import CalendarWidget from '../components/CalendarWidget';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
+import Footer from '../components/CandidateDashboard/Footer';
+import CalendarWidget from '../components/CandidateCalendar/CalendarWidget';
 
 /* ─── Interview data for the job-seeker view ─────────────────── */
 const INTERVIEWS = {

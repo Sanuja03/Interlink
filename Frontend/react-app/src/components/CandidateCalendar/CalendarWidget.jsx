@@ -121,11 +121,23 @@ const widgetStyles = `
   .cw-detail__icon    { font-size:18px; flex-shrink:0; }
   .cw-detail__actions { display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
   .cw-btn {
-    background:#fff; border:2px solid #d1d5db; border-radius:8px;
-    padding:10px 28px; font-size:14px; font-weight:700; color:#1a1a1a;
-    cursor:pointer; width:200px; transition:background .18s, border-color .18s, color .18s;
+    background: linear-gradient(135deg, #1d6fa5, #1a6a82);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    width: 200px;
+    box-shadow: 0 4px 12px rgba(26, 106, 130, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
   }
-  .cw-btn:hover { background:#f3f7fa; border-color:#1a6a82; color:#1a6a82; }
+  .cw-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(26, 106, 130, 0.3);
+  }
   .cw-no-iv   { text-align:center; color:#9ca3af; font-size:14px; font-weight:500; padding:16px 0; }
 
   @media(max-width:768px){

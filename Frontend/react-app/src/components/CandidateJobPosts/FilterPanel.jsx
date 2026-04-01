@@ -10,18 +10,17 @@ const FilterPanel = ({ filters, onChange, onReset, expanded: expandedProp, onTog
         ? onToggle
         : () => setLocalExpanded((v) => !v);
 
-    const { category, experience, techStack, mode } = filters;
+    const { category, experience, mode } = filters;
 
     const categories = ['Engineering', 'Design', 'Marketing', 'Finance', 'Healthcare'];
     const experiences = ['Entry Level', 'Mid Level', 'Senior Level', 'Director'];
-    const techStacks = ['React', 'Node.js', 'Python', 'Java', 'Flutter'];
     const modes = ['Remote', 'Onsite', 'Hybrid'];
 
     const toggle = (field, value) => {
         onChange(field, filters[field] === value ? '' : value);
     };
 
-    const hasFilters = category || experience || techStack || mode;
+    const hasFilters = category || experience || mode;
 
     return (
         <aside className={`fp-panel ${expanded ? 'fp-expanded' : 'fp-collapsed'}`}>
@@ -110,24 +109,7 @@ const FilterPanel = ({ filters, onChange, onReset, expanded: expandedProp, onTog
                     </div>
                 </div>
 
-                {/* Tech Stack */}
-                <div className="fp-section">
-                    <h4 className="fp-section-title">Tech Stack</h4>
-                    <div className="fp-list">
-                        {techStacks.map((t) => (
-                            <label key={t} className="fp-check-row">
-                                <input
-                                    type="radio"
-                                    name="techStack"
-                                    checked={techStack === t}
-                                    onChange={() => toggle('techStack', t)}
-                                    className="fp-radio"
-                                />
-                                <span>{t}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
+
             </div>
         </aside>
     );

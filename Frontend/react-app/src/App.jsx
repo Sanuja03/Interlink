@@ -1,76 +1,74 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+
+// Candidate pages
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import JobPosts from './pages/JobPosts';
 import JobPostDetails from './pages/JobPostDetails';
-import Dashboard from './pages/Dashboard';
+import CandidateDashboard from './pages/Dashboard';
 import AIQuestions from './pages/AIQuestions';
-import Calendar from './pages/Calendar';
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Signup from './components/LoginSignup/Signup'
-import SignUpCompany from './components/LoginSignup/SignUpCompany'
-import Login from './components/LoginSignup/Login'
-import Dashboard from './components/InterviewPages/Dashboard'
-import Calendar from './components/InterviewPages/Calendar'
-import InterviewerProfile from './components/InterviewPages/InterviewerProfile'
-import InterviewerSettings from './components/InterviewPages/InterviewerSettings'
-import PendingRequests from './components/InterviewPages/PendingRequests'
-import CompletedInterviews from './components/InterviewPages/CompletedInterviews'
-import ScheduledInterviews from './components/InterviewPages/ScheduledInterviews'
-import SingleView from "./components/InterviewPages/SingleView";
-import ShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
+import CandidateCalendar from './pages/Calendar';
+import JobApply from './pages/JobApply';
 
+// Auth
+import Signup from './components/LoginSignup/Signup';
+import SignUpCompany from './components/LoginSignup/SignUpCompany';
+import Login from './components/LoginSignup/Login';
 
+// Interviewer pages
+import Dashboard from './components/InterviewPages/Dashboard';
+import Calendar from './components/InterviewPages/Calendar';
+import InterviewerProfile from './components/InterviewPages/InterviewerProfile';
+import InterviewerSettings from './components/InterviewPages/InterviewerSettings';
+import PendingRequests from './components/InterviewPages/PendingRequests';
+import CompletedInterviews from './components/InterviewPages/CompletedInterviews';
+import ScheduledInterviews from './components/InterviewPages/ScheduledInterviews';
+import SingleView from './components/InterviewPages/SingleView';
 
+// Company pages
+import ShortlistedCandidates from './components/CompanyPages/ShortlistedCandidates';
 
 function App() {
-
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/job-posts" element={<JobPosts />} />
-        <Route path="/job-posts/:id" element={<JobPostDetails />} />
-        <Route path="/ai-questions" element={<AIQuestions />} />
-        <Route path="/calender" element={<Calendar />} />
-        <Route path="/calendar" element={<Calendar />} />
-      </Routes>
-    </BrowserRouter>
-  );
-  <>
-
     <Routes>
+      {/* Landing */}
+      <Route path="/" element={<Home />} />
 
-      <Route path="/" element={<Navigate to="/InterviewerSettings" />} />
+      {/* Auth */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/signup-company" element={<SignUpCompany />} />
 
-      <Route path="/Login" element={<Login />} />
-      <Route path="/Signup" element={<Signup />} />
-      <Route path="/SignUpCompany" element={<SignUpCompany />} />
-      <Route path="/Dashboard" element={<Dashboard />} />
-      <Route path="/Calendar" element={<Calendar />} />
-      <Route path="/InterviewerProfile" element={<InterviewerProfile />} />
-      <Route path="/InterviewerSettings" element={<InterviewerSettings />} />
-      <Route path="/PendingRequests" element={<PendingRequests />} />
-      <Route path="/CompletedInterviews" element={<CompletedInterviews />} />
-      <Route path="/ScheduledInterviews" element={<ScheduledInterviews />} />
-      <Route path="/SingleView/:interviewId" element={<SingleView />} />
-      <Route path="/ShortlistedCandidates" element={<ShortlistedCandidates />} />
+      {/* Candidate */}
+      <Route path="/home" element={<Home />} />
+      <Route path="/dashboard" element={<CandidateDashboard />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/job-posts" element={<JobPosts />} />
+      <Route path="/job-posts/:id" element={<JobPostDetails />} />
+      <Route path="/ai-questions" element={<AIQuestions />} />
+      <Route path="/calender" element={<CandidateCalendar />} />
+      <Route path="/calendar" element={<CandidateCalendar />} />
+      <Route path="/job-apply/:id" element={<JobApply />} />
 
+      {/* Interviewer */}
+      <Route path="/interviewer/dashboard" element={<Dashboard />} />
+      <Route path="/interviewer/calendar" element={<Calendar />} />
+      <Route path="/interviewer/profile" element={<InterviewerProfile />} />
+      <Route path="/interviewer/settings" element={<InterviewerSettings />} />
+      <Route path="/interviewer/pending-requests" element={<PendingRequests />} />
+      <Route path="/interviewer/completed-interviews" element={<CompletedInterviews />} />
+      <Route path="/interviewer/scheduled-interviews" element={<ScheduledInterviews />} />
+      <Route path="/interviewer/single-view/:interviewId" element={<SingleView />} />
 
+      {/* Company */}
+      <Route path="/company/shortlisted-candidates" element={<ShortlistedCandidates />} />
 
-
-
-
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
-  </>
-    ;
+  );
 }
 
 export default App;
-

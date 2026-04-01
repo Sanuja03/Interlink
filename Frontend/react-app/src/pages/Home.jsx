@@ -1,8 +1,8 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
-import Searchbar from '../components/Searchbar';
-import HeroSection from '../components/Herosection';
-import Footer from '../components/Footer';
+import Sidebar from '../components/CandidateDashboard/Sidebar';
+import Searchbar from '../components/CandidateJobPosts/Searchbar';
+import HeroSection from '../components/CandidateHome/Herosection';
+import Footer from '../components/CandidateDashboard/Footer';
 
 const Home = () => {
     return (
