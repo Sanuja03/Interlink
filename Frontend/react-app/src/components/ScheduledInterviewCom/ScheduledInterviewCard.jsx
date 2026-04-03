@@ -98,7 +98,7 @@ const ScheduledInterviewCard = ({ interview }) => {
           <p className="si-hint"></p>
 
           <Link
-            to={`/SingleView/${interviewId}`}
+            to={`/interviewer/single-view/:interviewId${interviewId}`}
             state={{ interview }}
             className="si-view-link"
           >

@@ -51,7 +51,7 @@ const Dashboard = () => {
               icon={interviewscheduled}
             />
 
-            <Link to = "/PendingRequests" className = "pending-link" >
+            <Link to = "/interviewer/pending-requests" className = "pending-link" >
             <Card
               title="Pending Requests"
               value={stats.pending}
