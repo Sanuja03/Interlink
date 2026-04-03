@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/CandidateDashboard/Footer';
 import logo from '../assets/logo.png';
+import '../components/LoginSignup/Login';
 
 /* ─── Inline styles ─── */
 const landingPageStyles = `
@@ -1050,7 +1051,7 @@ const LandingNavbar = () => {
                     <button className="lp-nav__link" onClick={() => scrollTo('features')}>Features</button>
                     <button className="lp-nav__link" onClick={() => scrollTo('howitworks')}>How It Works</button>
                     <button className="lp-nav__link" onClick={() => scrollTo('testimonials')}>Testimonials</button>
-                    <Link to="/signin" className="lp-nav__signin">Sign In</Link>
+                    <Link to="/Login" className="lp-nav__signin">Sign In</Link>
                     <Link to="/register" className="lp-nav__cta">Get Started</Link>
                 </div>
 

@@ -5,10 +5,10 @@ import pendingrequests from "../../assets/pendingrequests.png";
 import completedinterviews from "../../assets/completedinterviews.png";
 import defaultAvatar from "../../assets/default-avatar.png";
 
-import DashboardLayout from "../DashboardCom/DashboardLayout";
-import Card from "../DashboardCom/Card";
-import TodaySchedule from "../DashboardCom/TodaySchedule";
-import NextInterviewCard from "../DashboardCom/NextInterviewCard";
+import DashboardLayout from "./Layout/DashboardLayout";
+import Card from "./Layout/Card";
+import TodaySchedule from "./Layout/TodaySchedule";
+import NextInterviewCard from "./Layout/NextInterviewCard";
 
 import { Link } from "react-router-dom";
 

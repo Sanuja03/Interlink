@@ -1,4 +1,4 @@
-import DashboardLayout from "../DashboardCom/DashboardLayout";
+import DashboardLayout from "./Layout/DashboardLayout";
 import "./Calendar.css";
 
 const Calendar = () => {

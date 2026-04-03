@@ -1,11 +1,11 @@
 import "./Sidebar.css";
 
-import interlink from "../../assets/interlink.png";
-import dashboardIcon from "../../assets/dashboard.png";
-import interviewIcon from "../../assets/interviews.png";
-import calendarIcon from "../../assets/calendar.png";
-import settingsIcon from "../../assets/settings.png";
-import defaultAvatar from "../../assets/default-avatar.png";
+import interlink from "../../../assets/interlink.png";
+import dashboardIcon from "../../../assets/dashboard.png";
+import interviewIcon from "../../../assets/interviews.png";
+import calendarIcon from "../../../assets/calendar.png";
+import settingsIcon from "../../../assets/settings.png";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";

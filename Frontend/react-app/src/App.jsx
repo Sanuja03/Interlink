@@ -1,8 +1,15 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
-// Candidate pages
+//Landing
 import LandingPage from './pages/LandingPage';
+
+// Auth
+import Signup from './components/LoginSignup/Signup';
+import SignUpCompany from './components/LoginSignup/SignUpCompany';
+import Login from './components/LoginSignup/Login';
+
+// Candidate pages
 import CandidateHome from './pages/Home';
 import CandidateProfile from './pages/Profile';
 import CandidateJobPosts from './pages/JobPosts';
@@ -12,29 +19,25 @@ import CandidateAIQuestions from './pages/AIQuestions';
 import CandidateCalendar from './pages/Calendar';
 import CandidateJobApply from './pages/JobApply';
 
-// Auth
-import Signup from './components/LoginSignup/Signup';
-import SignUpCompany from './components/LoginSignup/SignUpCompany';
-import Login from './components/LoginSignup/Login';
 
 // Interviewer pages
-import InterviewerDashboard from './components/InterviewPages/Dashboard';
-import InterviewerCalendar from './components/InterviewPages/Calendar';
-import InterviewerProfile from './components/InterviewPages/InterviewerProfile';
-import InterviewerSettings from './components/InterviewPages/InterviewerSettings';
-import InterviewerPendingRequests from './components/InterviewPages/PendingRequests';
-import InterviewerCompletedInterviews from './components/InterviewPages/CompletedInterviews';
-import InterviewerScheduledInterviews from './components/InterviewPages/ScheduledInterviews';
-import InterviewerCandidateSingleView from './components/InterviewPages/SingleView';
+import InterviewerDashboard from './components/InterviewerPages/Dashboard';
+import InterviewerCalendar from './components/InterviewerPages/Calendar';
+import InterviewerProfile from './components/InterviewerPages/InterviewerProfile';
+import InterviewerSettings from './components/InterviewerPages/InterviewerSettings';
+import InterviewerPendingRequests from './components/InterviewerPages/PendingRequests';
+import InterviewerCompletedInterviews from './components/InterviewerPages/CompletedInterviews';
+import InterviewerScheduledInterviews from './components/InterviewerPages/ScheduledInterviews';
+import InterviewerCandidateSingleView from './components/InterviewerPages/SingleView';
 
-// Company pages
+// CompanyAdmin pages
 import CompanyShortlistedCandidates from './components/CompanyPages/ShortlistedCandidates';
 
 function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<InterviewerDashboard />} />
+      <Route path="/" element={<LandingPage/>} />
      
 
       {/* Auth */}

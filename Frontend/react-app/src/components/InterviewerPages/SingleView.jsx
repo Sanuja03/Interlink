@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import DashboardLayout from "../DashboardCom/DashboardLayout";
+import DashboardLayout from "./Layout/DashboardLayout";
 import "./SingleView.css";
 
 const SingleView = () => {
