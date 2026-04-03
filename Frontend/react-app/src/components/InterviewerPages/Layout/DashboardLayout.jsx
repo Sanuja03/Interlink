@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
-import Footer from "./Footer";
+import Footer from "./Layout/Footer";
 
 import notificationicon from "../../../assets/notificationicon.png";
 
