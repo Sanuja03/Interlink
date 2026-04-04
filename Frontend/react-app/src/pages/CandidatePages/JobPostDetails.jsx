@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/CandidateDashboard/Sidebar';
-import Footer from '../components/CandidateDashboard/Footer';
+import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
+import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import { allJobs } from './JobPosts';
 
 const JobPostDetails = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/CandidateDashboard/Sidebar';
+import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import { allJobs } from './JobPosts';
 
 const styles = `

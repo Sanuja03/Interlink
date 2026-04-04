@@ -4,12 +4,12 @@
    ============================================================ */
 
 import { useState } from "react";
-import Sidebar from "../components/CandidateDashboard/Sidebar";
-import Footer from "../components/CandidateDashboard/Footer";
-import StatCard from "../components/CandidateDashboard/StatCard";
-import UpcomingInterviews from "../components/CandidateDashboard/UpcomingInterviews";
-import ApplicationTracker from "../components/CandidateDashboard/ApplicationTracker";
-import Searchbar from "../components/CandidateJobPosts/Searchbar";
+import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
+import Footer from "../../components/CandidatePages/CandidateDashboard/Footer";
+import StatCard from "../../components/CandidatePages/CandidateDashboard/StatCard";
+import UpcomingInterviews from "../../components/CandidatePages/CandidateDashboard/UpcomingInterviews";
+import ApplicationTracker from "../../components/CandidatePages/CandidateDashboard/ApplicationTracker";
+import Searchbar from "../../components/CandidatePages/CandidateJobPosts/Searchbar";
 
 /* ── Data ──────────────────────────────────────────────── */
 const stats = [

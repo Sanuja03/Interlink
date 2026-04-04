@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Sidebar from '../components/CandidateDashboard/Sidebar';
-import FilterPanel from '../components/CandidateJobPosts/FilterPanel';
-import Searchbar from '../components/CandidateJobPosts/Searchbar';
+import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
+import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/FilterPanel';
+import Searchbar from '../../components/CandidatePages/CandidateJobPosts/Searchbar';
 
 export const allJobs = [
     {

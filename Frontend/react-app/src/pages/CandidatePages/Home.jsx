@@ -1,8 +1,8 @@
 import React from 'react';
-import Sidebar from '../components/CandidateDashboard/Sidebar';
-import Searchbar from '../components/CandidateJobPosts/Searchbar';
-import HeroSection from '../components/CandidateHome/Herosection';
-import Footer from '../components/CandidateDashboard/Footer';
+import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
+import Searchbar from '../../components/CandidatePages/CandidateJobPosts/Searchbar';
+import HeroSection from '../../components/CandidatePages/CandidateHome/Herosection';
+import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 
 const Home = () => {
     return (

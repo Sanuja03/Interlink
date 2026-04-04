@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/CandidateDashboard/Sidebar';
-import Footer from '../components/CandidateDashboard/Footer';
+import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
+import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 
 const mockQuestions = [
     "Can you explain the difference between state and props in React?",

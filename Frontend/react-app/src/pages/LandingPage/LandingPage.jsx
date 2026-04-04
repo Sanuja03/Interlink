@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Footer from '../components/CandidateDashboard/Footer';
-import logo from '../assets/logo.png';
+import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
+import logo from '../../assets/logo.png';
 
 /* ─── Inline styles ─── */
 const landingPageStyles = `

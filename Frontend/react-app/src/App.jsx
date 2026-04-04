@@ -2,15 +2,15 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 // Candidate pages
-import LandingPage from './pages/LandingPage';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import JobPosts from './pages/JobPosts';
-import JobPostDetails from './pages/JobPostDetails';
-import CandidateDashboard from './pages/Dashboard';
-import AIQuestions from './pages/AIQuestions';
-import CandidateCalendar from './pages/Calendar';
-import JobApply from './pages/JobApply';
+import LandingPage from './pages/LandingPage/LandingPage';
+import Home from './pages/CandidatePages/Home';
+import Profile from './pages/CandidatePages/Profile';
+import JobPosts from './pages/CandidatePages/JobPosts';
+import JobPostDetails from './pages/CandidatePages/JobPostDetails';
+import CandidateDashboard from './pages/CandidatePages/Dashboard';
+import AIQuestions from './pages/CandidatePages/AIQuestions';
+import CandidateCalendar from './pages/CandidatePages/Calendar';
+import JobApply from './pages/CandidatePages/JobApply';
 
 // Auth
 import Signup from './components/LoginSignup/Signup';
