@@ -3,14 +3,14 @@ import './App.css';
 
 // Candidate pages
 import LandingPage from './pages/LandingPage/LandingPage';
-import Home from './pages/CandidatePages/Home';
-import Profile from './pages/CandidatePages/Profile';
-import JobPosts from './pages/CandidatePages/JobPosts';
-import JobPostDetails from './pages/CandidatePages/JobPostDetails';
-import CandidateDashboard from './pages/CandidatePages/Dashboard';
-import AIQuestions from './pages/CandidatePages/AIQuestions';
-import CandidateCalendar from './pages/CandidatePages/Calendar';
-import JobApply from './pages/CandidatePages/JobApply';
+import Home from './pages/CPages/Home';
+import Profile from './pages/CPages/Profile';
+import JobPosts from './pages/CPages/JobPosts';
+import JobPostDetails from './pages/CPages/JobPostDetails';
+import CandidateDashboard from './pages/CPages/Dashboard';
+import AIQuestions from './pages/CPages/AIQuestions';
+import CandidateCalendar from './pages/CPages/Calendar';
+import JobApply from './pages/CPages/JobApply';
 
 // Auth
 import Signup from './components/LoginSignup/Signup';
