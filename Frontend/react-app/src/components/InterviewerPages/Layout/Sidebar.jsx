@@ -1,11 +1,11 @@
 import "./Sidebar.css";
 
-import interlink from "../../assets/interlink.png";
-import dashboardIcon from "../../assets/dashboard.png";
-import interviewIcon from "../../assets/interviews.png";
-import calendarIcon from "../../assets/calendar.png";
-import settingsIcon from "../../assets/settings.png";
-import defaultAvatar from "../../assets/default-avatar.png";
+import interlink from "../../../assets/interlink.png";
+import dashboardIcon from "../../../assets/dashboard.png";
+import interviewIcon from "../../../assets/interviews.png";
+import calendarIcon from "../../../assets/calendar.png";
+import settingsIcon from "../../../assets/settings.png";
+import defaultAvatar from "../../../assets/default-avatar.png";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -21,9 +21,9 @@ const Sidebar = () => {
   const currentPath = location.pathname;
 
   const interviewSubItems = [
-    { label: "Scheduled", href: "/ScheduledInterviews" },
-    { label: "Pending", href: "/PendingRequests" },
-    { label: "Completed", href: "/CompletedInterviews" },
+    { label: "Scheduled", href: "/interviewer/scheduled-interviews" },
+    { label: "Pending", href: "/interviewer/pending-requests" },
+    { label: "Completed", href: "/interviewer/completed-interviews" },
   ];
 
   const isInterviewRoute =
@@ -39,10 +39,10 @@ const Sidebar = () => {
   }, [isInterviewRoute]);
 
   const menuItems = [
-    { label: "Dashboard", href: "/Dashboard", icon: dashboardIcon },
+    { label: "Dashboard", href: "/interviewer/dashboard", icon: dashboardIcon },
     { label: "Interview Management", href: "/interviews", icon: interviewIcon },
-    { label: "Calendar", href: "/Calendar", icon: calendarIcon },
-    { label: "Settings", href: "/InterviewerSettings", icon: settingsIcon },
+    { label: "Calendar", href: "/interviewer/calendar", icon: calendarIcon },
+    { label: "Settings", href: "/interviewer/settings", icon: settingsIcon },
   ];
 
   return (
@@ -120,7 +120,7 @@ const Sidebar = () => {
 
       {/* bottom profile */}
       <div className="sidebar-profile">
-        <Link to="/InterviewerProfile">
+        <Link to="/interviewer/profile">
           <img src={profile.avatar || defaultAvatar} alt={profile.name} />
           <div className="sidebar-profile-text">
             <p className="sidebar-profile-name">{profile.name}</p>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import DashboardLayout from "../DashboardCom/DashboardLayout";
+import DashboardLayout from "./Layout/DashboardLayout";
 import CompanyDetailsModal from "./CompanyDetailsModal";
 import RolePermissionModal from "./RolePermissionModal";
 import "./InterviewerSettings.css";

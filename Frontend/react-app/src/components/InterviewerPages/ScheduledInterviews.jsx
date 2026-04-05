@@ -1,5 +1,5 @@
-import DashboardLayout from "../DashboardCom/DashboardLayout";
-import ScheduledInterviewCard from "../ScheduledInterviewCom/ScheduledInterviewCard";
+import DashboardLayout from "./Layout/DashboardLayout";
+import ScheduledInterviewCard from "./ScheduledInterviewCardLayout/ScheduledInterviewCard";
 import "./ScheduledInterviews.css";
 
 const ScheduledInterviews = () => {

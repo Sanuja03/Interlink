@@ -4,6 +4,8 @@ import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 
+import '../../pages/LandingPage';
+
 
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
-import Footer from "../layout/Footer";
+import Footer from "./Layout/Footer";
 
-import notificationicon from "../../assets/notificationicon.png";
+import notificationicon from "../../../assets/notificationicon.png";
 
 
 

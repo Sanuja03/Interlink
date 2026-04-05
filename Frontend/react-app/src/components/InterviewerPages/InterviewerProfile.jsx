@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../DashboardCom/DashboardLayout";
+import DashboardLayout from "./Layout/DashboardLayout";
 import defaultAvatar from "../../assets/default-avatar.png";
 import "./InterviewerProfile.css";
 

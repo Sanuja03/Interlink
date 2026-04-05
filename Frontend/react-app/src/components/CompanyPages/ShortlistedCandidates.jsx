@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../DashboardCom/DashboardLayout";
+import DashboardLayout from "../InterviewerPages/Layout/DashboardLayout";
 import "./ShortlistedCandidates.css";
 
 import InterviewRequestPopup from "./InterviewRequestPopup";

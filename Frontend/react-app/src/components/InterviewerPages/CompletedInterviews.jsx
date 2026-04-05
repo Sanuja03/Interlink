@@ -1,10 +1,10 @@
 import { useState } from "react";
-import DashboardLayout from "../DashboardCom/DashboardLayout";
-import "../DashboardCom/TodaySchedule.css"; // reuse same styling
-import "./PendingRequests.css";
+import DashboardLayout from "./Layout/DashboardLayout";
+import "./Layout/TodaySchedule.css";
+import "./CompletedInterviews.css";
 
-const PendingRequests = () => {
-  const [rows, setRows] = useState([
+const CompletedInterviews = () => {
+  const [rows] = useState([
     {
       interviewId: "IN5690",
       candidate: "Amal Dissanayaka",
@@ -12,12 +12,14 @@ const PendingRequests = () => {
       date: "2026-02-20",
       time: "10.30 AM",
       mode: "Online",
-      notes: "Focus on portfolio discussion nnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
-      accepted: false,
+      notes: "Focus on portfolio discussion",
       history: [
         { date: "2026-02-10", event: "Applied" },
         { date: "2026-02-12", event: "Shortlisted" },
         { date: "2026-02-15", event: "Round 1 (HR) - Completed (PASS)" },
+        { date: "2026-02-18", event: "Interview Request Sent to Panel" },
+        { date: "2026-02-19", event: "Panel Request Accepted" },
+        { date: "2026-02-20", event: "Interview Completed" },
       ],
       round: "Round 2 (Technical)",
     },
@@ -29,10 +31,13 @@ const PendingRequests = () => {
       time: "11.00 AM",
       mode: "Physical",
       notes: "Panel interview with HR",
-      accepted: true,
       history: [
         { date: "2026-02-09", event: "Applied" },
         { date: "2026-02-11", event: "Shortlisted" },
+        { date: "2026-02-13", event: "CV Screening Completed" },
+        { date: "2026-02-15", event: "Interview Request Sent to Panel" },
+        { date: "2026-02-16", event: "Panel Request Accepted" },
+        { date: "2026-02-20", event: "Interview Completed" },
       ],
       round: "Round 1 (HR)",
     },
@@ -40,17 +45,6 @@ const PendingRequests = () => {
 
   const [openHistory, setOpenHistory] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-
-  const handleToggle = (index) => {
-    const updated = [...rows];
-    updated[index].accepted = !updated[index].accepted;
-    setRows(updated);
-  };
-
-  const handleSend = (row) => {
-    console.log("Sending decision:", row);
-    alert(`Decision sent for ${row.interviewId}`);
-  };
 
   const modeDotClass = (mode) =>
     mode === "Online" ? "mode-online" : "mode-physical";
@@ -60,6 +54,10 @@ const PendingRequests = () => {
     setOpenHistory(true);
   };
 
+  const handleSingleView = (row) => {
+    alert(`Single view page for ${row.interviewId} will be added later`);
+  };
+
   const closeModal = () => {
     setOpenHistory(false);
     setSelectedRow(null);
@@ -67,8 +65,8 @@ const PendingRequests = () => {
 
   return (
     <DashboardLayout>
-      <div className="settings-page">
-        <h1 className="settings-title">Pending Requests</h1>
+      <div className="completed-page">
+        <h1 className="completed-title">Completed Interviews</h1>
 
          {/* 🔍 SEARCH BAR HERE */}
         <div className="flex items-center gap-4 mb-4">
@@ -86,7 +84,7 @@ const PendingRequests = () => {
           </button>
         </div>
 
-        <div className="schedule-card">
+        <div className="completed-card">
           <div className="table-wrapper">
             <table className="schedule-table">
               <thead>
@@ -99,13 +97,12 @@ const PendingRequests = () => {
                   <th>Mode</th>
                   <th>Admin Notes</th>
                   <th>History</th>
-                  <th>Accept</th>
-                  <th className="align-right"></th>
+                  <th>Single View</th>
                 </tr>
               </thead>
 
               <tbody>
-                {rows.map((r, index) => (
+                {rows.map((r) => (
                   <tr key={r.interviewId}>
                     <td className="bold">{r.interviewId}</td>
                     <td>{r.candidate}</td>
@@ -113,7 +110,6 @@ const PendingRequests = () => {
                     <td>{r.date}</td>
                     <td>{r.time}</td>
 
-                    {/* Mode same as TodaySchedule */}
                     <td>
                       <div className="mode-cell">
                         <span className={`mode-dot ${modeDotClass(r.mode)}`} />
@@ -121,10 +117,8 @@ const PendingRequests = () => {
                       </div>
                     </td>
 
-                    {/* Admin Notes (read only) */}
                     <td className="notes-cell">{r.notes}</td>
 
-                    {/* View History */}
                     <td>
                       <button
                         className="history-btn"
@@ -134,22 +128,12 @@ const PendingRequests = () => {
                       </button>
                     </td>
 
-                    {/* Accept Toggle */}
                     <td>
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={r.accepted}
-                          onChange={() => handleToggle(index)}
-                        />
-                        <span className="slider"></span>
-                      </label>
-                    </td>
-
-                    {/* Send button using SAME green style */}
-                    <td className="align-right">
-                      <button className="view-btn" onClick={() => handleSend(r)}>
-                        Send
+                      <button
+                        className="view-btn"
+                        onClick={() => handleSingleView(r)}
+                      >
+                        View
                       </button>
                     </td>
                   </tr>
@@ -159,12 +143,11 @@ const PendingRequests = () => {
           </div>
         </div>
 
-        {/* History Modal */}
         {openHistory && selectedRow && (
           <div className="modal-overlay" onClick={closeModal}>
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>
               <div className="modal-head">
-                <h2 className="modal-title">Application History</h2>
+                <h2 className="modal-title">Completed Interview History</h2>
                 <button className="modal-close" onClick={closeModal}>
                   ✕
                 </button>
@@ -186,18 +169,14 @@ const PendingRequests = () => {
               </div>
 
               <div className="modal-body">
-                {selectedRow.history?.length ? (
-                  <ul className="history-list">
-                    {selectedRow.history.map((h, i) => (
-                      <li key={i} className="history-item">
-                        <span className="history-date">{h.date}</span>
-                        <span className="history-event">{h.event}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="history-empty">No history available.</p>
-                )}
+                <ul className="history-list">
+                  {selectedRow.history.map((h, i) => (
+                    <li key={i} className="history-item">
+                      <span className="history-date">{h.date}</span>
+                      <span className="history-event">{h.event}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               <div className="modal-actions">
@@ -213,4 +192,4 @@ const PendingRequests = () => {
   );
 };
 
-export default PendingRequests;
+export default CompletedInterviews;
