@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 //Landing
-import LandingPage from './pages/LandingPage';
+import LandingPage from './pages/LandingPage/LandingPage';
 
 // Auth
 import Signup from './components/LoginSignup/Signup';
@@ -10,14 +10,14 @@ import SignUpCompany from './components/LoginSignup/SignUpCompany';
 import Login from './components/LoginSignup/Login';
 
 // Candidate pages
-import CandidateHome from './pages/Home';
-import CandidateProfile from './pages/Profile';
-import CandidateJobPosts from './pages/JobPosts';
-import CandidateJobPostDetails from './pages/JobPostDetails';
-import CandidateDashboard from './pages/Dashboard';
-import CandidateAIQuestions from './pages/AIQuestions';
-import CandidateCalendar from './pages/Calendar';
-import CandidateJobApply from './pages/JobApply';
+import CandidateHome from './pages/CPages/Home';
+import CandidateProfile from './pages/CPages/Profile';
+import CandidateJobPosts from './pages/CPages/JobPosts';
+import CandidateJobPostDetails from './pages/CPages/JobPostDetails';
+import CandidateDashboard from './pages/CPages/Dashboard';
+import CandidateAIQuestions from './pages/CPages/AIQuestions';
+import CandidateCalendar from './pages/CPages/Calendar';
+import CandidateJobApply from './pages/CPages/JobApply';
 
 
 // Interviewer pages
@@ -37,7 +37,7 @@ function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<InterviewerDashboard />} />
 
 
       {/* Auth */}

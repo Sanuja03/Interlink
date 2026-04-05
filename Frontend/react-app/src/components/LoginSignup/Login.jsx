@@ -4,7 +4,8 @@ import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 
-import '../../pages/LandingPage';
+import LandingPage from '../../pages/LandingPage/LandingPage';
+
 
 
 import { useForm } from "react-hook-form";
@@ -28,10 +29,10 @@ const Login = () => {
     const email = data.email.trim();
     const password = data.password;
 
-  
+
     if (email === "sanjalee@gmail.com" && password === "12345678") {
       setLoginError(""); //if correct credentials clear the error 
-      navigate("/Dashboard"); 
+      navigate("/Dashboard");
       return;
     }
 
@@ -59,8 +60,8 @@ const Login = () => {
         </div>
 
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          {/*Show login error if credentials are wrong*/} 
-          {loginError && <p className="error-text">{loginError}</p>} 
+          {/*Show login error if credentials are wrong*/}
+          {loginError && <p className="error-text">{loginError}</p>}
 
           {/* email */}
           <div className="input-group">
@@ -82,7 +83,7 @@ const Login = () => {
 
           {/* Password */}
           <div className="input-group">
-            {errors.password && ( <p className="error-text">{errors.password.message}</p>)}
+            {errors.password && (<p className="error-text">{errors.password.message}</p>)}
             <label>password</label>
             <input
               type="password"
@@ -98,14 +99,14 @@ const Login = () => {
             />
           </div>
 
-           {/* Forgot password */}   
+          {/* Forgot password */}
           <div className="forgot-password">
             <p>
               <a href="">Forgot Password</a>
             </p>
           </div>
 
-            {/* Login button */}
+          {/* Login button */}
           <div>
             <button className="login-button" type="submit" disabled={isSubmitting}> {/*button cannot be clicked when submitting */}
               Login

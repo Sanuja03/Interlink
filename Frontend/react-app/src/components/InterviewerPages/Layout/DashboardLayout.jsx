@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
-import Footer from "./Layout/Footer";
-
+import Footer from "./Footer";
 import notificationicon from "../../../assets/notificationicon.png";
 
 
@@ -35,33 +34,33 @@ const DashboardLayout = ({ children }) => {
         {/* top bar */}
         <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
 
-        {/* Notification */}
-        <img
-          src={notificationicon}
-          alt="Notifications"
-          className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100"
-        />
+          {/* Notification */}
+          <img
+            src={notificationicon}
+            alt="Notifications"
+            className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100"
+          />
 
-    
-    
-      <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+
+
+          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
                         bg-red-50 text-red-600 text-xs font-semibold
                         hover:bg-red-100 transition duration-200
                         cursor-pointer
                         focus:outline-none focus:ring-0 active:outline-none
                         outline-none border-none">
 
-        <svg xmlns="http://www.w3.org/2000/svg" 
-            className="w-3.5 h-3.5" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M17 16l4-4m0 0l-4-4m4 4H7" />
-        </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7" />
+            </svg>
 
-        Logout
-      </button>
+            Logout
+          </button>
         </div>
 
         {/* page specific content */}
@@ -74,8 +73,8 @@ const DashboardLayout = ({ children }) => {
 
       </div>
 
-     
-      
+
+
 
     </div>
   );

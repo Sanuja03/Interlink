@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../../../assets/logo.png";
 
 const sidebarStyles = `
@@ -260,12 +261,13 @@ const Sidebar = () => {
     avatar: "https://randomuser.me/api/portraits/men/32.jpg",
   };
 
-  const currentPath = window.location.pathname;
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const menuItems = [
     {
       label: "Home",
-      href: "/",
+      href: "/candidate/home",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -275,7 +277,7 @@ const Sidebar = () => {
     },
     {
       label: "Dashboard",
-      href: "/dashboard",
+      href: "/candidate/dashboard",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -285,7 +287,7 @@ const Sidebar = () => {
     },
     {
       label: "Job Posts",
-      href: "/job-posts",
+      href: "/candidate/job-posts",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -295,7 +297,7 @@ const Sidebar = () => {
     },
     {
       label: "Calendar",
-      href: "/calendar",
+      href: "/candidate/calendar",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -305,7 +307,7 @@ const Sidebar = () => {
     },
     {
       label: "Profile",
-      href: "/profile",
+      href: "/candidate/profile",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -343,15 +345,15 @@ const Sidebar = () => {
           {menuItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
-              <a
+              <Link
                 key={item.href}
-                href={item.href}
+                to={item.href}
                 title={!expanded ? item.label : undefined}
                 className={`sidebar-nav-item ${isActive ? "active" : ""}`}
               >
                 <span className="sidebar-icon">{item.icon}</span>
                 <span className="sidebar-label">{item.label}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -369,7 +371,7 @@ const Sidebar = () => {
 
         {/* Bottom Profile */}
         <div className="sidebar-profile">
-          <a href="/profile" className="sidebar-profile-link" title={!expanded ? profile.name : undefined}>
+          <Link to="/candidate/profile" className="sidebar-profile-link" title={!expanded ? profile.name : undefined}>
             <img
               src={profile.avatar}
               alt={profile.name}
@@ -384,7 +386,7 @@ const Sidebar = () => {
               <p className="sidebar-profile-name">{profile.name}</p>
               <p className="sidebar-profile-email">{profile.email}</p>
             </div>
-          </a>
+          </Link>
         </div>
 
       </aside>

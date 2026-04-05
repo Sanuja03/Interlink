@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Footer from '../components/CandidateDashboard/Footer';
-import logo from '../assets/logo.png';
-import '../components/LoginSignup/Login';
+import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
+import logo from '../../assets/logo.png';
+import '../../components/LoginSignup/Login';
 
 /* ─── Inline styles ─── */
 const landingPageStyles = `
