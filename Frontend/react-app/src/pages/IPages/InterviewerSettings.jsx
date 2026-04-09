@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import DashboardLayout from "./Layout/DashboardLayout";
-import CompanyDetailsModal from "./CompanyDetailsModal";
-import RolePermissionModal from "./RolePermissionModal";
+import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
+import CompanyDetailsModal from "../../components/InterviewerPages/InterviewerSettingsLayout/CompanyDetailsModal";
+import RolePermissionModal from "../../components/InterviewerPages/InterviewerSettingsLayout/RolePermissionModal";
 import "./InterviewerSettings.css";
 
 const InterviewerSettings = () => {

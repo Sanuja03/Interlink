@@ -1,4 +1,4 @@
-import DashboardLayout from "./Layout/DashboardLayout";
+import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import "./Calendar.css";
 
 const Calendar = () => {

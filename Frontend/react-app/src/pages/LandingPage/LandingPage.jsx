@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import logo from '../../assets/logo.png';
-import '../../components/LoginSignup/Login';
+import Login from "../LoginSignup/Login";
 
 /* ─── Inline styles ─── */
 const landingPageStyles = `

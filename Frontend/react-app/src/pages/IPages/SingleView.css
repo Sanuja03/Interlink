@@ -1,0 +1,141 @@
+.singleview-page {
+  padding: 8px 24px 32px;
+  background: #f8fbfc;
+}
+
+.singleview-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.singleview-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0c3e56;
+  margin: 0;
+}
+
+.singleview-back-btn {
+  border: 1px solid #24698b;
+  background: #ffffff;
+  color: #24698b;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.singleview-back-btn:hover {
+  background: #f0f7fa;
+}
+
+.singleview-empty-card {
+  background: #ffffff;
+  border: 1px solid #d6e4ea;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.singleview-empty-text {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #0c3e56;
+}
+
+.singleview-empty-sub {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.singleview-main-layout {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.singleview-left-panel {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.singleview-info-box {
+  background: #ffffff;
+  border: 1px solid #d6e4ea;
+  border-left: 4px solid #24698b;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.singleview-box-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.singleview-box-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0c3e56;
+}
+
+.singleview-meeting-link {
+  background: #24698b;
+  border: 1px solid #24698b;
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-decoration: none;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.singleview-meeting-link:hover {
+  background: #0c3e56;
+}
+
+.singleview-status-badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  margin-top: 2px;
+}
+
+.singleview-status-ongoing {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.singleview-status-scheduled {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+@media (max-width: 700px) {
+  .singleview-page {
+    padding: 8px 14px 28px;
+  }
+
+  .singleview-main-layout {
+    flex-direction: column;
+  }
+
+  .singleview-left-panel {
+    width: 100%;
+  }
+}
