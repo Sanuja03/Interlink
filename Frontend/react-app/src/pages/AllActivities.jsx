@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { fetchActivityLogs } from "../api/ActivityLogsApi";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 
 export default function AllActivitiesPage() {
   const [activities, setActivities] = useState([]);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [roleFilter, setRoleFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");

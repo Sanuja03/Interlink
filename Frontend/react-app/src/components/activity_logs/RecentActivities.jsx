@@ -42,7 +42,7 @@ return (
           key={a.id}
           className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition"
         >
-          {/* Left indicator (optional – very Figma-ish) */}
+          {/* Left indicator (optional) */}
           <span className="mt-1 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
 
           <div>
