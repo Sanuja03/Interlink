@@ -1,7 +1,10 @@
-
+import { useState } from "react";
 import CompanySection from "../components/SuperAdminCompany/CompanySection";
+import CreateAdminModal from "../components/SuperAdminCompany/CreateAdminModal";
 
 export default function SuperAdminCompanies() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div className="space-y-8">
 
@@ -42,10 +45,18 @@ export default function SuperAdminCompanies() {
           Create a new admin account for an approved company.
         </p>
 
-        <button className="px-6 py-3 bg-[#0C3E56] text-white rounded-full shadow">
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-6 py-3 bg-[#0C3E56] text-white rounded-full shadow hover:bg-[#092c3d]"
+        >
           + Create Admin
         </button>
       </div>
+
+      {/* MODAL */}
+      {showModal && (
+        <CreateAdminModal onClose={() => setShowModal(false)} />
+      )}
 
     </div>
   );
