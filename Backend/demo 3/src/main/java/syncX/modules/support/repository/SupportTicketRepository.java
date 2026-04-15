@@ -1,6 +1,6 @@
-package syncX.support.repository;
+package syncX.modules.support.repository;
 
-import syncX.support.entity.SupportTicket;
+import syncX.modules.support.entity.SupportTicket;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SupportTicketRepository

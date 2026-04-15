@@ -1,7 +1,7 @@
-package syncX.cv.controller;
+package syncX.modules.cv.controller;
 
 
-import syncX.cv.service.CvService;
+import syncX.modules.cv.service.CvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

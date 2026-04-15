@@ -1,4 +1,4 @@
-package syncX.cv.util;
+package syncX.modules.cv.util;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

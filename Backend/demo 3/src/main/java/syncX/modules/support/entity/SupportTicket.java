@@ -1,4 +1,4 @@
-package syncX.support.entity;
+package syncX.modules.support.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

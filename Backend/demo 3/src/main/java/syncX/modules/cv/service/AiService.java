@@ -1,4 +1,4 @@
-package syncX.cv.service;
+package syncX.modules.cv.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,12 +10,15 @@ import java.util.*;
 @Service
 public class AiService {
 
-    @Value("${openai.api.key}")
+    @Value("${openai.api.key:}")
     private String apiKey;
 
     private final String URL = "https://api.openai.com/v1/chat/completions";
 
     public String sendToAI(String text) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new RuntimeException("AI feature is disabled (missing API key)");
+        }
 
         RestTemplate restTemplate = new RestTemplate();
 

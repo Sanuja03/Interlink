@@ -1,6 +1,6 @@
-package syncX.cv.service;
+package syncX.modules.cv.service;
 
-import syncX.cv.util.CvExtractor;
+import syncX.modules.cv.util.CvExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
