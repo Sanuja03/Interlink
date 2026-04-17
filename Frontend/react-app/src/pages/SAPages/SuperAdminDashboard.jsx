@@ -5,14 +5,14 @@ export default function SuperAdminDashboard() {
   const navigate = useNavigate();
 
   const handleViewAll = () => {
-    navigate("/SuperAdmin/AllActivities");
+    navigate("/admin/AllActivities");
   };
 
   const actions = [
-    { name: "Companies", path: "/SuperAdmin/Companies" },
-    { name: "Interviews", path: "/SuperAdmin/Interviews" },
-    { name: "Jobs", path: "/SuperAdmin/Jobs" },
-    { name: "Users", path: "/SuperAdmin/Users" },
+    { name: "Companies", path: "/admin/Companies" },
+    { name: "Interviews", path: "/admin/Interviews" },
+    { name: "Jobs", path: "/admin/Jobs" },
+    { name: "Users", path: "/admin/Users" },
   ];
 
   return (

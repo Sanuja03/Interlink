@@ -20,7 +20,7 @@ public class AIService {
 
     private final WebClient webClient;
 
-    public AIService(@Value("${OPENAI_API_KEY}") String apiKey) {
+    public AIService(@Value("${openai.api.key}") String apiKey) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com/v1")
                 .defaultHeader("Authorization", "Bearer " + apiKey)

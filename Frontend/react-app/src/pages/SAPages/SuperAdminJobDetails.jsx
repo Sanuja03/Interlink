@@ -15,7 +15,7 @@ export default function JobDetails() {
 
   return (
     <div className="space-y-6 font-outfit">
-      <BackButton label="Back to Jobs" to="/SuperAdmin/Jobs" />
+      <BackButton label="Back to Jobs" to="/admin/Jobs" />
       
       {/* HEADER CARD */}
       <div className="bg-[#24698B]/15 p-6 rounded-xl border border-[#DADEE0] flex justify-between items-center">

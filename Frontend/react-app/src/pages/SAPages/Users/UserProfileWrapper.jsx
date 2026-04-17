@@ -14,21 +14,21 @@ const UserProfileWrapper = () => {
     case "Candidate":
       return (
         <>
-          <BackButton label="Back to Users" to="/SuperAdmin/Users" />
+          <BackButton label="Back to Users" to="/admin/Users" />
           <CandidateProfile user={user} />
         </>
       );
     case "Company Admin":
       return (
         <>
-          <BackButton label="Back to Users" to="/SuperAdmin/Users" />
+          <BackButton label="Back to Users" to="/admin/Users" />
           <CompanyAdminProfile user={user} />
         </>
       );
     case "Interviewer":
       return (
         <>
-          <BackButton label="Back to Users" to="/SuperAdmin/Users" />
+          <BackButton label="Back to Users" to="/admin/Users" />
           <InterviewerProfile user={user} />
         </>
       );

@@ -55,7 +55,7 @@ export default function CompanyCard({ type, company }) {
         {/* View Profile */}
         <button
           onClick={() =>
-            navigate(`/SuperAdmin/Company/${company.id}`, {
+            navigate(`/admin/Company/${company.id}`, {
               state: company,
             })
           }

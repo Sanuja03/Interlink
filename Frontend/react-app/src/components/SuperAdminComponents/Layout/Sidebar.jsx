@@ -39,7 +39,7 @@ const Sidebar = () => {
           <button
             onClick={() => setOpenDashboard(!openDashboard)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left transition
-              ${isActive("/SuperAdmin/dashboard") || isActive("/SuperAdmin/Companies") || isActive("/SuperAdmin/Interviews") || isActive("/SuperAdmin/Jobs") || isActive("/SuperAdmin/Users")? "bg-gray-100 text-[#24698B] font-semibold" : "text-gray-500 hover:text-black"}
+              ${isActive("/admin/dashboard") || isActive("/admin/Companies") || isActive("/admin/Interviews") || isActive("/admin/Jobs") || isActive("/admin/Users")? "bg-gray-100 text-[#24698B] font-semibold" : "text-gray-500 hover:text-black"}
             `}
           >
              {/* Left Side */}
@@ -53,7 +53,7 @@ const Sidebar = () => {
               className={`ml-auto transition-all duration-200
                 ${openDashboard ? "rotate-180" : ""}
                 opacity-0 group-hover:opacity-100
-                ${isActive("/SuperAdmin/") ? "opacity-100" : ""}
+                ${isActive("/admin/") ? "opacity-100" : ""}
               `}
             >
               <svg
@@ -71,11 +71,11 @@ const Sidebar = () => {
           {/* SUB MENU */}
           {openDashboard && (
             <div className="ml-8 mt-2 space-y-1">
-              <SubItem label="Overview" path="/SuperAdmin/dashboard" />
-              <SubItem label="Companies" path="/SuperAdmin/Companies" />
-              <SubItem label="Interviews" path="/SuperAdmin/Interviews" />
-              <SubItem label="Jobs" path="/SuperAdmin/Jobs" />
-              <SubItem label="Users" path="/SuperAdmin/Users" />
+              <SubItem label="Overview" path="/admin/dashboard" />
+              <SubItem label="Companies" path="/admin/Companies" />
+              <SubItem label="Interviews" path="/admin/Interviews" />
+              <SubItem label="Jobs" path="/admin/Jobs" />
+              <SubItem label="Users" path="/admin/Users" />
             </div>
           )}
         </div>
@@ -83,26 +83,26 @@ const Sidebar = () => {
         {/* BILLING */}
         <SidebarItem
           label="Billing & Subscription"
-          path="/SuperAdmin/billing"
+          path="/admin/subscription-plans"
           icon={billingIcon}
         />
 
         {/* SETTINGS */}
         <SidebarItem
           label="System Settings"
-          path="/SuperAdmin/SystemSettings"
+          path="/admin/SystemSettings"
           icon={settingsIcon}
         />
 
         {/* ACTIVITY LOGS (recommended add) */}
         <SidebarItem
           label="Activity Logs"
-          path="/SuperAdmin/AllActivities"
+          path="/admin/AllActivities"
           icon={RecentActivities}
         />
         <SidebarItem
           label="Chatbot"
-          path="/SuperAdmin/ChatBot"
+          path="/admin/ChatBot"
           icon={ChatBot}
         />
 
@@ -111,7 +111,7 @@ const Sidebar = () => {
       {/* PROFILE */}
       <div className="mt-auto px-3 py-4 border-t border-gray-200">
         <button
-          onClick={() => navigate("/SuperAdmin/profile")}
+          onClick={() => navigate("/admin/profile")}
           className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 w-full"
         >
           <img

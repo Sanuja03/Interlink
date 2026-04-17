@@ -1,0 +1,165 @@
+.template-page {
+    padding: 24px;
+    background: #f8fbfc;
+    min-height: 100vh;
+  }
+  
+  .template-card {
+    background: #ffffff;
+    border: 1px solid #d6e4ea;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 950px;
+    margin: 0 auto;
+  }
+  
+  .template-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0c3e56;
+    margin-bottom: 24px;
+  }
+  
+  .template-subtitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0c3e56;
+    margin-bottom: 16px;
+  }
+  
+  .template-group,
+  .template-section {
+    margin-bottom: 28px;
+  }
+  
+  .template-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+  
+  .template-input,
+  .template-textarea {
+    width: 100%;
+    border: 1px solid #cfdce2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .template-input:focus,
+  .template-textarea:focus {
+    border-color: #24698b;
+    box-shadow: 0 0 0 2px rgba(36, 105, 139, 0.12);
+  }
+  
+  .template-textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+  
+  .template-section-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .template-add-btn,
+  .template-delete-btn,
+  .template-save-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .template-add-btn {
+    background: #24698b;
+    color: #ffffff;
+  }
+  
+  .template-add-btn:hover {
+    background: #0c3e56;
+  }
+  
+  .template-delete-btn {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  
+  .template-delete-btn:hover {
+    background: #fecaca;
+  }
+  
+  .template-save-btn {
+    background: #24698b;
+    color: #ffffff;
+    min-width: 180px;
+  }
+  
+  .template-save-btn:hover {
+    background: #0c3e56;
+  }
+  
+  .template-field-row {
+    display: grid;
+    grid-template-columns: 1fr 160px 120px;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  
+  .score-input {
+    text-align: center;
+  }
+  
+  .fixed-field-box {
+    background: #f3f7f9;
+    border: 1px solid #d6e4ea;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+  }
+  
+  .preview-box {
+    display: grid;
+    gap: 16px;
+  }
+  
+  .preview-input {
+    background: #f9fafb;
+  }
+  
+  .template-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  @media (max-width: 768px) {
+    .template-field-row {
+      grid-template-columns: 1fr;
+    }
+  
+    .template-section-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  
+    .template-actions {
+      justify-content: stretch;
+    }
+  
+    .template-save-btn {
+      width: 100%;
+    }
+  }

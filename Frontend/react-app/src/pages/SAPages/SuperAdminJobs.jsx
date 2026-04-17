@@ -34,7 +34,7 @@ export default function SuperAdminJobs() {
           <JobCard
             key={job.id}
             job={job}
-            onClick={() => navigate(`/SuperAdmin/Jobs/${job.id}`)}
+            onClick={() => navigate(`/admin/Jobs/${job.id}`)}
           />
         ))}
       </div>

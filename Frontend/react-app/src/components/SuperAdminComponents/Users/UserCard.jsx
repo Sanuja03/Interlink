@@ -37,7 +37,7 @@ export default function UserCard({ user }) {
         {/* ACTIONS */}
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`/SuperAdmin/User/${user.id}`, { state: user })}
+            onClick={() => navigate(`/admin/User/${user.id}`, { state: user })}
             className="bg-[#24698B] text-white px-3 py-1 rounded-md text-xs hover:bg-[#1e5873]"
           >
             View Profile

@@ -1,0 +1,15 @@
+#root {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+
+}
+
+.a {
+  text-decoration: none;
+  color: #1f3548;
+}
+
+* {
+  box-sizing: border-box;
+}
