@@ -39,9 +39,25 @@ import AdminTickets from "./pages/Apages/AdminTickets";
 import SubscriptionPlans from "./pages/Apages/SubscriptionPlans";
 import ActivePlans from "./pages/Apages/ActivePlans";
 
+import AllActivitiesPage from "./pages/SAPages/AllActivities";
+import DashboardLayout from "././components/SuperAdminComponents/Layout/Dashboardlayout";
+import SuperAdminDashboard from "./pages/SAPages/SuperAdminDashboard";
+import SuperAdminCompanies from "./pages/SAPages/SuperAdminCompanies";
+import SuperAdminInterviews from "./pages/SAPages/SuperAdminInterviews";
+import SuperAdminProfile from "./pages/SAPages/SuperAdminProfile";
+import SystemSettings from "./pages/SAPages/SystemSettings";
+import SuperAdminJobs from "./pages/SAPages/SuperAdminJobs";
+import SuperAdminJobDetails from "./pages/SAPages/SuperAdminJobDetails";
+import SuperAdminUsers from "./pages/SAPages/Users/SuperAdminUsers";
+import ChatBot from "././components/SuperAdminComponents/RagChatbot/ChatBot";
+import UserProfileWrapper from "./pages/SAPages/Users/UserProfileWrapper";
+import SuperAdminViewCompany from "./pages/SAPages/SuperAdminViewCompany";
+
 // All User Pages
 import MyTickets from "./pages/AllUserPages/MyTickets";
 import TicketDetails from "./pages/AllUserPages/TicketDetails";
+
+
 
 function App() {
   return (
@@ -113,7 +129,21 @@ function App() {
       <Route path="/tickets/:id" element={<TicketDetails />} />
 
       {/* Fallback */}
-    </Routes>
+
+      {/* Super Admin routes with Dashboard Layout */}
+        <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
+        <Route path="/admin/AllActivities" element={<DashboardLayout><AllActivitiesPage /></DashboardLayout>} />
+        <Route path="/admin/Companies" element={<DashboardLayout><SuperAdminCompanies /></DashboardLayout>} />
+        <Route path="/admin/Interviews" element={<DashboardLayout><SuperAdminInterviews /></DashboardLayout>} />
+        <Route path="/admin/Profile" element={<DashboardLayout><SuperAdminProfile /></DashboardLayout>} />
+        <Route path="/admin/SystemSettings" element={<DashboardLayout><SystemSettings /></DashboardLayout>} />
+        <Route path="/admin/Jobs" element={<DashboardLayout><SuperAdminJobs /></DashboardLayout>} />
+        <Route path="/admin/Jobs/:id" element={<DashboardLayout><SuperAdminJobDetails /></DashboardLayout>} />
+        <Route path="/admin/Users" element={<DashboardLayout><SuperAdminUsers /></DashboardLayout>} />
+        <Route path="/admin/ChatBot" element={<DashboardLayout><ChatBot /></DashboardLayout>} />//test for now
+        <Route path="/admin/User/:id"element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>}/>
+        <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
+      </Routes>
   );
 }
 
