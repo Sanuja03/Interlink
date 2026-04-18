@@ -6,7 +6,7 @@ import SystemForm from "./Forms/SystemForm";
 
 export default function SystemSettingsModal({ type, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-0 sm:p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
 
       <div className="bg-white rounded-xl p-6 w-[420px] shadow-lg">
 
@@ -16,14 +16,11 @@ export default function SystemSettingsModal({ type, onClose }) {
 
         {renderForm(type)}
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
+        <div className="flex justify-end gap-3 mt-4">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded w-full">
             Cancel
           </button>
 
-          <button className="px-4 py-2 bg-[#24698B] text-white rounded-lg">
-            Save Changes
-          </button>
         </div>
       </div>
     </div>
