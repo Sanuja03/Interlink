@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "support_tickets")
 public class SupportTicket {
 
     @Id
@@ -13,6 +14,8 @@ public class SupportTicket {
     private String title;
     private String description;
     private String status;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // REQUIRED

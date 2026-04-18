@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Footer from "../../components/TicketSubsPages/Footer";
 import logo from "../../assets/interlink-logo.png";
+import TicketButton from "../../components/TicketSubsPages/TicketButton";
+import toast from "react-hot-toast";
 
 export default function AdminTicketDetails() {
   const { id } = useParams();
@@ -33,20 +35,22 @@ export default function AdminTicketDetails() {
     }
   };
 
-  const updateTicketSettings = async () => {
-    try {
-      await axios.put(`http://localhost:8080/api/tickets/${id}`, {
-        priority,
-        category,
-        status,
-      });
-
-      fetchTicket();
-    } catch (err) {
-      console.error("Error updating ticket", err);
-    }
-  };
-
+    const updateTicketSettings = async () => {
+      try {
+        await axios.put(`http://localhost:8080/api/tickets/${id}`, {
+          priority,
+          category,
+          status,
+        });
+    
+        toast.success("Ticket updated successfully 🎉");
+    
+        fetchTicket();
+      } catch (err) {
+        toast.error("Failed to update ticket ❌");
+        console.error("Error updating ticket", err);
+      }
+    };
   const handleReply = async () => {
     if (!reply.trim()) return;
 
@@ -90,12 +94,12 @@ export default function AdminTicketDetails() {
       <div className="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
         {/* BACK BUTTON */}
         <button
-          onClick={() => navigate("/admin/tickets")}
-          className="bg-[#24698B] text-white px-6 py-2 rounded-full shadow-md mb-8 hover:opacity-90"
-        >
-          ← Back to tickets
-        </button>
-
+  onClick={() => navigate("/admin/tickets")}
+  className="inline-flex items-center gap-2 bg-[#EAF3F8] text-[#24698B] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#d8eaf3] transition mb-8"
+  style={{ border: "none", outline: "none", boxShadow: "none" }}
+>
+  ← Back to tickets
+</button>
         {/* TICKET CARD */}
         <div className="bg-white p-10 rounded-2xl shadow-sm border">
           {/* HEADER */}
@@ -167,7 +171,7 @@ export default function AdminTicketDetails() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#24698B]"
                 >
                   <option value="OPEN">Open</option>
                   <option value="PENDING">Pending</option>
@@ -184,8 +188,9 @@ export default function AdminTicketDetails() {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#24698B]"
                 >
+                
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
@@ -201,8 +206,9 @@ export default function AdminTicketDetails() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#24698B]"
                 >
+                
                   <option value="GENERAL">General</option>
                   <option value="LOGIN">Login Issue</option>
                   <option value="PAYMENT">Payment Issue</option>
@@ -210,12 +216,12 @@ export default function AdminTicketDetails() {
                 </select>
               </div>
 
-              <button
+              <TicketButton variant="success"
                 onClick={updateTicketSettings}
                 className="bg-green-600 text-white px-6 py-2 rounded-lg shadow-sm hover:opacity-90"
               >
                 Update
-              </button>
+              </TicketButton>
             </div>
           </div>
 
@@ -262,19 +268,12 @@ export default function AdminTicketDetails() {
               />
 
               <div className="flex gap-5">
-                <button
-                  onClick={handleReply}
-                  className="bg-[#24698B] text-white px-6 py-2 rounded-lg shadow-sm hover:opacity-90"
-                >
-                  Send Response
-                </button>
-
-                <button
-                  onClick={handleDelete}
-                  className="bg-red-500 text-white px-6 py-2 rounded-lg shadow-sm hover:opacity-90"
-                >
-                  Delete Ticket
-                </button>
+              <TicketButton variant="primary" onClick={handleReply}>
+  Send Response
+</TicketButton>
+<TicketButton variant="danger" onClick={handleDelete}>
+  Delete Ticket
+</TicketButton>
               </div>
             </div>
           )}
@@ -285,4 +284,5 @@ export default function AdminTicketDetails() {
       <Footer />
     </div>
   );
+  
 }
