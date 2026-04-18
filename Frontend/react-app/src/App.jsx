@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
+import { Toaster } from "react-hot-toast";
 
 //Landing
 import LandingPage from "./pages/LandingPage/LandingPage";
@@ -61,6 +62,8 @@ import TicketDetails from "./pages/AllUserPages/TicketDetails";
 
 function App() {
   return (
+    <>
+    <Toaster position="top-right" />
     <Routes>
       {/* Landing */}
       <Route path="/" element={<CreateEvaluationTemplate />} />
@@ -144,6 +147,8 @@ function App() {
         <Route path="/admin/User/:id"element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>}/>
         <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
       </Routes>
+
+      </>
   );
 }
 
