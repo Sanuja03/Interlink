@@ -47,7 +47,7 @@ function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<CreateEvaluationTemplate />} />
+      <Route path="/" element={<CandidateHome />} />
 
       {/* Auth */}
       <Route path="/Login" element={<Login />} />
@@ -58,17 +58,17 @@ function App() {
       <Route path="/candidate/home" element={<CandidateHome />} />
       <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
       <Route path="/candidate/profile" element={<CandidateProfile />} />
-      <Route path="/candidate/job-posts" element={<CandidateJobPosts />} />
+      <Route path="/candidate/jobposts" element={<CandidateJobPosts />} />
       <Route
-        path="/candidate/job-posts/:id"
+        path="/candidate/jobposts/:id"
         element={<CandidateJobPostDetails />}
       />
       <Route
-        path="/candidate/ai-questions"
+        path="/candidate/aiquestions"
         element={<CandidateAIQuestions />}
       />
       <Route path="/candidate/calendar" element={<CandidateCalendar />} />
-      <Route path="/candidate/job-apply/:id" element={<CandidateJobApply />} />
+      <Route path="/candidate/jobapply/:id" element={<CandidateJobApply />} />
 
       {/* Interviewer */}
       <Route path="/interviewer/dashboard" element={<InterviewerDashboard />} />

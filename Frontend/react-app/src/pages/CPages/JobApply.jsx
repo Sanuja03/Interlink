@@ -423,7 +423,7 @@ const JobApply = () => {
       <style>{styles}</style>
       <Sidebar />
       <main className="apply-main">
-        <button className="apply-back" onClick={() => navigate('/job-posts')}>
+        <button className="apply-back" onClick={() => navigate('/candidate/jobposts')}>
           ← Back to Jobs
         </button>
         <p style={{ color: '#5a7a8a', marginTop: 40, textAlign: 'center' }}>Job not found.</p>
@@ -438,7 +438,7 @@ const JobApply = () => {
 
       <main className="apply-main">
         {/* Back */}
-        <button className="apply-back" onClick={() => navigate('/job-posts')}>
+        <button className="apply-back" onClick={() => navigate('/candidate/jobposts')}>
           ← Back to Jobs
         </button>
 
@@ -651,7 +651,7 @@ const JobApply = () => {
 
               {/* Actions */}
               <div className="apply-submit-row">
-                <button type="button" className="apply-btn-cancel" onClick={() => navigate('/job-posts')}>
+                <button type="button" className="apply-btn-cancel" onClick={() => navigate('/candidate/jobposts')}>
                   Cancel
                 </button>
                 <button type="submit" className="apply-btn-submit">
@@ -714,7 +714,7 @@ const JobApply = () => {
               Your application for <strong>{job.title}</strong> at <strong>{job.company}</strong> has been received.
               We'll notify you by email once the employer reviews it.
             </p>
-            <button className="apply-success__btn" onClick={() => navigate('/job-posts')}>
+            <button className="apply-success__btn" onClick={() => navigate('/candidate/jobposts')}>
               Back to Jobs
             </button>
           </div>

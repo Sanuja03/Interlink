@@ -8,7 +8,7 @@ const Navbar = () => {
     const navLinks = [
         { label: 'HOME', path: '/' },
         { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Job Posts', path: '/job-posts' },
+        { label: 'Job Posts', path: '/candidate/jobposts' },
         { label: 'Calender', path: '/calender' },
         { label: 'profile', path: '/profile' },
         { label: 'Logout', path: '/logout' },
