@@ -1,4 +1,4 @@
-package syncX.modules.Admin_activities.service;
+package syncX.modules.SuperAdmin.Admin_activities.service;
 
 import java.time.LocalDateTime;
 
@@ -8,8 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import syncX.modules.Admin_activities.entity.ActivityLog;
-import syncX.modules.Admin_activities.repository.ActivityLogRepository;
+import syncX.modules.SuperAdmin.Admin_activities.entity.ActivityLog;
+import syncX.modules.SuperAdmin.Admin_activities.repository.ActivityLogRepository;
 
 @Service
 @RequiredArgsConstructor

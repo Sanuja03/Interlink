@@ -1,4 +1,4 @@
-package syncX.modules.Admin_activities.controller;
+package syncX.modules.SuperAdmin.Admin_activities.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import syncX.modules.Admin_activities.entity.ActivityLog;
-import syncX.modules.Admin_activities.service.ActivityLogService;
+import syncX.modules.SuperAdmin.Admin_activities.entity.ActivityLog;
+import syncX.modules.SuperAdmin.Admin_activities.service.ActivityLogService;
 
 @RestController
 @RequestMapping("/api/admin/activity-logs")

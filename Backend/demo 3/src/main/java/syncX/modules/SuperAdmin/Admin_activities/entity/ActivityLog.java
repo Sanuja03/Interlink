@@ -1,4 +1,4 @@
-package syncX.modules.Admin_activities.entity;
+package syncX.modules.SuperAdmin.Admin_activities.entity;
 
 import java.time.LocalDateTime;
 
