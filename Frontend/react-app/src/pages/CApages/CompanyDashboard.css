@@ -2,6 +2,9 @@
 .il-dashboard {
   padding-top: 10px;
   font-family: 'Outfit', sans-serif;
+
+  width: 100%;            /* ✅ FIX */
+  max-width: 100%;        /* ✅ FIX */
 }
 
 /* Panel */
@@ -10,6 +13,8 @@
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+
+  width: 100%;            /* ✅ FIX */
 }
 
 /* Stats Grid */
@@ -17,6 +22,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
+
+  width: 100%;            /* ✅ FIX */
 }
 
 /* Stat Card */
@@ -28,6 +35,8 @@
   border-radius: 16px;
   padding: 20px;
   background: #f9fafb;
+
+  width: 100%;            /* ✅ FIX */
 }
 
 /* Icon box */
@@ -49,19 +58,17 @@
   object-fit: contain;
 }
 
-/* Typography based on Style Guide */
+/* Typography */
 .il-stat-title {
-  font-family: 'Outfit', sans-serif;
   font-weight: 600;
-  color: #24698B; /* Style guide heading color */
+  color: #24698B;
   font-size: 18px;
 }
 
 .il-stat-value {
-  font-family: 'Outfit', sans-serif;
   font-size: 28px;
   font-weight: 800;
-  color: #000000; /* Body text color */
+  color: #000000;
 }
 
 /* Buttons Section */
@@ -70,10 +77,12 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 25px;
+
+  width: 100%;            /* ✅ FIX */
 }
 
+/* Buttons */
 .il-action-btn {
-  font-family: 'Outfit', sans-serif;
   background-color: #1c6a85;
   color: white;
   padding: 16px;
@@ -82,6 +91,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+
+  width: 100%;            /* ✅ FIX */
 }
 
 .il-action-btn:hover {
@@ -94,6 +105,7 @@
   .il-stats-grid {
     grid-template-columns: 1fr;
   }
+
   .il-actions {
     grid-template-columns: 1fr;
   }

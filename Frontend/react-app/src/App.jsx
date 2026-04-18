@@ -32,16 +32,16 @@ import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 // CompanyAdmin pages
 import CompanyShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
-import CompanyDashboard from "./components/CompanyPages/CompanyDashboard";
-import ApplicationManagement from "./components/CompanyPages/ApplicationManagement";
-import CompanyAdminSettings from "./components/CompanyPages/CompanyAdminSettings";
-import JobManagement from "./components/CompanyPages/JobManagement";
-import CreateJob from "./components/CompanyPages/CreateJob";
-import EditJob from "./components/CompanyPages/EditJob";
-import InterviewScheduling from "./components/CompanyPages/InterviewScheduling";
-import InterviewConfirmation from "./components/CompanyPages/InterviewConfirmation";
-import CandidateHistory from "./components/CompanyPages/CandidateHistory";
-import Shortlist from "./components/CompanyPages/Shortlist";
+import CompanyDashboard from "./pages/CApages/CompanyDashboard";
+import ApplicationManagement from "./pages/CApages/ApplicationManagement";
+import CompanyAdminSettings from "./pages/CApages/CompanyAdminSettings";
+import JobManagement from "./pages/CApages/JobManagement";
+import CreateJob from "./pages/CApages/CreateJob";
+import EditJob from "./pages/CApages/EditJob";
+import InterviewScheduling from "./pages/CApages/InterviewScheduling";
+import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
+import CandidateHistory from "./pages/CApages/CandidateHistory";
+import Shortlist from "./pages/CApages/Shortlist";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -165,6 +165,7 @@ function App() {
         <Route path="/admin/ChatBot" element={<DashboardLayout><ChatBot /></DashboardLayout>} />//test for now
         <Route path="/admin/User/:id"element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>}/>
         <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
+        <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
       </Routes>
   );
 }

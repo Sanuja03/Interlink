@@ -1,13 +1,15 @@
 import "./CompanyDashboard.css";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import CalendarSection from "../../components/layout/CalendarSection";
+
+// ✅ FIXED
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import CalendarSection from "../../components/CompanyPages/layout/CalendarSection";
 
 // 🔥 NEW IMPORTS
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-// IMPORT ICONS
+// IMPORT ICONS (these are already correct ✅)
 import jobIcon from "../../assets/icons/job.png";
 import applyIcon from "../../assets/icons/apply.png";
 import handIcon from "../../assets/icons/hand.png";
@@ -32,10 +34,8 @@ function StatCard({ title, value, icon }) {
 export default function CompanyDashboard() {
   const navigate = useNavigate();
 
-  // 🔥 STATE
   const [users, setUsers] = useState([]);
 
-  // 🔥 FETCH DATA FROM BACKEND
   useEffect(() => {
     axios
       .get("http://localhost:8080/users")
@@ -46,7 +46,6 @@ export default function CompanyDashboard() {
       .catch((err) => console.error(err));
   }, []);
 
-  // 🔥 DYNAMIC STATS
   const stats = [
     { title: "Total Users", value: users.length, icon: jobIcon },
     { title: "Total Applications", value: "128", icon: applyIcon },
@@ -58,7 +57,6 @@ export default function CompanyDashboard() {
     <DashboardLayout>
       <div className="il-dashboard">
 
-        {/* Stats Section */}
         <div className="il-panel">
           <div className="il-stats-grid">
             {stats.map((s) => (
@@ -67,7 +65,6 @@ export default function CompanyDashboard() {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="il-actions">
           <button
             className="il-action-btn"
@@ -98,7 +95,6 @@ export default function CompanyDashboard() {
           </button>
         </div>
 
-        {/* Calendar Section */}
         <CalendarSection />
 
       </div>

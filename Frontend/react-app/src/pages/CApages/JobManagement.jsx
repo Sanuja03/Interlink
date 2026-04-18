@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./JobManagement.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";

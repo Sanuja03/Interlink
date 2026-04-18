@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./EditJob.css";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";

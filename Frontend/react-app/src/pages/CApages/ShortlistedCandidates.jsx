@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./ShortlistedCandidates.css";
 
 export default function ShortlistedCandidates() {

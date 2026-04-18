@@ -1,5 +1,5 @@
 import React from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./CandidateHistory.css";
 
 import companyLogo from "../../assets/images/default-avatar.png";

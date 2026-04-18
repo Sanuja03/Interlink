@@ -1,7 +1,9 @@
 import "./DashboardLayout.css";
 import Sidebar from "./Sidebar";
-import notificationicon from "../../assets/icons/notificationicon.png";
-import defaultAvatar from "../../assets/images/default-avatar.png";
+
+// ✅ FIXED PATHS
+import notificationicon from "../../../assets/icons/notificationicon.png";
+import defaultAvatar from "../../../assets/images/default-avatar.png";
 
 import { useState } from "react";
 import NotificationPopup from "./NotificationPopup";

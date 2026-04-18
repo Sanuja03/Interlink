@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./InterviewScheduling.css";
 
 export default function InterviewScheduling() {

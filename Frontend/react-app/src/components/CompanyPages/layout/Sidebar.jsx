@@ -2,13 +2,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./Sidebar.css";
 
-import logo from "../../assets/footer/logo.png";
-import defaultAvatar from "../../assets/images/default-avatar.png";
+// ✅ FIXED PATHS
+import logo from "../../../assets/footer/logo.png";
+import defaultAvatar from "../../../assets/images/default-avatar.png";
 
 // ICONS
-import dashboardIcon from "../../assets/icons/dashboard.png";
-import fileIcon from "../../assets/icons/file.png";
-import settingsIcon from "../../assets/icons/settings.png";
+import dashboardIcon from "../../../assets/icons/dashboard.png";
+import fileIcon from "../../../assets/icons/file.png";
+import settingsIcon from "../../../assets/icons/settings.png";
 
 export default function Sidebar() {
   const [openManage, setOpenManage] = useState(true);
