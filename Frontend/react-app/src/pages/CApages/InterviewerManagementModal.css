@@ -1,0 +1,192 @@
+:root{
+  --heading:#24698B; /* style guide */
+  --text:#000;
+}
+
+/* Important: stop overflow issues */
+.im-modal, .im-modal *{
+  box-sizing: border-box;
+}
+
+.im-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  padding: 18px;
+}
+
+.im-modal{
+  width: min(1100px, 94vw);
+  background: #f7f8fa;
+  border-radius: 36px;
+  padding: 44px 52px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.22);
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.im-title{
+  margin: 0 0 22px;
+  color: var(--heading);
+  font-size: 34px;
+  font-weight: 800;
+}
+
+/* Header row */
+.im-headerRow{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 240px;
+  gap: 22px;
+  margin-bottom: 10px;
+}
+
+.im-h{
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Rows container */
+.im-rows{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* EACH row is its own grid (prevents overlap) */
+.im-row{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 240px;
+  gap: 22px;
+  align-items: center;
+}
+
+/* KEY FIX: allow shrink in grid */
+.im-cell{
+  min-width: 0;          /* ✅ THIS stops pill overlap */
+}
+
+/* Inputs/selects */
+.im-input{
+  width: 100%;
+  min-width: 0;          /* ✅ THIS also helps */
+  height: 58px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.18);
+  padding: 0 18px;
+  outline: none;
+  background: #fff;
+}
+
+/* Status cell */
+.im-statusCell{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.im-statusText{
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Switch */
+.im-switch{
+  position: relative;
+  width: 58px;
+  height: 30px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.im-switch input{
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.im-slider{
+  position: absolute;
+  inset: 0;
+  background: #cfd8df;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.im-slider::before{
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 999px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+  transition: 0.2s;
+}
+
+.im-switch input:checked + .im-slider{
+  background: var(--heading);
+}
+
+.im-switch input:checked + .im-slider::before{
+  transform: translateX(28px);
+}
+
+/* Plus button */
+.im-add{
+  margin-top: 18px;
+  width: 86px;
+  height: 86px;
+  border-radius: 18px;
+  border: none;
+  background: #3f3f3f;
+  color: #fff;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+/* Bottom actions */
+.im-actions{
+  display: flex;
+  justify-content: center;
+  gap: 34px;
+  margin-top: 34px;
+}
+
+.im-cancel{
+  min-width: 220px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  background: #e0e0e0;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.10);
+}
+
+.im-save{
+  min-width: 260px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  background: var(--heading);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 22px rgba(36,105,139,0.22);
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .im-modal{ padding: 28px; }
+  .im-headerRow{ display: none; }
+  .im-row{
+    grid-template-columns: 1fr;
+  }
+}

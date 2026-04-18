@@ -32,6 +32,16 @@ import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 // CompanyAdmin pages
 import CompanyShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
+import CompanyDashboard from "./components/CompanyPages/CompanyDashboard";
+import ApplicationManagement from "./components/CompanyPages/ApplicationManagement";
+import CompanyAdminSettings from "./components/CompanyPages/CompanyAdminSettings";
+import JobManagement from "./components/CompanyPages/JobManagement";
+import CreateJob from "./components/CompanyPages/CreateJob";
+import EditJob from "./components/CompanyPages/EditJob";
+import InterviewScheduling from "./components/CompanyPages/InterviewScheduling";
+import InterviewConfirmation from "./components/CompanyPages/InterviewConfirmation";
+import CandidateHistory from "./components/CompanyPages/CandidateHistory";
+import Shortlist from "./components/CompanyPages/Shortlist";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -129,6 +139,18 @@ function App() {
       <Route path="/tickets/:id" element={<TicketDetails />} />
 
       {/* Fallback */}
+
+      {/* company Admin routes */}
+      <Route path="/company/dashboard" element={<CompanyDashboard />} />
+      <Route path="/application-management" element={<ApplicationManagement />} />
+      <Route path="/company-admin-settings" element={<CompanyAdminSettings />} />
+      <Route path="/job-management" element={<JobManagement />} />
+      <Route path="/create-job" element={<CreateJob />} />
+      <Route path="/edit-job/:id" element={<EditJob />} />
+      <Route path="/interview-scheduling" element={<InterviewScheduling />} />
+      <Route path="/interview-confirmation" element={<InterviewConfirmation />} />
+      <Route path="/candidate-history" element={<CandidateHistory />} />
+      <Route path="/shortlist" element={<Shortlist />} />
 
       {/* Super Admin routes with Dashboard Layout */}
         <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
