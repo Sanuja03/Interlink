@@ -8,6 +8,7 @@ import settingsIcon from "../../../assets/settings.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import RecentActivities from "../../../assets/RecentActivities.png";
 import ChatBot from "../../../assets/ChatBot.png";
+import SupportTickets from "../../../assets/SupportTickets.png";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -28,7 +29,9 @@ const Sidebar = () => {
       
       {/* Logo */}
       <div className="flex items-center px-5 py-6">
-        <img src={interlink} alt="logo" className="w-40 h-20 object-contain" />
+        <a href="/admin/dashboard">
+          <img src={interlink} alt="logo" className="w-40 h-20 object-contain" />
+        </a>
       </div>
 
       {/* NAVIGATION */}
@@ -105,6 +108,12 @@ const Sidebar = () => {
           path="/admin/ChatBot"
           icon={ChatBot}
         />
+        <SidebarItem
+          label="Support tickets"
+          path="/admin/tickets"
+          icon={SupportTickets}
+        />
+        
 
       </nav>
 
