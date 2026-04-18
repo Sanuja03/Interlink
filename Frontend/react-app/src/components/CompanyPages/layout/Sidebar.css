@@ -1,0 +1,204 @@
+/* ===== MAIN SIDEBAR ===== */
+.sb {
+  width: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 14px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  font-family: "Outfit", sans-serif;
+}
+
+/* COLLAPSED */
+.sb.collapsed {
+  width: 70px;
+  padding: 14px 8px;
+}
+
+/* ===== TOGGLE BUTTON ===== */
+.sb-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sb-toggle button {
+  border: none;
+  background: #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ===== LOGO ===== */
+.sb-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sb-logo {
+  width: 110px;
+  transition: 0.3s;
+}
+
+.sb-logo.small {
+  width: 40px;
+}
+
+/* ===== NAVIGATION ===== */
+.sb-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* MAIN LINKS */
+.sb-link,
+.sb-dropBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  text-decoration: none;
+
+  font-weight: 600;
+  font-size: 15px;
+
+  color: #000;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* HOVER */
+.sb-link:hover,
+.sb-dropBtn:hover {
+  background: #eef6fa;
+}
+
+/* ACTIVE */
+.sb-active {
+  background: #d6eef8;
+  color: #24698b;
+}
+
+/* ICON */
+.sb-iconImg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ===== ARROW ===== */
+.sb-arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.sb-arrowOpen {
+  transform: rotate(90deg);
+}
+
+/* ===== SUB MENU ===== */
+.sb-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.sb-sublink {
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+}
+
+.sb-sublink:hover {
+  background: #eef6fa;
+}
+
+.sb-subActive {
+  background: #d6eef8;
+  color: #24698b;
+}
+
+/* ===== LOGOUT ===== */
+.sb-logout {
+  margin-top: auto;
+}
+
+.sb-logout button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 10px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.sb-logout button:hover {
+  background: #fecaca;
+}
+
+/* ===== BOTTOM USER ===== */
+.sb-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.sb-bottomAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sb-bottomText {
+  display: flex;
+  flex-direction: column;
+}
+
+.sb-bottomName {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0c3e56;
+}
+
+.sb-bottomMail {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ===== COLLAPSED MODE FIXES ===== */
+.sb.collapsed .sb-link span,
+.sb.collapsed .sb-dropBtn span,
+.sb.collapsed .sb-bottomText {
+  display: none;
+}
+
+.sb.collapsed .sb-sub {
+  display: none;
+}
+
+.sb.collapsed .sb-logout button {
+  justify-content: center;
+}
