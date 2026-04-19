@@ -49,4 +49,12 @@ public class Job {
     public void setRequirements(List<JobRequirement> requirements) {
         this.requirements = requirements;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

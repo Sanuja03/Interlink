@@ -2,6 +2,8 @@ package syncX.modules.job.entity;
 
 import jakarta.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class JobRequirement {
 
@@ -11,6 +13,7 @@ public class JobRequirement {
 
     private String requirement;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;

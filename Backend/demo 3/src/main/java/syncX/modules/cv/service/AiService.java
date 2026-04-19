@@ -119,8 +119,16 @@ Return ONLY valid JSON:
 }
 
 Rules:
+Rules:
+- Extract ONLY skills explicitly mentioned in the text
+- Do NOT infer or add extra skills
+- Do NOT assume related technologies (e.g., React ≠ HTML/CSS)
+- Skills must be exact keywords from the text
 - Skills must be single keywords (React, Java, Communication)
-- Extract years as a number
+- Remove adjectives like "good", "strong"
+- Do NOT duplicate similar skills
+- Normalize skills to base form (e.g., "React", "Java")
+- Extract years of experience as a number
 - Keep education simple (Degree, Diploma, Masters)
 
 Text:

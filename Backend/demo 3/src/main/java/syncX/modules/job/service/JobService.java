@@ -11,6 +11,8 @@ import syncX.modules.job.entity.JobRequirement;
 import syncX.modules.job.repository.JobRepository;
 import syncX.modules.job.repository.JobRequirementRepository;
 
+import java.util.List;
+
 @Service
 public class JobService {
 
@@ -52,6 +54,8 @@ public class JobService {
             r.setRequirement(skill.toLowerCase());
             reqRepo.save(r);
         }
+        List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
+        saved.setRequirements(reqs);
 
         return saved;
     }
