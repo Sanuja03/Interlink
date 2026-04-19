@@ -3,6 +3,9 @@ package syncX.modules.candidatedashboard.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Entity
 @Data
 @Table(name = "candidate_interviews")
@@ -18,8 +21,8 @@ public class CandidateInterview {
     private String company;
     private String role;
 
-    private String date;  // OK for now (but not ideal)
-    private String time;
+    private LocalDate date;  // OK for now (but not ideal)
+    private LocalTime time;
 
     private String mode;
     private String status;

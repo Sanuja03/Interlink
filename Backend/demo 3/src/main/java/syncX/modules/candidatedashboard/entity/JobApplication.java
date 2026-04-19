@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @Table(name = "job_applications")
@@ -19,8 +21,8 @@ public class JobApplication {
     private Long candidateId;
     private String jobTitle;
     private String company;
-    private String appliedDate;
-    private String shortlistedDate;
-    private String interviewDate;
+    private LocalDate appliedDate;
+    private LocalDate shortlistedDate;
+    private LocalDate interviewDate;
     private String result; // e.g. "Pending" or "Rejected"
 }
