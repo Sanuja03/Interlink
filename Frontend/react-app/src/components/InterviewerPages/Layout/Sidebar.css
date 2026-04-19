@@ -1,0 +1,145 @@
+/* Sidebar container */
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  /* Logo */
+  .sidebar-logo {
+    display: flex;
+    justify-content: center; 
+    align-items: center;     
+    padding: 24px 20px;
+  }
+  
+  
+  .sidebar-logo img {
+    width: 160px;  
+    height: 80px;  
+    object-fit: contain;
+  }
+  
+  /* Navigation */
+  .sidebar-nav {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  /* Menu items  */
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    color: #4b5563; /* gray-600 */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .sidebar-item:hover {
+    background-color: #f3f4f6; /* gray-100 */
+  }
+  
+  /* Active item */
+  .sidebar-item.active {
+    background-color: #c8c8c8;
+    color: #ffffff;
+  }
+  
+  /* Icons */
+  .sidebar-item img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  
+  /* Sub menu */
+  .sidebar-submenu {
+    margin-left: 32px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .sidebar-subitem {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  
+  .sidebar-subitem:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .sidebar-subitem.active {
+    background-color: #c8c8c8;
+    color: #ffffff;
+  }
+  
+  /* Bottom profile section */
+  .sidebar-profile {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .sidebar-profile a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  
+  .sidebar-profile a:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .sidebar-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  
+  .sidebar-profile-text {
+    min-width: 0;
+  }
+  
+  .sidebar-profile-text p {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .sidebar-profile-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .sidebar-profile-email {
+    font-size: 12px;
+    color: #6b7280;
+  }
+  

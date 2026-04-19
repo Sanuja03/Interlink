@@ -1,0 +1,112 @@
+/* Global Dashboard Font from Style Guide */
+.il-dashboard {
+  padding-top: 10px;
+  font-family: 'Outfit', sans-serif;
+
+  width: 100%;            /* ✅ FIX */
+  max-width: 100%;        /* ✅ FIX */
+}
+
+/* Panel */
+.il-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+
+  width: 100%;            /* ✅ FIX */
+}
+
+/* Stats Grid */
+.il-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+
+  width: 100%;            /* ✅ FIX */
+}
+
+/* Stat Card */
+.il-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 2px solid #1c6a85;
+  border-radius: 16px;
+  padding: 20px;
+  background: #f9fafb;
+
+  width: 100%;            /* ✅ FIX */
+}
+
+/* Icon box */
+.il-icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Icon image */
+.il-stat-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+/* Typography */
+.il-stat-title {
+  font-weight: 600;
+  color: #24698B;
+  font-size: 18px;
+}
+
+.il-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #000000;
+}
+
+/* Buttons Section */
+.il-actions {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+
+  width: 100%;            /* ✅ FIX */
+}
+
+/* Buttons */
+.il-action-btn {
+  background-color: #1c6a85;
+  color: white;
+  padding: 16px;
+  border-radius: 30px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  width: 100%;            /* ✅ FIX */
+}
+
+.il-action-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .il-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .il-actions {
+    grid-template-columns: 1fr;
+  }
+}

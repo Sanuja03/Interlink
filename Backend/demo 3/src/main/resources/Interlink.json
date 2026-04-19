@@ -1,0 +1,41 @@
+{
+  "name": "Interlink",
+  "type": "AI-powered Recruitment Management System",
+  "description": "Interlink is a web-based, multi-tenant recruitment management platform designed to streamline and automate hiring processes. It centralizes candidate data, reduces manual workload, and improves decision-making through AI-driven features.",
+  
+  "core_features": [
+    "Job posting and vacancy management",
+    "Candidate profile and application tracking",
+    "AI-powered CV screening and candidate ranking",
+    "Automated pre-screening question generation",
+    "Interview scheduling and management",
+    "Structured feedback collection",
+    "Real-time notifications and updates",
+    "Candidate history tracking"
+  ],
+
+  "users": [
+    "Companies",
+    "Recruiters",
+    "Interviewers",
+    "Job seekers",
+    "System administrators"
+  ],
+
+  "benefits": [
+    "Reduces hiring time and manual effort",
+    "Improves accuracy of candidate selection",
+    "Enhances transparency in recruitment",
+    "Provides data-driven hiring decisions",
+    "Improves candidate experience"
+  ],
+
+  "technology": {
+    "frontend": "React.js",
+    "backend": "Spring Boot",
+    "database": "PostgreSQL",
+    "ai": "AI APIs for CV analysis and evaluation"
+  },
+
+  "goal": "To provide an intelligent, scalable, and user-friendly recruitment platform that improves hiring efficiency and decision quality."
+}

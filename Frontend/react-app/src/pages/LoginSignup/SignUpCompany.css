@@ -1,0 +1,23 @@
+
+  .select-group {
+    display: flex;
+    align-items: center;     /* vertical alignment */
+    width: 90%;
+    margin: 0 auto 10px;
+  }
+  
+  .select-group label {
+    font-size: 15px;
+    color: #213547;
+    text-align: left;        
+  }
+  
+  .select-group .input-field {
+    width: 60%;
+    margin-left: auto;       /* pushes field to the right */
+    padding: 6px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+
