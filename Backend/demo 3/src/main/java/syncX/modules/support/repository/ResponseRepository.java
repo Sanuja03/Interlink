@@ -1,4 +1,7 @@
 package syncX.modules.support.repository;
 
-public class Response_Repo {
+import syncX.modules.support.entity.Response;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ResponseRepository extends JpaRepository<Response, Long> {
 }
