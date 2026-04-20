@@ -2,29 +2,72 @@ import './Signup.css'
 
 import interlink from '../../assets/interlink.png'
 import homeicon from '../../assets/homeicon.png'
+import { supabase } from "../../lib/supabase"
+import api from "../../lib/api";
 
 import { useForm } from 'react-hook-form'
-import { Link } from "react-router-dom" //avoids refreshing browser
-
+import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 const Signup = () => {
+  const navigate = useNavigate()
+  const [submitError, setSubmitError] = useState("")
+  const [submitSuccess, setSubmitSuccess] = useState("")
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm({ mode: "onTouched" })
 
-  const onSubmit = (data) => {
-    // call backend signup API here
+  const onSubmit = async (data) => {
+    try {
+      setSubmitError("")
+      setSubmitSuccess("")
+
+      const firstName = data.firstName.trim()
+      const lastName = data.lastName.trim()
+      const email = data.email.trim()
+      const password = data.password
+
+      // Create auth user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (authError) {
+        setSubmitError(authError.message)
+        return
+      }
+
+      //send profile data to backend
+      await api.post("/auth/complete-candidate-signup", {
+        firstName,
+        lastName,
+        email,
+      })
+      setSubmitSuccess("Signup successful!")
+      navigate("/Login")
+
+    } catch (err) {
+      console.error("UNEXPECTED ERROR:", err)
+      setSubmitError(
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err.message ||
+        "Unexpected error occurred"
+      )
+    }
+
   }
 
   return (
     <div className='page'>
-
       <div className="home-button">
-              <a href="/">
-                <img src={homeicon} alt="Home" />
-              </a>
+        <a href="/">
+          <img src={homeicon} alt="Home" />
+        </a>
       </div>
 
       <div className='container'>
@@ -37,17 +80,17 @@ const Signup = () => {
         </div>
 
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
+          {submitError && <p className="error-text">{submitError}</p>}
+          {submitSuccess && <p className="success-text">{submitSuccess}</p>}
 
           <div className='Name-group'>
-            {/*first name */}
             <div className='input-group'>
               {errors.firstName && <p className="error-text">{errors.firstName.message}</p>}
               <label>first name</label>
-              {/*if tehres an error put input-error style*/ }
               <input
                 type="text"
-                placeholder='Enter your first name' 
-                className={`input-field ${errors.firstName ? "input-error" : ""}`} 
+                placeholder='Enter your first name'
+                className={`input-field ${errors.firstName ? "input-error" : ""}`}
                 {...register("firstName", {
                   required: "First name is required",
                   minLength: { value: 2, message: "must be at least 2 characters" },
@@ -56,7 +99,6 @@ const Signup = () => {
               />
             </div>
 
-            {/*last name */}
             <div className='input-group'>
               {errors.lastName && <p className="error-text">{errors.lastName.message}</p>}
               <label>last name</label>
@@ -73,7 +115,6 @@ const Signup = () => {
             </div>
           </div>
 
-          {/*email */}
           <div className='input-group'>
             {errors.email && <p className="error-text">{errors.email.message}</p>}
             <label>email address</label>
@@ -91,7 +132,6 @@ const Signup = () => {
             />
           </div>
 
-          {/*Password */}
           <div className='input-group'>
             {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
@@ -108,18 +148,16 @@ const Signup = () => {
 
           <div>
             <button className='signup-button' type="submit" disabled={isSubmitting}>
-              Sign Up
+              {isSubmitting ? "Signing up..." : "Sign Up"}
             </button>
           </div>
 
           <div>
-            <p>Already have an account?{" "} 
-                <Link to ="/Login">
-                Login
-                </Link>
+            <p>
+              Already have an account?{" "}
+              <Link to="/Login">Login</Link>
             </p>
           </div>
-
         </form>
       </div>
     </div>

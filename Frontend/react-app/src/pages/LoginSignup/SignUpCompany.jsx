@@ -2,20 +2,69 @@ import './SignUpCompany.css'
 
 import interlink from '../../assets/interlink.png'
 import homeicon from '../../assets/homeicon.png'
+import { supabase } from "../../lib/supabase"
 
 import { useForm } from 'react-hook-form'
-import {Link} from "react-router-dom"
+
+
+import { useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
 
 
 const SignUpCompany = () => {
+  const navigate = useNavigate()
+  const [submitError, setSubmitError] = useState("")
+  const [submitSuccess, setSubmitSuccess] = useState("")
+
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isSubmitting }
   } = useForm({ mode: "onTouched" })
 
-  const onSubmit = (data) => {
-  }
+  const onSubmit = async (data) => {
+    try {
+      setSubmitError("")
+      setSubmitSuccess("")
+  
+      const email = data.companyEmail.trim()
+      const companyName = data.companyName.trim()
+      const companySize = data.companySize
+      const industry = data.industry
+      const password = data.password
+  
+      // Create auth user in Supabase Auth
+      const { error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+  
+      if (authError) {
+        setSubmitError(authError.message)
+        return
+      }
+  
+      // Send to backend using Axios instance
+      await api.post("/auth/complete-company-signup", {
+        companyName,
+        companySize,
+        industry,
+        email,
+      })
+  
+      setSubmitSuccess("Signup successful!")
+      navigate("/Login")
+  
+    } catch (err) {
+      console.error("UNEXPECTED ERROR:", err)
+      setSubmitError(
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err.message ||
+        "Unexpected error occurred"
+      )
+    }
+  };
 
   return (
     <div className='page'>

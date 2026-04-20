@@ -63,7 +63,7 @@ function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<CreateEvaluationTemplate />} />
+      <Route path="/" element={<Login />} />
 
       {/* Auth */}
       <Route path="/Login" element={<Login />} />
