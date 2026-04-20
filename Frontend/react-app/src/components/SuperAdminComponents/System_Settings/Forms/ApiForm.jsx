@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
+import { createActivityLog } from "../../../../api/ActivityLogsApi";
 
-export default function ApiForm() {
+export default function ApiForm({ loading, setLoading, onClose }) {
 
   const [settings, setSettings] = useState({
     rateLimit: "",
@@ -11,7 +12,7 @@ export default function ApiForm() {
     apiEnabled: false
   });
 
-  const [loading, setLoading] = useState(false);
+
 
   // 🔹 LOAD
   useEffect(() => {
@@ -42,6 +43,18 @@ export default function ApiForm() {
 
   // 🔹 SAVE
   const handleSave = async () => {
+     if (!settings.apiKey) {
+      showError("Please fill all required fields");
+      return;
+    }
+    if (!settings.rateLimit>0) {
+      showError("Invalid rate limit value");
+      return;
+    }
+    if (!settings.webhookUrl.startsWith("http://") && !settings.webhookUrl.includes(".")) {
+      showError("Invalid webhook URL");
+      return;
+    }
     setLoading(true);
 
     const payload = [
@@ -54,6 +67,16 @@ export default function ApiForm() {
     try {
       await saveSettings("API", payload);
       showSuccess("API settings saved ✅");
+      await createActivityLog({
+        userId: 1,
+        userRole: "ADMIN",
+        action: "UPDATE",
+        entityType: "API_SETTINGS",
+        description: "Updated API Settings"
+      });
+      setTimeout(() => {
+        onClose();
+        }, 5000);
     } catch (err) {
       console.error(err);
       showError("Failed to save ❌");

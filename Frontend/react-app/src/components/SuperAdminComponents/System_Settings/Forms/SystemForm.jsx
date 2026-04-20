@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
+import { createActivityLog } from "../../../../api/ActivityLogsApi";
 
-export default function SystemForm() {
+export default function SystemForm({ loading, setLoading, onClose }) {
 
-  const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
     timezone: "",
     logLevel: "",
@@ -41,6 +41,10 @@ export default function SystemForm() {
 
   // 🔹 SAVE
   const handleSave = async () => {
+      if (settings.cacheExpiration <= 0) { 
+      showError("Invalid cache expiration value");
+      return;
+    }
     setLoading(true);
     const payload = [
       { keyName: "timezone", value: settings.timezone },
@@ -52,6 +56,17 @@ export default function SystemForm() {
     try {
       await saveSettings("SYSTEM", payload);
       showSuccess("Settings saved successfully ✅");
+      await createActivityLog({
+        userId: 1,
+        userRole: "ADMIN",
+        action: "UPDATE",
+        entityType: "SYSTEM_SETTINGS",
+        description: "Updated System Settings"
+      });
+
+      setTimeout(() => {
+        onClose();
+        }, 5000);
     } catch (err) {
       console.error(err);
       showError("Failed to save settings ❌");
@@ -69,8 +84,9 @@ export default function SystemForm() {
           className="w-full border p-2 rounded mt-1"
           value={settings.timezone}
           onChange={(e) => handleChange("timezone", e.target.value)}
+          disabled={loading}
         >
-          <option value="">Select</option>
+          <option value="" disabled>Select</option>
           <option value="GMT+5:30">GMT +5:30 (Sri Lanka)</option>
           <option value="UTC">UTC</option>
         </select>
@@ -83,8 +99,9 @@ export default function SystemForm() {
           className="w-full border p-2 rounded mt-1"
           value={settings.logLevel}
           onChange={(e) => handleChange("logLevel", e.target.value)}
+          disabled={loading}
         >
-          <option value="">Select</option>
+          <option value="" disabled>Select</option>
           <option value="INFO">Info</option>
           <option value="DEBUG">Debug</option>
           <option value="ERROR">Error</option>
@@ -100,6 +117,7 @@ export default function SystemForm() {
           placeholder="e.g. 24"
           value={settings.cacheExpiration}
           onChange={(e) => handleChange("cacheExpiration", e.target.value)}
+          disabled={loading}
         />
       </div>
 
@@ -110,6 +128,7 @@ export default function SystemForm() {
           type="checkbox"
           checked={settings.maintenanceMode}
           onChange={(e) => handleChange("maintenanceMode", e.target.checked)}
+          disabled={loading}
         />
       </div>
 

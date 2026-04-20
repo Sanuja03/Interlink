@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
+import { createActivityLog } from "../../../../api/ActivityLogsApi";
 
-export default function AuthenticationForm() {
+export default function AuthenticationForm({ loading, setLoading, onClose }) {
 
   const [settings, setSettings] = useState({
     twoFactor: false,
@@ -11,7 +12,6 @@ export default function AuthenticationForm() {
     maxLoginAttempts: ""
   });
 
-  const [loading, setLoading] = useState(false);
 
   // 🔹 LOAD SETTINGS
   useEffect(() => {
@@ -42,6 +42,11 @@ export default function AuthenticationForm() {
 
   // 🔹 SAVE SETTINGS
   const handleSave = async () => {
+    if (settings.sessionTimeout <= 0 || settings.maxLoginAttempts <= 0) {
+      showError("Invalid data entered");
+      return;
+    }
+
     setLoading(true);
 
     const payload = [
@@ -54,6 +59,17 @@ export default function AuthenticationForm() {
     try {
       await saveSettings("AUTH", payload);
       showSuccess("Authentication settings saved ✅");
+      
+      await createActivityLog({
+        userId: 1,
+        userRole: "ADMIN",
+        action: "UPDATE",
+        entityType: "AUTHENTICATION_SETTINGS",
+        description: "Updated Authentication Settings"
+      });
+      setTimeout(() => {
+        onClose();
+        }, 5000);
     } catch (err) {
       console.error(err);
       showError("Failed to save ❌");
@@ -85,7 +101,7 @@ export default function AuthenticationForm() {
           onChange={(e) => handleChange("passwordPolicy", e.target.value)}
           disabled={loading}
         >
-          <option value="">Select</option>
+          <option value=""disabled>Select</option>
           <option value="STRONG">Strong (12+ chars, special chars)</option>
           <option value="MEDIUM">Medium</option>
         </select>

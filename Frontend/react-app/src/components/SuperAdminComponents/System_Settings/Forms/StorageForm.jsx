@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
+import { createActivityLog } from "../../../../api/ActivityLogsApi";
 
-export default function StorageForm() {
+export default function StorageForm({ loading, setLoading, onClose }) {
 
   const [settings, setSettings] = useState({
     provider: "",
@@ -11,7 +12,6 @@ export default function StorageForm() {
     retentionPeriod: ""
   });
 
-  const [loading, setLoading] = useState(false);
 
   // 🔹 LOAD
   useEffect(() => {
@@ -38,6 +38,10 @@ export default function StorageForm() {
 
   // 🔹 SAVE
   const handleSave = async () => {
+    if (settings.maxUploadSize <= 0 || settings.retentionPeriod <= 0) {
+      showError("Invalid max upload size or retention period");
+      return;
+    }
     setLoading(true);
 
     const payload = [
@@ -50,6 +54,17 @@ export default function StorageForm() {
     try {
       await saveSettings("STORAGE", payload);
       showSuccess("Storage settings saved ✅");
+
+      await createActivityLog({
+        userId: 1,
+        userRole: "SUPER ADMIN",
+        action: "UPDATE",
+        entityType: "STORAGE_SETTINGS",
+        description: "Updated Storage Settings"
+      });
+      setTimeout(() => {
+        onClose();
+        }, 5000);
     } catch (err) {
       console.error(err);
       showError("Failed to save ❌");
@@ -70,7 +85,7 @@ export default function StorageForm() {
           onChange={(e) => handleChange("provider", e.target.value)}
           disabled={loading}
         >
-          <option value="">Select</option>
+          <option value="" disabled>Select</option>
           <option value="AWS">AWS S3</option>
           <option value="GCP">Google Cloud</option>
           <option value="LOCAL">Local Storage</option>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
+import { createActivityLog } from "../../../../api/ActivityLogsApi";
 
-export default function CommunicationForm() {
+export default function CommunicationForm({ loading, setLoading, onClose }) {
 
   const [settings, setSettings] = useState({
     smtpServer: "",
@@ -12,7 +13,6 @@ export default function CommunicationForm() {
     smsNotifications: false
   });
 
-  const [loading, setLoading] = useState(false);
 
   // 🔹 LOAD SETTINGS
   useEffect(() => {
@@ -43,6 +43,18 @@ export default function CommunicationForm() {
 
   // 🔹 SAVE SETTINGS
   const handleSave = async () => {
+    if (!settings.smtpServer.includes("@") || !settings.smtpServer.includes(".")) {
+      showError("Invalid smtp server address");
+      return;
+    }
+    if (settings.smtpPort <= 0) {
+      showError("Invalid smtp port");
+      return;
+    }
+    if (!settings.senderEmail.includes("@") || !settings.senderEmail.includes(".")) {
+      showError("Invalid sender email address");
+      return;
+    }
     setLoading(true);
 
     const payload = [
@@ -56,6 +68,17 @@ export default function CommunicationForm() {
     try {
       await saveSettings("COMMUNICATION", payload);
       showSuccess("Communication settings saved ✅");
+
+      await createActivityLog({
+        userId: 1,
+        userRole: "ADMIN",
+        action: "UPDATE",
+        entityType: "COMMUNICATION_SETTINGS",
+        description: "Updated Communication Settings"
+      });
+      setTimeout(() => {
+        onClose();
+        }, 5000);
     } catch (err) {
       console.error(err);
       showError("Failed to save ❌");
