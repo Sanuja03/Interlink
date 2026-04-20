@@ -1,16 +1,3 @@
-// ─── DROP-IN REPLACEMENT for the search + filter section in MyTickets.jsx ───
-// Replace your existing "SEARCH + FILTERS" <div> block with this.
-// All handler props (handleSearch, handleStatusFilter, handleCategoryFilter,
-// clearFilters, statusFilter, categoryFilter) stay exactly the same.
-
-// ── Add this import at the top of MyTickets.jsx (if not already there) ──
-// import TicketSearch from "../../components/TicketSubsPages/TicketSearch";
-
-// ── Add this state at the top of MyTickets (if not already there) ──
-// const [statusOpen, setStatusOpen] = useState(false);
-// const [categoryOpen, setCategoryOpen] = useState(false);
-
-// ── Paste this JSX in place of your current search+filter block ──
 
 const STATUS_OPTIONS = [
   { value: "OPEN",     label: "Open",     dot: "bg-green-400" },
