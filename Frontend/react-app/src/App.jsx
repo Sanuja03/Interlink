@@ -63,7 +63,7 @@ function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Signup />} />
 
       {/* Auth */}
       <Route path="/Login" element={<Login />} />
