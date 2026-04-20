@@ -32,6 +32,17 @@ import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 // CompanyAdmin pages
 import CompanyShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
+import CompanyDashboard from "./pages/CApages/CompanyDashboard";
+import ApplicationManagement from "./pages/CApages/ApplicationManagement";
+import CompanyAdminSettings from "./pages/CApages/CompanyAdminSettings";
+import JobManagement from "./pages/CApages/JobManagement";
+import CreateJob from "./pages/CApages/CreateJob";
+import EditJob from "./pages/CApages/EditJob";
+import InterviewScheduling from "./pages/CApages/InterviewScheduling";
+import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
+import CandidateHistory from "./pages/CApages/CandidateHistory";
+import Shortlist from "./pages/CApages/Shortlist";
+import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -74,17 +85,17 @@ function App() {
       <Route path="/candidate/home" element={<CandidateHome />} />
       <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
       <Route path="/candidate/profile" element={<CandidateProfile />} />
-      <Route path="/candidate/job-posts" element={<CandidateJobPosts />} />
+      <Route path="/candidate/jobposts" element={<CandidateJobPosts />} />
       <Route
-        path="/candidate/job-posts/:id"
+        path="/candidate/jobposts/:id"
         element={<CandidateJobPostDetails />}
       />
       <Route
-        path="/candidate/ai-questions"
+        path="/candidate/aiquestions"
         element={<CandidateAIQuestions />}
       />
       <Route path="/candidate/calendar" element={<CandidateCalendar />} />
-      <Route path="/candidate/job-apply/:id" element={<CandidateJobApply />} />
+      <Route path="/candidate/jobapply/:id" element={<CandidateJobApply />} />
 
       {/* Interviewer */}
       <Route path="/interviewer/dashboard" element={<InterviewerDashboard />} />
@@ -130,6 +141,19 @@ function App() {
 
       {/* Fallback */}
 
+      {/* company Admin routes */}
+      <Route path="/company/dashboard" element={<CompanyDashboard />} />
+      <Route path="/application-management" element={<ApplicationManagement />} />
+      <Route path="/company-admin-settings" element={<CompanyAdminSettings />} />
+      <Route path="/job-management" element={<JobManagement />} />
+      <Route path="/create-job" element={<CreateJob />} />
+      <Route path="/edit-job/:id" element={<EditJob />} />
+      <Route path="/interview-scheduling" element={<InterviewScheduling />} />
+      <Route path="/interview-confirmation" element={<InterviewConfirmation />} />
+      <Route path="/candidate-history" element={<CandidateHistory />} />
+      <Route path="/shortlist" element={<Shortlist />} />
+      <Route path="/candidate-profile" element={<CompanyCandidateProfile />} />
+
       {/* Super Admin routes with Dashboard Layout */}
         <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
         <Route path="/admin/AllActivities" element={<DashboardLayout><AllActivitiesPage /></DashboardLayout>} />
@@ -143,6 +167,7 @@ function App() {
         <Route path="/admin/ChatBot" element={<DashboardLayout><ChatBot /></DashboardLayout>} />//test for now
         <Route path="/admin/User/:id"element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>}/>
         <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
+        <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
       </Routes>
   );
 }

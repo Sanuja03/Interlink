@@ -1,0 +1,162 @@
+.is-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 32px 30px;
+  min-height: 100%;
+  background: #dadee0;
+  font-family: "Outfit", sans-serif;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+.is-title {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+  color: #24698b;
+}
+
+.is-formCard {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgba(36, 105, 139, 0.2);
+  border-radius: 20px;
+  padding: 34px 44px 30px;
+  box-shadow: 0 8px 20px rgba(12, 62, 86, 0.08);
+}
+
+.is-field {
+  margin-bottom: 18px;
+}
+
+.is-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #222222;
+}
+
+.is-input,
+.is-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(36, 105, 139, 0.22);
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  color: #111111;
+  outline: none;
+}
+
+.is-input {
+  height: 52px;
+  padding: 0 14px;
+}
+
+.is-input:focus,
+.is-textarea:focus {
+  border-color: #24698b;
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}
+
+.is-input::placeholder,
+.is-textarea::placeholder {
+  color: #a8a8a8;
+}
+
+.is-textarea {
+  min-height: 120px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.is-error {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e12626;
+}
+
+.is-actions {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 28px;
+}
+
+.is-btn {
+  min-width: 210px;
+  height: 58px;
+  border: none;
+  border-radius: 999px;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(12, 62, 86, 0.14);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.is-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(12, 62, 86, 0.16);
+}
+
+.is-btnPrimary {
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+}
+
+.is-btnDanger {
+  background: #ff1f1f;
+}
+
+.is-btnDanger:hover {
+  background: #eb1b1b;
+}
+
+@media (max-width: 900px) {
+  .is-page {
+    padding: 20px 18px 24px;
+  }
+
+  .is-title {
+    font-size: 32px;
+  }
+
+  .is-formCard {
+    padding: 24px 20px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .is-page {
+    padding: 16px 14px 22px;
+  }
+
+  .is-title {
+    font-size: 26px;
+  }
+
+  .is-label {
+    font-size: 16px;
+  }
+
+  .is-input,
+  .is-textarea {
+    font-size: 15px;
+  }
+
+  .is-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .is-btn {
+    width: 100%;
+    max-width: 320px;
+  }
+}

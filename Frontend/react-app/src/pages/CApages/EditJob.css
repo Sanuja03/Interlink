@@ -1,0 +1,104 @@
+.ej-page {
+  background: #f5f7f9;
+  min-height: 100vh;
+  font-family: 'Outfit', sans-serif;
+}
+
+.ej-container {
+  padding: 30px;
+  text-align: center; /* 🔥 CENTER TITLE */
+}
+
+/* 🔥 TITLE CENTER + BOLD */
+.ej-title {
+  color: #24698B;
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* CARD SAME WIDTH AS CREATE */
+.ej-card {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 600px;
+  margin: auto;
+  text-align: left;
+}
+
+/* INPUT FULL WIDTH */
+.ej-input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  border: 1px solid #dcdcdc;
+  font-size: 15px;
+}
+
+/* REQUIREMENTS */
+.ej-req-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ej-req-input {
+  flex: 1;
+}
+
+.ej-req-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: none;
+  background: #e0e0e0;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* 🔥 BUTTON AREA FIXED */
+.ej-actions {
+  display: flex;
+  justify-content: center; /* 🔥 CENTER BUTTONS */
+  gap: 25px;               /* 🔥 SAME SPACE */
+  margin-top: 35px;
+}
+
+/* 🔥 ALL BUTTON SAME SIZE */
+.ej-save,
+.ej-cancel,
+.ej-delete {
+  min-width: 140px;
+  padding: 14px 0;
+  border-radius: 25px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600; /* 🔥 BOLD TEXT */
+  cursor: pointer;
+}
+
+/* GREEN */
+.ej-save {
+  background: #00c853;
+  color: white;
+}
+
+/* BLUE (LIKE CREATE POST) */
+.ej-cancel {
+  background: #24698B;
+  color: white;
+}
+
+/* RED */
+.ej-delete {
+  background: #ff1a1a;
+  color: white;
+}
+
+/* 🔥 HOVER EFFECT */
+.ej-save:hover { background: #00b248; }
+.ej-cancel:hover { background: #1e5a74; }
+.ej-delete:hover { background: #cc0000; }
