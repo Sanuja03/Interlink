@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./CandidateProfile.css";
@@ -6,8 +6,14 @@ import "./CandidateProfile.css";
 import companyLogo from "../../assets/images/default-avatar.png";
 import fileIcon from "../../assets/icons/file.png";
 
+// ✅ IMPORT POPUP
+import InterviewRequestPopup from "../../components/CompanyPages/InterviewRequestPopup";
+
 export default function CandidateProfile() {
   const navigate = useNavigate();
+
+  // ✅ POPUP STATE
+  const [openInterviewPopup, setOpenInterviewPopup] = useState(false);
 
   const stats = [
     { value: "247", label: "Total Interviews" },
@@ -40,6 +46,8 @@ export default function CandidateProfile() {
   return (
     <DashboardLayout>
       <div className="cp-page">
+
+        {/* HERO */}
         <section className="cp-hero">
           <div className="cp-profileCard">
             <div className="cp-profileLeft">
@@ -69,27 +77,19 @@ export default function CandidateProfile() {
           </div>
         </section>
 
+        {/* ABOUT */}
         <section className="cp-section">
           <h2 className="cp-sectionTitle">About</h2>
-
           <div className="cp-card">
             <p className="cp-aboutText">
               Experienced technical interviewer with over 10 years in the software
               industry. Specialized in conducting comprehensive technical assessments
-              for full-stack developers and software engineers. Known for creating a
-              comfortable interview environment while maintaining rigorous evaluation
-              standards.
-            </p>
-
-            <p className="cp-aboutText cp-aboutTextLast">
-              Passionate about identifying top talent and helping companies build
-              exceptional engineering teams. Regular contributor to technical
-              interview best practices and candidate experience improvement
-              initiatives.
+              for full-stack developers and software engineers.
             </p>
           </div>
         </section>
 
+        {/* STATS */}
         <section className="cp-section">
           <h2 className="cp-sectionTitle">Statistics</h2>
 
@@ -103,27 +103,7 @@ export default function CandidateProfile() {
           </div>
         </section>
 
-        <section className="cp-section">
-          <h2 className="cp-sectionTitle">Professional Details</h2>
-
-          <div className="cp-card cp-professionalCard">
-            <div className="cp-professionalItem">
-              <div className="cp-professionalLabel">Years of Experience</div>
-              <div className="cp-professionalValue">10+ Years</div>
-            </div>
-
-            <div className="cp-professionalItem">
-              <div className="cp-professionalLabel">Education</div>
-              <div className="cp-professionalValue">MSc in Computer Science</div>
-            </div>
-
-            <div className="cp-professionalItem">
-              <div className="cp-professionalLabel">Certifications</div>
-              <div className="cp-professionalValue">AWS Certified</div>
-            </div>
-          </div>
-        </section>
-
+        {/* EXPERIENCE */}
         <section className="cp-section">
           <h2 className="cp-sectionTitle">Experience</h2>
 
@@ -152,6 +132,7 @@ export default function CandidateProfile() {
           </div>
         </section>
 
+        {/* CV */}
         <div className="cp-cvWrap">
           <button className="cp-cvBtn">
             <img src={fileIcon} alt="File icon" className="cp-cvIcon" />
@@ -159,7 +140,9 @@ export default function CandidateProfile() {
           </button>
         </div>
 
+        {/* ACTION BUTTONS */}
         <div className="cp-actions">
+
           <button
             className="cp-actionBtn cp-btnBlue"
             onClick={() => navigate("/shortlist")}
@@ -167,9 +150,10 @@ export default function CandidateProfile() {
             Shortlist
           </button>
 
+          {/* should FIXE this BUTTON */}
           <button
             className="cp-actionBtn cp-btnBlue"
-            onClick={() => navigate("/schedule-interview")}
+            onClick={() => navigate("/InterviewRequestPopup")}
           >
             Schedule Interview
           </button>
@@ -185,6 +169,9 @@ export default function CandidateProfile() {
             Reject
           </button>
         </div>
+
+
+
       </div>
     </DashboardLayout>
   );

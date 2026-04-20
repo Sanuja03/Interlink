@@ -42,6 +42,7 @@ import InterviewScheduling from "./pages/CApages/InterviewScheduling";
 import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
 import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
+import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -151,6 +152,7 @@ function App() {
       <Route path="/interview-confirmation" element={<InterviewConfirmation />} />
       <Route path="/candidate-history" element={<CandidateHistory />} />
       <Route path="/shortlist" element={<Shortlist />} />
+      <Route path="/candidate-profile" element={<CompanyCandidateProfile />} />
 
       {/* Super Admin routes with Dashboard Layout */}
         <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
