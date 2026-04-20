@@ -41,6 +41,16 @@ public class ScoringService {
 
     public double skillScore(List<String> cvSkills, List<JobRequirement> reqs) {
 
+        // ===== VALIDATION ADDED =====
+        if (cvSkills == null || cvSkills.isEmpty()) {
+            return 0;
+        }
+
+        if (reqs == null || reqs.isEmpty()) {
+            return 0;
+        }
+        // ============================
+
         List<String> required = reqs.stream()
                 .map(r -> r.getRequirement().toLowerCase())
                 .toList();
@@ -52,6 +62,10 @@ public class ScoringService {
             boolean found = false;
 
             for (String cv : cvSkills) {
+
+                // ===== VALIDATION ADDED =====
+                if (cv == null || req == null) continue;
+                // ============================
 
                 // Direct match
                 if (cv.equalsIgnoreCase(req)) {
@@ -79,11 +93,30 @@ public class ScoringService {
     }
 
     public double experienceScore(double cvExp, double reqExp) {
+
+        // ===== VALIDATION ADDED =====
+        if (cvExp < 0) {
+            throw new RuntimeException("Invalid CV experience value");
+        }
+
+        if (reqExp < 0) {
+            throw new RuntimeException("Invalid job experience requirement");
+        }
+        // ============================
+
         if (reqExp == 0) return 1;
+
         return Math.min(cvExp / reqExp, 1);
     }
 
     private int level(String edu) {
+
+        // ===== VALIDATION ADDED =====
+        if (edu == null || edu.isEmpty()) {
+            return 0;
+        }
+        // ============================
+
         edu = edu.toLowerCase();
 
         if (edu.contains("phd")) return 4;
@@ -95,6 +128,12 @@ public class ScoringService {
     }
 
     public double educationScore(String cvEdu, String reqEdu) {
+
+        // ===== VALIDATION ADDED =====
+        if (cvEdu == null) cvEdu = "";
+        if (reqEdu == null) reqEdu = "";
+        // ============================
+
         int c = level(cvEdu);
         int r = level(reqEdu);
 
@@ -104,6 +143,13 @@ public class ScoringService {
     }
 
     public double finalScore(double skill, double exp, double edu) {
+
+        // ===== VALIDATION ADDED =====
+        if (skill < 0 || exp < 0 || edu < 0) {
+            throw new RuntimeException("Invalid score values");
+        }
+        // ============================
+
         return (skill * 50) + (exp * 30) + (edu * 20);
     }
 }
