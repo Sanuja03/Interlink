@@ -2,9 +2,7 @@ package syncX.modules.auth.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import syncX.modules.auth.entity.User;
-
-import java.util.UUID;
+import syncX.modules.auth.entity.Candidate;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {}
+public interface CandidateRepository extends JpaRepository<Candidate, Long> {}

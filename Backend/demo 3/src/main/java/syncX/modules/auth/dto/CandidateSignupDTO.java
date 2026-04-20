@@ -1,4 +1,10 @@
 package syncX.modules.auth.dto;
+import lombok.Data;
 
-public class LoginRequest {
+@Data
+public class CandidateSignupDTO {
+    private String firstName;
+    private String lastName;
+    private String email;
 }
+
