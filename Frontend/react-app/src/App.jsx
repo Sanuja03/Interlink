@@ -2,6 +2,35 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import { Toaster } from "react-hot-toast";
 
+
+<Toaster
+  position="top-right"
+  toastOptions={{
+    duration: 5000,
+    style: {
+      borderRadius: "12px",
+      background: "#ffffff",
+      color: "#1f2937",
+      border: "1px solid #e5e7eb",
+      fontSize: "15px",          // 🔼 bigger text
+      padding: "16px 20px",      // 🔼 bigger box
+      minWidth: "260px",         // 🔼 wider
+      fontWeight: "500",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    },
+    success: {
+      style: {
+        borderLeft: "5px solid #24698B",
+      },
+    },
+    error: {
+      style: {
+        borderLeft: "5px solid #dc2626",
+      },
+    },
+  }}
+/>
+
 //Landing
 import LandingPage from "./pages/LandingPage/LandingPage";
 
