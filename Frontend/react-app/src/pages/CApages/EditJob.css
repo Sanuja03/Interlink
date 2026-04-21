@@ -98,6 +98,13 @@
   color: white;
 }
 
+.ej-label {
+  display: block;
+  font-weight: 600;
+  margin: 10px 0 5px;
+  color: #2c3e50;
+}
+
 /* 🔥 HOVER EFFECT */
 .ej-save:hover { background: #00b248; }
 .ej-cancel:hover { background: #1e5a74; }

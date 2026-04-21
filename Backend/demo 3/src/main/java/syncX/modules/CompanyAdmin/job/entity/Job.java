@@ -10,21 +10,49 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "job_title")
     private String jobTitle;
+
+    @Column(name = "department")
     private String department;
+
+    @Column(name = "employment_type")
     private String employmentType;
+
+    @Column(name = "category")
     private String category;
+
+    @Column(name = "interview_rounds")
     private int interviewRounds;
+
+    // 🔥 NEW COLUMN (ALREADY ADDED)
+    @Column(name = "interview_stages")
+    private String interviewStages;
+
+    // 🔥 NEW FIELD (ADDED ONLY)
+    @Column(name = "status")
+    private String status;
+
+    // 🔥 NEW FIELD (ADDED ONLY)
+    @Column(name = "created_date")
+    private String createdDate;
+
+    @Column(name = "job_location")
     private String jobLocation;
+
+    @Column(name = "experience_level")
     private String experienceLevel;
+
+    @Column(name = "vacancies")
     private int vacancies;
 
-    @Column(length = 2000)
+    @Column(name = "key_requirements", length = 2000)
     private String keyRequirements;
 
+    @Column(name = "company_id")
     private Long companyId;
 
-    // GETTERS AND SETTERS
+    // ================= GETTERS & SETTERS =================
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -43,6 +71,17 @@ public class Job {
 
     public int getInterviewRounds() { return interviewRounds; }
     public void setInterviewRounds(int interviewRounds) { this.interviewRounds = interviewRounds; }
+
+    // 🔥 EXISTING
+    public String getInterviewStages() { return interviewStages; }
+    public void setInterviewStages(String interviewStages) { this.interviewStages = interviewStages; }
+
+    // 🔥 NEW GETTERS & SETTERS
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getCreatedDate() { return createdDate; }
+    public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
 
     public String getJobLocation() { return jobLocation; }
     public void setJobLocation(String jobLocation) { this.jobLocation = jobLocation; }

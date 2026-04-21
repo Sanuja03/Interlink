@@ -16,28 +16,34 @@ export default function JobManagement() {
 
   const fetchJobs = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/jobs");
+      // ✅ FIXED URL
+      const res = await axios.get("http://localhost:8080/company/jobs");
+
+      console.log("API RESPONSE:", res.data);
 
       const formatted = res.data.map((job) => ({
         id: job.id,
-        title: job.title,
-        dept: job.department,
-        status: job.status || "Active",
-        date: job.createdDate || new Date().toLocaleDateString("en-GB"),
+        title: job.jobTitle || "No Title",
+        dept: job.department || "No Dept",
+        status: job.status ? job.status : "Active",
+        date: job.createdDate
+          ? job.createdDate
+          : new Date().toLocaleDateString("en-GB"),
       }));
 
       setRows(formatted);
     } catch (err) {
-      console.error(err);
+      console.error("FETCH ERROR:", err);
     }
   };
 
   const handleClose = async (id) => {
     try {
-      await axios.put(`http://localhost:8080/jobs/close/${id}`);
+      // ✅ FIXED URL
+      await axios.put(`http://localhost:8080/company/jobs/close/${id}`);
       fetchJobs();
     } catch (err) {
-      console.error(err);
+      console.error("CLOSE ERROR:", err);
     }
   };
 
@@ -48,7 +54,8 @@ export default function JobManagement() {
       r.title?.toLowerCase().includes(search.toLowerCase()) ||
       r.dept?.toLowerCase().includes(search.toLowerCase());
 
-    const matchesFilter = filter === "All" ? true : r.title === filter;
+    const matchesFilter =
+      filter === "All" ? true : r.title === filter;
 
     return matchesText && matchesFilter;
   });
@@ -58,6 +65,7 @@ export default function JobManagement() {
       <div className="jm-page">
         <div className="jm-container">
 
+          {/* SEARCH + FILTER */}
           <div className="jm-tools">
             <div className="jm-searchWrap">
               <input
@@ -76,13 +84,14 @@ export default function JobManagement() {
             >
               <option value="All">Filter by Job Title</option>
               {rows.map((r) => (
-                <option key={r.title} value={r.title}>
+                <option key={r.id} value={r.title}>
                   {r.title}
                 </option>
               ))}
             </select>
           </div>
 
+          {/* TABLE */}
           <div className="jm-card">
             <h2 className="jm-cardTitle">Job Management</h2>
 
@@ -98,58 +107,71 @@ export default function JobManagement() {
               </thead>
 
               <tbody>
-                {filtered.map((r) => (
-                  <tr key={r.id}>
-                    <td className="jm-td">{r.title}</td>
-                    <td className="jm-td">{r.dept}</td>
-                    <td className="jm-td">
-                      <span className="jm-status">
-                        <span
-                          className={
-                            "jm-dot " +
-                            (r.status === "Active"
-                              ? "jm-dot--green"
-                              : "jm-dot--red")
-                          }
-                        />
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="jm-td">{r.date}</td>
-                    <td className="jm-td">
-                      <div className="jm-btns">
-
-                        <button
-                          className="jm-btn jm-btn--edit"
-                          onClick={() => navigate(`/edit-job/${r.id}`)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          className={
-                            "jm-btn " +
-                            (r.status === "Active"
-                              ? "jm-btn--close"
-                              : "jm-btn--active")
-                          }
-                          onClick={() => handleClose(r.id)}
-                        >
-                          {r.status === "Active" ? "Close" : "Activate"}
-                        </button>
-
-                      </div>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center" }}>
+                      No jobs found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filtered.map((r) => (
+                    <tr key={r.id}>
+                      <td className="jm-td">{r.title}</td>
+                      <td className="jm-td">{r.dept}</td>
+                      <td className="jm-td">
+                        <span className="jm-status">
+                          <span
+                            className={
+                              "jm-dot " +
+                              (r.status === "Active"
+                                ? "jm-dot--green"
+                                : "jm-dot--red")
+                            }
+                          />
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="jm-td">{r.date}</td>
+                      <td className="jm-td">
+                        <div className="jm-btns">
+
+                          <button
+                            className="jm-btn jm-btn--edit"
+                            onClick={() =>
+                              navigate(`/edit-job/${r.id}`)
+                            }
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            className={
+                              "jm-btn " +
+                              (r.status === "Active"
+                                ? "jm-btn--close"
+                                : "jm-btn--active")
+                            }
+                            onClick={() => handleClose(r.id)}
+                          >
+                            {r.status === "Active"
+                              ? "Close"
+                              : "Activate"}
+                          </button>
+
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
+          {/* CREATE BUTTON */}
           <div className="jm-createWrap">
             <button
               className="jm-create"
-              onClick={() => (window.location.href = "/create-job")}
+              onClick={() => navigate("/create-job")}
             >
               Create New Job Post
             </button>

@@ -5,7 +5,6 @@ import axios from "axios";
 
 export default function CreateJob() {
 
-  // 🔐 AUTH CHECK (✅ FIXED - NO REDIRECT)
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -24,9 +23,11 @@ export default function CreateJob() {
     interview_rounds: "",
   });
 
-  const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
+
+  // 🔥 NEW STATE
+  const [roundDetails, setRoundDetails] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,22 +37,23 @@ export default function CreateJob() {
       [name]: value,
     }));
 
+    // 🔥 generate stage inputs
     if (name === "interview_rounds") {
-      const rounds = Number(value);
-      setInterviewStages(Array(rounds).fill(""));
+      const count = Math.min(Number(value), 5);
+      setRoundDetails(Array(count).fill(""));
     }
-  };
-
-  const handleStageChange = (index, value) => {
-    const updated = [...interviewStages];
-    updated[index] = value;
-    setInterviewStages(updated);
   };
 
   const handleReqChange = (index, value) => {
     const updated = [...reqs];
     updated[index] = value;
     setReqs(updated);
+  };
+
+  const handleRoundChange = (index, value) => {
+    const updated = [...roundDetails];
+    updated[index] = value;
+    setRoundDetails(updated);
   };
 
   const addRequirement = () => setReqs([...reqs, ""]);
@@ -69,6 +71,9 @@ export default function CreateJob() {
   };
 
   const handleSubmit = async () => {
+
+    console.log("Round Details:", roundDetails); // 🔥 DEBUG
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -78,21 +83,26 @@ export default function CreateJob() {
     const token = localStorage.getItem("token");
 
     const jobData = {
-      title: form.title,
+      jobTitle: form.title,
       department: form.department,
-      type: form.type,
+      employmentType: form.type,
       category: form.category,
-      location: form.location,
-      experience: form.experience,
+      jobLocation: form.location,
+      experienceLevel: form.experience,
       vacancies: Number(form.vacancies || 0),
       interviewRounds: Number(form.interview_rounds || 0),
-      interviewStages: interviewStages.join(", "),
-      requirements: reqs.join(", "),
+      keyRequirements: reqs.join(", "),
+      companyId: 1,
+
+      // 🔥 FIXED LINE
+      interviewStages: roundDetails.filter(r => r !== "").join(", ")
     };
+
+    console.log("Job Data:", jobData); // 🔥 DEBUG
 
     try {
       const res = await axios.post(
-        "http://localhost:8080/jobs",
+        "http://localhost:8080/company/jobs/create",
         jobData,
         {
           headers: {
@@ -115,8 +125,8 @@ export default function CreateJob() {
         interview_rounds: "",
       });
 
-      setInterviewStages([]);
       setReqs([""]);
+      setRoundDetails([]);
       setErrors({});
 
     } catch (error) {
@@ -136,13 +146,13 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Job Title</label>
-              <input name="title" value={form.title} className="cj-input" onChange={handleChange}/>
+              <input className="cj-input" name="title" value={form.title} onChange={handleChange}/>
               {errors.title && <p className="cj-error">{errors.title}</p>}
             </div>
 
             <div className="cj-field">
               <label className="cj-label">Department</label>
-              <select name="department" value={form.department} className="cj-select" onChange={handleChange}>
+              <select className="cj-select" name="department" value={form.department} onChange={handleChange}>
                 <option value="">Select</option>
                 <option>Engineering</option>
                 <option>Design</option>
@@ -153,7 +163,7 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Employment Type</label>
-              <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
+              <select className="cj-select" name="type" value={form.type} onChange={handleChange}>
                 <option value="">Select</option>
                 <option>Full-Time</option>
                 <option>Part-Time</option>
@@ -164,7 +174,7 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Category</label>
-              <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
+              <select className="cj-select" name="category" value={form.category} onChange={handleChange}>
                 <option value="">Select</option>
                 <option>IT</option>
                 <option>Finance</option>
@@ -173,38 +183,44 @@ export default function CreateJob() {
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Number of Interview Rounds</label>
-              <select name="interview_rounds" value={form.interview_rounds} className="cj-select" onChange={handleChange}>
+              <label className="cj-label">Interview Rounds</label>
+              <select className="cj-select" name="interview_rounds" value={form.interview_rounds} onChange={handleChange}>
                 <option value="">Select</option>
                 {[1,2,3,4,5].map(n => <option key={n}>{n}</option>)}
               </select>
             </div>
 
-            {interviewStages.map((stage, index) => (
-              <div className="cj-field" key={index}>
-                <label className="cj-label">Stage {index + 1}</label>
-                <select
-                  className="cj-select"
-                  value={stage}
-                  onChange={(e) => handleStageChange(index, e.target.value)}
-                >
-                  <option value="">Select Stage</option>
-                  <option>HR</option>
-                  <option>Technical</option>
-                  <option>Managerial</option>
-                  <option>Final</option>
-                </select>
+            {/* 🔥 Interview Stages */}
+            {roundDetails.length > 0 && (
+              <div className="cj-field">
+                <label className="cj-label">Interview Stages</label>
+
+                {roundDetails.map((round, index) => (
+                  <select
+                    key={index}
+                    className="cj-select"
+                    value={roundDetails[index] || ""}
+                    onChange={(e) => handleRoundChange(index, e.target.value)}
+                    style={{ marginBottom: "10px" }}
+                  >
+                    <option value="">Select Stage</option>
+                    <option value="HR">HR</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Managerial">Managerial</option>
+                    <option value="Final">Final</option>
+                  </select>
+                ))}
               </div>
-            ))}
+            )}
 
             <div className="cj-field">
               <label className="cj-label">Job Location</label>
-              <input name="location" value={form.location} className="cj-input" onChange={handleChange}/>
+              <input className="cj-input" name="location" value={form.location} onChange={handleChange}/>
             </div>
 
             <div className="cj-field">
               <label className="cj-label">Experience Level</label>
-              <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>
+              <select className="cj-select" name="experience" value={form.experience} onChange={handleChange}>
                 <option value="">Select</option>
                 <option>Junior</option>
                 <option>Mid</option>
@@ -214,9 +230,9 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Vacancies</label>
-              <select name="vacancies" value={form.vacancies} className="cj-select" onChange={handleChange}>
+              <select className="cj-select" name="vacancies" value={form.vacancies} onChange={handleChange}>
                 <option value="">Select</option>
-                {Array.from({ length: 100 }, (_, i) => i + 1).map(n => (
+                {Array.from({ length: 50 }, (_, i) => i + 1).map(n => (
                   <option key={n}>{n}</option>
                 ))}
               </select>
@@ -226,22 +242,16 @@ export default function CreateJob() {
               <label className="cj-label">Key Requirements</label>
 
               {reqs.map((req, index) => (
-                <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-
-                  <button type="button" onClick={() => removeRequirement(index)} className="cj-icon-btn">
-                    -
-                  </button>
+                <div key={index} className="cj-reqRow">
+                  <button className="cj-reqBtn" type="button" onClick={() => removeRequirement(index)}>-</button>
 
                   <input
-                    className="cj-input"
+                    className="cj-reqInput"
                     value={req}
                     onChange={(e) => handleReqChange(index, e.target.value)}
                   />
 
-                  <button type="button" onClick={addRequirement} className="cj-icon-btn">
-                    +
-                  </button>
-
+                  <button className="cj-reqBtn" type="button" onClick={addRequirement}>+</button>
                 </div>
               ))}
             </div>
@@ -249,13 +259,8 @@ export default function CreateJob() {
           </div>
 
           <div className="cj-actions">
-            <button className="cj-post" onClick={handleSubmit}>
-              Post
-            </button>
-
-            <button className="cj-cancel" onClick={() => window.history.back()}>
-              Cancel
-            </button>
+            <button className="cj-post" onClick={handleSubmit}>Post</button>
+            <button className="cj-cancel" onClick={() => window.history.back()}>Cancel</button>
           </div>
 
         </div>
