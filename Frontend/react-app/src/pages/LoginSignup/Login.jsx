@@ -1,97 +1,55 @@
+// ============================================================
+// FILE: src/pages/LoginSignup/Login.jsx
+// PURPOSE: Uses AuthContext for login + proper redirect logic
+// ============================================================
 import "./Login.css";
 
 import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 
-import { supabase } from "../../lib/supabase";
-import api from "../../lib/api";
-
+import { useAuth } from "../../context/Authcontext";
 import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated, role, loading } = useAuth();
   const [loginError, setLoginError] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    mode: "onTouched",
-  });
+  } = useForm({ mode: "onTouched" });
+
+  // Redirect when genuinely authenticated
+  useEffect(() => {
+    if (loading) return;
+
+    if (isAuthenticated && role) {
+      const dashboardMap = {
+        candidate: "/candidate/dashboard",
+        company_admin: "/company/dashboard",
+        interviewer: "/interviewer/dashboard",
+        super_admin: "/admin/dashboard",
+      };
+      const from = location.state?.from?.pathname || dashboardMap[role] || "/";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, role, loading, navigate, location]);
 
   const onSubmit = async (data) => {
     try {
-      const email = data.email.trim();
-      const password = data.password;
-
       setLoginError("");
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        setLoginError("Invalid email or password");
-        return;
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-
-      if (authError || !authData?.user) {
-        setLoginError("Invalid email or password");
-        return;
-      }
-
-      const authUserId = authData.user.id;
-
-      const response = await api.get("/auth/me");
-      const appUser = response.data;
-
-      console.log("AUTH USER ID:", authUserId);
-      console.log("APP USER:", appUser);
-      console.log("APP USER ROLE:", appUser?.role);
-
-      if (!appUser) {
-        setLoginError("Invalid email or password");
-        return;
-      }
-
-      if (appUser.role === "company_admin") {
-        navigate("/company/shortlisted-candidates");
-        return;
-      }
-
-      if (appUser.role === "interviewer") {
-        navigate("/interviewer/dashboard");
-        return;
-      }
-
-      if (appUser.role === "candidate") {
-        navigate("/candidate/dashboard");
-        return;
-      }
-
-      if (appUser.role === "super_admin") {
-        navigate("/admin/dashboard");
-        return;
-      }
-
-      setLoginError("Invalid email or password");
+      await login(data.email.trim(), data.password);
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      setLoginError(
-        err?.response?.data?.message ||
-        err?.response?.data ||
-        err.message ||
-        "Login failed"
-      );
+      setLoginError(err?.message || "Invalid email or password");
     }
-  }
+  };
 
   return (
     <div className="page">
@@ -106,9 +64,7 @@ const Login = () => {
           <div className="text">
             <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
             <h1>Welcome Back!</h1>
-            <p>
-              <i>Connecting Talent with Opportunity</i>
-            </p>
+            <p><i>Connecting Talent with Opportunity</i></p>
           </div>
         </div>
 
@@ -133,9 +89,7 @@ const Login = () => {
           </div>
 
           <div className="input-group">
-            {errors.password && (
-              <p className="error-text">{errors.password.message}</p>
-            )}
+            {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
             <input
               type="password"
@@ -152,9 +106,7 @@ const Login = () => {
           </div>
 
           <div className="forgot-password">
-            <p>
-              <a href="">Forgot Password</a>
-            </p>
+            <p><a href="">Forgot Password</a></p>
           </div>
 
           <div>
@@ -173,7 +125,7 @@ const Login = () => {
 
           <div>
             <p>
-              Dont have an account? <Link to="/signup-company">Sign up</Link>
+              Don't have an account? <Link to="/?section=howitworks">Signup</Link>
             </p>
           </div>
         </form>

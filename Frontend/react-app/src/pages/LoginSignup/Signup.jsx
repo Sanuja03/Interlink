@@ -30,6 +30,9 @@ const Signup = () => {
       const email = data.email.trim()
       const password = data.password
 
+      // Set flag BEFORE supabase signup so AuthContext ignores the SIGNED_IN event
+      sessionStorage.setItem("is_signing_up", "true")
+
       // Create auth user in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -37,20 +40,40 @@ const Signup = () => {
       })
 
       if (authError) {
+        sessionStorage.removeItem("is_signing_up")
         setSubmitError(authError.message)
         return
       }
 
-      //send profile data to backend
+      // Get the session manually since it was just created
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        sessionStorage.removeItem("is_signing_up")
+        setSubmitError("Could not retrieve session after signup. Please try logging in.")
+        return
+      }
+
+      // Send profile data to backend with token attached manually
       await api.post("/auth/complete-candidate-signup", {
         firstName,
         lastName,
         email,
+      }, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       })
+
+      // Clean up - sign out so user can log in fresh
+      sessionStorage.removeItem("is_signing_up")
+      await supabase.auth.signOut()
+
       setSubmitSuccess("Signup successful!")
       navigate("/Login")
 
     } catch (err) {
+      sessionStorage.removeItem("is_signing_up")
       console.error("UNEXPECTED ERROR:", err)
       setSubmitError(
         err?.response?.data?.message ||

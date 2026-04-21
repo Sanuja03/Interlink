@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import logo from '../../assets/logo.png';
 import Login from "../LoginSignup/Login";
+import SignUpCompany from "../LoginSignup/SignUpCompany";
+import Signup from "../LoginSignup/Signup";
 
 /* ─── Inline styles ─── */
 const landingPageStyles = `
@@ -1052,7 +1056,7 @@ const LandingNavbar = () => {
                     <button className="lp-nav__link" onClick={() => scrollTo('howitworks')}>How It Works</button>
                     <button className="lp-nav__link" onClick={() => scrollTo('testimonials')}>Testimonials</button>
                     <Link to="/Login" className="lp-nav__signin">Sign In</Link>
-                    <Link to="/register" className="lp-nav__cta">Get Started</Link>
+                    <button className="lp-nav__cta"  onClick={() => scrollTo('howitworks')}>Get Started</button>
                 </div>
 
                 {/* Mobile hamburger */}
@@ -1067,7 +1071,7 @@ const LandingNavbar = () => {
                     <button className="lp-nav__mlink" onClick={() => scrollTo('features')}>Features</button>
                     <button className="lp-nav__mlink" onClick={() => scrollTo('howitworks')}>How It Works</button>
                     <button className="lp-nav__mlink" onClick={() => scrollTo('testimonials')}>Testimonials</button>
-                    <Link to="/signin" className="lp-nav__mlink" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                    <Link to="/Login" className="lp-nav__mlink" onClick={() => setMobileOpen(false)}>Sign In</Link>
                     <Link to="/register" className="lp-nav__mcta" onClick={() => setMobileOpen(false)}>Get Started Free</Link>
                 </div>
             )}
@@ -1078,6 +1082,18 @@ const LandingNavbar = () => {
 /* ─── Main Landing Page ─── */
 const LandingPage = () => {
     const [activeTab, setActiveTab] = useState('candidate');
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const section = params.get("section");
+
+        if (section) {
+            setTimeout(() => {
+                document.getElementById(section)?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    }, [location]);
 
     return (
         <div className="lp">
@@ -1195,11 +1211,11 @@ const LandingPage = () => {
 
                     <div className="lp-steps-cta">
                         {activeTab === 'candidate' ? (
-                            <Link to="/register?role=candidate" className="lp-btn lp-btn--white lp-btn--lg">
+                            <Link to="/Signup?role=candidate" className="lp-btn lp-btn--white lp-btn--lg">
                                 Register as Candidate <IconArrow />
                             </Link>
                         ) : (
-                            <Link to="/register?role=company" className="lp-btn lp-btn--white lp-btn--lg">
+                            <Link to="/SignUpCompany?role=company" className="lp-btn lp-btn--white lp-btn--lg">
                                 Register Your Company <IconArrow />
                             </Link>
                         )}
@@ -1218,7 +1234,7 @@ const LandingPage = () => {
                             <li key={p}><span className="lp-check"><IconCheck /></span> {p}</li>
                         ))}
                     </ul>
-                    <Link to="/register?role=candidate" className="lp-btn lp-btn--primary lp-btn--full">
+                    <Link to="/Signup?role=candidate" className="lp-btn lp-btn--primary lp-btn--full">
                         Register as Candidate <IconArrow />
                     </Link>
                 </div>
@@ -1236,7 +1252,7 @@ const LandingPage = () => {
                             <li key={p}><span className="lp-check"><IconCheck /></span> {p}</li>
                         ))}
                     </ul>
-                    <Link to="/register?role=company" className="lp-btn lp-btn--primary lp-btn--full">
+                    <Link to="/SignUpCompany?role=company" className="lp-btn lp-btn--primary lp-btn--full">
                         Register Your Company <IconArrow />
                     </Link>
                 </div>

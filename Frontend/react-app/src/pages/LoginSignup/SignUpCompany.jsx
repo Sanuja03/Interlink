@@ -3,10 +3,9 @@ import './SignUpCompany.css'
 import interlink from '../../assets/interlink.png'
 import homeicon from '../../assets/homeicon.png'
 import { supabase } from "../../lib/supabase"
+import api from "../../lib/api"   
 
 import { useForm } from 'react-hook-form'
-
-
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 
@@ -32,30 +31,51 @@ const SignUpCompany = () => {
       const companySize = data.companySize
       const industry = data.industry
       const password = data.password
+
+      // Set flag BEFORE supabase signup so AuthContext ignores the SIGNED_IN event
+      sessionStorage.setItem("is_signing_up", "true")
   
-      // Create auth user in Supabase Auth
-      const { error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       })
   
       if (authError) {
+        sessionStorage.removeItem("is_signing_up")
         setSubmitError(authError.message)
         return
       }
+
+      // Get the session manually since it was just created
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        sessionStorage.removeItem("is_signing_up")
+        setSubmitError("Could not retrieve session after signup. Please try logging in.")
+        return
+      }
   
-      // Send to backend using Axios instance
+      // Send profile data to backend with token attached manually
       await api.post("/auth/complete-company-signup", {
         companyName,
         companySize,
         industry,
         email,
+      }, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       })
-  
+
+      // Clean up - sign out so user can log in fresh
+      sessionStorage.removeItem("is_signing_up")
+      await supabase.auth.signOut()
+
       setSubmitSuccess("Signup successful!")
       navigate("/Login")
   
     } catch (err) {
+      sessionStorage.removeItem("is_signing_up")
       console.error("UNEXPECTED ERROR:", err)
       setSubmitError(
         err?.response?.data?.message ||
@@ -69,9 +89,9 @@ const SignUpCompany = () => {
   return (
     <div className='page'>
       <div className="home-button">
-                    <a href="/">
-                      <img src={homeicon} alt="Home" />
-                    </a>
+        <a href="/">
+          <img src={homeicon} alt="Home" />
+        </a>
       </div>
       <div className='container'>
         <div className='header'>
@@ -84,7 +104,6 @@ const SignUpCompany = () => {
 
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
 
-          {/*compnay name */}
           <div className='input-group'>
             {errors.companyName && <p className="error-text">{errors.companyName.message}</p>}
             <label>company name</label>
@@ -94,15 +113,11 @@ const SignUpCompany = () => {
               className={`input-field ${errors.companyName ? "input-error" : ""}`}
               {...register("companyName", {
                 required: "Company name is required",
-                minLength: {
-                  value: 1,
-                  message: "Company name cannot be empty"
-                }
+                minLength: { value: 1, message: "Company name cannot be empty" }
               })}
             />
           </div>
 
-          {/* compnay email */}
           <div className='input-group'>
             {errors.companyEmail && <p className="error-text">{errors.companyEmail.message}</p>}
             <label>company email</label>
@@ -120,15 +135,12 @@ const SignUpCompany = () => {
             />
           </div>
 
-          {/* industry */}
           <div className='select-group'>
             {errors.industry && <p className="error-text">{errors.industry.message}</p>}
             <label>industry</label>
             <select
               className={`input-field ${errors.industry ? "input-error" : ""}`}
-              {...register("industry", {
-                required: "Please select an industry"
-              })}
+              {...register("industry", { required: "Please select an industry" })}
             >
               <option value="">Select industry</option>
               <option value="it">IT</option>
@@ -137,15 +149,12 @@ const SignUpCompany = () => {
             </select>
           </div>
 
-          {/* size */}
           <div className='select-group'>
             {errors.companySize && <p className="error-text">{errors.companySize.message}</p>}
             <label>size</label>
             <select
               className={`input-field ${errors.companySize ? "input-error" : ""}`}
-              {...register("companySize", {
-                required: "Please select company size"
-              })}
+              {...register("companySize", { required: "Please select company size" })}
             >
               <option value="">Select range</option>
               <option value="10-15">10 - 15</option>
@@ -154,7 +163,6 @@ const SignUpCompany = () => {
             </select>
           </div>
 
-          {/* password */}
           <div className='input-group'>
             {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
@@ -164,23 +172,18 @@ const SignUpCompany = () => {
               className={`input-field ${errors.password ? "input-error" : ""}`}
               {...register("password", {
                 required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters"
-                }
+                minLength: { value: 8, message: "Password must be at least 8 characters" }
               })}
             />
           </div>
 
-          <button className='signup-button' type="submit">
-            Sign Up
+          <button className='signup-button' type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Signing up..." : "Sign Up"}
           </button>
 
-          <p>Already have an account? {" "}
-            <Link to = "/Login">
-            Login
-            </Link>
-            </p>
+          <p>Already have an account?{" "}
+            <Link to="/Login">Login</Link>
+          </p>
 
         </form>
       </div>
