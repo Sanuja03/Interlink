@@ -11,6 +11,8 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import Signup from "./pages/LoginSignup/Signup";
 import SignUpCompany from "./pages/LoginSignup/SignUpCompany";
 import Login from "./pages/LoginSignup/Login";
+import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
+
 
 // Candidate pages
 import CandidateHome from "./pages/CPages/Home";
@@ -101,6 +103,8 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
 
         {/* Candidate */}
         <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
