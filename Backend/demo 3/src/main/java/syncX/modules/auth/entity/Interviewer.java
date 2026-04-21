@@ -14,7 +14,7 @@ public class Interviewer {
 
     @Id
     @Column(name = "interviewer_id")
-    private UUID interviewerId;
+    private String interviewerId;
 
     @Column(name = "user_id")
     private UUID userId;
@@ -48,4 +48,7 @@ public class Interviewer {
 
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    @Column(name = "email")
+    private String email;
 }
