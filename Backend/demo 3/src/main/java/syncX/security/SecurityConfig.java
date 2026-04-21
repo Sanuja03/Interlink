@@ -36,7 +36,8 @@ public class SecurityConfig {
                         // ── Public: signup endpoints (called right after Supabase signup) ──
                         .requestMatchers(
                                 "/api/auth/complete-candidate-signup",
-                                "/api/auth/complete-company-signup"
+                                "/api/auth/complete-company-signup",
+                                "/api/otp/**"
                         ).permitAll()
 
                         // ── Candidate endpoints ──
