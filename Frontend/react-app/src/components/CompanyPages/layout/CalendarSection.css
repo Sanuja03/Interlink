@@ -1,0 +1,20 @@
+.cal-section {
+  margin-top: 24px;
+}
+
+/* TITLE */
+.cal-title {
+  font-size: 24px;
+  color: #24698B;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+/* CARD WRAPPER */
+.cal-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}

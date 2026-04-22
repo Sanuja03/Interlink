@@ -1,0 +1,67 @@
+/* src/components/layout/Header.css */
+.il-header{
+  background: #DADEE0;               /* style guide nav bar */
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+}
+
+.il-header__inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.il-header__logoWrap{
+  display: flex;
+  align-items: center;
+}
+
+.il-header__logo{
+  height: 80px;                      /* adjust if needed */
+  width: auto;
+  display: block;
+}
+
+.il-header__nav{
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.il-header__link{
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 20px;                   /* style guide nav text */
+  color: #000;
+  text-decoration: none;
+  padding: 10px 10px;
+  border-radius: 10px;
+  transition: 0.2s ease;
+}
+
+.il-header__link:hover{
+  background: rgba(255,255,255,0.55);
+}
+
+.il-header__link.is-active{
+  color: #24698B;                    /* heading color */
+  font-weight: 600;
+  background: rgba(255,255,255,0.75);
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .il-header__inner{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .il-header__nav{
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+}

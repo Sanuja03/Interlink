@@ -138,8 +138,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Editor directories and files
 #Mac Dump files
 .DS_Store
 
 #Vs code configs
-.vscode/
+.vscode/.DS_Store
+.DS_Store
+.idea/

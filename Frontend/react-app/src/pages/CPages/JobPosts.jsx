@@ -235,14 +235,14 @@ const JobPosts = () => {
 
                                 <div className="flex items-center gap-3 shrink-0">
                                     <button
-                                        onClick={() => navigate(`/job-posts/${job.id}`)}
+                                        onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
                                         className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
                                         style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
                                     >
                                         View Details
                                     </button>
                                     <button
-                                        onClick={() => navigate(`/job-apply/${job.id}`)}
+                                        onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
                                         className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
                                         style={{ background: 'linear-gradient(135deg, #0C3E56, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
                                     >

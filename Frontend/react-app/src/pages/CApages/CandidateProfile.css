@@ -1,0 +1,433 @@
+.cp-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  background: #dadee0;
+  padding: 28px 32px 36px;
+  min-height: 100%;
+  font-family: "Outfit", sans-serif;
+  color: #000000;
+  box-sizing: border-box;
+}
+
+/* Hero */
+.cp-hero {
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+  border-radius: 20px;
+  padding: 36px 28px 28px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 22px rgba(12, 62, 86, 0.1);
+}
+
+.cp-profileCard {
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 20px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 10px 22px rgba(12, 62, 86, 0.1);
+}
+
+.cp-profileLeft {
+  flex-shrink: 0;
+}
+
+.cp-profilePhoto {
+  width: 138px;
+  height: 138px;
+  border-radius: 16px;
+  object-fit: cover;
+  display: block;
+  border: 3px solid rgba(36, 105, 139, 0.12);
+}
+
+.cp-profileRight {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-name {
+  margin: 0 0 4px;
+  font-size: 58px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: #1f2b34;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.cp-companyText {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #24698b;
+}
+
+.cp-role {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  color: #59656e;
+}
+
+.cp-statusRow {
+  margin-top: 16px;
+  margin-bottom: 18px;
+}
+
+.cp-statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #4bbf63;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cp-contactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(250px, 1fr));
+  gap: 12px 26px;
+}
+
+.cp-contactItem {
+  font-size: 16px;
+  font-weight: 400;
+  color: #2f3941;
+}
+
+/* Sections */
+.cp-section {
+  margin-bottom: 34px;
+}
+
+.cp-sectionTitle {
+  margin: 0 0 16px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #24698b;
+  padding-left: 20px;
+  position: relative;
+}
+
+.cp-sectionTitle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 9px;
+  height: 9px;
+  background: #24698b;
+  border-radius: 1px;
+}
+
+.cp-card {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  padding: 26px 28px;
+  box-shadow: 0 8px 20px rgba(12, 62, 86, 0.08);
+  border: 1px solid rgba(36, 105, 139, 0.12);
+}
+
+.cp-aboutText {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.8;
+  color: #2d363d;
+}
+
+.cp-aboutTextLast {
+  margin-top: 20px;
+}
+
+/* Statistics */
+.cp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 900px;
+}
+
+.cp-statCard {
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+  border-radius: 18px;
+  padding: 24px 14px;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(12, 62, 86, 0.14);
+}
+
+.cp-statValue {
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 700;
+  margin-bottom: 12px;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.cp-statLabel {
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* Professional details */
+.cp-professionalCard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.cp-professionalLabel {
+  font-size: 14px;
+  color: #67727a;
+  margin-bottom: 8px;
+}
+
+.cp-professionalValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2b34;
+}
+
+/* Experience timeline */
+.cp-timeline {
+  padding-left: 18px;
+}
+
+.cp-expRow {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+
+.cp-timelineLine {
+  width: 18px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cp-timelineLine::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: -18px;
+  width: 2px;
+  background: #24698b;
+}
+
+.cp-expRow:last-child .cp-timelineLine::before {
+  bottom: 42px;
+}
+
+.cp-timelineDot {
+  position: absolute;
+  top: 18px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #24698b;
+  z-index: 1;
+}
+
+.cp-expCard {
+  flex: 1;
+  background: #d9eaf4;
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(36, 105, 139, 0.14);
+}
+
+.cp-expTitle {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2b34;
+}
+
+.cp-expCompany {
+  margin: 0 0 5px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #24698b;
+}
+
+.cp-expPeriod {
+  margin: 0;
+  font-size: 14px;
+  color: #64717a;
+}
+
+.cp-expLogo {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* CV button */
+.cp-cvWrap {
+  display: flex;
+  justify-content: center;
+  margin: 38px 0 30px;
+}
+
+.cp-cvBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  border: none;
+  border-radius: 18px;
+  padding: 22px 42px;
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(12, 62, 86, 0.16);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cp-cvBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(12, 62, 86, 0.18);
+}
+
+.cp-cvIcon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Action buttons */
+.cp-actions {
+  max-width: 1020px;
+  margin: 0 auto 32px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 22px 42px;
+}
+
+.cp-actionBtn {
+  height: 72px;
+  border: none;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(12, 62, 86, 0.12);
+  font-family: "Outfit", sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cp-actionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(12, 62, 86, 0.18);
+}
+
+.cp-btnBlue {
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+}
+
+.cp-btnRed {
+  background: #ff3636;
+}
+
+.cp-btnRed:hover {
+  background: #eb2d2d;
+}
+
+/* Responsive */
+@media (max-width: 1150px) {
+  .cp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+  }
+
+  .cp-professionalCard {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-contactGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .cp-page {
+    padding: 20px 18px 30px;
+  }
+
+  .cp-profileCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cp-name {
+    font-size: 42px;
+  }
+
+  .cp-actions {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .cp-page {
+    padding: 16px 14px 24px;
+  }
+
+  .cp-hero {
+    padding: 18px 14px 14px;
+  }
+
+  .cp-profileCard,
+  .cp-card,
+  .cp-expCard {
+    padding: 16px;
+  }
+
+  .cp-profilePhoto {
+    width: 110px;
+    height: 110px;
+  }
+
+  .cp-name {
+    font-size: 34px;
+  }
+
+  .cp-companyText {
+    font-size: 20px;
+  }
+
+  .cp-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-cvBtn {
+    width: 100%;
+    justify-content: center;
+    font-size: 18px;
+    padding: 18px 24px;
+  }
+
+  .cp-actionBtn {
+    font-size: 18px;
+    height: 62px;
+  }
+}

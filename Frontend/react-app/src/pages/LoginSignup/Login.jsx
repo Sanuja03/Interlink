@@ -1,43 +1,54 @@
+// ============================================================
+// FILE: src/pages/LoginSignup/Login.jsx
+// PURPOSE: Uses AuthContext for login + proper redirect logic
+// ============================================================
 import "./Login.css";
 
 import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 
-import LandingPage from "../LandingPage/LandingPage";
-
-
-
+import { useAuth } from "../../context/Authcontext";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated, role, loading } = useAuth();
   const [loginError, setLoginError] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    mode: "onTouched",
-  });
+  } = useForm({ mode: "onTouched" });
 
-  const onSubmit = (data) => {
+  // Redirect when genuinely authenticated
+  useEffect(() => {
+    if (loading) return;
 
-    const email = data.email.trim();
-    const password = data.password;
-
-
-    if (email === "sanjalee@gmail.com" && password === "12345678") {
-      setLoginError(""); //if correct credentials clear the error 
-      navigate("/Dashboard");
-      return;
+    if (isAuthenticated && role) {
+      const dashboardMap = {
+        candidate: "/candidate/dashboard",
+        company_admin: "/company/dashboard",
+        interviewer: "/interviewer/dashboard",
+        super_admin: "/admin/dashboard",
+      };
+      const from = location.state?.from?.pathname || dashboardMap[role] || "/";
+      navigate(from, { replace: true });
     }
+  }, [isAuthenticated, role, loading, navigate, location]);
 
-    // else  wrong credentials set a error msg
-    setLoginError("Invalid email or password");
+  const onSubmit = async (data) => {
+    try {
+      setLoginError("");
+      await login(data.email.trim(), data.password);
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setLoginError(err?.message || "Invalid email or password");
+    }
   };
 
   return (
@@ -53,19 +64,15 @@ const Login = () => {
           <div className="text">
             <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
             <h1>Welcome Back!</h1>
-            <p>
-              <i>Connecting Talent with Opportunity</i>
-            </p>
+            <p><i>Connecting Talent with Opportunity</i></p>
           </div>
         </div>
 
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          {/*Show login error if credentials are wrong*/}
           {loginError && <p className="error-text">{loginError}</p>}
 
-          {/* email */}
           <div className="input-group">
-            {errors.email && <p className="error-text">{errors.email.message}</p>} {/* if errors.email exists show the error msg */}
+            {errors.email && <p className="error-text">{errors.email.message}</p>}
             <label>email address</label>
             <input
               type="email"
@@ -81,9 +88,8 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="input-group">
-            {errors.password && (<p className="error-text">{errors.password.message}</p>)}
+            {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
             <input
               type="password"
@@ -99,36 +105,29 @@ const Login = () => {
             />
           </div>
 
-          {/* Forgot password */}
           <div className="forgot-password">
-            <p>
-              <a href="">Forgot Password</a>
-            </p>
+            <p><Link to="/forgot-password">Forgot Password</Link></p>
           </div>
 
-          {/* Login button */}
           <div>
-            <button className="login-button" type="submit" disabled={isSubmitting}> {/*button cannot be clicked when submitting */}
-              Login
+            <button className="login-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </div>
-
 
           <div className="or-container">
             <span>OR</span>
           </div>
 
-          {/* Google Sign in */}
           <div className="google-signin">
             <img src={signin} alt="Sign in with Google" />
           </div>
 
           <div>
             <p>
-              Dont have an account? <a href="">Sign up</a>
+              Don't have an account? <Link to="/?section=howitworks">Signup</Link>
             </p>
           </div>
-
         </form>
       </div>
     </div>

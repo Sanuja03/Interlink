@@ -25,7 +25,7 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
             if (category) params.set('category', category);
             if (experience) params.set('experience', experience);
             const query = params.toString();
-            window.location.href = `/job-posts${query ? '?' + query : ''}`;
+            window.location.href = `/candidate/jobposts${query ? '?' + query : ''}`;
         }
     };
 
