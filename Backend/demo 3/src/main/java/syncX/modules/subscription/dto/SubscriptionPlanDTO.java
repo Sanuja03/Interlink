@@ -1,15 +1,11 @@
 package syncX.modules.subscription.dto;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class SubscriptionPlanDTO {
 
-    @NotBlank
     private String name;
-
-    @PositiveOrZero
     private double price;
 
     private Integer activeJobs;

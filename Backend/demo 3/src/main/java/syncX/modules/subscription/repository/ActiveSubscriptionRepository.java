@@ -1,4 +1,8 @@
 package syncX.modules.subscription.repository;
 
-public class ActiveSubscriptionRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import syncX.modules.subscription.entity.ActiveSubscription;
+
+public interface ActiveSubscriptionRepository
+        extends JpaRepository<ActiveSubscription, Long> {
 }
