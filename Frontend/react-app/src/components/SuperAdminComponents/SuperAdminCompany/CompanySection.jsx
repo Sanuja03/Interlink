@@ -1,25 +1,18 @@
 import CompanyCard from "./CompanyCard";
 
-export default function CompanySection({ title, badge, type }) {
-
-  const companies = [
-    {
-      id: 1,
-      name: "TechVision Solutions",
-      email: "contact@techvision.com",
-      location: "Colombo, Sri Lanka",
-    },
-    {
-      id: 2,
-      name: "Inova IT Systems",
-      email: "info@inova.com",
-      location: "Colombo",
-    },
-  ];
+export default function CompanySection({
+  title,
+  badge,
+  type,
+  companies = [],
+  refresh,
+}) {
+  const safeCompanies = Array.isArray(companies) ? companies : [];
 
   return (
     <div className="bg-white rounded-xl shadow p-6 space-y-4">
 
+      {/* Header */}
       <div className="flex items-center gap-2">
         <h3 className="font-semibold text-[#24698B]">
           ■ {title}
@@ -29,14 +22,22 @@ export default function CompanySection({ title, badge, type }) {
         </span>
       </div>
 
+      {/* Content */}
       <div className="space-y-4">
-        {companies.map((company) => (
-          <CompanyCard
-            key={company.id}
-            type={type}
-            company={company}   // ✅ THIS IS THE FIX
-          />
-        ))}
+        {safeCompanies.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center">
+            No companies found
+          </p>
+        ) : (
+          safeCompanies.map((company) => (
+            <CompanyCard
+              key={company.id}
+              type={type}
+              company={company}
+              refresh={refresh}
+            />
+          ))
+        )}
       </div>
     </div>
   );
