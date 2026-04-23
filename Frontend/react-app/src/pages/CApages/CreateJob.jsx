@@ -12,41 +12,24 @@ export default function CreateJob() {
   useEffect(() => {
     const loadCompanyId = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setSessionError("Not logged in");
-        return;
-      }
+      if (!session) { setSessionError("Not logged in"); return; }
 
-      // ✅ companies table: user_id = auth UUID, company_id = FK into jobs
       const { data, error } = await supabase
         .from("companies")
         .select("company_id")
         .eq("user_id", session.user.id)
         .single();
 
-      if (error || !data) {
-        console.error("Company lookup failed:", error);
-        setSessionError("Could not find your company record.");
-        return;
-      }
-
-      setCompanyId(data.company_id); // ✅ this is the real UUID for jobs.company_id
+      if (error || !data) { setSessionError("Could not find your company record."); return; }
+      setCompanyId(data.company_id);
     };
-
     loadCompanyId();
   }, []);
 
   const [form, setForm] = useState({
-    title: "",
-    department: "",
-    type: "",
-    category: "",
-    location: "",
-    experience: "",
-    vacancies: "",
-    interview_rounds: "",
+    title: "", department: "", type: "", category: "",
+    location: "", experience: "", vacancies: "", interview_rounds: "",
   });
-
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
@@ -55,48 +38,32 @@ export default function CreateJob() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    if (name === "interview_rounds") {
-      setInterviewStages(Array(Number(value)).fill(""));
-    }
+    if (name === "interview_rounds") setInterviewStages(Array(Number(value)).fill(""));
   };
 
   const handleStageChange = (index, value) => {
-    const updated = [...interviewStages];
-    updated[index] = value;
-    setInterviewStages(updated);
+    const updated = [...interviewStages]; updated[index] = value; setInterviewStages(updated);
   };
-
   const handleReqChange = (index, value) => {
-    const updated = [...reqs];
-    updated[index] = value;
-    setReqs(updated);
+    const updated = [...reqs]; updated[index] = value; setReqs(updated);
   };
-
   const addRequirement = () => setReqs([...reqs, ""]);
-  const removeRequirement = (index) => {
-    if (reqs.length === 1) return;
-    setReqs(reqs.filter((_, i) => i !== index));
-  };
+  const removeRequirement = (index) => { if (reqs.length === 1) return; setReqs(reqs.filter((_, i) => i !== index)); };
 
   const validate = () => {
     const newErrors = {};
     if (!form.title.trim()) newErrors.title = "Required";
     if (!form.department)   newErrors.department = "Required";
     if (!form.type)         newErrors.type = "Required";
-    if (reqs.filter((r) => r.trim()).length === 0)
-      newErrors.reqs = "At least one requirement is needed";
+    if (reqs.filter((r) => r.trim()).length === 0) newErrors.reqs = "At least one requirement is needed";
     return newErrors;
   };
 
   const handleSubmit = async () => {
     if (sessionError) { alert(sessionError); return; }
     if (!companyId)   { alert("Loading company info, please wait..."); return; }
-
     const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
 
     setLoading(true);
     setErrors({});
@@ -112,22 +79,16 @@ export default function CreateJob() {
       interviewRounds: Number(form.interview_rounds || 0),
       interviewStages: interviewStages.join(", "),
       requirementText: reqs.filter((r) => r.trim()).join(", "),
-      companyId:       companyId,  // ✅ companies.company_id UUID
+      companyId:       companyId,
     };
 
     try {
       const res = await api.post("/jobs", jobData);
-      const extractedCount = res.data.requirements?.length || 0;
-      alert(`Job Posted! AI extracted ${extractedCount} skill requirements.`);
-
-      setForm({ title: "", department: "", type: "", category: "",
-                location: "", experience: "", vacancies: "", interview_rounds: "" });
-      setInterviewStages([]);
-      setReqs([""]);
-
+      alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
+      setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
+      setInterviewStages([]); setReqs([""]);
     } catch (error) {
-      console.error("Job creation error:", error);
-      alert(error.response?.data || "Error saving job. Check console.");
+      alert(error.response?.data || "Error saving job.");
     } finally {
       setLoading(false);
     }
@@ -140,8 +101,7 @@ export default function CreateJob() {
           <h2 className="cj-title">Create new job</h2>
 
           {sessionError && (
-            <div style={{ background: "#fee", color: "#c00", padding: 12,
-              borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
+            <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
             </div>
           )}
@@ -150,8 +110,7 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Job Title</label>
-              <input name="title" value={form.title} className="cj-input"
-                onChange={handleChange} placeholder="e.g. Frontend Developer" />
+              <input name="title" value={form.title} className="cj-input" onChange={handleChange} placeholder="e.g. Frontend Developer" />
               {errors.title && <p className="cj-error">{errors.title}</p>}
             </div>
 
@@ -159,27 +118,36 @@ export default function CreateJob() {
               <label className="cj-label">Department</label>
               <select name="department" value={form.department} className="cj-select" onChange={handleChange}>
                 <option value="">Select</option>
-                <option>Engineering</option><option>Design</option>
-                <option>QA</option><option>HR</option>
+                <option>Engineering</option>
+                <option>Design</option>
+                <option>QA</option>
+                <option>HR</option>
               </select>
               {errors.department && <p className="cj-error">{errors.department}</p>}
             </div>
 
+            {/* ✅ EmploymentType enum values */}
             <div className="cj-field">
               <label className="cj-label">Employment Type</label>
               <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
                 <option value="">Select</option>
-                <option>Full-Time</option><option>Part-Time</option>
-                <option>Intern</option><option>Contract</option>
+                <option value="REMOTE">Remote</option>
+                <option value="ONSITE">Onsite</option>
+                <option value="HYBRID">Hybrid</option>
               </select>
               {errors.type && <p className="cj-error">{errors.type}</p>}
             </div>
 
+            {/* ✅ Category enum values */}
             <div className="cj-field">
               <label className="cj-label">Category</label>
               <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
                 <option value="">Select</option>
-                <option>IT</option><option>Finance</option><option>Marketing</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Design">Design</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Finance">Finance</option>
+                <option value="Healthcare">Healthcare</option>
               </select>
             </div>
 
@@ -194,8 +162,7 @@ export default function CreateJob() {
             {interviewStages.map((stage, index) => (
               <div className="cj-field" key={index}>
                 <label className="cj-label">Stage {index + 1}</label>
-                <select className="cj-select" value={stage}
-                  onChange={(e) => handleStageChange(index, e.target.value)}>
+                <select className="cj-select" value={stage} onChange={(e) => handleStageChange(index, e.target.value)}>
                   <option value="">Select Stage</option>
                   <option>HR</option><option>Technical</option>
                   <option>Managerial</option><option>Final</option>
@@ -205,15 +172,19 @@ export default function CreateJob() {
 
             <div className="cj-field">
               <label className="cj-label">Job Location</label>
-              <input name="location" value={form.location} className="cj-input"
-                onChange={handleChange} placeholder="e.g. Colombo, Remote" />
+              <input name="location" value={form.location} className="cj-input" onChange={handleChange} placeholder="e.g. Colombo, Remote" />
             </div>
 
+            {/* ✅ ExperienceLevel enum values */}
             <div className="cj-field">
               <label className="cj-label">Experience Level</label>
               <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>
                 <option value="">Select</option>
-                <option>Junior</option><option>Mid</option><option>Senior</option>
+                <option value="ENTRY_LEVEL">Entry Level</option>
+                <option value="MID_LEVEL">Mid Level</option>
+                <option value="SENIOR_LEVEL">Senior Level</option>
+                <option value="DIRECTOR">Director</option>
+                <option value="EXECUTIVE">Executive</option>
               </select>
             </div>
 
@@ -221,9 +192,7 @@ export default function CreateJob() {
               <label className="cj-label">Vacancies</label>
               <select name="vacancies" value={form.vacancies} className="cj-select" onChange={handleChange}>
                 <option value="">Select</option>
-                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => (
-                  <option key={n}>{n}</option>
-                ))}
+                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => <option key={n}>{n}</option>)}
               </select>
             </div>
 

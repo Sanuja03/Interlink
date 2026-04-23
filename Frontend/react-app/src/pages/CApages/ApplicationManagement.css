@@ -23,7 +23,6 @@
   padding: 28px 24px 60px;
 }
 
-/* Top row */
 .am-top {
   display: flex;
   justify-content: space-between;
@@ -47,7 +46,6 @@
   color: var(--heading);
 }
 
-/* Stats cards */
 .am-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -76,7 +74,6 @@
   margin-top: 10px;
 }
 
-/* Table Card */
 .am-card {
   background: white;
   border-radius: 20px;
@@ -117,10 +114,10 @@
   margin-right: 8px;
 }
 
-.green { background: #19d319; }
-.red { background: #ff0000; }
+.green  { background: #19d319; }
+.red    { background: #ff0000; }
 .yellow { background: orange; }
-.blue { background: #1d72d8; }
+.blue   { background: #1d72d8; }
 
 .am-btn {
   border: none;
@@ -130,7 +127,7 @@
   cursor: pointer;
   margin-right: 6px;
 }
-/* SEE MORE BUTTON */
+
 .am-see-more {
   text-align: center;
   margin-top: 12px;
@@ -145,10 +142,294 @@
   font-size: 14px;
 }
 
-.am-see-more button:hover {
-  text-decoration: underline;
+.am-see-more button:hover { text-decoration: underline; }
+
+.am-view     { background: var(--heading); color: white; }
+.am-shortlist { background: #19d319; color: white; }
+.am-reject   { background: red; color: white; }
+
+.am-score-blank { color: #aaa; font-size: 13px; font-style: italic; }
+
+/* ═══════════════════════════════════════════════════
+   ✅ YOUR MODULE: CV Analysis Popup Styles
+   ═══════════════════════════════════════════════════ */
+
+/* Overlay */
+.cv-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 62, 86, 0.65);
+  backdrop-filter: blur(6px);
 }
 
-.am-view { background: var(--heading); color: white; }
-.am-shortlist { background: #19d319; color: white; }
-.am-reject { background: red; color: white; }
+/* Modal box */
+.cv-modal {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(12, 62, 86, 0.25);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 16px;
+  overflow: hidden;
+  animation: cv-popin 0.3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes cv-popin {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Modal header */
+.cv-header {
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  padding: 24px 28px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cv-header-title { color: #fff; font-weight: 800; font-size: 18px; margin: 0; }
+.cv-header-sub   { color: rgba(176, 216, 232, 0.9); font-size: 13px; margin: 4px 0 0; }
+
+.cv-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.cv-close-btn:hover { color: #fff; }
+
+/* Modal body */
+.cv-body { padding: 28px; }
+
+/* ── IDLE stage ── */
+.cv-idle { text-align: center; padding: 12px 0; }
+
+.cv-idle-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.cv-idle p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.cv-analyse-btn {
+  padding: 12px 36px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(12, 62, 86, 0.25);
+  transition: opacity 0.2s;
+}
+.cv-analyse-btn:hover { opacity: 0.88; }
+
+/* ── ANALYZING stage ── */
+.cv-analyzing { text-align: center; padding: 16px 0; }
+
+.cv-ping-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+}
+
+.cv-ping-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  animation: cv-ping 1.2s ease-in-out infinite;
+}
+
+.cv-ping-ring2 {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  animation: cv-ping 1.2s ease-in-out infinite 0.3s;
+}
+
+.cv-ping-center {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cv-ping-center svg { animation: cv-pulse 1.5s ease-in-out infinite; }
+
+@keyframes cv-ping {
+  0%   { transform: scale(1);   opacity: 0.3; }
+  50%  { transform: scale(1.5); opacity: 0;   }
+  100% { transform: scale(1);   opacity: 0.3; }
+}
+
+@keyframes cv-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.cv-analyzing h3 { font-size: 15px; font-weight: 700; color: #1a2e3b; margin: 0 0 6px; }
+.cv-analyzing p  { color: #9ca3af; font-size: 13px; margin: 0 0 16px; }
+
+.cv-tags { display: flex; justify-content: center; gap: 8px; }
+.cv-tag  {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #1a6a82;
+  animation: cv-pulse 1.5s ease-in-out infinite;
+}
+.cv-tag:nth-child(2) { animation-delay: 0.2s; }
+.cv-tag:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── DONE stage ── */
+.cv-done { }
+
+.cv-score-circle-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cv-score-circle { position: relative; width: 96px; height: 96px; }
+.cv-score-circle svg { transform: rotate(-90deg); }
+
+.cv-score-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.cv-score-num  { font-size: 24px; font-weight: 900; line-height: 1; }
+.cv-score-denom { font-size: 11px; color: #9ca3af; font-weight: 500; }
+
+.cv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 10px;
+}
+
+/* Score breakdown bars */
+.cv-breakdown { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+
+.cv-bar-row {}
+.cv-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.cv-bar-label  { font-size: 13px; font-weight: 600; color: #374151; }
+.cv-bar-meta   { display: flex; align-items: center; gap: 8px; }
+.cv-bar-weight { font-size: 11px; color: #9ca3af; }
+.cv-bar-value  { font-size: 13px; font-weight: 700; }
+
+.cv-bar-track {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cv-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s ease;
+}
+
+/* Formula note */
+.cv-formula {
+  background: #eff6ff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #1d4ed8;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.cv-done-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #1a6a82, #0C3E56);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ── ERROR stage ── */
+.cv-error { text-align: center; padding: 12px 0; }
+
+.cv-error-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 24px;
+}
+.cv-error p { color: #dc2626; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+
+.cv-error-actions { display: flex; gap: 10px; justify-content: center; }
+
+.cv-retry-btn {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cv-error-close-btn {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  background: #1a6a82;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
