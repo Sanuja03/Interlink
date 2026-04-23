@@ -12,6 +12,7 @@ import syncX.modules.job.repository.JobRepository;
 import syncX.modules.job.repository.JobRequirementRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class JobService {
@@ -25,38 +26,61 @@ public class JobService {
     @Autowired
     private JobRequirementRepository reqRepo;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public Job createJob(JobRequestDto dto) throws Exception {
 
-        String aiResponse = aiService.extractJobData(dto.getRequirementText());
+        String rawText = dto.getRequirementText();
+        if (rawText == null || rawText.trim().isEmpty()) {
+            throw new Exception("Key requirements cannot be empty");
+        }
 
-        System.out.println("===== RAW AI RESPONSE =====");
-        System.out.println(aiResponse);
-
+        // AI extraction
+        String aiResponse = aiService.extractJobData(rawText);
         JobAiDto aiData = mapper.readValue(aiResponse, JobAiDto.class);
 
-        System.out.println("===== PARSED JOB DATA =====");
-        System.out.println("Skills: " + aiData.getSkills());
-        System.out.println("Experience Required: " + aiData.getExperienceRequired());
-        System.out.println("Education Required: " + aiData.getEducationRequired());
-
+        // Build Job entity
         Job job = new Job();
-        job.setTitle(dto.getTitle());
+        job.setJobTitle(dto.getTitle());
+        job.setDepartment(dto.getDepartment());
+        job.setEmploymentType(dto.getType());
+        job.setCategory(dto.getCategory());
+        job.setJobLocation(dto.getLocation());
+        job.setExperienceLevel(dto.getExperience());
+        job.setVacancies(dto.getVacancies());
+        job.setInterviewRounds(dto.getInterviewRounds());
+        job.setInterviewStages(dto.getInterviewStages());
+        job.setKeyRequirements(rawText);
+        job.setStatus("Open");
+
+        // ✅ AI-extracted fields now stored directly in jobs table
         job.setExperienceRequired(aiData.getExperienceRequired());
         job.setEducationRequired(aiData.getEducationRequired());
 
+        // Company ID
+        if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
+            try {
+                job.setCompanyId(UUID.fromString(dto.getCompanyId()));
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid company ID format");
+            }
+        }
+
         Job saved = jobRepo.save(job);
 
-        for (String skill : aiData.getSkills()) {
-            JobRequirement r = new JobRequirement();
-            r.setJob(saved);
-            r.setRequirement(skill.toLowerCase());
-            reqRepo.save(r);
+        // Save extracted skills to job_requirement table
+        if (aiData.getSkills() != null) {
+            for (String skill : aiData.getSkills()) {
+                if (skill == null || skill.trim().isEmpty()) continue;
+                JobRequirement r = new JobRequirement();
+                r.setJob(saved);
+                r.setRequirement(skill.trim().toLowerCase());
+                reqRepo.save(r);
+            }
         }
+
         List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
         saved.setRequirements(reqs);
-
         return saved;
     }
 }

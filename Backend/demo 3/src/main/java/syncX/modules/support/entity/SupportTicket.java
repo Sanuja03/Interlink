@@ -3,6 +3,7 @@ package syncX.modules.support.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -20,6 +21,9 @@ public class SupportTicket {
     private String priority;
     private String category;
     private String email;
+
+    @Column(name = "user_id")
+    private UUID userId;
 
     @Column(name = "submitted_by")
     private String submittedBy;
@@ -64,4 +68,12 @@ public class SupportTicket {
 
     public List<Response> getResponses() { return responses; }
     public void setResponses(List<Response> responses) { this.responses = responses; }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
 }
