@@ -1,6 +1,5 @@
 import React from "react";
 import Sidebar from "./Sidebar";
-import defaultAvatar from "../../../assets/default-avatar.png";
 import notificationicon from "../../../assets/notification.png";
 import Footer from "./Footer";
 
@@ -30,14 +29,24 @@ const DashboardLayout = ({ children }) => {
           />
 
           <div className="flex items-center gap-3 cursor-pointer">
-            <img
-              src={defaultAvatar}
-              alt="Profile"
-              className="w-11 h-11 rounded-full object-cover border border-gray-300"
-            />
-            <span className="text-sm font-semibold text-gray-800">
-              K. Perera
-            </span>
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+                        bg-red-50 text-red-600 text-xs font-semibold
+                        hover:bg-red-100 transition duration-200
+                        cursor-pointer
+                        focus:outline-none focus:ring-0 active:outline-none
+                        outline-none border-none">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7" />
+            </svg>
+
+            Logout
+          </button>
           </div>
 
         </div>
