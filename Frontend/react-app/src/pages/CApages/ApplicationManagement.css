@@ -148,7 +148,21 @@
 .am-see-more button:hover {
   text-decoration: underline;
 }
+.am-statusDot.orange {
+  background-color: orange;
+}
 
+.am-statusDot.green {
+  background-color: green;
+}
+
+.am-statusDot.blue {
+  background-color: blue;
+}
+
+.am-statusDot.red {
+  background-color: red;
+}
 .am-view { background: var(--heading); color: white; }
 .am-shortlist { background: #19d319; color: white; }
 .am-reject { background: red; color: white; }

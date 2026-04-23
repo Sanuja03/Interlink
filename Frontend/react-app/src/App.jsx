@@ -152,7 +152,7 @@ function App() {
       <Route path="/interview-confirmation" element={<InterviewConfirmation />} />
       <Route path="/candidate-history" element={<CandidateHistory />} />
       <Route path="/shortlist" element={<Shortlist />} />
-      <Route path="/candidate-profile" element={<CompanyCandidateProfile />} />
+      <Route path="/candidate-profile/:id" element={<CompanyCandidateProfile />}/>
 
       {/* Super Admin routes with Dashboard Layout */}
         <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />

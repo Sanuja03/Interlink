@@ -17,12 +17,12 @@ export default function EditJob() {
     experienceLevel: "",
     vacancies: "",
     interviewRounds: "",
-    keyRequirements: "",
   });
 
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
 
+  // ✅ FETCH JOB
   useEffect(() => {
     axios
       .get(`http://localhost:8080/company/jobs/${id}`)
@@ -38,7 +38,6 @@ export default function EditJob() {
           experienceLevel: job.experienceLevel || "",
           vacancies: job.vacancies || "",
           interviewRounds: job.interviewRounds || "",
-          keyRequirements: job.keyRequirements || "",
         });
 
         setInterviewStages(
@@ -53,9 +52,10 @@ export default function EditJob() {
             : [""]
         );
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("FETCH ERROR:", err));
   }, [id]);
 
+  // ✅ HANDLE INPUT CHANGE
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -64,8 +64,14 @@ export default function EditJob() {
       [name]: value,
     }));
 
+    // 🔥 FIX: keep existing values when changing rounds
     if (name === "interviewRounds") {
-      setInterviewStages(Array(Number(value)).fill(""));
+      const count = Number(value);
+      setInterviewStages((prev) => {
+        const updated = [...prev];
+        while (updated.length < count) updated.push("");
+        return updated.slice(0, count);
+      });
     }
   };
 
@@ -84,28 +90,37 @@ export default function EditJob() {
   const addReq = () => setReqs([...reqs, ""]);
   const removeReq = (i) => setReqs(reqs.filter((_, index) => index !== i));
 
+  // ✅ UPDATE JOB
   const handleUpdate = async () => {
     try {
+      const companyId = localStorage.getItem("companyId");
+
       const data = {
         ...form,
         vacancies: Number(form.vacancies),
         interviewRounds: Number(form.interviewRounds),
-        interviewStages: interviewStages.join(", "),
-        keyRequirements: reqs.join(", "),
+        interviewStages: interviewStages.filter(s => s !== "").join(", "),
+        keyRequirements: reqs.filter(r => r !== "").join(", "),
+        companyId: companyId, // 🔥 IMPORTANT
       };
 
+      console.log("UPDATE DATA:", data);
+
       await axios.put(
-        `http://localhost:8080/company/jobs/update/${id}`,
+        `http://localhost:8080/company/jobs/${id}`, // ✅ FIXED
         data
       );
 
       alert("Job Updated Successfully!");
       navigate("/job-management");
+
     } catch (err) {
-      console.error(err);
+      console.error("UPDATE ERROR:", err.response?.data || err.message);
+      alert("Update failed!");
     }
   };
 
+  // ✅ DELETE
   const handleDelete = async () => {
     try {
       await axios.delete(
@@ -114,7 +129,7 @@ export default function EditJob() {
       alert("Job Deleted!");
       navigate("/job-management");
     } catch (err) {
-      console.error(err);
+      console.error("DELETE ERROR:", err);
     }
   };
 
@@ -142,15 +157,18 @@ export default function EditJob() {
             <select name="employmentType" value={form.employmentType} onChange={handleChange} className="ej-input">
               <option>Full-Time</option>
               <option>Part-Time</option>
+              <option>Intern</option>
+              <option>Contract</option>
             </select>
 
             <label className="ej-label">Category</label>
             <select name="category" value={form.category} onChange={handleChange} className="ej-input">
               <option>Finance</option>
               <option>IT</option>
+              <option>Marketing</option>
             </select>
 
-            <label className="ej-label">Number of Interview Rounds</label>
+            <label className="ej-label">Interview Rounds</label>
             <select name="interviewRounds" value={form.interviewRounds} onChange={handleChange} className="ej-input">
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n}>{n}</option>
@@ -194,15 +212,9 @@ export default function EditJob() {
             <label className="ej-label">Key Requirements</label>
             {reqs.map((r, i) => (
               <div key={i} className="ej-req-row">
-                <button className="ej-req-btn" onClick={() => removeReq(i)}>-</button>
-
-                <input
-                  className="ej-input ej-req-input"
-                  value={r}
-                  onChange={(e) => handleReqChange(i, e.target.value)}
-                />
-
-                <button className="ej-req-btn" onClick={addReq}>+</button>
+                <button type="button" onClick={() => removeReq(i)}>-</button>
+                <input value={r} onChange={(e) => handleReqChange(i, e.target.value)} />
+                <button type="button" onClick={addReq}>+</button>
               </div>
             ))}
 

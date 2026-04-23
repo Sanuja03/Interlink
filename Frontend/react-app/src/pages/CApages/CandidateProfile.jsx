@@ -1,47 +1,31 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./CandidateProfile.css";
 
-import companyLogo from "../../assets/images/default-avatar.png";
 import fileIcon from "../../assets/icons/file.png";
-
-// ✅ IMPORT POPUP
 import InterviewRequestPopup from "../../components/CompanyPages/InterviewRequestPopup";
 
 export default function CandidateProfile() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  // ✅ POPUP STATE
+  // ✅ STATES
   const [openInterviewPopup, setOpenInterviewPopup] = useState(false);
+  const [profile, setProfile] = useState(null);
 
-  const stats = [
-    { value: "247", label: "Total Interviews" },
-    { value: "53", label: "Candidates Hired" },
-    { value: "4.8/5", label: "Average Rating" },
-    { value: "91%", label: "Points Earned" },
-  ];
+  // ✅ FETCH DATA
+  useEffect(() => {
+    fetch(`http://localhost:8080/api/profile/candidate/${id}`)
+      .then((res) => res.json())
+      .then((data) => setProfile(data))
+      .catch((err) => console.error(err));
+  }, [id]);
 
-  const experiences = [
-    {
-      title: "Senior Technical Interviewer",
-      company: "Horizon Global",
-      period: "Jan 2025 - Present",
-      logo: companyLogo,
-    },
-    {
-      title: "Lead Software Engineer",
-      company: "Innotech Solutions",
-      period: "Jan 2023 - Present",
-      logo: companyLogo,
-    },
-    {
-      title: "Lead Software Engineer",
-      company: "Innotech Solutions",
-      period: "Jan 2023 - Present",
-      logo: companyLogo,
-    },
-  ];
+  // ✅ LOADING
+  if (!profile) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <DashboardLayout>
@@ -59,47 +43,18 @@ export default function CandidateProfile() {
             </div>
 
             <div className="cp-profileRight">
-              <h1 className="cp-name">Michal Johnson</h1>
-              <p className="cp-companyText">Horizon Global</p>
-              <p className="cp-role">Senior Technical Interviewer</p>
+              <h1 className="cp-name">{profile.fullName}</h1>
 
               <div className="cp-statusRow">
                 <span className="cp-statusBadge">Active</span>
               </div>
 
               <div className="cp-contactGrid">
-                <div className="cp-contactItem">✉ sarajjohn@horizonglobal.com</div>
-                <div className="cp-contactItem">☏ +94 112 345 678</div>
-                <div className="cp-contactItem">⌖ Colombo, Sri Lanka</div>
-                <div className="cp-contactItem">🗓 Joined: Dec 22, 2025</div>
+                <div className="cp-contactItem">✉ {profile.email}</div>
+                <div className="cp-contactItem">☏ {profile.phone}</div>
+                <div className="cp-contactItem">⌖ {profile.location}</div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ABOUT */}
-        <section className="cp-section">
-          <h2 className="cp-sectionTitle">About</h2>
-          <div className="cp-card">
-            <p className="cp-aboutText">
-              Experienced technical interviewer with over 10 years in the software
-              industry. Specialized in conducting comprehensive technical assessments
-              for full-stack developers and software engineers.
-            </p>
-          </div>
-        </section>
-
-        {/* STATS */}
-        <section className="cp-section">
-          <h2 className="cp-sectionTitle">Statistics</h2>
-
-          <div className="cp-stats">
-            {stats.map((item, index) => (
-              <div key={index} className="cp-statCard">
-                <div className="cp-statValue">{item.value}</div>
-                <div className="cp-statLabel">{item.label}</div>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -108,7 +63,7 @@ export default function CandidateProfile() {
           <h2 className="cp-sectionTitle">Experience</h2>
 
           <div className="cp-timeline">
-            {experiences.map((item, index) => (
+            {profile.experiences?.map((item, index) => (
               <div key={index} className="cp-expRow">
                 <div className="cp-timelineLine">
                   <span className="cp-timelineDot"></span>
@@ -116,16 +71,12 @@ export default function CandidateProfile() {
 
                 <div className="cp-expCard">
                   <div className="cp-expText">
-                    <h3 className="cp-expTitle">{item.title}</h3>
+                    <h3 className="cp-expTitle">{item.jobTitle}</h3>
                     <p className="cp-expCompany">{item.company}</p>
-                    <p className="cp-expPeriod">{item.period}</p>
+                    <p className="cp-expPeriod">
+                      {item.startDate} - {item.endDate}
+                    </p>
                   </div>
-
-                  <img
-                    src={item.logo}
-                    alt="Company logo"
-                    className="cp-expLogo"
-                  />
                 </div>
               </div>
             ))}
@@ -150,10 +101,10 @@ export default function CandidateProfile() {
             Shortlist
           </button>
 
-          {/* should FIXE this BUTTON */}
+          {/* ✅ FIXED BUTTON */}
           <button
             className="cp-actionBtn cp-btnBlue"
-            onClick={() => navigate("/InterviewRequestPopup")}
+            onClick={() => setOpenInterviewPopup(true)}
           >
             Schedule Interview
           </button>
@@ -170,7 +121,12 @@ export default function CandidateProfile() {
           </button>
         </div>
 
-
+        {/* ✅ POPUP */}
+        {openInterviewPopup && (
+          <InterviewRequestPopup
+            onClose={() => setOpenInterviewPopup(false)}
+          />
+        )}
 
       </div>
     </DashboardLayout>

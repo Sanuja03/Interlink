@@ -16,8 +16,12 @@ export default function JobManagement() {
 
   const fetchJobs = async () => {
     try {
-      // ✅ FIXED URL
-      const res = await axios.get("http://localhost:8080/company/jobs");
+      const companyId = localStorage.getItem("companyId");
+
+      // ✅ FETCH ONLY COMPANY JOBS
+      const res = await axios.get(
+        `http://localhost:8080/company/jobs/company/${companyId}`
+      );
 
       console.log("API RESPONSE:", res.data);
 
@@ -25,10 +29,10 @@ export default function JobManagement() {
         id: job.id,
         title: job.jobTitle || "No Title",
         dept: job.department || "No Dept",
-        status: job.status ? job.status : "Active",
-        date: job.createdDate
-          ? job.createdDate
-          : new Date().toLocaleDateString("en-GB"),
+        status: job.status || "OPEN",
+        date: job.createdAt
+          ? new Date(job.createdAt).toLocaleDateString("en-GB")
+          : "-",
       }));
 
       setRows(formatted);
@@ -37,13 +41,15 @@ export default function JobManagement() {
     }
   };
 
-  const handleClose = async (id) => {
+  // ✅ TOGGLE STATUS
+  const handleToggle = async (id) => {
     try {
-      // ✅ FIXED URL
-      await axios.put(`http://localhost:8080/company/jobs/close/${id}`);
+      await axios.put(
+        `http://localhost:8080/company/jobs/${id}/toggle`
+      );
       fetchJobs();
     } catch (err) {
-      console.error("CLOSE ERROR:", err);
+      console.error("TOGGLE ERROR:", err);
     }
   };
 
@@ -118,12 +124,14 @@ export default function JobManagement() {
                     <tr key={r.id}>
                       <td className="jm-td">{r.title}</td>
                       <td className="jm-td">{r.dept}</td>
+
+                      {/* ✅ STATUS */}
                       <td className="jm-td">
                         <span className="jm-status">
                           <span
                             className={
                               "jm-dot " +
-                              (r.status === "Active"
+                              (r.status === "OPEN"
                                 ? "jm-dot--green"
                                 : "jm-dot--red")
                             }
@@ -131,10 +139,13 @@ export default function JobManagement() {
                           {r.status}
                         </span>
                       </td>
+
                       <td className="jm-td">{r.date}</td>
+
                       <td className="jm-td">
                         <div className="jm-btns">
 
+                          {/* EDIT */}
                           <button
                             className="jm-btn jm-btn--edit"
                             onClick={() =>
@@ -144,16 +155,17 @@ export default function JobManagement() {
                             Edit
                           </button>
 
+                          {/* TOGGLE */}
                           <button
                             className={
                               "jm-btn " +
-                              (r.status === "Active"
+                              (r.status === "OPEN"
                                 ? "jm-btn--close"
                                 : "jm-btn--active")
                             }
-                            onClick={() => handleClose(r.id)}
+                            onClick={() => handleToggle(r.id)}
                           >
-                            {r.status === "Active"
+                            {r.status === "OPEN"
                               ? "Close"
                               : "Activate"}
                           </button>

@@ -6,6 +6,7 @@ import syncX.modules.CompanyAdmin.job.entity.Job;
 import syncX.modules.CompanyAdmin.job.repository.JobRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class JobService {
@@ -13,58 +14,95 @@ public class JobService {
     @Autowired
     private JobRepository jobRepository;
 
-    // 🔥 CREATE JOB (FIXED)
+    // ✅ CREATE JOB
     public Job createJob(Job job) {
 
-        // ✅ SET DEFAULT VALUES
-        job.setStatus("Active");
-        job.setCreatedDate(java.time.LocalDate.now().toString());
+        // 🔥 Ensure status is correct
+        if (job.getStatus() == null || job.getStatus().isEmpty()) {
+            job.setStatus("OPEN");
+        }
 
+        // createdAt handled by @PrePersist
         return jobRepository.save(job);
     }
 
-    // 🔥 GET ALL JOBS (for Job Management page)
+    // ✅ GET ALL JOBS
     public List<Job> getAllJobs() {
         return jobRepository.findAll();
     }
 
-    // 🔥 CLOSE / ACTIVATE JOB
-    public Job toggleJobStatus(Long id) {
-        Job job = jobRepository.findById(id).orElseThrow();
+    // ✅ GET JOBS BY COMPANY (FIXED 🔥)
+    public List<Job> getJobsByCompany(UUID companyId) {
+        return jobRepository.findByCompanyIdOrderByCreatedAtDesc(companyId);
+    }
 
-        if ("Active".equals(job.getStatus())) {
-            job.setStatus("Closed");
+    // ✅ GET JOB BY ID
+    public Job getJobById(Long id) {
+        return jobRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+    }
+
+    // ✅ TOGGLE STATUS (OPEN ↔ CLOSED)
+    public Job toggleJobStatus(Long id) {
+
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if ("OPEN".equalsIgnoreCase(job.getStatus())) {
+            job.setStatus("CLOSED");
         } else {
-            job.setStatus("Active");
+            job.setStatus("OPEN");
         }
 
         return jobRepository.save(job);
     }
 
-    // 🔥 GET JOB BY ID (FOR EDIT PAGE)
-    public Job getJobById(Long id) {
-        return jobRepository.findById(id).orElseThrow();
-    }
-
-    // 🔥 UPDATE JOB (EDIT FEATURE)
+    // ✅ UPDATE JOB (SAFE UPDATE)
     public Job updateJob(Long id, Job updatedJob) {
-        Job job = jobRepository.findById(id).orElseThrow();
 
-        job.setJobTitle(updatedJob.getJobTitle());
-        job.setDepartment(updatedJob.getDepartment());
-        job.setEmploymentType(updatedJob.getEmploymentType());
-        job.setCategory(updatedJob.getCategory());
-        job.setInterviewRounds(updatedJob.getInterviewRounds());
-        job.setInterviewStages(updatedJob.getInterviewStages());
-        job.setJobLocation(updatedJob.getJobLocation());
-        job.setExperienceLevel(updatedJob.getExperienceLevel());
-        job.setVacancies(updatedJob.getVacancies());
-        job.setKeyRequirements(updatedJob.getKeyRequirements());
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (updatedJob.getJobTitle() != null)
+            job.setJobTitle(updatedJob.getJobTitle());
+
+        if (updatedJob.getDepartment() != null)
+            job.setDepartment(updatedJob.getDepartment());
+
+        if (updatedJob.getEmploymentType() != null)
+            job.setEmploymentType(updatedJob.getEmploymentType());
+
+        if (updatedJob.getCategory() != null)
+            job.setCategory(updatedJob.getCategory());
+
+        if (updatedJob.getInterviewRounds() != null)
+            job.setInterviewRounds(updatedJob.getInterviewRounds());
+
+        if (updatedJob.getInterviewStages() != null)
+            job.setInterviewStages(updatedJob.getInterviewStages());
+
+        if (updatedJob.getJobLocation() != null)
+            job.setJobLocation(updatedJob.getJobLocation());
+
+        if (updatedJob.getExperienceLevel() != null)
+            job.setExperienceLevel(updatedJob.getExperienceLevel());
+
+        if (updatedJob.getVacancies() != null)
+            job.setVacancies(updatedJob.getVacancies());
+
+        if (updatedJob.getKeyRequirements() != null)
+            job.setKeyRequirements(updatedJob.getKeyRequirements());
+
+        if (updatedJob.getStatus() != null)
+            job.setStatus(updatedJob.getStatus());
+
+        if (updatedJob.getCompanyId() != null)
+            job.setCompanyId(updatedJob.getCompanyId());
 
         return jobRepository.save(job);
     }
 
-    // 🔥 DELETE JOB (NEW)
+    // ✅ DELETE JOB
     public void deleteJob(Long id) {
         jobRepository.deleteById(id);
     }

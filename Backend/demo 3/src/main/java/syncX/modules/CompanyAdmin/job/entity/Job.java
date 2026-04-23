@@ -1,100 +1,85 @@
 package syncX.modules.CompanyAdmin.job.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "jobs")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Job {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ✅ Job Title
     @Column(name = "job_title")
     private String jobTitle;
 
+    // ✅ Department
     @Column(name = "department")
     private String department;
 
+    // ✅ Employment Type
     @Column(name = "employment_type")
     private String employmentType;
 
+    // ✅ Category
     @Column(name = "category")
     private String category;
 
+    // ✅ Interview Rounds
     @Column(name = "interview_rounds")
-    private int interviewRounds;
+    private Integer interviewRounds;
 
-    // 🔥 NEW COLUMN (ALREADY ADDED)
+    // ✅ Interview Stages (optional)
     @Column(name = "interview_stages")
     private String interviewStages;
 
-    // 🔥 NEW FIELD (ADDED ONLY)
+    // ✅ Status (OPEN / CLOSED)
     @Column(name = "status")
-    private String status;
+    private String status = "OPEN"; // 🔥 default value
 
-    // 🔥 NEW FIELD (ADDED ONLY)
-    @Column(name = "created_date")
-    private String createdDate;
+    // ❌ OLD (WRONG)
+    // private String createdDate;
 
+    // ✅ FIXED (use timestamp)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    // ✅ Job Location
     @Column(name = "job_location")
     private String jobLocation;
 
+    // ✅ Experience Level
     @Column(name = "experience_level")
     private String experienceLevel;
 
+    // ✅ Vacancies
     @Column(name = "vacancies")
-    private int vacancies;
+    private Integer vacancies;
 
-    @Column(name = "key_requirements", length = 2000)
+    // ⚠️ IMPORTANT FIX
+    // If you store multiple requirements → convert to JSON string
+    @Column(name = "key_requirements", columnDefinition = "TEXT")
     private String keyRequirements;
 
+    // ✅ Company ID
     @Column(name = "company_id")
-    private Long companyId;
+    private UUID companyId;
 
-    // ================= GETTERS & SETTERS =================
+    // 🔥 AUTO SET CREATED TIME
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getJobTitle() { return jobTitle; }
-    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
-
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
-
-    public String getEmploymentType() { return employmentType; }
-    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public int getInterviewRounds() { return interviewRounds; }
-    public void setInterviewRounds(int interviewRounds) { this.interviewRounds = interviewRounds; }
-
-    // 🔥 EXISTING
-    public String getInterviewStages() { return interviewStages; }
-    public void setInterviewStages(String interviewStages) { this.interviewStages = interviewStages; }
-
-    // 🔥 NEW GETTERS & SETTERS
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public String getCreatedDate() { return createdDate; }
-    public void setCreatedDate(String createdDate) { this.createdDate = createdDate; }
-
-    public String getJobLocation() { return jobLocation; }
-    public void setJobLocation(String jobLocation) { this.jobLocation = jobLocation; }
-
-    public String getExperienceLevel() { return experienceLevel; }
-    public void setExperienceLevel(String experienceLevel) { this.experienceLevel = experienceLevel; }
-
-    public int getVacancies() { return vacancies; }
-    public void setVacancies(int vacancies) { this.vacancies = vacancies; }
-
-    public String getKeyRequirements() { return keyRequirements; }
-    public void setKeyRequirements(String keyRequirements) { this.keyRequirements = keyRequirements; }
-
-    public Long getCompanyId() { return companyId; }
-    public void setCompanyId(Long companyId) { this.companyId = companyId; }
+        if (this.status == null) {
+            this.status = "OPEN";
+        }
+    }
 }
