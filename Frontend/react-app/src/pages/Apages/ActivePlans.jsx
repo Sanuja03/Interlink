@@ -2,21 +2,19 @@ import { useEffect, useState } from "react";
 import ActivePlanTable from "../../components/TicketSubsPages/ActivePlanTable";
 import Footer from "../../components/TicketSubsPages/Footer";
 import logo from "../../assets/interlink-logo.png";
+import api from "../../lib/api";
 
 export default function ActivePlans() {
   const [data, setData] = useState([]);
 
   const fetchData = async () => {
-    const res = await fetch("http://localhost:8080/api/active-subscriptions");
-    const json = await res.json();
-    setData(json);
+    const res = await api.get("/active-subscriptions");
+    setData(res.data);
   };
 
   const handleUndo = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/active-subscriptions/${id}/revert`, {
-        method: "PUT",
-      });
+      await api.put(`/active-subscriptions/${id}/revert`);
   
       fetchData(); // refresh table
     } catch (err) {

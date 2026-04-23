@@ -1,30 +1,12 @@
-
-const STATUS_OPTIONS = [
-  { value: "OPEN",     label: "Open",     dot: "bg-green-400" },
-  { value: "PENDING",  label: "Pending",  dot: "bg-amber-400" },
-  { value: "RESOLVED", label: "Resolved", dot: "bg-blue-400"  },
-  { value: "CLOSED",   label: "Closed",   dot: "bg-slate-400" },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: "GENERAL",          label: "General"          },
-  { value: "LOGIN_ISSUE",      label: "Login Issue"      },
-  { value: "PAYMENT_ISSUE",    label: "Payment Issue"    },
-  { value: "TECHNICAL_ISSUE",  label: "Technical Issue"  },
-];
-
-// ────────────────────────────────────────────────────────────────────────────
-// FULL COMPONENT (copy MyTickets.jsx and replace with this version)
-// ────────────────────────────────────────────────────────────────────────────
-
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "../../lib/api";
 import TicketCard from "../../components/TicketSubsPages/TicketCard";
 import TicketModal from "../../components/TicketSubsPages/TicketModal";
 import Footer from "../../components/TicketSubsPages/Footer";
 import logo from "../../assets/interlink-logo.png";
 import TicketSearch from "../../components/TicketSubsPages/TicketSearch";
 
+// ── Filter options — values MUST match what the DB stores ─────────────────
 const STATUS_OPTS = [
   { value: "OPEN",     label: "Open",     dot: "bg-green-400"  },
   { value: "PENDING",  label: "Pending",  dot: "bg-amber-400"  },
@@ -33,14 +15,14 @@ const STATUS_OPTS = [
 ];
 
 const CATEGORY_OPTS = [
-  { value: "GENERAL",         label: "General"         },
-  { value: "LOGIN_ISSUE",     label: "Login Issue"     },
-  { value: "PAYMENT_ISSUE",   label: "Payment Issue"   },
-  { value: "TECHNICAL_ISSUE", label: "Technical Issue" },
+  { value: "GENERAL",   label: "General"         },
+  { value: "LOGIN",     label: "Login Issue"     },
+  { value: "PAYMENT",   label: "Payment Issue"   },
+  { value: "TECHNICAL", label: "Technical Issue" },
 ];
 
-// Reusable custom dropdown filter pill
-function FilterPill({ icon, label, options, value, onChange, dotKey }) {
+// ── Reusable custom dropdown filter pill ──────────────────────────────────
+function FilterPill({ label, options, value, onChange, icon }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -70,35 +52,31 @@ function FilterPill({ icon, label, options, value, onChange, dotKey }) {
       >
         {icon}
         <span>{selectedOpt ? selectedOpt.label : label}</span>
-
-        {/* Active badge */}
         {selectedOpt && (
-          <span className="ml-1 inline-flex items-center justify-center bg-[#EAF3F8] text-[#14597A] text-[11px] font-semibold rounded-[8px] px-1.5 h-[18px]">
+          <span className="ml-1 inline-flex items-center justify-center bg-[#EAF3F8]
+            text-[#14597A] text-[11px] font-semibold rounded-[8px] px-1.5 h-[18px]">
             1
           </span>
         )}
-
-        {/* Chevron */}
         <svg
           className={`w-[11px] h-[11px] ml-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"
-        >
+          viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth={2.5} strokeLinecap="round">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div className="
           absolute top-[calc(100%+6px)] left-0 z-50
           bg-white rounded-[10px] p-1 min-w-[160px]
           shadow-[0_4px_20px_rgba(12,62,86,0.13),0_0_0_1px_rgba(12,62,86,0.08)]
-          animate-fade-in
         ">
-          {/* All option */}
           <button
             onClick={() => { onChange(""); setOpen(false); }}
-            className="w-full text-left flex items-center px-2.5 py-[7px] rounded-[7px] text-[13px] text-[#8AAFC4] font-medium hover:bg-[#EAF3F8] transition-colors"
+            className="w-full text-left flex items-center px-2.5 py-[7px]
+              rounded-[7px] text-[13px] text-[#8AAFC4] font-medium
+              hover:bg-[#EAF3F8] transition-colors"
           >
             All {label.toLowerCase()}s
           </button>
@@ -107,14 +85,22 @@ function FilterPill({ icon, label, options, value, onChange, dotKey }) {
             <button
               key={opt.value}
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className="w-full text-left flex items-center gap-2 px-2.5 py-[7px] rounded-[7px] text-[13px] text-[#1C3A4A] hover:bg-[#EAF3F8] transition-colors"
+              className="w-full text-left flex items-center gap-2 px-2.5 py-[7px]
+                rounded-[7px] text-[13px] text-[#1C3A4A]
+                hover:bg-[#EAF3F8] transition-colors"
             >
               {opt.dot && (
                 <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${opt.dot}`} />
               )}
-              <span className={opt.value === value ? "font-medium text-[#14597A]" : ""}>{opt.label}</span>
+              <span className={opt.value === value ? "font-medium text-[#14597A]" : ""}>
+                {opt.label}
+              </span>
               {opt.value === value && (
-                <svg className="ml-auto text-[#14597A]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg className="ml-auto text-[#14597A]" width="12" height="12"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth={3} strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
               )}
             </button>
           ))}
@@ -124,56 +110,63 @@ function FilterPill({ icon, label, options, value, onChange, dotKey }) {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function MyTickets() {
-  const [tickets, setTickets] = useState([]);
+  const [tickets,         setTickets]         = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
-  const [editingTicket, setEditingTicket] = useState(null);
-  const [creating, setCreating] = useState(false);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [editingTicket,   setEditingTicket]   = useState(null);
+  const [creating,        setCreating]        = useState(false);
+  const [search,          setSearch]          = useState("");
+  const [statusFilter,    setStatusFilter]    = useState("");
+  const [categoryFilter,  setCategoryFilter]  = useState("");
+  const [loading,         setLoading]         = useState(true);
+  const [error,           setError]           = useState(null);
 
   useEffect(() => { fetchTickets(); }, []);
 
   const fetchTickets = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get("http://localhost:8080/api/tickets");
+      const res = await api.get("/tickets");
       setTickets(res.data);
       setFilteredTickets(res.data);
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
+    } catch (err) {
+      console.error("Error fetching tickets:", err);
+      setError("Failed to load tickets. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const applyFilters = (query, status, category) => {
-    let data = [...tickets];
+  // ── filtering (exact match — no normalisation needed now) ──────────────
+  const applyFilters = (query, status, category, source = tickets) => {
+    let data = [...source];
     if (query.trim()) {
       const lower = query.toLowerCase();
       data = data.filter((t) =>
-        (t.title || "").toLowerCase().includes(lower) ||
+        (t.title       || "").toLowerCase().includes(lower) ||
         (t.description || "").toLowerCase().includes(lower) ||
-        (t.status || "").toLowerCase().includes(lower)
+        (t.status      || "").toLowerCase().includes(lower)
       );
     }
-    if (status) data = data.filter((t) => t.status === status);
-    if (category) {
-      const normalized = category.toLowerCase().replace("_issue", "");
-      data = data.filter((t) => (t.category || "").toLowerCase().includes(normalized));
-    }
+    if (status)   data = data.filter((t) => t.status   === status);
+    if (category) data = data.filter((t) => t.category === category);
     setFilteredTickets(data);
   };
 
-  const handleSearch = (query) => { setSearch(query); applyFilters(query, statusFilter, categoryFilter); };
-  const handleStatusFilter = (value) => { setStatusFilter(value); applyFilters(search, value, categoryFilter); };
-  const handleCategoryFilter = (value) => { setCategoryFilter(value); applyFilters(search, statusFilter, value); };
-  const clearFilters = () => { setStatusFilter(""); setCategoryFilter(""); applyFilters(search, "", ""); };
+  const handleSearch         = (q) => { setSearch(q);        applyFilters(q, statusFilter, categoryFilter); };
+  const handleStatusFilter   = (v) => { setStatusFilter(v);  applyFilters(search, v, categoryFilter); };
+  const handleCategoryFilter = (v) => { setCategoryFilter(v);applyFilters(search, statusFilter, v); };
+  const clearFilters         = ()  => { setStatusFilter(""); setCategoryFilter(""); applyFilters(search, "", ""); };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this ticket? This cannot be undone.")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/tickets/${id}`);
+      await api.delete(`/tickets/${id}`);
       fetchTickets();
-    } catch (error) {
-      console.error("Error deleting ticket:", error);
+    } catch (err) {
+      console.error("Error deleting ticket:", err);
     }
   };
 
@@ -181,41 +174,59 @@ export default function MyTickets() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#F4F8FA] to-[#EAF3F8]">
       <div className="flex-grow py-10 px-6">
 
-        {/* HEADER — unchanged */}
+        {/* HEADER */}
         <div className="max-w-5xl mx-auto mb-10">
-          <div className="rounded-3xl p-8 shadow-lg bg-gradient-to-r from-[#0C3E56] to-[#14597A] text-white">
+          <div className="rounded-3xl p-8 shadow-lg
+            bg-gradient-to-r from-[#0C3E56] to-[#14597A] text-white">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-5">
-                <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center shadow-md">
+                <div className="h-14 w-14 bg-white rounded-2xl flex items-center
+                  justify-center shadow-md">
                   <img src={logo} alt="Interlink Logo" className="h-9 w-auto object-contain" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-semibold">Support Tickets</h1>
-                  <p className="text-white/90 text-sm mt-1">Manage and track your support requests</p>
+                  <p className="text-white/90 text-sm mt-1">
+                    Manage and track your support requests
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setCreating(true)}
-                className="bg-white text-[#0C3E56] px-6 py-3 rounded-xl font-semibold shadow-md hover:scale-105 transition"
+                className="bg-white text-[#0C3E56] px-6 py-3 rounded-xl
+                  font-semibold shadow-md hover:scale-105 transition"
               >
                 + Create Ticket
               </button>
             </div>
             <div className="flex items-center justify-between">
-              <button onClick={() => (window.location.href = "/settings")} className="text-white/90 hover:underline">
+              <button
+                onClick={() => (window.location.href = "/settings")}
+                className="text-white/90 hover:underline"
+              >
                 ← Back to Settings
               </button>
-              <div className="bg-white/20 px-5 py-2 rounded-xl text-sm">{filteredTickets.length} Tickets</div>
+              <div className="bg-white/20 px-5 py-2 rounded-xl text-sm">
+                {filteredTickets.length} Ticket{filteredTickets.length !== 1 ? "s" : ""}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ✨ REDESIGNED SEARCH + FILTERS */}
-        <div className="max-w-5xl mx-auto bg-white border border-[#E4EFF7] rounded-2xl px-4 py-3 mb-8 shadow-sm">
+        {/* ERROR */}
+        {error && (
+          <div className="max-w-5xl mx-auto mb-6 bg-red-50 border border-red-200
+            text-red-600 text-sm px-4 py-3 rounded-xl">
+            {error}
+          </div>
+        )}
+
+        {/* SEARCH + FILTERS */}
+        <div className="max-w-5xl mx-auto bg-white border border-[#E4EFF7]
+          rounded-2xl px-4 py-3 mb-8 shadow-sm">
           <div className="flex items-center gap-3 flex-wrap">
 
             <TicketSearch onSearch={handleSearch} />
-
             <div className="w-px h-6 bg-[#D6E6F2] shrink-0" />
 
             <FilterPill
@@ -224,8 +235,10 @@ export default function MyTickets() {
               onChange={handleStatusFilter}
               options={STATUS_OPTS}
               icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
                 </svg>
               }
             />
@@ -236,7 +249,8 @@ export default function MyTickets() {
               onChange={handleCategoryFilter}
               options={CATEGORY_OPTS}
               icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M4 6h16M4 12h16M4 18h7"/>
                 </svg>
               }
@@ -245,14 +259,14 @@ export default function MyTickets() {
             {(statusFilter || categoryFilter) && (
               <button
                 onClick={clearFilters}
-                className="
-                  flex items-center gap-1.5 px-3 h-[26px] rounded-full
+                className="flex items-center gap-1.5 px-3 h-[26px] rounded-full
                   bg-red-50 border-none text-[11.5px] font-semibold text-red-500
-                  hover:bg-red-100 transition-colors cursor-pointer
-                "
+                  hover:bg-red-100 transition-colors cursor-pointer"
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={3} strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
                 Clear filters
               </button>
@@ -260,11 +274,21 @@ export default function MyTickets() {
           </div>
         </div>
 
-        {/* TICKETS */}
+        {/* TICKET LIST */}
         <div className="max-w-5xl mx-auto space-y-6">
-          {filteredTickets.length === 0 ? (
+          {loading ? (
+            <div className="bg-white p-12 rounded-3xl shadow-md text-center
+              text-gray-400 text-sm">
+              Loading your tickets…
+            </div>
+          ) : filteredTickets.length === 0 ? (
             <div className="bg-white p-12 rounded-3xl shadow-md text-center">
-              <p className="text-xl text-gray-500 mb-6">No tickets match your search.</p>
+              <p className="text-xl text-gray-500 mb-2">No tickets found.</p>
+              <p className="text-sm text-gray-400">
+                {(statusFilter || categoryFilter)
+                  ? "Try clearing your filters."
+                  : "Click \"+ Create Ticket\" to raise your first ticket."}
+              </p>
             </div>
           ) : (
             filteredTickets.map((ticket) => (
@@ -272,7 +296,7 @@ export default function MyTickets() {
                 key={ticket.id}
                 ticket={ticket}
                 onEdit={() => setEditingTicket(ticket)}
-                onDelete={(id) => handleDelete(id)}
+                onDelete={handleDelete}
               />
             ))
           )}
@@ -280,10 +304,17 @@ export default function MyTickets() {
       </div>
 
       {editingTicket && (
-        <TicketModal ticket={editingTicket} onClose={() => setEditingTicket(null)} onSuccess={fetchTickets} />
+        <TicketModal
+          ticket={editingTicket}
+          onClose={() => setEditingTicket(null)}
+          onSuccess={fetchTickets}
+        />
       )}
       {creating && (
-        <TicketModal onClose={() => setCreating(false)} onSuccess={fetchTickets} />
+        <TicketModal
+          onClose={() => setCreating(false)}
+          onSuccess={fetchTickets}
+        />
       )}
 
       <Footer />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import api from "../../lib/api";
 
 export default function ActivePlanTable({ data, refresh, onUndo }) {
 
@@ -10,16 +11,12 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const fetchPlans = async () => {
-    const res = await fetch("http://localhost:8080/api/subscriptions");
-    const json = await res.json();
-    setPlans(json);
+    const res = await api.get("/subscriptions");
+    setPlans(res.data);
   };
 
   const confirmUpdate = async () => {
-    await fetch(
-      `http://localhost:8080/api/active-subscriptions/${selected.id}/extend`,
-      { method: "PUT" }
-    );
+    await api.put(`/active-subscriptions/${selected.id}/extend`);
 
     toast.success("Membership renewed for 1 month");
     setSelected(null);
@@ -27,16 +24,12 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
   };
 
   const confirmPlanChange = async () => {
-    await fetch(
-      `http://localhost:8080/api/active-subscriptions/${pendingChange.id}/change-plan/${pendingChange.planId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          startDate: customStartDate || null,
-        }),
-      }
-    );
+     await api.put(
+         `/active-subscriptions/${pendingChange.id}/change-plan/${pendingChange.planId}`,
+        {
+           startDate: customStartDate || null,
+         }
+       );
 
     toast.success("Plan updated successfully");
     setPendingChange(null);

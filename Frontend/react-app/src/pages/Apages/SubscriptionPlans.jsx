@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Footer from "../../components/TicketSubsPages/Footer";
 import logo from "../../assets/interlink-logo.png";
 import { toast } from "react-hot-toast";
+import api from "../../lib/api";
 
 const planIcons = {
   Free: "📦",
@@ -20,18 +21,17 @@ export default function SubscriptionPlans() {
 
   const fetchPlans = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/subscriptions");
-      const data = await res.json();
-
-      const plansWithIcons = data.map(plan => ({
+      const res = await api.get("/subscriptions");
+  
+      const plansWithIcons = res.data.map(plan => ({
         ...plan,
         icon: planIcons[plan.name] || "📄",
       }));
-
+  
       const sortedPlans = plansWithIcons.sort(
         (a, b) => planOrder.indexOf(a.name) - planOrder.indexOf(b.name)
       );
-
+  
       setPlans(sortedPlans);
     } catch (err) {
       console.error(err);
@@ -45,12 +45,8 @@ export default function SubscriptionPlans() {
 
   const updatePlan = async (updatedPlan) => {
     try {
-      await fetch(`http://localhost:8080/api/subscriptions/${updatedPlan.name}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedPlan),
-      });
-
+      await api.put(`/subscriptions/${updatedPlan.name}`, updatedPlan);
+  
       toast.success("Plan updated successfully!");
       fetchPlans();
     } catch (err) {
