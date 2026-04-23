@@ -6,7 +6,7 @@ export default function RecentActivities({ onViewAll }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchActivityLogs({ page: 0, size: 5 })
+    fetchActivityLogs({ page: 0, size: 5,userRole: "", fromDate: "", toDate: "" })
       .then(res => {
         setActivities(res.data.content);
       })

@@ -8,15 +8,25 @@ export default function AllActivitiesPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
-    fetchActivityLogs({ page: 0, size: 10, role: roleFilter, fromDate, toDate })
+  const timeout = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 400); // 400ms delay
+
+  return () => clearTimeout(timeout);
+}, [search]);
+
+  useEffect(() => {
+    fetchActivityLogs({ userRole: roleFilter || "",fromDate: fromDate || "",toDate: toDate || "",search: debouncedSearch || "" })
       .then(res => {
         setActivities(res.data.content);
       })
       .catch(err => console.error(err));
-  }, [roleFilter, fromDate, toDate]);
+  }, [roleFilter, fromDate, toDate, debouncedSearch]);
+
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -36,6 +46,15 @@ export default function AllActivitiesPage() {
 
       {/* Filters Card */}
      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search activities..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
 
       {/* Role Filter */}
@@ -49,10 +68,10 @@ export default function AllActivitiesPage() {
           onChange={e => setRoleFilter(e.target.value)}
         >
           <option value="">All Roles</option>
-          <option value="SUPER_ADMIN">Super Admin</option>
+          <option value="ADMIN">Super Admin</option>
           <option value="COMPANY_ADMIN">Company Admin</option>
-          <option value="JOB_SEEKER">Candidate</option>
-          <option value="RECRUITER">Interviewer</option>
+          <option value="Candidate">Candidate</option>
+          <option value="Interviewer">Interviewer</option>
         </select>
       </div>
 
@@ -88,10 +107,11 @@ export default function AllActivitiesPage() {
           setRoleFilter("");
           setFromDate("");
           setToDate("");
+          setSearch("");
         }}
         className="h-10 text-sm border border-gray-300 rounded-lg hover:bg-orange-500 transition"
       >
-        Clear Filters
+        Clear Filters & Search
       </button>
 
     </div>

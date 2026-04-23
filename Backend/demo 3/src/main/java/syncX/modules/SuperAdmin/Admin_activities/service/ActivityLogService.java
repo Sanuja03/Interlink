@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import lombok.RequiredArgsConstructor;
 import syncX.modules.SuperAdmin.Admin_activities.entity.ActivityLog;
@@ -40,14 +41,39 @@ public class ActivityLogService {
 
     public Page<ActivityLog> getLogs(
             String userRole,
+            String search,
+            String fromDate,
+            String toDate,
             int page,
             int size
     ) {
-        return repository.findByUserRoleContainingIgnoreCase(
-                userRole,
-                PageRequest.of(page, size,
-                        Sort.by("createdAt").descending())
-        );
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        userRole = (userRole == null) ? "" : userRole;
+        search = (search == null) ? "" : search;
+        fromDate = (fromDate == null) ? "" : fromDate;
+        toDate =  (toDate == null) ? "" : toDate ;
+
+        LocalDateTime from = null;
+        LocalDateTime to = null;
+
+        try{
+        if (!fromDate.isEmpty()) {
+            from = LocalDateTime.parse(fromDate + "T00:00:00");
+        }
+
+        if (!toDate.isEmpty()) {
+            to = LocalDateTime.parse(toDate + "T23:59:59");}
+        }catch (Exception e) {
+            System.out.println("Date parse error: " + e.getMessage());
+        }
+
+        return repository.searchLogs(userRole, search, from, to, pageable);
+    }
+    public ActivityLog createLog(ActivityLog log) {
+        log.setCreatedAt(LocalDateTime.now());
+        return repository.save(log);
     }
 }
 
