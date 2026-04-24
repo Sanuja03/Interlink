@@ -35,7 +35,7 @@ import InterviewerScheduledInterviews from "./pages/IPages/ScheduledInterviews";
 import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 
 // CompanyAdmin pages
-import CompanyShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
+import CompanyShortlistedCandidates from "./pages/CApages/ShortlistedCandidates";
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
 import CompanyDashboard from "./pages/CApages/CompanyDashboard";
 import ApplicationManagement from "./pages/CApages/ApplicationManagement";
@@ -104,6 +104,8 @@ function App() {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/company/shortlisted-candidates" element={<CompanyShortlistedCandidates/>}/>
+        <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate/>}/>
 
 
         {/* Candidate */}
@@ -127,8 +129,8 @@ function App() {
         <Route path="/interviewer/single-view/:interviewId" element={<InterviewerRole><InterviewerCandidateSingleView /></InterviewerRole>} />
 
         {/* Company */}
-        <Route path="/company/shortlisted-candidates" element={<CompanyAdmin><CompanyShortlistedCandidates /></CompanyAdmin>} />
-        <Route path="/company/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
+        {/*<Route path="/company/shortlisted-candidates" element={<CompanyAdmin><CompanyShortlistedCandidates /></CompanyAdmin>} />
+        <Route path="/company/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />*/}
 
         {/* Company Admin routes */}
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
@@ -144,8 +146,8 @@ function App() {
         <Route path="/candidate-profile" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
 
         {/* All User Routes */}
-        <Route path="/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
-        <Route path="/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
+        <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
+        <Route path="/admin/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
 
         {/* Super Admin routes */}
         <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />

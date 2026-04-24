@@ -1,0 +1,89 @@
+/* floating button — fixed bottom-right */
+
+.floating-availability-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 900;
+  
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.12),
+      0 1px 3px rgba(0, 0, 0, 0.08);
+  
+    transition: all 0.2s ease;
+  }
+  
+  .floating-availability-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.15),
+      0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .floating-availability-btn:active {
+    transform: translateY(0);
+  }
+  
+  
+  /* pending state — dark bg with red indicator */
+  
+  .floating-availability-btn.pending {
+    background: #111827;
+    color: #ffffff;
+  }
+  
+  
+  /* done state — dark bg with green indicator */
+  
+  .floating-availability-btn.done {
+    background: #111827;
+    color: #ffffff;
+  }
+  
+  
+  /* dot indicator — sits top-right of the button */
+  
+  .floating-btn-dot {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid #ffffff;
+  }
+  
+  
+  /* red pulsing dot when availability is not set */
+  
+  .floating-btn-dot.pending {
+    background: #ef4444;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes dotPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+  }
+  
+  
+  /* green static dot when availability is set */
+  
+  .floating-btn-dot.done {
+    background: #22c55e;
+    animation: none;
+  }

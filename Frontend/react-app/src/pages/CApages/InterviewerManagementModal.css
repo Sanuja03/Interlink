@@ -188,6 +188,11 @@
   color: var(--danger);
 }
 
+.badge-suspended {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
 .badge-created {
   background: #dbeafe;
   color: #1d4ed8;
@@ -491,9 +496,8 @@
   }
 }
 
-/* ─── Add these styles to your existing InterviewerManagementModal.css ─── */
+/* ─── Tab Navigation ─── */
 
-/* Tab Navigation */
 .interviewer-tabs {
   display: flex;
   gap: 0;
@@ -538,7 +542,8 @@
   text-align: center;
 }
 
-/* Created Details Section (shown after account creation) */
+/* ─── Created Details Section ─── */
+
 .interviewer-created-details {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
@@ -584,7 +589,8 @@
   word-break: break-word;
 }
 
-/* Loading & Empty States */
+/* ─── Loading & Empty States ─── */
+
 .interviewer-loading,
 .interviewer-empty {
   text-align: center;
@@ -616,13 +622,21 @@
   }
 }
 
-/* First Login Badge */
+/* ─── Badge variants ─── */
+
 .badge-first-login {
   background: #fef3c7;
   color: #92400e;
 }
+
+/* ─── Stats grid variants ─── */
+
 .interviewer-stats.two-cards {
   grid-template-columns: repeat(2, 1fr);
+}
+
+.interviewer-stats.three-cards {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .btn:disabled {

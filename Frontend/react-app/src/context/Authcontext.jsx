@@ -28,27 +28,39 @@ function clearSupabaseLocalStorage() {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [appUser, setAppUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // A ref that is immediately set to false on logout.
-  // Unlike sessionStorage (which the listener reads async), a ref
-  // is updated synchronously in the same JS tick as the logout call,
-  // so there is zero window for a stale event to slip through.
-  const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
-
-  const fetchAppUser = useCallback(async () => {
-    try {
-      const response = await api.get("/auth/me");
-      setAppUser(response.data);
-      return response.data;
-    } catch (err) {
-      console.error("[AuthContext] fetchAppUser failed:", err);
-      setAppUser(null);
-      return null;
-    }
-  }, []);
+    const [user, setUser] = useState(null);
+    const [appUser, setAppUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [suspendedMessage, setSuspendedMessage] = useState("");  // ← new
+  
+    const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
+  
+    const fetchAppUser = useCallback(async () => {
+      try {
+        const response = await api.get("/auth/me");
+        setSuspendedMessage("");  // clear any old message
+        setAppUser(response.data);
+        return response.data;
+      } catch (err) {
+        console.error("[AuthContext] fetchAppUser failed:", err);
+        setAppUser(null);
+  
+        // Handle suspended account — force full logout
+        if (err?.response?.status === 403) {
+          const message = err?.response?.data?.message
+            || "Your account has been suspended. Please contact support.";
+          setSuspendedMessage(message);
+  
+          loggedInRef.current = false;
+          sessionStorage.removeItem(LOGIN_FLAG);
+          setUser(null);
+          clearSupabaseLocalStorage();
+          try { await supabase.auth.signOut(); } catch (_) {}
+        }
+  
+        return null;
+      }
+    }, []);
 
   // ── Bootstrap + listener (runs once) ──
   useEffect(() => {
@@ -105,27 +117,37 @@ export function AuthProvider({ children }) {
         }
 
         // ▸ THE CRITICAL GUARD ◂
-        // If the ref says "not logged in", reject every event.
-        // This is synchronous — no race window.
+        // If the ref says "not logged in", check if this is a Google OAuth return.
+        // Google OAuth redirects back to the app with a fresh page load,
+        // so loggedInRef will be false — we need to let it through.
         if (!loggedInRef.current) {
-          console.log("[AuthContext] ignoring event (not logged in):", event);
-          return;
+            console.log("[AuthContext] provider check:", session?.user?.app_metadata?.provider, "identities:", session?.user?.app_metadata?.providers);
+            const isOAuthReturn = event === "SIGNED_IN" && session?.user?.app_metadata?.providers?.includes("google");
+
+          if (!isOAuthReturn) {
+            console.log("[AuthContext] ignoring event (not logged in):", event);
+            return;
+          }
+
+          // It's a Google OAuth return — set the flag and let it through
+          console.log("[AuthContext] Google OAuth sign-in detected, setting login flag");
+          loggedInRef.current = true;
+          sessionStorage.setItem(LOGIN_FLAG, "true");
         }
-        
 
         if (event === "SIGNED_IN") {
-            if (sessionStorage.getItem("is_signing_up") === "true") {
-              console.log("[AuthContext] ignoring SIGNED_IN during signup flow");
-              return;
-            }
+          if (sessionStorage.getItem("is_signing_up") === "true") {
+            console.log("[AuthContext] ignoring SIGNED_IN during signup flow");
+            return;
           }
-          
-          if (
-            (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") &&
-            session?.user
-          ) {
-            setUser(session.user);
-          }
+        }
+
+        if (
+          (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") &&
+          session?.user
+        ) {
+          setUser(session.user);
+        }
       }
     );
 
@@ -170,34 +192,29 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     console.log("[AuthContext] logout called");
 
-    // 1. Flip the ref synchronously — this immediately blocks the
-    //    onAuthStateChange listener from accepting any more events
-    loggedInRef.current = false;
-
-    // 2. Remove the sessionStorage flag
-    sessionStorage.removeItem(LOGIN_FLAG);
-
-    // 3. Clear React state
-    setUser(null);
-    setAppUser(null);
-
-    // 4. Nuke Supabase tokens from localStorage BEFORE calling signOut.
-    //    This way, even if signOut fires a TOKEN_REFRESHED before
-    //    SIGNED_OUT, there's nothing in storage to refresh from.
-    clearSupabaseLocalStorage();
-
-    // 5. Now tell Supabase to sign out (server-side revocation)
+    // Hit backend FIRST while we still have a valid token
     try {
-      await supabase.auth.signOut({ scope: "global" });
+        await api.post("/auth/logout");
     } catch (err) {
-      console.error("[AuthContext] signOut error (non-fatal):", err);
+        console.error("[AuthContext] backend logout failed (non-fatal):", err);
     }
 
-    // 6. One more cleanup in case signOut wrote something back
+    // Then proceed with existing cleanup
+    loggedInRef.current = false;
+    sessionStorage.removeItem(LOGIN_FLAG);
+    setUser(null);
+    setAppUser(null);
     clearSupabaseLocalStorage();
 
+    try {
+        await supabase.auth.signOut({ scope: "global" });
+    } catch (err) {
+        console.error("[AuthContext] signOut error (non-fatal):", err);
+    }
+
+    clearSupabaseLocalStorage();
     console.log("[AuthContext] logout complete");
-  };
+};
 
   const hasRole = (role) => appUser?.role === role;
   const hasAnyRole = (...roles) => roles.includes(appUser?.role);
@@ -214,6 +231,8 @@ export function AuthProvider({ children }) {
         hasAnyRole,
         isAuthenticated: !!user && !!appUser,
         role: appUser?.role || null,
+        suspendedMessage,        // ← expose it
+        setSuspendedMessage,     // ← so Login.jsx can clear it
       }}
     >
       {children}
