@@ -183,8 +183,8 @@ function App() {
         {/* Super Admin routes */}
         <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />
         <Route path="/admin/tickets/:id" element={<SuperAdmin><AdminTicketDetails /></SuperAdmin>} />
-        <Route path="/admin/subscription-plans" element={<SuperAdmin><SubscriptionPlans /></SuperAdmin>} />
-        <Route path="/admin/active-plans" element={<SuperAdmin><ActivePlans /></SuperAdmin>} />
+        <Route path="/admin/subscription-plans" element={<SuperAdmin><DashboardLayout><SubscriptionPlans /></DashboardLayout></SuperAdmin>} />
+        <Route path="/admin/active-plans" element={<SuperAdmin><DashboardLayout><ActivePlans /></DashboardLayout></SuperAdmin>} />
 
         <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
         <Route path="/admin/AllActivities" element={<SuperAdmin><DashboardLayout><AllActivitiesPage /></DashboardLayout></SuperAdmin>} />

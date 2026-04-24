@@ -4,30 +4,49 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import "./ApplicationManagement.css";
 
-// ═══════════════════════════════════════════════════════════════
-// ✅ YOUR MODULE: CV Analysis Popup
-// Triggered by "View Profile" button — runs AI scoring pipeline
-// ═══════════════════════════════════════════════════════════════
-function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
-  const [stage, setStage] = useState("idle"); // idle | analyzing | done | error
+function CvAnalysisPopup({ application, companyId, onClose, onScoreSaved }) {
+  const [stage, setStage] = useState("idle");
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // ✅ YOUR CODE: score color logic matches ScoringService threshold (>=70 = recommended)
   const scoreColor = (s) => s >= 70 ? "#22c55e" : s >= 45 ? "#f59e0b" : "#ef4444";
   const scoreLabel = (s) => s >= 70 ? "✓ Recommended" : "✗ Not Recommended";
 
-  // ✅ YOUR CODE: fetch CV from storage → call Spring /api/score/analyze → save result
   const analyze = async () => {
     setStage("analyzing");
     try {
+      // STEP 1: Check CV analysis limit
+      const { data: subData, error: subError } = await supabase
+      .from("active_subscriptions")
+      .select("ai_cv_used, subscription_plans!active_subscriptions_plan_id_fkey(ai_cv_limit, is_unlimited, name)")
+      .eq("company_id", companyId)
+      .single();
+
+        console.log("subData:", subData, "subError:", subError); 
+      if (subError || !subData) throw new Error("Could not verify your subscription.");
+
+      const plan = subData.subscription_plans;
+      if (!plan) throw new Error("Could not load your plan details.");
+      const used = subData.ai_cv_used ?? 0;
+      const limit = plan.ai_cv_limit;
+      const isUnlimited = plan.is_unlimited;
+
+      if (!isUnlimited && limit !== null && used >= limit) {
+        throw new Error(
+          `CV analysis limit reached. Your ${plan.name} plan allows ${limit} CV analyses.`
+        );
+      }
+
+      // STEP 2: Run analysis
       const fileRes = await fetch(application.resume_url);
       if (!fileRes.ok) throw new Error("Could not fetch CV file from storage");
       const blob = await fileRes.blob();
       const filename = application.resume_url.split("/").pop();
       const file = new File([blob], filename, { type: blob.type });
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("jobId", String(application.job_id));
@@ -41,15 +60,21 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
       if (!res.ok) throw new Error(await res.text());
       const scoreData = await res.json();
 
-      // ✅ YOUR CODE: persist score to job_applications table
+      // STEP 3: Save score
       await supabase
         .from("job_applications")
         .update({ score: scoreData.score, score_details: scoreData })
         .eq("id", application.id);
 
+      // STEP 4: Increment counter
+      await fetch(`http://localhost:8080/api/active-subscriptions/increment-cv-usage/${companyId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
       setResult(scoreData);
-      setStage("done");
-      onScoreSaved(application.id, scoreData.score, scoreData);
+setStage("done");
+onScoreSaved(application.id, scoreData.score, scoreData);
+
     } catch (err) {
       setErrorMsg(err.message);
       setStage("error");
@@ -60,7 +85,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
     <div className="cv-overlay">
       <div className="cv-modal">
 
-        {/* Header */}
         <div className="cv-header">
           <div>
             <h2 className="cv-header-title">CV Analysis</h2>
@@ -71,7 +95,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
 
         <div className="cv-body">
 
-          {/* ── IDLE: show analyse button ── */}
           {stage === "idle" && (
             <div className="cv-idle">
               <div className="cv-idle-icon">
@@ -84,7 +107,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
             </div>
           )}
 
-          {/* ── ANALYZING: pulsing animation ── */}
           {stage === "analyzing" && (
             <div className="cv-analyzing">
               <div className="cv-ping-wrap">
@@ -106,11 +128,8 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
             </div>
           )}
 
-          {/* ── DONE: score results ── */}
           {stage === "done" && result && (
             <div className="cv-done">
-
-              {/* Circular score */}
               <div className="cv-score-circle-wrap">
                 <div className="cv-score-circle">
                   <svg width="96" height="96" viewBox="0 0 96 96">
@@ -131,7 +150,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
                 </div>
               </div>
 
-              {/* ✅ YOUR CODE: Score breakdown showing how each component was calculated */}
               <div className="cv-breakdown">
                 {[
                   { label: "🎯 Skill Match",  value: result.skillScore, weight: "50%" },
@@ -161,7 +179,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
             </div>
           )}
 
-          {/* ── ERROR ── */}
           {stage === "error" && (
             <div className="cv-error">
               <div className="cv-error-icon">⚠️</div>
@@ -178,9 +195,6 @@ function CvAnalysisPopup({ application, onClose, onScoreSaved }) {
     </div>
   );
 }
-// ═══════════════════════════════════════════════════════════════
-// END YOUR MODULE
-// ═══════════════════════════════════════════════════════════════
 
 
 export default function ApplicationManagement() {
@@ -189,23 +203,26 @@ export default function ApplicationManagement() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
-
-  // ✅ YOUR CODE: controls which application's popup is open
   const [selectedApp, setSelectedApp] = useState(null);
+  const [companyId, setCompanyId] = useState(null);
 
-  // Fetch real applications for logged-in company
   useEffect(() => {
     const fetchApplications = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // ✅ safe session destructuring
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session;
       if (!session) return;
 
-      const { data: companyData } = await supabase
+      // ✅ properly destructured with error
+      const { data: companyData, error: companyError } = await supabase
         .from("companies")
         .select("company_id")
         .eq("user_id", session.user.id)
         .single();
 
-      if (!companyData) return;
+      if (companyError || !companyData) return;
+
+      setCompanyId(companyData.company_id);
 
       const { data, error } = await supabase
         .from("job_applications")
@@ -219,14 +236,12 @@ export default function ApplicationManagement() {
     fetchApplications();
   }, []);
 
-  // ✅ YOUR CODE: update score in local state after analysis — no full refetch needed
   const handleScoreSaved = (appId, score, scoreDetails) => {
     setApplications(prev =>
       prev.map(a => a.id === appId ? { ...a, score, score_details: scoreDetails } : a)
     );
   };
 
-  // Stats from real data
   const total       = applications.length;
   const shortlisted = applications.filter(a => a.status === "Shortlisted").length;
   const rejected    = applications.filter(a => a.status === "Rejected").length;
@@ -253,7 +268,6 @@ export default function ApplicationManagement() {
       <div className="am-page">
         <div className="am-container">
 
-          {/* Stats */}
           <div className="am-stats">
             <div className="am-statCard">
               <div className="am-statTitle">Total Applications</div>
@@ -273,7 +287,6 @@ export default function ApplicationManagement() {
             </div>
           </div>
 
-          {/* Table */}
           <div className="am-card">
             <div className="am-cardTitle">Application Status Tracker</div>
 
@@ -288,7 +301,6 @@ export default function ApplicationManagement() {
                     <tr>
                       <th className="am-th">Candidate</th>
                       <th className="am-th">Job Title</th>
-                      {/* ✅ YOUR CODE: AI Score column */}
                       <th className="am-th">AI Score</th>
                       <th className="am-th">Status</th>
                       <th className="am-th"></th>
@@ -300,7 +312,6 @@ export default function ApplicationManagement() {
                         <td className="am-td">{r.candidate_name || "—"}</td>
                         <td className="am-td">{r.job_title || "—"}</td>
 
-                        {/* ✅ YOUR CODE: blank if not analysed, score% if analysed */}
                         <td className="am-td">
                           {r.score !== null && r.score !== undefined ? (
                             <>
@@ -318,24 +329,21 @@ export default function ApplicationManagement() {
                         </td>
 
                         <td className="am-td">
-                          {/* ✅ YOUR CODE: triggers CV analysis popup */}
                           <button
-  className="am-btn am-view"
-  onClick={() => navigate("/candidate-profile")}
->
-  View Profile
-</button>
+                            className="am-btn am-view"
+                            onClick={() => navigate("/candidate-profile")}
+                          >
+                            View Profile
+                          </button>
 
-{/* ✅ YOUR CODE: triggers CV analysis popup */}
-<button
-  className="am-btn"
-  style={{ background: "#24698B", color: "white" }}
-  onClick={() => setSelectedApp(r)}
->
-  Analyse CV
-</button>
+                          <button
+                            className="am-btn"
+                            style={{ background: "#24698B", color: "white" }}
+                            onClick={() => setSelectedApp(r)}
+                          >
+                            Analyse CV
+                          </button>
 
-                          {/* TEMP: teammate to wire these to update status in job_applications */}
                           <button className="am-btn am-shortlist">Shortlist</button>
                           <button className="am-btn am-reject">Reject</button>
                         </td>
@@ -358,10 +366,10 @@ export default function ApplicationManagement() {
         </div>
       </div>
 
-      {/* ✅ YOUR CODE: CV Analysis popup — mounts when a row's View Profile is clicked */}
       {selectedApp && (
         <CvAnalysisPopup
           application={selectedApp}
+          companyId={companyId}
           onClose={() => setSelectedApp(null)}
           onScoreSaved={handleScoreSaved}
         />

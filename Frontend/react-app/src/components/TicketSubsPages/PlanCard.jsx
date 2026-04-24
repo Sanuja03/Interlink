@@ -36,9 +36,7 @@ export default function PlanCard({ plan, onChange }) {
         
         <p>✔ Active job posts: {formatValue(plan.activeJobs)}</p>
         
-        <p>
-  ✔ Applications: {plan.applications === null ? "Unlimited" : plan.applications}
-</p>
+ 
         
         <p>✔ Interviewer Accounts: {formatValue(plan.interviewers)}</p>
         

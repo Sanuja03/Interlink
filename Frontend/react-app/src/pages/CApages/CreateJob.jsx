@@ -8,6 +8,7 @@ export default function CreateJob() {
 
   const [companyId, setCompanyId] = useState(null);
   const [sessionError, setSessionError] = useState(null);
+  const [limitError, setLimitError] = useState(null);
 
   useEffect(() => {
     const loadCompanyId = async () => {
@@ -39,6 +40,7 @@ export default function CreateJob() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "interview_rounds") setInterviewStages(Array(Number(value)).fill(""));
+    setLimitError(null);
   };
 
   const handleStageChange = (index, value) => {
@@ -67,6 +69,7 @@ export default function CreateJob() {
 
     setLoading(true);
     setErrors({});
+    setLimitError(null);
 
     const jobData = {
       title:           form.title.trim(),
@@ -88,7 +91,13 @@ export default function CreateJob() {
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
       setInterviewStages([]); setReqs([""]);
     } catch (error) {
-      alert(error.response?.data || "Error saving job.");
+      const msg = error.response?.data;
+      if (typeof msg === "string" && msg.includes("Job limit reached")) {
+        setLimitError(msg);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert(msg || "Error saving job.");
+      }
     } finally {
       setLoading(false);
     }
@@ -100,9 +109,29 @@ export default function CreateJob() {
         <div className="cj-container">
           <h2 className="cj-title">Create new job</h2>
 
+          {/* Session Error */}
           {sessionError && (
             <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
+            </div>
+          )}
+
+          {/* Limit Error Banner */}
+          {limitError && (
+            <div className="flex items-start justify-between gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+              <div className="flex items-start gap-2">
+                <span className="text-lg mt-0.5">⚠️</span>
+                <div>
+                  <p className="font-semibold text-sm">Job Limit Reached</p>
+                  <p className="text-sm mt-0.5 text-red-600">{limitError}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setLimitError(null)}
+                className="text-red-400 hover:text-red-600 text-lg leading-none mt-0.5"
+              >
+                ✕
+              </button>
             </div>
           )}
 
@@ -126,7 +155,6 @@ export default function CreateJob() {
               {errors.department && <p className="cj-error">{errors.department}</p>}
             </div>
 
-            {/* ✅ EmploymentType enum values */}
             <div className="cj-field">
               <label className="cj-label">Employment Type</label>
               <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
@@ -138,7 +166,6 @@ export default function CreateJob() {
               {errors.type && <p className="cj-error">{errors.type}</p>}
             </div>
 
-            {/* ✅ Category enum values */}
             <div className="cj-field">
               <label className="cj-label">Category</label>
               <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
@@ -175,7 +202,6 @@ export default function CreateJob() {
               <input name="location" value={form.location} className="cj-input" onChange={handleChange} placeholder="e.g. Colombo, Remote" />
             </div>
 
-            {/* ✅ ExperienceLevel enum values */}
             <div className="cj-field">
               <label className="cj-label">Experience Level</label>
               <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>

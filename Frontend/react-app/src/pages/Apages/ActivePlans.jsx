@@ -1,53 +1,52 @@
 import { useEffect, useState } from "react";
 import ActivePlanTable from "../../components/TicketSubsPages/ActivePlanTable";
-import Footer from "../../components/TicketSubsPages/Footer";
-import logo from "../../assets/interlink-logo.png";
 import api from "../../lib/api";
+import { toast } from "react-hot-toast";
 
 export default function ActivePlans() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    const res = await api.get("/active-subscriptions");
-    setData(res.data);
+    try {
+      setLoading(true);
+      const res = await api.get("/active-subscriptions");
+      setData(res.data);
+    } catch (err) {
+      toast.error("Failed to load subscriptions");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUndo = async (id) => {
     try {
       await api.put(`/active-subscriptions/${id}/revert`);
-  
-      fetchData(); // refresh table
+      toast.success("Renewal undone");
+      fetchData();
     } catch (err) {
-      console.error(err);
+      toast.error(err.response?.data || "Failed to undo renewal");
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto flex items-center gap-4 px-8 py-4">
-          <img src={logo} className="h-10" />
-          <h1 className="text-xl font-semibold text-gray-700">
-            Active Subscription Details
-          </h1>
-        </div>
-      </header>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Active Subscription Plans</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Manage company subscriptions. Confirm payment to schedule renewal at cycle end, or change plans immediately.
+        </p>
+      </div>
 
-      <main className="flex-grow px-8 py-12">
-        <div className="max-w-7xl mx-auto">
-        <ActivePlanTable 
-  data={data} 
-  refresh={fetchData} 
-  onUndo={handleUndo}
-/>
+      {loading ? (
+        <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+          Loading subscriptions...
         </div>
-      </main>
-
-      <Footer />
+      ) : (
+        <ActivePlanTable data={data} refresh={fetchData} onUndo={handleUndo} />
+      )}
     </div>
   );
 }
