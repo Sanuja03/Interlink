@@ -1,13 +1,10 @@
 package syncX.modules.candidatedashboard.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -18,11 +15,40 @@ public class JobApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long candidateId;
+    @Column(name = "candidate_id")
+    private UUID candidateId;
+
+    @Column(name = "candidate_name")
+    private String candidateName;
+
+    @Column(name = "job_title")
     private String jobTitle;
-    private String company;
+
+    // 🔥 FINAL FIX (String → UUID)
+    @Column(name = "\"Company_Id\"", nullable = false)
+    private UUID company;
+
+    @Column(name = "job_id")
+    private Long jobId;
+
+    @Column(name = "applied_date")
     private LocalDate appliedDate;
+
+    @Column(name = "shortlisted_date")
     private LocalDate shortlistedDate;
+
+    @Column(name = "interview_date")
     private LocalDate interviewDate;
-    private String result; // e.g. "Pending" or "Rejected"
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "score")
+    private Double score;
+
+    @Column(name = "resume_url")
+    private String resumeUrl;
+
+    @Column(name = "result")
+    private String result;
 }

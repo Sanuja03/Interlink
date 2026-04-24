@@ -13,6 +13,10 @@ import syncX.modules.auth.repository.UserRepository;
 import syncX.modules.auth.repository.CandidateRepository;
 import syncX.modules.auth.repository.CompanyRepository;
 
+// 🔥 ADDED IMPORTS
+import syncX.modules.CompanyAdmin.companydetails.entity.CompanyDetails;
+import syncX.modules.CompanyAdmin.companydetails.repository.CompanyDetailsRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -40,6 +44,11 @@ public class AuthService {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
+    // 🔥 ADDED REPOSITORY
+    @Autowired
+    private CompanyDetailsRepository companyDetailsRepository;
+
+
     // ── UPDATED: clears isFirstLogin on first access & updates lastLoginAt ──
     public Object getCurrentUser(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -49,13 +58,11 @@ public class AuthService {
         OffsetDateTime now = OffsetDateTime.now();
         boolean changed = false;
 
-        // Clear first login flag when user actually logs in / calls /me
         if (Boolean.TRUE.equals(user.getIsFirstLogin())) {
             user.setIsFirstLogin(false);
             changed = true;
         }
 
-        // Always update last login timestamp
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
         userRepository.save(user);
@@ -116,7 +123,27 @@ public class AuthService {
         company.setCreatedAt(now);
         company.setUpdatedAt(now);
 
-        companyRepository.save(company);
+        Company savedCompany = companyRepository.save(company);
+
+        // 🔥🔥🔥 ADDED: COPY DATA TO company_details TABLE
+        CompanyDetails details = new CompanyDetails();
+
+        details.setCompanyId(savedCompany.getCompanyId());
+        details.setCompanyName(savedCompany.getCompanyName());
+        details.setCompanyEmail(savedCompany.getCompanyEmail());
+        details.setIndustry(savedCompany.getIndustry());
+        details.setCompanySize(savedCompany.getCompanySize());
+
+        // location might be null at signup
+        details.setCompanyLocation(null);
+
+        // optional fields initially empty
+        details.setWebsite(null);
+        details.setAbout(null);
+        details.setLogoUrl(null);
+
+        companyDetailsRepository.save(details);
+        // 🔥🔥🔥 END ADDED BLOCK
     }
 
     public InterviewerResponseDTO completeInterviewerSignup(Jwt jwt, InterviewerSignupDTO dto) {
@@ -124,7 +151,6 @@ public class AuthService {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        // 1. Verify admin
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -132,7 +158,6 @@ public class AuthService {
             throw new RuntimeException("Only company admins can create interviewers");
         }
 
-        // Get company
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
@@ -140,7 +165,6 @@ public class AuthService {
             throw new RuntimeException("Email already exists in system");
         }
 
-        // CREATE USER IN SUPABASE
         String supabaseUserId = supabaseAdminService.createUser(
                 dto.getEmail(),
                 dto.getPassword()
@@ -148,7 +172,6 @@ public class AuthService {
 
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
-        // SAVE INTO USERS TABLE
         User user = new User();
         user.setUserId(interviewerUserId);
         user.setEmail(dto.getEmail());
@@ -160,7 +183,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // SAVE INTO INTERVIEWERS TABLE
         Interviewer interviewer = new Interviewer();
         interviewer.setInterviewerId(dto.getInterviewerId());
         interviewer.setUserId(interviewerUserId);
@@ -180,11 +202,9 @@ public class AuthService {
 
         interviewerRepository.save(interviewer);
 
-        // Return the created interviewer details
         return mapToResponseDTO(interviewer, user);
     }
 
-    // ── Fetch all interviewers for the admin's company ──
     public List<InterviewerResponseDTO> getInterviewersByCompany(Jwt jwt) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
 
@@ -208,7 +228,6 @@ public class AuthService {
                 .collect(Collectors.toList());
     }
 
-    // ── Fetch single interviewer by interviewer_id ──
     public InterviewerResponseDTO getInterviewerById(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
 
@@ -225,7 +244,6 @@ public class AuthService {
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Make sure this interviewer belongs to the admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
@@ -234,12 +252,10 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    // ── NEW: Deactivate an interviewer account ──
     public void deactivateInterviewer(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        // Verify admin
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -247,20 +263,16 @@ public class AuthService {
             throw new RuntimeException("Only company admins can deactivate interviewers");
         }
 
-        // Get admin's company
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // Find the interviewer
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Ensure interviewer belongs to admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
 
-        // Update account_status in the users table to "inactive"
         User interviewerUser = userRepository.findById(interviewer.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
 
@@ -269,7 +281,6 @@ public class AuthService {
         userRepository.save(interviewerUser);
     }
 
-    // ── Helper: map entity to response DTO ──
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();
         response.setInterviewerId(interviewer.getInterviewerId());

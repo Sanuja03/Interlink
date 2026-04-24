@@ -1,13 +1,8 @@
-// ============================================================
-// FILE: src/main/java/syncX/security/SecurityConfig.java (UPDATED)
-// PURPOSE: Role-based URL authorization + JWT auth
-// ============================================================
 package syncX.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,7 +13,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity  // Enables @PreAuthorize on methods
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -26,6 +21,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
@@ -33,32 +29,39 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // ── Public: signup endpoints (called right after Supabase signup) ──
+
+                        // ✅ TEMP FIX (ALLOW APPLICATION MANAGEMENT)
+                        .requestMatchers("/api/company/applications/**").permitAll()
+
+                        // ── Public ──
                         .requestMatchers(
                                 "/api/auth/complete-candidate-signup",
                                 "/api/auth/complete-company-signup",
                                 "/api/otp/**"
                         ).permitAll()
 
-                        // ── Candidate endpoints ──
+                        // ── Candidate ──
                         .requestMatchers("/api/candidate/**").hasAuthority("ROLE_candidate")
 
-                        // ── Interviewer endpoints ──
+                        // ── Interviewer ──
                         .requestMatchers("/api/interviewer/**").hasAuthority("ROLE_interviewer")
 
-                        // ── Company admin endpoints ──
+                        // ── Company Admin ──
                         .requestMatchers("/api/company/**").hasAuthority("ROLE_company_admin")
                         .requestMatchers("/api/auth/interviewers/**").hasAuthority("ROLE_company_admin")
                         .requestMatchers("/api/auth/complete-interviewer-signup").hasAuthority("ROLE_company_admin")
 
-                        // ── Super admin endpoints ──
+                        // ── Special path fix ──
+                        .requestMatchers("/company/**").hasAuthority("ROLE_company_admin")
+
+                        // ── Super Admin ──
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_super_admin")
 
-                        // ── Shared endpoints (any authenticated user) ──
+                        // ── Shared ──
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/auth/me").authenticated()
 
-                        // ── Everything else requires authentication ──
+                        // ── Everything else ──
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
@@ -68,11 +71,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Converts the Supabase JWT into Spring Security authorities.
-     * Since Supabase JWTs don't contain Spring roles, we look up the
-     * user's role from the database and inject it as a granted authority.
-     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
