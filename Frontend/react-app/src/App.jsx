@@ -73,7 +73,7 @@ function App() {
   return (
     <Routes>
       {/* Landing */}
-      <Route path="/" element={<CandidateHome />} />
+      <Route path="/" element={<InterviewerCalendar />} />
 
       {/* Auth */}
       <Route path="/Login" element={<Login />} />
@@ -153,20 +153,20 @@ function App() {
       <Route path="/shortlist" element={<Shortlist />} />
 
       {/* Super Admin routes with Dashboard Layout */}
-        <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
-        <Route path="/admin/AllActivities" element={<DashboardLayout><AllActivitiesPage /></DashboardLayout>} />
-        <Route path="/admin/Companies" element={<DashboardLayout><SuperAdminCompanies /></DashboardLayout>} />
-        <Route path="/admin/Interviews" element={<DashboardLayout><SuperAdminInterviews /></DashboardLayout>} />
-        <Route path="/admin/Profile" element={<DashboardLayout><SuperAdminProfile /></DashboardLayout>} />
-        <Route path="/admin/SystemSettings" element={<DashboardLayout><SystemSettings /></DashboardLayout>} />
-        <Route path="/admin/Jobs" element={<DashboardLayout><SuperAdminJobs /></DashboardLayout>} />
-        <Route path="/admin/Jobs/:id" element={<DashboardLayout><SuperAdminJobDetails /></DashboardLayout>} />
-        <Route path="/admin/Users" element={<DashboardLayout><SuperAdminUsers /></DashboardLayout>} />
-        <Route path="/admin/ChatBot" element={<DashboardLayout><ChatBot /></DashboardLayout>} />//test for now
-        <Route path="/admin/User/:id"element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>}/>
-        <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
-        <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
-      </Routes>
+      <Route path="/admin/dashboard" element={<DashboardLayout><SuperAdminDashboard /></DashboardLayout>} />
+      <Route path="/admin/AllActivities" element={<DashboardLayout><AllActivitiesPage /></DashboardLayout>} />
+      <Route path="/admin/Companies" element={<DashboardLayout><SuperAdminCompanies /></DashboardLayout>} />
+      <Route path="/admin/Interviews" element={<DashboardLayout><SuperAdminInterviews /></DashboardLayout>} />
+      <Route path="/admin/Profile" element={<DashboardLayout><SuperAdminProfile /></DashboardLayout>} />
+      <Route path="/admin/SystemSettings" element={<DashboardLayout><SystemSettings /></DashboardLayout>} />
+      <Route path="/admin/Jobs" element={<DashboardLayout><SuperAdminJobs /></DashboardLayout>} />
+      <Route path="/admin/Jobs/:id" element={<DashboardLayout><SuperAdminJobDetails /></DashboardLayout>} />
+      <Route path="/admin/Users" element={<DashboardLayout><SuperAdminUsers /></DashboardLayout>} />
+      <Route path="/admin/ChatBot" element={<DashboardLayout><ChatBot /></DashboardLayout>} />//test for now
+      <Route path="/admin/User/:id" element={<DashboardLayout><UserProfileWrapper /></DashboardLayout>} />
+      <Route path="/admin/Company/:id" element={<DashboardLayout><SuperAdminViewCompany /></DashboardLayout>} />
+      <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
+    </Routes>
   );
 }
 
