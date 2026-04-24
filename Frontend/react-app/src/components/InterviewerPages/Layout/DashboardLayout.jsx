@@ -1,18 +1,27 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import FloatingAvailabilityBtn from "./FloatingAvailabilityBtn";
 import notificationicon from "../../../assets/notificationicon.png";
+import { useAuth } from "../../../context/Authcontext";
 
-
-
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 
 const SIDEBAR_WIDTH = 240;
 
 const DashboardLayout = ({ children }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/");
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-gray-50">
@@ -41,9 +50,7 @@ const DashboardLayout = ({ children }) => {
             className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100"
           />
 
-
-
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+          <button onClick={handleLogout} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
                         bg-red-50 text-red-600 text-xs font-semibold
                         hover:bg-red-100 transition duration-200
                         cursor-pointer
@@ -73,8 +80,8 @@ const DashboardLayout = ({ children }) => {
 
       </div>
 
-
-
+      {/* Floating availability button — visible on all interviewer pages */}
+      <FloatingAvailabilityBtn />
 
     </div>
   );

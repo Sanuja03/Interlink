@@ -1,43 +1,89 @@
+// ============================================================
+// FILE: src/pages/LoginSignup/Login.jsx
+// PURPOSE: Uses AuthContext for login + proper redirect logic
+// ============================================================
 import "./Login.css";
 
 import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
+import api from "../../lib/api";
 
-import LandingPage from "../LandingPage/LandingPage";
-
-
-
+import { useAuth } from "../../context/Authcontext";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { supabase } from "../../lib/supabase";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated, role, loading, suspendedMessage, setSuspendedMessage } = useAuth();
   const [loginError, setLoginError] = useState("");
+
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    mode: "onTouched",
-  });
+  } = useForm({ mode: "onTouched" });
 
-  const onSubmit = (data) => {
-
-    const email = data.email.trim();
-    const password = data.password;
-
-
-    if (email === "sanjalee@gmail.com" && password === "12345678") {
-      setLoginError(""); //if correct credentials clear the error 
-      navigate("/Dashboard");
-      return;
+  // Redirect when genuinely authenticated
+  useEffect(() => {
+    if (loading) return;
+    if (isAuthenticated && role) {
+      const dashboardMap = {
+        candidate: "/candidate/dashboard",
+        company_admin: "/company/dashboard",
+        interviewer: "/interviewer/dashboard",
+        super_admin: "/admin/dashboard",
+      };
+      const from = location.state?.from?.pathname || dashboardMap[role] || "/";
+      navigate(from, { replace: true });
     }
+  }, [isAuthenticated, role, loading, navigate, location]);
 
-    // else  wrong credentials set a error msg
-    setLoginError("Invalid email or password");
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          const provider = session.user?.app_metadata?.provider;
+          if (provider === "google") {
+            try {
+              await api.get("/auth/me", {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+              });
+            } catch (err) {
+              if (err?.response?.status === 403) {
+                // Suspended Google user
+                await supabase.auth.signOut();
+                setLoginError("Your account has been suspended. Please contact support.");
+              } else if (err?.response?.status === 500 || err?.response?.status === 404) {
+                await supabase.auth.signOut();
+                setLoginError("No account found for this Google email. Please sign up first.");
+              }
+            }
+          }
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const onSubmit = async (data) => {
+    try {
+      setLoginError("");
+      setSuspendedMessage("");  // clear previous suspension message
+      await login(data.email.trim(), data.password);
+      // After login succeeds, AuthContext calls /auth/me.
+      // If the user is suspended, fetchAppUser will set suspendedMessage
+      // and force logout — the message will appear on re-render.
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setLoginError(err?.message || "Invalid email or password");
+    }
   };
 
   return (
@@ -53,19 +99,24 @@ const Login = () => {
           <div className="text">
             <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
             <h1>Welcome Back!</h1>
-            <p>
-              <i>Connecting Talent with Opportunity</i>
-            </p>
+            <p><i>Connecting Talent with Opportunity</i></p>
           </div>
         </div>
 
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          {/*Show login error if credentials are wrong*/}
+
+        {suspendedMessage && (
+            <p className="error-text" style={{ color: "#d32f2f", fontWeight: "bold" }}>
+              {suspendedMessage}
+            </p>
+          )}
+
+
+
           {loginError && <p className="error-text">{loginError}</p>}
 
-          {/* email */}
           <div className="input-group">
-            {errors.email && <p className="error-text">{errors.email.message}</p>} {/* if errors.email exists show the error msg */}
+            {errors.email && <p className="error-text">{errors.email.message}</p>}
             <label>email address</label>
             <input
               type="email"
@@ -81,9 +132,8 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="input-group">
-            {errors.password && (<p className="error-text">{errors.password.message}</p>)}
+            {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
             <input
               type="password"
@@ -99,36 +149,42 @@ const Login = () => {
             />
           </div>
 
-          {/* Forgot password */}
           <div className="forgot-password">
-            <p>
-              <a href="">Forgot Password</a>
-            </p>
+            <p><Link to="/forgot-password">Forgot Password</Link></p>
           </div>
 
-          {/* Login button */}
           <div>
-            <button className="login-button" type="submit" disabled={isSubmitting}> {/*button cannot be clicked when submitting */}
-              Login
+            <button className="login-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </div>
-
 
           <div className="or-container">
             <span>OR</span>
           </div>
 
-          {/* Google Sign in */}
           <div className="google-signin">
-            <img src={signin} alt="Sign in with Google" />
+            <img
+              src={signin}
+              alt="Sign in with Google"
+              style={{ cursor: "pointer" }}
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: window.location.origin + "/login",
+                  },
+                });
+                if (error) setLoginError(error.message);
+              }}
+            />
           </div>
 
           <div>
             <p>
-              Dont have an account? <a href="">Sign up</a>
+              Don't have an account? <Link to="/?section=howitworks">Signup</Link>
             </p>
           </div>
-
         </form>
       </div>
     </div>

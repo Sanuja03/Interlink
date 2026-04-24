@@ -1,9 +1,7 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8080/api/chat";
+import api from "../lib/api";
 
 export const sendMessage = (message) => {
-  return axios.post(API_BASE_URL, {
+  return api.post("/chat", {
     message,
   });
 };

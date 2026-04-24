@@ -1,62 +1,79 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import "../../components/InterviewerPages/Layout/TodaySchedule.css";
 import "./PendingRequests.css";
-import PendingRequestList from "../../components/InterviewerPages/PendingRequestsLayout/PendingRequestsList";
+import PendingRequestsList from "../../components/InterviewerPages/PendingRequestsLayout/PendingRequestsList";
 import SearchBar from "../../components/InterviewerPages/Layout/SearchBar";
-
+import api from "../../lib/api"; // adjust this path to match your project structure
 
 const PendingRequests = () => {
-  const [rows, setRows] = useState([
-    {
-      interviewId: "IN5690",
-      candidate: "Amal Dissanayaka",
-      jobTitle: "UI/UX Designer",
-      date: "2026-02-20",
-      time: "10.30 AM",
-      mode: "Online",
-      notes: "Focus on portfolio discussion nnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
-      accepted: false,
-      history: [
-        { date: "2026-02-10", event: "Applied" },
-        { date: "2026-02-12", event: "Shortlisted" },
-        { date: "2026-02-15", event: "Round 1 (HR) - Completed (PASS)" },
-      ],
-      round: "Round 2 (Technical)",
-    },
-    {
-      interviewId: "IN5691",
-      candidate: "Sumudu Perera",
-      jobTitle: "Software Engineer",
-      date: "2026-02-20",
-      time: "11.00 AM",
-      mode: "Physical",
-      notes: "Panel interview with HR",
-      accepted: true,
-      history: [
-        { date: "2026-02-09", event: "Applied" },
-        { date: "2026-02-11", event: "Shortlisted" },
-      ],
-      round: "Round 1 (HR)",
-    },
-  ]);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [openHistory, setOpenHistory] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchPending = async () => {
+      try {
+        console.log("Calling pending endpoint...");
+        const res = await api.get("/interviewer/interview-requests/pending");
+        console.log("Pending response:", res.data);
+
+        if (cancelled) return;
+
+        const mapped = (res.data || []).map((r) => ({
+          interviewId: r.interviewId,
+          requestId: r.requestId,
+          candidate: r.candidateName,
+          jobTitle: r.jobTitle,
+          date: r.interviewDate,
+          time: r.interviewTime,
+          mode: r.mode,
+          notes: r.adminNotes || "—",
+          historyId: r.historyId,
+          round: r.round,
+          history: r.history || [],
+          accepted: false,
+        }));
+        setRows(mapped);
+      } catch (err) {
+        console.error("Failed to fetch pending requests:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchPending();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleToggle = (index) => {
-    const updated = [...rows];
-    updated[index].accepted = !updated[index].accepted;
-    setRows(updated);
+    setRows((prev) =>
+      prev.map((r, i) => (i === index ? { ...r, accepted: !r.accepted } : r))
+    );
   };
 
-  const handleSend = (row) => {
-    console.log("Sending decision:", row);
-    alert(`Decision sent for ${row.interviewId}`);
+  const handleSend = async (row) => {
+    const response = row.accepted ? "accepted" : "rejected";
+    try {
+      await api.put(
+        `/interviewer/interview-requests/${row.requestId}/respond`,
+        null,
+        { params: { response } }
+      );
+      // Remove from list after responding
+      setRows((prev) => prev.filter((r) => r.requestId !== row.requestId));
+    } catch (err) {
+      console.error("Failed to respond:", err);
+      alert("Failed to send decision. Please try again.");
+    }
   };
-
-  const modeDotClass = (mode) =>
-    mode === "Online" ? "mode-online" : "mode-physical";
 
   const handleViewHistory = (row) => {
     setSelectedRow(row);
@@ -68,6 +85,9 @@ const PendingRequests = () => {
     setSelectedRow(null);
   };
 
+  const modeDotClass = (mode) =>
+    mode === "Online" ? "mode-online" : "mode-physical";
+
   return (
     <DashboardLayout>
       <div className="settings-page">
@@ -78,13 +98,17 @@ const PendingRequests = () => {
           onSearch={() => console.log("Search clicked")}
         />
 
-        <PendingRequestList
-          rows={rows}
-          onToggle={handleToggle}
-          onSend={handleSend}
-          onViewHistory={handleViewHistory}
-          modeDotClass={modeDotClass}
-        />
+        {loading ? (
+          <p>Loading…</p>
+        ) : (
+          <PendingRequestsList
+            rows={rows}
+            onToggle={handleToggle}
+            onSend={handleSend}
+            onViewHistory={handleViewHistory}
+            modeDotClass={modeDotClass}
+          />
+        )}
 
         {openHistory && selectedRow && (
           <div className="modal-overlay" onClick={closeModal}>

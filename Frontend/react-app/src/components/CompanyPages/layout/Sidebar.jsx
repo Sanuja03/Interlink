@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./Sidebar.css";
 
+import { useAuth } from "../../../context/Authcontext";
+
 // ✅ FIXED PATHS
 import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
@@ -15,6 +17,7 @@ export default function Sidebar() {
   const [openManage, setOpenManage] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleManageClick = () => {
     if (collapsed) {
@@ -23,6 +26,11 @@ export default function Sidebar() {
     } else {
       setOpenManage((s) => !s);
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
 
   return (
@@ -74,7 +82,7 @@ export default function Sidebar() {
               Create Job
             </NavLink>
 
-            <NavLink to="/shortlisted-candidates" className="sb-sublink">
+            <NavLink to="/company/shortlisted-candidates" className="sb-sublink">
               Shortlisted
             </NavLink>
           </div>
@@ -87,12 +95,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="sb-logout">
-        <button
-          onClick={() => {
-            alert("Logged out");
-            navigate("/");
-          }}
-        >
+        <button onClick={handleLogout}>
           <span>⎋</span>
           {!collapsed && "Logout"}
         </button>

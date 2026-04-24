@@ -1,81 +1,59 @@
-import "./PendingRequestsList.css";
-
-const PendingRequestList = ({
+const PendingRequestsList = ({
   rows,
   onToggle,
   onSend,
   onViewHistory,
   modeDotClass,
 }) => {
+  if (!rows || rows.length === 0) {
+    return <p className="empty-state">No pending requests.</p>;
+  }
+
   return (
-    <div className="schedule-card">
-      <div className="table-wrapper">
-        <table className="schedule-table">
-          <thead>
-            <tr>
-              <th>Interview ID</th>
-              <th>Candidate</th>
-              <th>Job Title</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Mode</th>
-              <th>Admin Notes</th>
-              <th>History</th>
-              <th>Accept</th>
-              <th className="align-right"></th>
-            </tr>
-          </thead>
+    <div className="pending-list">
+      {rows.map((row, index) => (
+        <div key={row.requestId || row.interviewId} className="pending-row">
+          <div className="row-main">
+            <div className="row-id">{row.interviewId}</div>
+            <div className="row-candidate">{row.candidate}</div>
+            <div className="row-job">{row.jobTitle}</div>
+            <div className="row-date">{row.date}</div>
+            <div className="row-time">{row.time}</div>
+            <div className="row-mode">
+              <span className={`mode-dot ${modeDotClass(row.mode)}`}></span>
+              {row.mode}
+            </div>
+            <div className="row-notes">{row.notes}</div>
+          </div>
 
-          <tbody>
-            {rows.map((r, index) => (
-              <tr key={r.interviewId}>
-                <td className="bold">{r.interviewId}</td>
-                <td>{r.candidate}</td>
-                <td>{r.jobTitle}</td>
-                <td>{r.date}</td>
-                <td>{r.time}</td>
+          <div className="row-actions">
+            <button
+              className="view-btn"
+              onClick={() => onViewHistory(row)}
+            >
+              View History
+            </button>
 
-                <td>
-                  <div className="mode-cell">
-                    <span className={`mode-dot ${modeDotClass(r.mode)}`} />
-                    <span>{r.mode}</span>
-                  </div>
-                </td>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={row.accepted}
+                onChange={() => onToggle(index)}
+              />
+              <span>{row.accepted ? "Accept" : "Reject"}</span>
+            </label>
 
-                <td className="notes-cell">{r.notes}</td>
-
-                <td>
-                  <button
-                    className="history-btn"
-                    onClick={() => onViewHistory(r)}
-                  >
-                    View
-                  </button>
-                </td>
-
-                <td>
-                  <label className="switch">
-                    <input
-                      type="checkbox"
-                      checked={r.accepted}
-                      onChange={() => onToggle(index)}
-                    />
-                    <span className="slider"></span>
-                  </label>
-                </td>
-
-                <td className="align-right">
-                  <button className="view-btn" onClick={() => onSend(r)}>
-                    Send
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <button
+              className="send-btn"
+              onClick={() => onSend(row)}
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default PendingRequestList;
+export default PendingRequestsList;
