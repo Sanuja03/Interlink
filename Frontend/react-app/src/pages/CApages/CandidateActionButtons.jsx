@@ -1,45 +1,27 @@
-import RequestButton from "./RequestButton";
-import StatusButton from "./StatusButton";
 import FinalizedPanelButton from "./FinalizedPanelButton";
 
 /**
  * CandidateActionButtons
  *
- * Groups the Request, Status, and Finalized Panel buttons
- * for a single candidate table row. Each button manages its own popup.
+ * The "Request / Status" button calls onOpenRequest (handleOpenForCandidate
+ * in ShortlistedCandidates) which checks /current and opens either the
+ * Request popup or Status popup with the candidate passed correctly.
  *
- * Props:
- *  - candidate            : object — candidate data
- *  - interviewDetails     : object — interview info for finalized popup
- *  - acceptedInterviewers : array  — accepted interviewers for finalized popup
- *  - scorecards           : array  — scorecard templates (for finalized popup dropdown)
- *  - interviewers         : array  — all interviewers (for status popup)
- *  - panelSize            : number — panel size (for status popup)
- *  - onResendRequest      : (id) => void
- *  - onFinalizePanel      : () => void
- *  - onSendDetails        : (payload) => void
+ * StatusButton removed — its logic is owned by ShortlistedCandidates.
  */
 const CandidateActionButtons = ({
   candidate,
   interviewDetails,
   acceptedInterviewers,
   scorecards,
-  interviewers,
-  panelSize,
-  onResendRequest,
-  onFinalizePanel,
+  onOpenRequest,
   onSendDetails,
 }) => {
   return (
     <div className="sc-action-group">
-      <RequestButton candidate={candidate} />
-
-      <StatusButton
-        panelSize={panelSize}
-        interviewers={interviewers}
-        onResendRequest={onResendRequest}
-        onFinalizePanel={onFinalizePanel}
-      />
+      <button className="sc-request-btn" onClick={onOpenRequest}>
+        Request / Status
+      </button>
 
       <FinalizedPanelButton
         interviewDetails={interviewDetails}
