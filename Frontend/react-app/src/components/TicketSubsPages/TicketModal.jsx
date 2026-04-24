@@ -1,14 +1,30 @@
 import { useEffect, useState } from "react";
 import api from "../../lib/api";
+import { sanitizeInput, detectMaliciousInput } from "../../utils/subscriptionUtils";
 
 // Category values must match exactly what the backend stores
 const CATEGORIES = [
-  { value: "GENERAL",   label: "General"         },
-  { value: "LOGIN",     label: "Login Issue"      },
-  { value: "PAYMENT",   label: "Payment Issue"    },
-  { value: "TECHNICAL", label: "Technical Issue"  },
+  { value: "GENERAL",   label: "General"        },
+  { value: "LOGIN",     label: "Login Issue"     },
+  { value: "PAYMENT",   label: "Payment Issue"   },
+  { value: "TECHNICAL", label: "Technical Issue" },
 ];
 
+const TITLE_MAX       = 120;
+const TITLE_MIN       = 5;
+const DESC_MAX        = 2000;
+const DESC_MIN        = 10;
+
+/**
+ * TicketModal
+ * Create / Edit ticket dialog with full inline field validation,
+ * security sanitization, and character counters.
+ *
+ * Props:
+ *  - ticket    {object|null}  if provided, pre-fills fields for editing
+ *  - onClose   {function}     closes the modal
+ *  - onSuccess {function}     called after successful create/update
+ */
 export default function TicketModal({ ticket = null, onClose, onSuccess }) {
   const isEdit = Boolean(ticket?.id);
 
@@ -16,7 +32,13 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
   const [description, setDescription] = useState("");
   const [category,    setCategory]    = useState("");
   const [submitting,  setSubmitting]  = useState(false);
-  const [error,       setError]       = useState(null);
+
+  // Per-field inline errors — empty string means no error
+  const [errors, setErrors] = useState({ title: "", description: "", category: "" });
+
+  // Track whether the user has touched a field (so we don't show
+  // errors on fields the user hasn't interacted with yet)
+  const [touched, setTouched] = useState({ title: false, description: false, category: false });
 
   // Populate fields when editing
   useEffect(() => {
@@ -29,28 +51,94 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
       setDescription("");
       setCategory("");
     }
-    setError(null);
+    setErrors({ title: "", description: "", category: "" });
+    setTouched({ title: false, description: false, category: false });
   }, [ticket]);
 
-  const validate = () => {
-    if (!title.trim())       return "Title is required.";
-    if (title.trim().length > 120) return "Title must be 120 characters or fewer.";
-    if (!description.trim()) return "Description is required.";
-    if (!category)           return "Please select a category.";
-    return null;
+  // ── Validation ──────────────────────────────────────────────────────────
+
+  /**
+   * Validates a single field and returns an error string or "".
+   * Security checks run before UX checks so malicious input is caught first.
+   */
+  const validateField = (name, value) => {
+    switch (name) {
+      case "title": {
+        if (!value.trim())                    return "Title is required.";
+        const sec = detectMaliciousInput(value, "Title");
+        if (sec)                              return sec;
+        if (value.trim().length < TITLE_MIN)  return `Title must be at least ${TITLE_MIN} characters.`;
+        if (value.trim().length > TITLE_MAX)  return `Title must be ${TITLE_MAX} characters or fewer.`;
+        return "";
+      }
+      case "description": {
+        if (!value.trim())                    return "Description is required.";
+        const sec = detectMaliciousInput(value, "Description");
+        if (sec)                              return sec;
+        if (value.trim().length < DESC_MIN)   return `Description must be at least ${DESC_MIN} characters.`;
+        if (value.trim().length > DESC_MAX)   return `Description must be ${DESC_MAX} characters or fewer.`;
+        return "";
+      }
+      case "category": {
+        if (!value) return "Please select a category.";
+        return "";
+      }
+      default: return "";
+    }
   };
 
+  /** Validates all fields at once. Returns true if all pass. */
+  const validateAll = () => {
+    const newErrors = {
+      title:       validateField("title",       title),
+      description: validateField("description", description),
+      category:    validateField("category",    category),
+    };
+    setErrors(newErrors);
+    // Mark all fields as touched so errors show immediately on submit
+    setTouched({ title: true, description: true, category: true });
+    return !Object.values(newErrors).some(Boolean);
+  };
+
+  // ── Change handlers (real-time validation after first touch) ─────────────
+
+  const handleTitleChange = (e) => {
+    const val = e.target.value;
+    if (val.length > TITLE_MAX) return; // hard cap — enforced by maxLength too
+    setTitle(val);
+    if (touched.title) setErrors((prev) => ({ ...prev, title: validateField("title", val) }));
+  };
+
+  const handleDescriptionChange = (e) => {
+    const val = e.target.value;
+    if (val.length > DESC_MAX) return;
+    setDescription(val);
+    if (touched.description) setErrors((prev) => ({ ...prev, description: validateField("description", val) }));
+  };
+
+  const handleCategoryChange = (e) => {
+    const val = e.target.value;
+    setCategory(val);
+    setTouched((prev) => ({ ...prev, category: true }));
+    setErrors((prev) => ({ ...prev, category: validateField("category", val) }));
+  };
+
+  const handleBlur = (name, value) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
+  // ── Submit ───────────────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
-    const validationError = validate();
-    if (validationError) { setError(validationError); return; }
+    if (!validateAll()) return;
 
     setSubmitting(true);
-    setError(null);
-
     try {
+      // Sanitize before sending — strips any HTML that slipped through
       const payload = {
-        title:       title.trim(),
-        description: description.trim(),
+        title:       sanitizeInput(title),
+        description: sanitizeInput(description),
         category,
       };
 
@@ -65,16 +153,29 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
     } catch (err) {
       console.error(err);
       const serverMsg = err?.response?.data?.message;
-      setError(serverMsg || "Something went wrong. Please try again.");
+      // Show server error on the title field as a general form error
+      setErrors((prev) => ({
+        ...prev,
+        title: serverMsg || "Something went wrong. Please try again.",
+      }));
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Close on backdrop click
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /** Returns border colour class based on touched + error state */
+  const fieldBorder = (name) => {
+    if (!touched[name]) return "border-gray-300";
+    return errors[name] ? "border-red-400" : "border-emerald-400";
+  };
+
+  const descRemaining = DESC_MAX - description.length;
 
   return (
     <div
@@ -87,14 +188,6 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
           {isEdit ? "Edit Ticket" : "Create Ticket"}
         </h1>
 
-        {/* ERROR BANNER */}
-        {error && (
-          <div className="mb-5 bg-red-50 border border-red-200 text-red-600
-            text-sm px-4 py-3 rounded-xl">
-            {error}
-          </div>
-        )}
-
         <div className="flex flex-col gap-6">
 
           {/* TITLE */}
@@ -104,15 +197,26 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
             </label>
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={120}
+              onChange={handleTitleChange}
+              onBlur={() => handleBlur("title", title)}
+              maxLength={TITLE_MAX}
               placeholder="Enter ticket title"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3
-                focus:outline-none focus:ring-2 focus:ring-[#0C3E56]"
+              className={`w-full border rounded-xl px-4 py-3
+                focus:outline-none focus:ring-2 focus:ring-[#0C3E56] transition
+                ${fieldBorder("title")}`}
             />
-            <p className="text-xs text-gray-400 mt-1 text-right">
-              {title.length}/120
-            </p>
+            <div className="flex justify-between mt-1">
+              {/* Inline error */}
+              {touched.title && errors.title ? (
+                <p className="text-xs text-red-500">{errors.title}</p>
+              ) : (
+                <span /> // keeps layout stable
+              )}
+              {/* Character counter — turns red near limit */}
+              <p className={`text-xs ml-auto ${title.length >= TITLE_MAX - 10 ? "text-red-400" : "text-gray-400"}`}>
+                {title.length}/{TITLE_MAX}
+              </p>
+            </div>
           </div>
 
           {/* DESCRIPTION */}
@@ -123,11 +227,24 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
             <textarea
               rows={5}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
+              onBlur={() => handleBlur("description", description)}
+              maxLength={DESC_MAX}
               placeholder="Describe the issue in detail…"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3
-                focus:outline-none focus:ring-2 focus:ring-[#0C3E56] resize-none"
+              className={`w-full border rounded-xl px-4 py-3
+                focus:outline-none focus:ring-2 focus:ring-[#0C3E56] resize-none transition
+                ${fieldBorder("description")}`}
             />
+            <div className="flex justify-between mt-1">
+              {touched.description && errors.description ? (
+                <p className="text-xs text-red-500">{errors.description}</p>
+              ) : (
+                <span />
+              )}
+              <p className={`text-xs ml-auto ${descRemaining < 100 ? "text-red-400" : "text-gray-400"}`}>
+                {description.length}/{DESC_MAX}
+              </p>
+            </div>
           </div>
 
           {/* CATEGORY */}
@@ -137,15 +254,19 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
             </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white
-                focus:outline-none focus:ring-2 focus:ring-[#0C3E56]"
+              onChange={handleCategoryChange}
+              className={`w-full border rounded-xl px-4 py-3 bg-white
+                focus:outline-none focus:ring-2 focus:ring-[#0C3E56] transition
+                ${fieldBorder("category")}`}
             >
               <option value="">Select a category</option>
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
+            {touched.category && errors.category && (
+              <p className="text-xs text-red-500 mt-1">{errors.category}</p>
+            )}
           </div>
 
           {/* ACTIONS */}
