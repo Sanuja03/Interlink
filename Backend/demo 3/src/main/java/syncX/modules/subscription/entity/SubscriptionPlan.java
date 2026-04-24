@@ -2,8 +2,10 @@ package syncX.modules.subscription.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "subscription_plans")
@@ -18,11 +20,14 @@ public class SubscriptionPlan {
     @Column(unique = true, nullable = false)
     private String name;
 
-    private double price;
+    @Column(name = "ai_cv_limit")
+    private Integer aiCvLimit = 0; // 0 = unlimited (for Free)
+
+    @Column(name = "active_jobs")
     private Integer activeJobs;
-    private String applications;
+
+    private double price;
     private Integer interviewers;
-    private Integer aiCvLimit;
     private Integer aiQuestionLimit;
     private Boolean isUnlimited;
 

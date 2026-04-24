@@ -10,6 +10,9 @@ import syncX.modules.job.entity.Job;
 import syncX.modules.job.entity.JobRequirement;
 import syncX.modules.job.repository.JobRepository;
 import syncX.modules.job.repository.JobRequirementRepository;
+import syncX.modules.subscription.entity.ActiveSubscription;
+import syncX.modules.subscription.entity.SubscriptionPlan;
+import syncX.modules.subscription.repository.ActiveSubscriptionRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +29,9 @@ public class JobService {
     @Autowired
     private JobRequirementRepository reqRepo;
 
+    @Autowired
+    private ActiveSubscriptionRepository activeSubscriptionRepository;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public Job createJob(JobRequestDto dto) throws Exception {
@@ -34,6 +40,29 @@ public class JobService {
         if (rawText == null || rawText.trim().isEmpty()) {
             throw new Exception("Key requirements cannot be empty");
         }
+
+        // ── SUBSCRIPTION JOB LIMIT CHECK ──────────────────────────────────
+        if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
+            UUID companyId = UUID.fromString(dto.getCompanyId());
+
+            ActiveSubscription activeSub = activeSubscriptionRepository
+                    .findByCompanyId(companyId)
+                    .orElseThrow(() -> new RuntimeException("No active subscription found for this company"));
+
+            SubscriptionPlan plan = activeSub.getPlan();
+            Integer jobLimit = plan.getActiveJobs();
+
+            if (jobLimit != null) {
+                long openJobCount = jobRepo.countByCompanyIdAndStatus(companyId, "Open");
+                if (openJobCount >= jobLimit) {
+                    throw new RuntimeException(
+                            "Job post limit reached. Your " + plan.getName() +
+                                    " plan allows " + jobLimit + " active job posts."
+                    );
+                }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         // AI extraction
         String aiResponse = aiService.extractJobData(rawText);
@@ -52,12 +81,9 @@ public class JobService {
         job.setInterviewStages(dto.getInterviewStages());
         job.setKeyRequirements(rawText);
         job.setStatus("Open");
-
-        // ✅ AI-extracted fields now stored directly in jobs table
         job.setExperienceRequired(aiData.getExperienceRequired());
         job.setEducationRequired(aiData.getEducationRequired());
 
-        // Company ID
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
             try {
                 job.setCompanyId(UUID.fromString(dto.getCompanyId()));
@@ -68,7 +94,6 @@ public class JobService {
 
         Job saved = jobRepo.save(job);
 
-        // Save extracted skills to job_requirement table
         if (aiData.getSkills() != null) {
             for (String skill : aiData.getSkills()) {
                 if (skill == null || skill.trim().isEmpty()) continue;
