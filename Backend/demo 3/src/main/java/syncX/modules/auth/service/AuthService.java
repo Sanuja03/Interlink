@@ -8,6 +8,7 @@ import syncX.modules.auth.entity.Candidate;
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.entity.Interviewer;
 import syncX.modules.auth.entity.User;
+import syncX.modules.auth.exception.AccountSuspendedException;
 import syncX.modules.auth.repository.InterviewerRepository;
 import syncX.modules.auth.repository.UserRepository;
 import syncX.modules.auth.repository.CandidateRepository;
@@ -46,6 +47,10 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if ("suspended".equals(user.getAccountStatus())) {
+            throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         boolean changed = false;
 
@@ -56,6 +61,7 @@ public class AuthService {
         }
 
         // Always update last login timestamp
+        user.setAccountStatus("active");
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
         userRepository.save(user);
@@ -71,7 +77,7 @@ public class AuthService {
         user.setUserId(userId);
         user.setEmail(dto.getEmail());
         user.setRole("candidate");
-        user.setAccountStatus("active");
+        user.setAccountStatus("inactive");
         user.setIsFirstLogin(true);
         if (user.getCreatedAt() == null) {
             user.setCreatedAt(now);
@@ -98,7 +104,7 @@ public class AuthService {
         user.setUserId(userId);
         user.setEmail(dto.getEmail());
         user.setRole("company_admin");
-        user.setAccountStatus("active");
+        user.setAccountStatus("inactive");
         user.setIsFirstLogin(true);
         if (user.getCreatedAt() == null) {
             user.setCreatedAt(now);
@@ -153,7 +159,7 @@ public class AuthService {
         user.setUserId(interviewerUserId);
         user.setEmail(dto.getEmail());
         user.setRole("interviewer");
-        user.setAccountStatus("active");
+        user.setAccountStatus("inactive");
         user.setIsFirstLogin(true);
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
@@ -182,6 +188,16 @@ public class AuthService {
 
         // Return the created interviewer details
         return mapToResponseDTO(interviewer, user);
+    }
+
+    public void logoutUser(Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setAccountStatus("inactive");
+        user.setUpdatedAt(OffsetDateTime.now());
+        userRepository.save(user);
     }
 
     // ── Fetch all interviewers for the admin's company ──
@@ -235,11 +251,11 @@ public class AuthService {
     }
 
     // ── NEW: Deactivate an interviewer account ──
+    // ── Deactivate → sets status to "suspended" (blocks login) ──
     public void deactivateInterviewer(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        // Verify admin
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -247,20 +263,46 @@ public class AuthService {
             throw new RuntimeException("Only company admins can deactivate interviewers");
         }
 
-        // Get admin's company
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // Find the interviewer
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Ensure interviewer belongs to admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
 
-        // Update account_status in the users table to "inactive"
+        User interviewerUser = userRepository.findById(interviewer.getUserId())
+                .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
+
+        interviewerUser.setAccountStatus("suspended");
+        interviewerUser.setUpdatedAt(now);
+        userRepository.save(interviewerUser);
+    }
+
+    // ── Activate → sets status to "inactive" (allows login again) ──
+    public void activateInterviewer(Jwt jwt, String interviewerId) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        OffsetDateTime now = OffsetDateTime.now();
+
+        User admin = userRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!admin.getRole().equals("company_admin")) {
+            throw new RuntimeException("Only company admins can activate interviewers");
+        }
+
+        Company adminCompany = companyRepository.findByUserId(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                .orElseThrow(() -> new RuntimeException("Interviewer not found"));
+
+        if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
+            throw new RuntimeException("Interviewer does not belong to your company");
+        }
+
         User interviewerUser = userRepository.findById(interviewer.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
 
@@ -268,7 +310,6 @@ public class AuthService {
         interviewerUser.setUpdatedAt(now);
         userRepository.save(interviewerUser);
     }
-
     // ── Helper: map entity to response DTO ──
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();

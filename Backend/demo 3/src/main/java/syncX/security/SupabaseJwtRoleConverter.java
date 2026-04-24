@@ -49,18 +49,20 @@ public class SupabaseJwtRoleConverter implements Converter<Jwt, Collection<Grant
             Optional<User> userOpt = userRepository.findById(UUID.fromString(userId));
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                String role = user.getRole();
 
+                // Suspended users get no authorities → 403 on all protected endpoints
+                if ("suspended".equals(user.getAccountStatus())) {
+                    return authorities;
+                }
+
+                String role = user.getRole();
                 if (role != null && !role.isBlank()) {
-                    // ROLE_candidate, ROLE_company_admin, ROLE_interviewer, ROLE_super_admin
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
                 }
             }
         } catch (Exception e) {
-            // If lookup fails, user gets no authorities → 403
             System.err.println("JWT role conversion failed: " + e.getMessage());
         }
 
         return authorities;
-    }
-}
+    }}
