@@ -1,11 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { formatDate } from "../../utils/subscriptionUtils";
 
-function formatDate(dateString) {
-  return new Date(dateString).toLocaleString("en-US", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  });
-}
+// ─── Style Maps ──────────────────────────────────────────────────────────────
 
 const statusColors = {
   OPEN:     "bg-[#EAF3F8] text-[#24698B]",
@@ -28,10 +24,12 @@ const categoryColors = {
   GENERAL:   "bg-gray-100 text-gray-600",
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 /**
- * Unread dot logic (no DB needed):
- *  Admin view  → dot if last message is from "REQUESTER"
- *  User view   → dot if last message is from "ADMIN"
+ * Returns true if there is an unread reply for the current viewer.
+ * Admin sees dot when last message is from REQUESTER (and vice versa).
+ * No DB reads needed — purely derived from the responses array.
  */
 function hasUnread(ticket, isAdmin) {
   if (!ticket.responses || ticket.responses.length === 0) return false;
@@ -39,31 +37,35 @@ function hasUnread(ticket, isAdmin) {
   return isAdmin ? lastSender === "REQUESTER" : lastSender === "ADMIN";
 }
 
+// ─── Component ───────────────────────────────────────────────────────────────
+
+/**
+ * TicketCard
+ * Displays a single ticket summary row with status/priority/category badges
+ * and an unread-reply indicator. Navigates to the ticket detail page on click.
+ *
+ * Props:
+ *  - ticket  {object}   ticket data from the API
+ *  - isAdmin {boolean}  controls route and unread logic
+ */
 export default function TicketCard({ ticket, isAdmin }) {
-  const navigate  = useNavigate();
+  const navigate    = useNavigate();
   const ticketRoute = isAdmin ? `/admin/tickets/${ticket.id}` : `/tickets/${ticket.id}`;
-  const unread    = hasUnread(ticket, isAdmin);
+  const unread      = hasUnread(ticket, isAdmin);
 
   return (
-    <div className="
-      bg-white p-6 rounded-xl shadow-sm
-      border-l-4 border-[#24698B]
-      hover:shadow-md transition
-    ">
+    <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-[#24698B] hover:shadow-md transition">
       <div className="flex justify-between items-start">
 
-        {/* LEFT */}
+        {/* LEFT — ticket info */}
         <div className="flex-1 pr-6">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="text-lg font-semibold text-[#24698B]">
               #{ticket.id} — {ticket.title}
             </h3>
             {unread && (
-              <span className="
-                inline-flex items-center gap-1
-                bg-red-500 text-white text-[10px] font-bold
-                px-2 py-0.5 rounded-full leading-none shrink-0
-              ">
+              <span className="inline-flex items-center gap-1 bg-red-500 text-white
+                text-[10px] font-bold px-2 py-0.5 rounded-full leading-none shrink-0">
                 <span className="w-1.5 h-1.5 bg-white rounded-full" />
                 New reply
               </span>
@@ -75,40 +77,37 @@ export default function TicketCard({ ticket, isAdmin }) {
 
           <div className="flex flex-wrap gap-2 mt-3">
             {ticket.status && (
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium
+                ${statusColors[ticket.status] ?? "bg-gray-100 text-gray-600"}`}>
                 {ticket.status}
               </span>
             )}
             {isAdmin && ticket.priority && (
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${priorityColors[ticket.priority]}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium
+                ${priorityColors[ticket.priority] ?? "bg-gray-100 text-gray-600"}`}>
                 {ticket.priority}
               </span>
             )}
             {ticket.category && (
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryColors[ticket.category]}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium
+                ${categoryColors[ticket.category] ?? "bg-gray-100 text-gray-600"}`}>
                 {ticket.category}
               </span>
             )}
           </div>
         </div>
 
-        {/* RIGHT — arrow with red dot overlay when unread */}
+        {/* RIGHT — navigate arrow with unread dot */}
         <div className="flex flex-col items-end gap-3 shrink-0">
           <div className="relative">
             {unread && (
-              <span className="
-                absolute -top-1 -right-1 z-10
-                w-3 h-3 rounded-full bg-red-500
-                border-2 border-white
-              " />
+              <span className="absolute -top-1 -right-1 z-10 w-3 h-3 rounded-full
+                bg-red-500 border-2 border-white" />
             )}
             <button
               onClick={() => navigate(ticketRoute)}
-              className="
-                h-9 w-9 flex items-center justify-center
-                rounded-full bg-[#EAF3F8] text-[#24698B]
-                hover:bg-[#d8eaf3] transition
-              "
+              className="h-9 w-9 flex items-center justify-center rounded-full
+                bg-[#EAF3F8] text-[#24698B] hover:bg-[#d8eaf3] transition"
               style={{ border: "none", outline: "none", boxShadow: "none" }}
             >
               →

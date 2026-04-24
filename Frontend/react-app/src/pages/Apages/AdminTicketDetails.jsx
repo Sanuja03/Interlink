@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
-import Footer from "../../components/TicketSubsPages/Footer";
-import logo from "../../assets/interlink-logo.png";
 import TicketButton from "../../components/TicketSubsPages/TicketButton";
 import ConfirmModal from "../../components/TicketSubsPages/ConfirmModal";
 import toast from "react-hot-toast";
+import { formatDate } from "../../utils/subscriptionUtils";
 
-function formatDate(dateString) {
-  return new Date(dateString).toLocaleString("en-US", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  });
-}
+// ─── Style Map ───────────────────────────────────────────────────────────────
 
 const STATUS_STYLES = {
   OPEN:     "bg-green-100 text-green-700",
@@ -20,6 +14,8 @@ const STATUS_STYLES = {
   RESOLVED: "bg-blue-100 text-blue-700",
   CLOSED:   "bg-gray-200 text-gray-600",
 };
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function AdminTicketDetails() {
   const { id }   = useParams();
@@ -97,13 +93,17 @@ export default function AdminTicketDetails() {
     }
   };
 
+  // ── Error / Loading states ────────────────────────────────────────────────
+
   if (error && !ticket) {
     return (
       <div className="flex flex-col min-h-screen bg-[#F4F7FA]">
         <div className="flex-grow max-w-5xl mx-auto w-full px-6 py-20 text-center">
           <p className="text-red-500 font-medium">{error}</p>
-          <button onClick={() => navigate("/admin/tickets")}
-            className="mt-6 bg-[#24698B] text-white px-6 py-2 rounded-lg hover:opacity-90">
+          <button
+            onClick={() => navigate("/admin/tickets")}
+            className="mt-6 bg-[#24698B] text-white px-6 py-2 rounded-lg hover:opacity-90"
+          >
             ← Back to tickets
           </button>
         </div>
@@ -129,28 +129,28 @@ export default function AdminTicketDetails() {
   const hasReplies = ticket.responses && ticket.responses.length > 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4F7FA]">
-
-      {/* HEADER */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
-          <img src={logo} alt="Interlink" className="h-10" />
-          <h1 className="text-xl font-semibold text-gray-700">Admin Support Dashboard</h1>
-        </div>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Admin Support Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Manage and monitor support tickets</p>
       </div>
+  
+      <div>
 
-      <div className="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
-
-        <button onClick={() => navigate("/admin/tickets")}
+        <button
+          onClick={() => navigate("/admin/tickets")}
           className="inline-flex items-center gap-2 bg-[#EAF3F8] text-[#24698B]
             px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#d8eaf3] transition mb-8"
-          style={{ border: "none", outline: "none", boxShadow: "none" }}>
+          style={{ border: "none", outline: "none", boxShadow: "none" }}
+        >
           ← Back to tickets
         </button>
 
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-600
-            text-sm px-4 py-3 rounded-xl">{error}</div>
+            text-sm px-4 py-3 rounded-xl">
+            {error}
+          </div>
         )}
 
         <div className="bg-white p-10 rounded-2xl shadow-sm border">
@@ -235,7 +235,7 @@ export default function AdminTicketDetails() {
             </div>
           </div>
 
-          {/* ── CHAT BUBBLES ─────────────────────────────────────────── */}
+          {/* CONVERSATION */}
           <div className="mb-8">
             <h3 className="font-semibold text-gray-700 mb-4">Conversation</h3>
 
@@ -253,10 +253,8 @@ export default function AdminTicketDetails() {
                 {ticket.responses.map((res) => {
                   const isAdmin = res.sender === "ADMIN";
                   return (
-                    <div key={res.id}
-                      className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}>
-                      <div className={`flex flex-col gap-1 max-w-[70%]
-                        ${isAdmin ? "items-end" : "items-start"}`}>
+                    <div key={res.id} className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}>
+                      <div className={`flex flex-col gap-1 max-w-[70%] ${isAdmin ? "items-end" : "items-start"}`}>
                         <span className="text-xs text-gray-400 px-2">
                           {isAdmin
                             ? "You (Support Team)"
@@ -281,7 +279,7 @@ export default function AdminTicketDetails() {
             )}
           </div>
 
-          {/* ── REPLY BOX ────────────────────────────────────────────── */}
+          {/* REPLY BOX */}
           {isClosed ? (
             <div className="bg-gray-50 border border-dashed border-gray-300
               rounded-xl p-5 text-sm text-gray-500 text-center mb-6">
@@ -329,10 +327,12 @@ export default function AdminTicketDetails() {
 
           {/* DELETE */}
           <div className="border-t pt-5">
-            <button onClick={() => setShowDeleteModal(true)}
+            <button
+              onClick={() => setShowDeleteModal(true)}
               className="flex items-center gap-2 text-sm text-red-500
                 hover:text-red-600 font-medium transition"
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                 <polyline points="3 6 5 6 21 6"/>
@@ -356,7 +356,7 @@ export default function AdminTicketDetails() {
         onCancel={() => setShowDeleteModal(false)}
       />
 
-      <Footer />
+    
     </div>
   );
 }

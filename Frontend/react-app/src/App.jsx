@@ -181,8 +181,8 @@ function App() {
         <Route path="/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
 
         {/* Super Admin routes */}
-        <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />
-        <Route path="/admin/tickets/:id" element={<SuperAdmin><AdminTicketDetails /></SuperAdmin>} />
+        <Route path="/admin/tickets" element={<SuperAdmin><DashboardLayout><AdminTickets /></DashboardLayout></SuperAdmin>} />
+        <Route path="/admin/tickets/:id" element={<SuperAdmin><DashboardLayout><AdminTicketDetails /></DashboardLayout></SuperAdmin>} />
         <Route path="/admin/subscription-plans" element={<SuperAdmin><DashboardLayout><SubscriptionPlans /></DashboardLayout></SuperAdmin>} />
         <Route path="/admin/active-plans" element={<SuperAdmin><DashboardLayout><ActivePlans /></DashboardLayout></SuperAdmin>} />
 
