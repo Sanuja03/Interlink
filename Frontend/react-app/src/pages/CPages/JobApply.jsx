@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
-import { allJobs } from './JobPosts';
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -382,9 +381,25 @@ const IconArrow = () => (
 );
 
 const JobApply = () => {
+  const formatEnum = (val) => {
+      if (!val) return '';
+      return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  };
+
+  const formatMode = (mode) => {
+      if (!mode) return '';
+      return mode.charAt(0) + mode.slice(1).toLowerCase();
+  };
   const { id } = useParams();
   const navigate = useNavigate();
-  const job = allJobs.find(j => j.id === Number(id));
+  const [job, setJob] = useState(null);
+
+  useEffect(() => {
+      fetch(`http://localhost:8080/api/jobs/${id}`)
+          .then(res => res.json())
+          .then(data => setJob(data))
+          .catch(err => console.error("Error fetching job details:", err));
+  }, [id]);
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -451,8 +466,8 @@ const JobApply = () => {
             <h1 className="apply-hero__title">{job.title}</h1>
             <p className="apply-hero__company">{job.company} · {job.location}</p>
             <div className="apply-hero__tags">
-              <span className="apply-hero__tag">{job.mode}</span>
-              <span className="apply-hero__tag">{job.experience}</span>
+              <span className="apply-hero__tag">{formatMode(job.employmentType)}</span>
+              <span className="apply-hero__tag">{formatEnum(job.experienceLevel)}</span>
               <span className="apply-hero__tag">{job.category}</span>
             </div>
           </div>

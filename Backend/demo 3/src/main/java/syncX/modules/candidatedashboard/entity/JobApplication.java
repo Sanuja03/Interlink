@@ -1,11 +1,9 @@
 package syncX.modules.candidatedashboard.entity;
+import syncX.modules.enums.ApplicationStatus;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+import java.util.UUID;
 
 import java.time.LocalDate;
 
@@ -18,11 +16,17 @@ public class JobApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long candidateId;
+
+
+
+    @Column(name = "candidate_id")
+    private UUID candidateId;
     private String jobTitle;
     private String company;
     private LocalDate appliedDate;
     private LocalDate shortlistedDate;
     private LocalDate interviewDate;
-    private String result; // e.g. "Pending" or "Rejected"
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus result; // e.g. "Pending" or "Rejected"
 }

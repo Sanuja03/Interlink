@@ -1,7 +1,8 @@
 package syncX.modules.candidatedashboard.entity;
-
+import syncX.modules.enums.InterviewStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.UUID;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,7 +17,7 @@ public class CandidateInterview {
     private Long id;  // FIXED (int → Long)
 
     @Column(name = "candidate_id")
-    private Long candidateId;  // FIXED mapping
+    private UUID candidateId;  // FIXED mapping
 
     private String company;
     private String role;
@@ -25,5 +26,6 @@ public class CandidateInterview {
     private LocalTime time;
 
     private String mode;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private InterviewStatus status;
 }

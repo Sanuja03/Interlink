@@ -1,5 +1,6 @@
 package syncX.modules.candidatedashboard.service;
-
+import syncX.modules.enums.ApplicationStatus;
+import syncX.modules.enums.InterviewStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import syncX.modules.candidatedashboard.dto.DashboardResponseDto;
@@ -8,8 +9,10 @@ import syncX.modules.candidatedashboard.entity.CandidateInterview;
 import syncX.modules.candidatedashboard.entity.JobApplication;
 import syncX.modules.candidatedashboard.repository.CandidateInterviewRepository;
 import syncX.modules.candidatedashboard.repository.JobApplicationRepository;
-
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CandidateDashboardService {
@@ -20,7 +23,7 @@ public class CandidateDashboardService {
     @Autowired
     private CandidateInterviewRepository interviewRepository;
 
-    public DashboardResponseDto getDashboardData(Long candidateId) {
+    public DashboardResponseDto getDashboardData(UUID candidateId) {
         DashboardResponseDto response = new DashboardResponseDto();
 
         // Fetch Applications and Interviews
@@ -30,8 +33,8 @@ public class CandidateDashboardService {
         // Compute Stats
         long totalApplications = applicationRepository.countByCandidateId(candidateId);
         long totalInterviews = interviewRepository.countByCandidateId(candidateId);
-        long pending = applicationRepository.countByCandidateIdAndResultIgnoreCase(candidateId, "Pending");
-        long rejected = applicationRepository.countByCandidateIdAndResultIgnoreCase(candidateId, "Rejected");
+        long pending = applicationRepository.countByCandidateIdAndResult(candidateId, ApplicationStatus.PENDING);
+        long rejected = applicationRepository.countByCandidateIdAndResult(candidateId, ApplicationStatus.REJECTED);
 
         DashboardStatsDto stats = new DashboardStatsDto();
         stats.setApplications(totalApplications);
@@ -46,7 +49,7 @@ public class CandidateDashboardService {
         return response;
     }
 
-    public void seedDummyData(Long candidateId) {
+    public void seedDummyData(UUID candidateId) {
         // Clear old data for simple testing
         List<JobApplication> existingApps = applicationRepository.findByCandidateId(candidateId);
         applicationRepository.deleteAll(existingApps);
@@ -64,10 +67,10 @@ public class CandidateDashboardService {
             app.setCandidateId(candidateId);
             app.setCompany(companies[i]);
             app.setJobTitle(titles[i]);
-            app.setAppliedDate("09.06.2025");
-            app.setShortlistedDate("17.07.2025");
-            app.setInterviewDate("17.12.2025");
-            app.setResult(statuses[i]);
+            app.setAppliedDate(LocalDate.of(2025, 6, 9));
+            app.setShortlistedDate(LocalDate.of(2025, 6, 10));
+            app.setInterviewDate(LocalDate.of(2025, 6, 11));
+            app.setResult(ApplicationStatus.valueOf(statuses[i].toUpperCase()));
             applicationRepository.save(app);
         }
 
@@ -84,10 +87,19 @@ public class CandidateDashboardService {
             interview.setCandidateId(candidateId);
             interview.setCompany(intCompanies[i]);
             interview.setRole(roles[i]);
-            interview.setDate(dates[i]);
-            interview.setTime(times[i]);
+            LocalDate[] date = {
+                    LocalDate.of(2025, 6, 24),
+                    LocalDate.of(2025, 6, 27),
+                    LocalDate.of(2025, 6, 24)
+            };
+
+            LocalTime[] time = {
+                    LocalTime.of(10, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(10, 0)
+            };
             interview.setMode(modes[i]);
-            interview.setStatus(intStatuses[i]);
+            interview.setStatus(InterviewStatus.valueOf(intStatuses[i].toUpperCase()));
             interviewRepository.save(interview);
         }
     }

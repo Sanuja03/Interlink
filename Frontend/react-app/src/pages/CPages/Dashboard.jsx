@@ -1,9 +1,4 @@
-/* ============================================================
-   Dashboard — CSS + JSX in one file
-   Replaces top Navbar with the collapsible Sidebar
-   ============================================================ */
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
 import Footer from "../../components/CandidatePages/CandidateDashboard/Footer";
 import StatCard from "../../components/CandidatePages/CandidateDashboard/StatCard";
@@ -11,11 +6,10 @@ import UpcomingInterviews from "../../components/CandidatePages/CandidateDashboa
 import ApplicationTracker from "../../components/CandidatePages/CandidateDashboard/ApplicationTracker";
 import Searchbar from "../../components/CandidatePages/CandidateJobPosts/Searchbar";
 
-/* ── Data ──────────────────────────────────────────────── */
-const stats = [
+/* ── Static Data (Used for Icons) ──────────────────────────────────────── */
+const statsIcons = [
     {
         label: "Interviews",
-        count: 5,
         icon: (
             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -25,7 +19,6 @@ const stats = [
     },
     {
         label: "Applications",
-        count: 9,
         icon: (
             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -35,7 +28,6 @@ const stats = [
     },
     {
         label: "Pending",
-        count: 12,
         icon: (
             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -45,75 +37,12 @@ const stats = [
     },
     {
         label: "Rejected",
-        count: 2,
         icon: (
             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         ),
-    },
-];
-
-const interviews = [
-    {
-        company: "Horizon Global",
-        role: "Software Engineer",
-        date: "24 June 2025",
-        time: "10:00 AM – 11:00 AM",
-        mode: "Online Interview",
-        status: "Completed",
-    },
-    {
-        company: "Inova",
-        role: "Project Manager",
-        date: "27 June 2025",
-        time: "09:00 AM – 09:30 AM",
-        mode: "Online Interview",
-        status: "Scheduled",
-    },
-    {
-        company: "Interlink",
-        role: "Software Engineer",
-        date: "24 June 2025",
-        time: "10:00 AM – 11:00 AM",
-        mode: "Online Interview",
-        status: "Rescheduled",
-    },
-];
-
-const applications = [
-    {
-        jobTitle: "UI/UX Designer",
-        company: "PixelCraft Studio",
-        applied: "09.06.2025",
-        shortlisted: "17.07.2025",
-        interview: "17.12.2025",
-        result: "Pending",
-    },
-    {
-        jobTitle: "Software Engineer",
-        company: "Alpha tech",
-        applied: "18.06.2025",
-        shortlisted: "11.09.2025",
-        interview: "05.12.2025",
-        result: "Rejected",
-    },
-    {
-        jobTitle: "UI/UX Designer",
-        company: "Innosence tech",
-        applied: "09.05.2025",
-        shortlisted: "12.07.2025",
-        interview: "11.12.2025",
-        result: "Pending",
-    },
-    {
-        jobTitle: "Project manager",
-        company: "PixelCraft Studio",
-        applied: "09.06.2025",
-        shortlisted: "20.07.2025",
-        interview: "17.12.2025",
-        result: "Pending",
     },
 ];
 
@@ -178,6 +107,16 @@ const dashStyles = `
     margin: 0 -24px;
   }
 
+  /* Loading State Area */
+  .db-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.2rem;
+    color: #1a6a82;
+  }
+
   @media (max-width: 768px) {
     .db-top-row {
       flex-direction: column;
@@ -197,6 +136,71 @@ const dashStyles = `
 /* ── Component ──────────────────────────────────────────── */
 const Dashboard = () => {
     const [keyword, setKeyword] = useState("");
+    const [dashboardData, setDashboardData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                // Hardcoded candidate ID for now (usually this would come from auth context)
+                const candidateId = 1;
+                const response = await fetch(`http://localhost:8080/api/dashboard/candidate/${candidateId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setDashboardData(data);
+                } else {
+                    console.error("Failed to fetch dashboard data.");
+                }
+            } catch (error) {
+                console.error("Error connecting to backend:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    if (loading) {
+        return (
+            <>
+                <style>{dashStyles}</style>
+                <div className="db-loading">Loading Dashboard Data...</div>
+            </>
+        );
+    }
+
+    // Safely map fetched statistics for StatCards
+    const dynamicStats = [
+        {
+            label: "Interviews",
+            count: dashboardData?.stats?.interviews || 0,
+            icon: statsIcons[0].icon
+        },
+        {
+            label: "Applications",
+            count: dashboardData?.stats?.applications || 0,
+            icon: statsIcons[1].icon
+        },
+        {
+            label: "Pending",
+            count: dashboardData?.stats?.pending || 0,
+            icon: statsIcons[2].icon
+        },
+        {
+            label: "Rejected",
+            count: dashboardData?.stats?.rejected || 0,
+            icon: statsIcons[3].icon
+        }
+    ];
+
+    // Safely map backend "date" fields to frontend's expected properties
+    const dynamicApplications = (dashboardData?.applications || []).map(app => ({
+        ...app,
+        applied: app.appliedDate || "-",
+        shortlisted: app.shortlistedDate || "-",
+        interview: app.interviewDate || "-"
+    }));
 
     return (
         <>
@@ -226,19 +230,19 @@ const Dashboard = () => {
                         <div className="db-top-row">
                             {/* 2×2 stats */}
                             <div className="db-stats">
-                                {stats.map((s) => (
+                                {dynamicStats.map((s) => (
                                     <StatCard key={s.label} label={s.label} count={s.count} icon={s.icon} />
                                 ))}
                             </div>
 
                             {/* Upcoming interviews */}
                             <div className="db-interviews">
-                                <UpcomingInterviews interviews={interviews} />
+                                <UpcomingInterviews interviews={dashboardData?.interviews || []} />
                             </div>
                         </div>
 
                         {/* Application Tracker */}
-                        <ApplicationTracker applications={applications} />
+                        <ApplicationTracker applications={dynamicApplications} />
                     </div>
 
                     <Footer />

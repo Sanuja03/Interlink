@@ -2,16 +2,54 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
-import { allJobs } from './JobPosts';
 
 const JobPostDetails = () => {
+    const formatMode = (mode) => {
+        if (!mode) return '';
+        return mode.charAt(0) + mode.slice(1).toLowerCase();
+    };
+
+    const renderList = (text) => {
+        if (!text) return null;
+        // Split by newline and filter out empty lines
+        const items = text.split('\n').filter(item => item.trim() !== '');
+        return (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {items.map((item, i) => {
+                    const cleanItem = item.replace(/^[\s\-\*·]+/, '').trim();
+                    if (!cleanItem) return null;
+                    return (
+                        <li key={i} style={{ fontSize: '14px', color: '#374151', lineHeight: '1.8', paddingLeft: '18px', position: 'relative', marginBottom: '4px' }}>
+                            <span style={{ position: 'absolute', left: 0, top: 0, color: '#374151' }}>·</span>
+                            {cleanItem}
+                        </li>
+                    );
+                })}
+            </ul>
+        );
+    };
     const { id } = useParams();
     const navigate = useNavigate();
     const [job, setJob] = useState(null);
+    const [allJobs, setAllJobs] = useState([]);
 
     useEffect(() => {
-        const foundJob = allJobs.find(j => j.id === parseInt(id));
-        setJob(foundJob);
+        fetch(`http://localhost:8080/api/jobpostdetails/${id}`)
+            .then(async res => {
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`Server Error ${res.status}: ${text}`);
+                }
+                return res.json();
+            })
+            .then(data => setJob(data))
+            .catch(err => console.error("Error fetching job details:", err.message));
+
+        fetch('http://localhost:8080/api/jobs')
+            .then(res => res.json())
+            .then(data => setAllJobs(data))
+            .catch(err => console.error("Error fetching jobs:", err));
+
         window.scrollTo(0, 0);
     }, [id]);
 
@@ -91,7 +129,7 @@ const JobPostDetails = () => {
                                 </div>
                                 <div>
                                     <div style={{ color: '#fff', fontSize: '22px', fontWeight: '400', marginBottom: '4px', lineHeight: 1.2 }}>{job.company}</div>
-                                    <div style={{ color: '#b2d8e3', fontSize: '13px', fontWeight: '500' }}>{job.location} | {job.mode}</div>
+                                    <div style={{ color: '#b2d8e3', fontSize: '13px', fontWeight: '500' }}>{job.location} | {formatMode(job.employmentType)}</div>
                                 </div>
                             </div>
                             {/* Right: Job Title */}
@@ -106,61 +144,37 @@ const JobPostDetails = () => {
                             {/* About the Company */}
                             <section style={{ marginBottom: '28px' }}>
                                 <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#111', marginBottom: '8px' }}>About the Company</h2>
-                                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.7' }}>
-                                    CodeWave Solutions is a Sri Lanka-based software development company specializing in web and mobile applications. We work with modern technologies to build scalable and user-friendly digital solutions for global clients.
+                                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
+                                    {job.companyDescription || job.aboutCompany || 'No company description available.'}
                                 </p>
                             </section>
 
                             {/* Job Description */}
                             <section style={{ marginBottom: '28px' }}>
                                 <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#111', marginBottom: '8px' }}>Job Description</h2>
-                                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.7' }}>
-                                    We are looking for a motivated and skilled {job.title} to join our development team. The selected candidate will be responsible for designing, developing, and maintaining web applications while collaborating with designers, project managers, and other developers to deliver high-quality solutions.
-                                    <br />
-                                    This role offers an opportunity to work with modern technologies, improve technical skills, and gain hands-on experience in a professional work environment.
+                                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
+                                    {job.description || 'No job description provided.'}
                                 </p>
                             </section>
 
                             {/* Key Requirements */}
                             <section style={{ marginBottom: '28px' }}>
                                 <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#111', marginBottom: '8px' }}>Key Requirements</h2>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                    {[
-                                        'Basic to intermediate knowledge of JavaScript and web development concepts',
-                                        `Experience or familiarity with modern frontend frameworks`,
-                                        'Understanding of REST APIs and backend integration',
-                                        'Basic knowledge of databases such as MySQL or MongoDB',
-                                        'Good problem-solving and analytical skills',
-                                        'Ability to work effectively in a team',
-                                        'Willingness to learn new technologies and tools',
-                                    ].map((item, i) => (
-                                        <li key={i} style={{ fontSize: '14px', color: '#374151', lineHeight: '1.8', paddingLeft: '18px', position: 'relative' }}>
-                                            <span style={{ position: 'absolute', left: 0, top: 0, color: '#374151' }}>·</span>
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
+                                {job.experienceRequired ? renderList(job.experienceRequired) : (
+                                    <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.8' }}>
+                                        Not specified
+                                    </div>
+                                )}
                             </section>
 
                             {/* Benefits & Perks */}
                             <section style={{ marginBottom: '40px' }}>
                                 <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#111', marginBottom: '8px' }}>Benefits &amp; Perks</h2>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                    {[
-                                        'Competitive salary package',
-                                        'Flexible working hours',
-                                        `Hybrid / remote work options`,
-                                        'Supportive and friendly team environment',
-                                        'Opportunities for learning and skill development',
-                                        'Career growth and advancement opportunities',
-                                        'Paid leave and public holidays',
-                                    ].map((item, i) => (
-                                        <li key={i} style={{ fontSize: '14px', color: '#374151', lineHeight: '1.8', paddingLeft: '18px', position: 'relative' }}>
-                                            <span style={{ position: 'absolute', left: 0, top: 0, color: '#374151' }}>·</span>
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
+                                {job.jobBenefits ? renderList(job.jobBenefits) : (
+                                    <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.8' }}>
+                                        Not specified
+                                    </div>
+                                )}
                             </section>
 
                             {/* Action Buttons */}

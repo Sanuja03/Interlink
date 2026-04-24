@@ -5,9 +5,10 @@ import org.springframework.stereotype.Repository;
 import syncX.modules.candidatedashboard.entity.CandidateInterview;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface CandidateInterviewRepository extends JpaRepository<CandidateInterview, Long> {
-    List<CandidateInterview> findByCandidateId(Long candidateId);
-    long countByCandidateId(Long candidateId);
+    List<CandidateInterview> findByCandidateId(UUID candidateId);
+    long countByCandidateId(UUID candidateId);
 }
