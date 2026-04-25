@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import RecentActivities from "../../components/SuperAdminComponents/activity_logs/RecentActivities";
+import { fetchDashboardData } from "../../api/SAdminDashboardApi";
+import GlobalSearch from "../../components/SuperAdminComponents/Layout/GlobalSearch";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleViewAll = () => {
     navigate("/admin/AllActivities");
@@ -15,54 +21,112 @@ export default function SuperAdminDashboard() {
     { name: "Users", path: "/admin/Users" },
   ];
 
+  // Fetch + Auto refresh
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const res = await fetchDashboardData();
+        setData(res);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+
+    const interval = setInterval(loadData, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6 font-outfit">
 
       {/* SEARCH */}
       <div className="flex items-center gap-4">
-        <input
-          type="text"
-          placeholder="Search ..."
-          className="flex-1 px-4 py-3 rounded-xl border border-[#DADEE0] bg-white shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-[#24698B]"
-        />
-
-        <button className="w-12 h-12 rounded-full bg-[#24698B] text-white shadow flex items-center justify-center hover:bg-[#1e5873] transition">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
+        <GlobalSearch />
       </div>
 
-      {/* TOP PILLS (KEEP — FIGMA STYLE) */}
+      {/* NAV PILLS */}
       <div className="grid grid-cols-4 gap-6">
         {actions.map((action) => (
           <button
             key={action.name}
             onClick={() => navigate(action.path)}
-            className="bg-[#0C3E56] text-white py-3 rounded-full font-medium shadow
-                       hover:bg-[#092c3d] transition duration-200"
+            className="bg-[#0C3E56] text-white py-3 rounded-full font-medium shadow hover:bg-[#092c3d]"
           >
             {action.name}
           </button>
         ))}
       </div>
 
-      {/* MAIN SECTION */}
+      {/* MAIN */}
       <div className="grid grid-cols-2 gap-6">
 
         {/* INSIGHTS */}
         <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-6">
-          <h3 className="font-semibold text-[#24698B] mb-4">
-            Insights
-          </h3>
+          <h3 className="font-semibold text-[#24698B] mb-4">Insights</h3>
 
-          <div className="grid grid-cols-2 gap-4">
-            <InsightCard title="Companies" value="248" subtitle="185 accepted · 63 pending" />
-            <InsightCard title="Jobs" value="1542" subtitle="185 accepted · 63 pending" />
-            <InsightCard title="Job Applications" value="2215" subtitle="185 accepted · 63 pending" />
-            <InsightCard title="Interviewers" value="512" subtitle="185 accepted · 63 pending" />
-          </div>
+          {loading ? (
+            <p className="text-gray-500">Loading dashboard...</p>
+          ) : (
+            <div className="space-y-4">
+
+              {/* COMPANIES (MAIN CARD) */}
+              <div className="bg-[#24698B]/15 rounded-xl p-5 border-l-4 border-[#24698B]">
+                <p className="text-sm">Companies</p>
+                <p className="text-3xl font-bold text-[#24698B]">
+                  {data?.companies?.total || 0}
+                </p>
+
+                <p className="text-sm text-gray-700 mt-1">
+                  Total companies
+                </p>
+
+                <div className="flex gap-6 mt-2 text-lg">
+                  <span className="text-green-600">
+                    Approved: {data?.companies?.approved || 0}
+                  </span>
+
+                  <span className="text-yellow-600">
+                    Pending: {data?.companies?.pending || 0}
+                  </span>
+                </div>
+              </div>
+
+              {/* JOBS + APPLICATIONS */}
+              <div className="grid grid-cols-2 gap-4">
+                <InsightCard
+                  title="Jobs"
+                  value={data?.jobs?.total || 0}
+                  subtitle="Total jobs"
+                />
+
+                <InsightCard
+                  title="Applications"
+                  value={data?.applications?.total || 0}
+                  subtitle="Total applications"
+                />
+              </div>
+
+              {/* USERS WITH BREAKDOWN (future-ready) */}
+              <div className="bg-[#24698B]/15 rounded-xl p-5 border-l-4 border-[#24698B]">
+                <p className="text-sm">Users</p>
+                <p className="text-3xl font-bold text-[#24698B]">
+                  {data?.users?.total || 0}
+                </p>
+
+                {/* If backend later sends breakdown, it will show automatically */}
+                <div className="grid grid-cols-3 mt-3 text-sm text-gray-700">
+                  <p>Candidates: {data?.users?.candidates || "-"}</p>
+                  <p>Interviewers: {data?.users?.interviewers || "-"}</p>
+                  <p>Company Admins: {data?.users?.companyAdmins || "-"}</p>
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
 
         {/* RECENT ACTIVITIES */}
@@ -72,16 +136,12 @@ export default function SuperAdminDashboard() {
 
       </div>
 
-      {/* SUPPORT TICKETS */}
+      {/* SUPPORT */}
       <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-[#24698B]">
-            Support Tickets
-          </h3>
+          <h3 className="font-semibold text-[#24698B]">Support Tickets</h3>
 
-          <button className="text-sm font-medium text-[#24698B]
-                             border border-[#24698B] rounded-md px-3 py-1
-                             hover:bg-[#24698B]/10 transition">
+          <button className="text-sm text-white bg-[#24698B] px-3 py-1 rounded-md hover:bg-[#1e5873]">
             View All
           </button>
         </div>
@@ -94,20 +154,14 @@ export default function SuperAdminDashboard() {
     </div>
   );
 }
+
 function InsightCard({ title, value, subtitle }) {
   return (
     <div className="bg-[#24698B]/15 rounded-xl p-4 border-l-4 border-[#24698B]
                     hover:bg-[#24698B]/20 transition">
-
-      <p className="text-sm text-black">{title}</p>
-
-      <p className="text-2xl font-semibold text-[#24698B]">
-        {value}
-      </p>
-
-      <p className="text-xs text-gray-700 mt-1">
-        {subtitle}
-      </p>
+      <p className="text-sm">{title}</p>
+      <p className="text-2xl font-semibold text-[#24698B]">{value}</p>
+      <p className="text-xs text-gray-700 mt-1">{subtitle}</p>
     </div>
   );
 }
