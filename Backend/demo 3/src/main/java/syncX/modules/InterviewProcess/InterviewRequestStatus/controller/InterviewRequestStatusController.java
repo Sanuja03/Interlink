@@ -67,6 +67,32 @@ public class InterviewRequestStatusController {
     }
 
     // ────────────────────────────────────────────────────────────────
+    // POST /api/company/interview-requests/status/{requestId}/interviewers/add
+    // Adds new interviewers to an existing pending request without
+    // disturbing accepted/pending rows already on the request.
+    // ────────────────────────────────────────────────────────────────
+    @PostMapping("/{requestId}/interviewers/add")
+    @PreAuthorize("hasRole('company_admin')")
+    public ResponseEntity<?> addInterviewers(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId,
+            @RequestBody InterviewRequestStatusDTO.AddInterviewersRequest body) {
+
+        try {
+            InterviewRequestStatusDTO.StatusResponse result =
+                    statusService.addInterviewers(jwt, requestId, body.getInterviewerUserIds());
+            return ResponseEntity.ok(result);
+
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────────
     // PUT /api/company/interview-requests/status/{requestId}/interviewers/{interviewerUserId}/resend
     // Resets a rejected interviewer's response_status back to "pending"
     // so the request reappears in their pending-requests page.

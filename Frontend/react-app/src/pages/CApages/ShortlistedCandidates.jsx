@@ -24,6 +24,7 @@ const ShortlistedCandidates = () => {
   // Ref so RequestStatusPopup always gets the candidate synchronously,
   // regardless of React's async setState batching.
   const candidateRef = useRef(null);
+  const [editMode, setEditMode]   = useState(false); // true = opened via Cancel & Redo
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +136,7 @@ const ShortlistedCandidates = () => {
     // the React async-setState race condition.
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
+    setEditMode(false); // fresh open — not from Cancel & Redo
 
     try {
       const res = await api.get("/company/interview-requests/current", {
@@ -163,6 +165,7 @@ const ShortlistedCandidates = () => {
     setShowStatusPopup(false);
     setSelectedCandidate(null);
     candidateRef.current = null;
+    setEditMode(false);
   };
 
   /**
@@ -171,6 +174,7 @@ const ShortlistedCandidates = () => {
    * auto-pre-fill from GET /current.
    */
   const handleEditFromStatus = () => {
+    setEditMode(true);   // open request form in edit mode (unlocked)
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
@@ -287,6 +291,7 @@ const ShortlistedCandidates = () => {
         open={showRequestPopup}
         onClose={closeAllPopups}
         candidate={selectedCandidate}
+        startInEditMode={editMode}
         /* After a successful send, InterviewRequestPopup sets isSent=true
            and stays open with the confirmation view. If you want to auto-
            switch to the status popup instead, expose an onSent callback

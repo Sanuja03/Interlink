@@ -36,6 +36,14 @@ const RequestStatusPopup = ({
   const [removingId, setRemovingId]       = useState(null);
   const [resendingId, setResendingId]     = useState(null);
   const [removeError, setRemoveError]     = useState("");
+
+  // ── Add Interviewers panel state ──
+  const [showAddPanel, setShowAddPanel]       = useState(false);
+  const [addCandidates, setAddCandidates]     = useState([]);   // available to pick
+  const [addSelected, setAddSelected]         = useState([]);   // picked IDs
+  const [loadingAdd, setLoadingAdd]           = useState(false);
+  const [addError, setAddError]               = useState("");
+  const [submittingAdd, setSubmittingAdd]     = useState(false);
   // Track IDs the admin removed — persisted in localStorage so the
   // "Removed" badge survives logout/refresh.
   // Key: "removed_interviewers:<requestId>"  Value: JSON array of userIds
@@ -216,6 +224,60 @@ const RequestStatusPopup = ({
     }
   };
 
+  // ── Load assignable interviewers for the add panel ──
+  const openAddPanel = async () => {
+    if (!activeRequest?.interviewDate) return;
+    setShowAddPanel(true);
+    setAddSelected([]);
+    setAddError("");
+    setLoadingAdd(true);
+    try {
+      const res = await api.get("/company/interview-requests/assignable", {
+        params: { date: activeRequest.interviewDate },
+      });
+      const all = [
+        ...(res.data?.available || []),
+        ...(res.data?.other     || []),
+      ];
+      // Filter out interviewers already on the request (any status)
+      const existingIds = new Set(
+        (activeRequest?.invitedInterviewers || []).map((p) => p.userId)
+      );
+      setAddCandidates(all.filter((iv) => !existingIds.has(iv.userId)));
+    } catch (err) {
+      setAddError("Failed to load interviewers");
+    } finally {
+      setLoadingAdd(false);
+    }
+  };
+
+  const toggleAddSelect = (userId) => {
+    setAddSelected((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleAddSubmit = async () => {
+    if (addSelected.length === 0) return;
+    setSubmittingAdd(true);
+    setAddError("");
+    try {
+      await api.post(
+        `/company/interview-requests/status/${activeRequest.requestId}/interviewers/add`,
+        { interviewerUserIds: addSelected }
+      );
+      setShowAddPanel(false);
+      setAddSelected([]);
+      await fetchActiveRequest();
+    } catch (err) {
+      setAddError(
+        err?.response?.data?.error || err?.message || "Failed to add interviewers"
+      );
+    } finally {
+      setSubmittingAdd(false);
+    }
+  };
+
   const handleFinalize = () => {
     if (typeof onFinalizePanel === "function") {
       onFinalizePanel(activeRequest?.requestId);
@@ -346,6 +408,50 @@ const RequestStatusPopup = ({
           ))}
         </div>
 
+        {/* ── Add Interviewers inline panel ── */}
+        {showAddPanel && (
+          <div className="ip-add-panel">
+            <p className="ip-group-title">Select interviewers to add</p>
+            {loadingAdd && <p className="ip-person-role">Loading…</p>}
+            {!loadingAdd && addCandidates.length === 0 && (
+              <p className="ip-person-role">No other interviewers available to add.</p>
+            )}
+            {!loadingAdd && addCandidates.map((iv) => (
+              <label key={iv.userId} className="ip-dropdown-item">
+                <div>
+                  <p className="ip-person-name">{iv.fullName}</p>
+                  <p className="ip-person-role">{iv.role}</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={addSelected.includes(iv.userId)}
+                  onChange={() => toggleAddSelect(iv.userId)}
+                />
+              </label>
+            ))}
+            {addError && (
+              <p className="ip-person-role" style={{ color: "crimson" }}>{addError}</p>
+            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <button
+                className="ip-primary-btn"
+                style={{ flex: 1, minHeight: 44, fontSize: 15 }}
+                disabled={addSelected.length === 0 || submittingAdd}
+                onClick={handleAddSubmit}
+              >
+                {submittingAdd ? "Adding…" : `Add ${addSelected.length > 0 ? `(${addSelected.length})` : ""}`}
+              </button>
+              <button
+                className="ip-danger-btn"
+                style={{ flex: 1, minHeight: 44, fontSize: 15 }}
+                onClick={() => { setShowAddPanel(false); setAddSelected([]); }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Remove error */}
         {removeError && (
           <div className="ip-note-box" style={{ color: "crimson", marginTop: 12 }}>
@@ -371,10 +477,38 @@ const RequestStatusPopup = ({
 
         {renderBody()}
 
-        <div className="ip-actions">
+        <div className="ip-actions" style={{ flexWrap: "wrap", gap: 14 }}>
+          {/* Add Interviewers — adds to the existing request without cancelling */}
+          {activeRequest && (
+            <button
+              className="ip-small-btn"
+              onClick={() => showAddPanel ? setShowAddPanel(false) : openAddPanel()}
+            >
+              {showAddPanel ? "Hide Add" : "Add Interviewers"}
+            </button>
+          )}
+
+          {/* Cancel & Redo — cancels the whole request, opens the request form fresh */}
           {activeRequest && typeof onEditRequest === "function" && (
-            <button className="ip-small-btn" onClick={onEditRequest}>
-              Edit Request
+            <button
+              className="ip-small-btn"
+              style={{ background: "#6b7280" }}
+              onClick={() => {
+                // Clear stored removed IDs for this request since it's being
+                // cancelled — the new request starts with a clean slate
+                if (activeRequest?.requestId) {
+                  try {
+                    localStorage.removeItem(
+                      `removed_interviewers:${activeRequest.requestId}`
+                    );
+                  } catch { /* ignore */ }
+                }
+                setRemovedIds(new Set());
+                setShowAddPanel(false);
+                onEditRequest();
+              }}
+            >
+              Cancel &amp; Redo
             </button>
           )}
 

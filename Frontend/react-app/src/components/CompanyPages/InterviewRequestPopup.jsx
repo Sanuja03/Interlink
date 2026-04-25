@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../lib/api"; // adjust path if needed
 import "./InterviewPopups.css";
 
-const InterviewRequestPopup = ({ open, onClose, candidate }) => {
+const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = false }) => {
   const [panelSize, setPanelSize] = useState(2);
   const [mode, setMode] = useState("Online");
   const [date, setDate] = useState("");
@@ -79,7 +79,9 @@ const InterviewRequestPopup = ({ open, onClose, candidate }) => {
 
         setSelectedInterviewers(invitedMapped);
         setRequestedInterviewers(invitedMapped);
-        setIsSent(true);
+        // If opened from "Cancel & Redo", skip the locked view so the admin
+        // can immediately edit all fields and send a fresh request.
+        setIsSent(startInEditMode ? false : true);
       } catch (err) {
         if (cancelled) return;
         console.error("[InterviewRequestPopup] load existing failed:", err);

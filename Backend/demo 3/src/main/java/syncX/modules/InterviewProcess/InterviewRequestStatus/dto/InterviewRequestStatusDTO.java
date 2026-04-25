@@ -74,6 +74,15 @@ public class InterviewRequestStatusDTO {
     }
 
     // ────────────────────────────────────────────────
+    // REQUEST: add interviewers to existing request
+    // ────────────────────────────────────────────────
+    public static class AddInterviewersRequest {
+        private java.util.List<java.util.UUID> interviewerUserIds;
+        public java.util.List<java.util.UUID> getInterviewerUserIds() { return interviewerUserIds; }
+        public void setInterviewerUserIds(java.util.List<java.util.UUID> ids) { this.interviewerUserIds = ids; }
+    }
+
+    // ────────────────────────────────────────────────
     // RESPONSE: summary counts (used after a remove)
     // ────────────────────────────────────────────────
     public static class RemoveInterviewerResponse {

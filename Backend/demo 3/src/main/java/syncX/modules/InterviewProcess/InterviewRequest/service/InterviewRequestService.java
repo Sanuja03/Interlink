@@ -169,6 +169,14 @@ public class InterviewRequestService {
         if (existing.isPresent()) {
             InterviewRequest old = existing.get();
             old.setStatus("cancelled");
+            // Flip all pending interviewers to rejected so the request
+            // disappears from their pending page immediately
+            for (InterviewRequestInterviewer iri : old.getInterviewers()) {
+                if ("pending".equalsIgnoreCase(iri.getResponseStatus())) {
+                    iri.setResponseStatus("rejected");
+                    iri.setRespondedAt(OffsetDateTime.now());
+                }
+            }
             requestRepo.save(old);
             requestRepo.flush();
         }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequest;
+import syncX.modules.InterviewProcess.InterviewRequest.repository.AssignableInterviewerRepository;
 import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequestInterviewer;
 import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewRequestRepository;
 import syncX.modules.InterviewProcess.InterviewRequestStatus.dto.InterviewRequestStatusDTO;
@@ -21,7 +22,8 @@ import java.util.stream.Collectors;
 @Service
 public class InterviewRequestStatusService {
 
-    @Autowired private InterviewRequestRepository  requestRepo;
+    @Autowired private InterviewRequestRepository       requestRepo;
+    @Autowired private AssignableInterviewerRepository  assignableRepo;
     @Autowired private InterviewerRepository       interviewerRepo;
     @Autowired private CompanyRepository           companyRepository;
 
@@ -146,6 +148,57 @@ public class InterviewRequestStatusService {
         target.setResponseStatus("pending");
         target.setRespondedAt(null);
         requestRepo.save(ir);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // POST: add more interviewers to an existing pending request.
+    //  • Skips any userId already in the request (no duplicates).
+    //  • Only adds — never touches accepted/pending existing rows.
+    //  • Validates that every added userId belongs to this company.
+    // ════════════════════════════════════════════════════════════════
+    @Transactional
+    public InterviewRequestStatusDTO.StatusResponse addInterviewers(
+            Jwt jwt, UUID requestId, List<UUID> newUserIds) {
+
+        UUID companyId = resolveCompanyId(jwt);
+
+        InterviewRequest ir = requestRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Interview request not found"));
+
+        if (!ir.getCompanyId().equals(companyId))
+            throw new SecurityException("You do not own this interview request");
+
+        if ("finalised".equalsIgnoreCase(ir.getStatus()) ||
+                "cancelled".equalsIgnoreCase(ir.getStatus()))
+            throw new IllegalStateException(
+                    "Cannot add interviewers to a " + ir.getStatus() + " request");
+
+        // Validate all new IDs belong to this company
+        Set<UUID> allowedIds = assignableRepo.findAssignableByCompany(companyId)
+                .stream().map(i -> i.getUserId()).collect(Collectors.toSet());
+        for (UUID uid : newUserIds) {
+            if (!allowedIds.contains(uid))
+                throw new IllegalArgumentException(
+                        "Interviewer " + uid + " is not assignable to this company");
+        }
+
+        // IDs already in the request — skip to avoid duplicates
+        Set<UUID> existing = ir.getInterviewers().stream()
+                .map(InterviewRequestInterviewer::getInterviewerUserId)
+                .collect(Collectors.toSet());
+
+        for (UUID uid : newUserIds) {
+            if (existing.contains(uid)) continue; // already invited, skip
+            InterviewRequestInterviewer iri = new InterviewRequestInterviewer();
+            iri.setInterviewRequest(ir);
+            iri.setInterviewerUserId(uid);
+            iri.setWasAvailable(false); // availability not re-checked on add
+            iri.setResponseStatus("pending");
+            ir.getInterviewers().add(iri);
+        }
+
+        requestRepo.save(ir);
+        return buildStatusResponse(ir);
     }
 
     // ════════════════════════════════════════════════════════════════
