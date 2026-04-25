@@ -28,7 +28,6 @@ public class AdminCompanyService {
 
         List<AdminCompanyDetailJobsDto> jobs = null;
 
-        //  KEY LOGIC: Only approved companies get jobs
         if ("approved".equalsIgnoreCase(company.getCompanyStatus())) {
 
             boolean isSuspended = "suspended".equalsIgnoreCase(company.getCompanyActivityStatus());
@@ -83,26 +82,32 @@ public class AdminCompanyService {
         AdminCompanyRepository.save(c);
     }
 
+    // SUSPEND COMPANY + JOBS
     public void suspendCompany(UUID id) {
         AdminCompany c = getCompany(id);
 
-        // UI
+        // UI state
         c.setCompanyActivityStatus("suspended");
         AdminCompanyRepository.save(c);
 
-        // REAL LOGIC
+        // deactivate users
         AdminCompanyUsersRepository.deactivateCompanyUsers(id);
+
+        // suspend jobs
+        AdminCompanyJobsRepository.suspendJobsByCompanyId(id);
     }
 
+    //  UPDATED — RESTORE COMPANY + JOBS
     public void restoreCompany(UUID id) {
         AdminCompany c = getCompany(id);
 
-        // UI (optional)
         c.setCompanyActivityStatus("normal");
         AdminCompanyRepository.save(c);
 
-        // REAL LOGIC
         AdminCompanyUsersRepository.activateCompanyUsers(id);
+
+        //  restore jobs
+        AdminCompanyJobsRepository.restoreJobsByCompanyId(id);
     }
 
     public void flagCompany(UUID id) {
@@ -125,7 +130,7 @@ public class AdminCompanyService {
 
     public void deleteCompany(UUID id) {
         AdminCompany c = getCompany(id);
-        c.setCompanyStatus("deleted"); // soft delete
+        c.setCompanyStatus("deleted");
         AdminCompanyRepository.save(c);
     }
 

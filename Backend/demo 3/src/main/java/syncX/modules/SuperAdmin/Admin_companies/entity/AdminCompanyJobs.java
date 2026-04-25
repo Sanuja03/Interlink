@@ -23,6 +23,7 @@ public class AdminCompanyJobs {
     @Column(name = "employment_type")
     private String employmentType;
 
+    @Column(name = "status")
     private String status;
 
     @Column(name = "created_at")
