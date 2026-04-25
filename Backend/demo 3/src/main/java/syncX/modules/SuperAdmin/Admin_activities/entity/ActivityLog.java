@@ -1,6 +1,7 @@
 package syncX.modules.SuperAdmin.Admin_activities.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +28,8 @@ public class ActivityLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    @Column(name = "user_id", nullable = true)
+    private UUID userId;
 
     private String userRole;
 
@@ -40,6 +42,7 @@ public class ActivityLog {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
 

@@ -5,7 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
-import syncX.modules.SuperAdmin.Admin_activities.entity.ActivityLog;
+import syncX.modules.SuperAdmin.Admin_activities.dto.ActivityLogDto;
+import syncX.modules.SuperAdmin.Admin_activities.dto.CreateActivityLogDto;
 import syncX.modules.SuperAdmin.Admin_activities.service.ActivityLogService;
 
 @RestController
@@ -16,9 +17,9 @@ public class ActivityLogController {
 
     private final ActivityLogService service;
 
-    // Dashboard + All Activities
+    // 🔹 GET LOGS (DTO)
     @GetMapping
-    public Page<ActivityLog> getLogs(
+    public Page<ActivityLogDto> getLogs(
             @RequestParam(defaultValue = "") String userRole,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) String fromDate,
@@ -29,14 +30,14 @@ public class ActivityLogController {
         return service.getLogs(userRole, search, fromDate, toDate, page, size);
     }
 
+    // 🔹 CREATE LOG (DTO)
     @PostMapping
-    public ActivityLog createActivityLog(@RequestBody ActivityLog log) {
-        return service.createLog(log);
+    public ActivityLogDto createActivityLog(@RequestBody CreateActivityLogDto dto) {
+        return service.createLog(dto);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleError(Exception e) {
         return ResponseEntity.status(500).body("Something went wrong");
     }
-
 }
