@@ -1,30 +1,58 @@
 package syncX.modules.SuperAdmin.Admin_settings.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+
+import syncX.modules.SuperAdmin.Admin_settings.dto.*;
 import syncX.modules.SuperAdmin.Admin_settings.entity.SASettings;
 import syncX.modules.SuperAdmin.Admin_settings.repository.SASettingsRepository;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SASettingsService {
 
-    @Autowired
-    private SASettingsRepository repo;
+    private final SASettingsRepository repo;
 
-    public List<SASettings> getSettings(String category) {
-        return repo.findByCategory(category);
+    //  GET SETTINGS
+    public List<SASettingsDto> getSettings(String category) {
+        return repo.findByCategory(category)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
-    public List<SASettings> saveSettings(String category, List<SASettings> settings) {
+    //  SAVE SETTINGS
+    public List<SASettingsDto> saveSettings(String category, List<SaveSettingsDto> settings) {
 
-        // delete old ones (simple clean approach)
+        // delete existing
         List<SASettings> existing = repo.findByCategory(category);
         repo.deleteAll(existing);
 
-        settings.forEach(s -> s.setCategory(category));
+        // map DTO → Entity
+        List<SASettings> newSettings = settings.stream()
+                .map(dto -> {
+                    SASettings s = new SASettings();
+                    s.setCategory(category);
+                    s.setKeyName(dto.keyName());
+                    s.setValue(dto.value());
+                    return s;
+                })
+                .toList();
 
-        return repo.saveAll(settings);
+        return repo.saveAll(newSettings)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    //  MAPPER
+    private SASettingsDto mapToDto(SASettings s) {
+        return new SASettingsDto(
+                s.getId(),
+                s.getKeyName(),
+                s.getValue()
+        );
     }
 }

@@ -1,8 +1,9 @@
 package syncX.modules.SuperAdmin.Admin_settings.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import syncX.modules.SuperAdmin.Admin_settings.entity.SASettings;
+
+import syncX.modules.SuperAdmin.Admin_settings.dto.*;
 import syncX.modules.SuperAdmin.Admin_settings.service.SASettingsService;
 
 import java.util.List;
@@ -10,20 +11,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/settings")
 @CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
 public class SASettingsController {
 
-    @Autowired
-    private SASettingsService service;
+    private final SASettingsService service;
 
+    // 🔹 GET
     @GetMapping("/{category}")
-    public List<SASettings> getSettings(@PathVariable String category) {
+    public List<SASettingsDto> getSettings(@PathVariable String category) {
         return service.getSettings(category);
     }
 
+    // 🔹 SAVE
     @PostMapping("/{category}")
-    public List<SASettings> saveSettings(
+    public List<SASettingsDto> saveSettings(
             @PathVariable String category,
-            @RequestBody List<SASettings> settings) {
+            @RequestBody List<SaveSettingsDto> settings) {
 
         return service.saveSettings(category, settings);
     }
