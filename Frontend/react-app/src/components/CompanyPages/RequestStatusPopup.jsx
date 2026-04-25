@@ -5,28 +5,22 @@ import "./InterviewPopups.css";
 /**
  * RequestStatusPopup
  *
- * Shows the currently-active interview request for a (candidate, jobApplication)
- * pair, pulling invited interviewers and their response statuses from the
- * backend's GET /api/company/interview-requests/current endpoint.
+ * Fetches from the EXISTING endpoint (same one ShortlistedCandidates uses):
+ *   GET /api/company/interview-requests/current
+ *         ?candidateId=…&jobApplicationId=…
+ *   → returns ExistingRequestResponse  (field: invitedInterviewers[])
  *
- * The backend already filters out rows whose status = 'cancelled', so if the
- * admin "Edit"-ed an old request (which cancels the old row and inserts a new
- * one), this popup will automatically show the NEW interviewer list — old
- * interviewers from the cancelled request are dropped, and newly added ones
- * appear.
- *
- * Response-status mapping (DB → UI):
- *   pending   → "Pending"
- *   accepted  → "Accepted"
- *   rejected  → "Rejected"
+ * Remove an interviewer:
+ *   DELETE /api/company/interview-requests/status/{requestId}/interviewers/{userId}
+ *   (requires InterviewRequestStatusController to be deployed)
  *
  * Props:
- *   open         : boolean — show/hide
- *   onClose      : () => void
- *   candidate    : { candidateId, jobApplicationId, candidateName?, jobTitle? }
- *   onResendRequest : (interviewerUserId) => void   // optional
- *   onFinalizePanel : (requestId) => void           // optional
- *   onEditRequest   : () => void                    // optional — opens InterviewRequestPopup
+ *   open            : boolean
+ *   onClose         : () => void
+ *   candidate       : { candidateId, jobApplicationId, candidateName?, jobTitle? }
+ *   onResendRequest : (interviewerUserId, requestId) => void   // optional
+ *   onFinalizePanel : (requestId) => void                      // optional
+ *   onEditRequest   : () => void                               // optional
  */
 const RequestStatusPopup = ({
   open,
@@ -36,19 +30,42 @@ const RequestStatusPopup = ({
   onFinalizePanel,
   onEditRequest,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading]             = useState(false);
+  const [error, setError]                 = useState("");
   const [activeRequest, setActiveRequest] = useState(null);
+  const [removingId, setRemovingId]       = useState(null);
+  const [resendingId, setResendingId]     = useState(null);
+  const [removeError, setRemoveError]     = useState("");
+  // Track IDs the admin removed — persisted in localStorage so the
+  // "Removed" badge survives logout/refresh.
+  // Key: "removed_interviewers:<requestId>"  Value: JSON array of userIds
+  const getStoredRemovedIds = (requestId) => {
+    if (!requestId) return new Set();
+    try {
+      const raw = localStorage.getItem(`removed_interviewers:${requestId}`);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  };
 
+  const [removedIds, setRemovedIds] = useState(new Set());
+
+  // ── Fetch from the existing /current endpoint ──
+  // Returns ExistingRequestResponse which has:
+  //   requestId, interviewId, status, panelSize, interviewDate,
+  //   interviewTime, mode, adminNotes, historyId,
+  //   invitedInterviewers: [{ userId, fullName, role, responseStatus }]
   const fetchActiveRequest = useCallback(async () => {
     if (!candidate?.candidateId || !candidate?.jobApplicationId) return;
 
     setLoading(true);
     setError("");
+    setRemoveError("");
+    // Don't clear removedIds here — keep them so the "Removed" badge
+    // persists after the re-fetch that follows a remove action.
     try {
       const res = await api.get("/company/interview-requests/current", {
         params: {
-          candidateId: candidate.candidateId,
+          candidateId:      candidate.candidateId,
           jobApplicationId: candidate.jobApplicationId,
         },
       });
@@ -56,15 +73,18 @@ const RequestStatusPopup = ({
       // 204 No Content → no active (non-cancelled) request exists
       if (res.status === 204 || !res.data) {
         setActiveRequest(null);
+        setRemovedIds(new Set());
       } else {
         setActiveRequest(res.data);
+        // Hydrate from localStorage so "Removed" badges survive refresh/logout
+        setRemovedIds(getStoredRemovedIds(res.data.requestId));
       }
     } catch (err) {
       console.error("[RequestStatusPopup] fetch failed:", err);
       const msg =
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.message ||
+        err?.response?.data?.error   ||
+        err?.message                 ||
         "Failed to load request status";
       setError(msg);
       setActiveRequest(null);
@@ -80,43 +100,119 @@ const RequestStatusPopup = ({
 
   if (!open) return null;
 
-  // ── Map backend response_status → UI label + CSS class ──
+  // ── Map DB responseStatus → UI label ──
   const normalizeStatus = (raw) => {
     if (!raw) return "Pending";
     const s = String(raw).toLowerCase();
-    if (s === "accepted") return "Accepted";
-    if (s === "rejected") return "Rejected";
+    if (s === "accepted")                     return "Accepted";
+    if (s === "rejected")                     return "Rejected";
     if (s === "timed_out" || s === "timeout") return "Timed Out";
     return "Pending";
   };
 
   const getStatusClass = (uiStatus) => {
-    if (uiStatus === "Accepted") return "ip-status-accepted";
-    if (uiStatus === "Rejected") return "ip-status-rejected";
-    if (uiStatus === "Pending") return "ip-status-pending";
+    if (uiStatus === "Accepted")  return "ip-status-accepted";
+    if (uiStatus === "Rejected")  return "ip-status-rejected";
+    if (uiStatus === "Pending")   return "ip-status-pending";
     if (uiStatus === "Timed Out") return "ip-status-timeout";
     return "";
   };
 
-  // ── Build interviewer list from backend payload ──
-  const invited = activeRequest?.invitedInterviewers || [];
+  // ExistingRequestResponse uses `invitedInterviewers` as the field name
+  const invited      = activeRequest?.invitedInterviewers || [];
   const interviewers = invited.map((p) => ({
-    id: p.userId,
-    name: p.fullName,
-    role: p.role,
+    id:            p.userId,
+    name:          p.fullName,
+    role:          p.role,
     requestStatus: normalizeStatus(p.responseStatus),
-    rawStatus: p.responseStatus,
+    rawStatus:     p.responseStatus,
+    // If the admin removed this person this session, flag it so we can
+    // show "Removed" instead of the generic "Rejected" badge.
+    adminRemoved:  removedIds.has(p.userId),
   }));
 
-  const panelSize = activeRequest?.panelSize || 0;
-  const acceptedCount = interviewers.filter(
-    (p) => p.requestStatus === "Accepted"
-  ).length;
-  const canFinalize = panelSize > 0 && acceptedCount === panelSize;
+  const panelSize     = activeRequest?.panelSize || 0;
+  const acceptedCount = interviewers.filter((p) => p.requestStatus === "Accepted").length;
+  // Finalize enabled when accepted >= panelSize
+  const canFinalize   = panelSize > 0 && acceptedCount >= panelSize;
 
-  const handleResend = (interviewerUserId) => {
-    if (typeof onResendRequest === "function") {
-      onResendRequest(interviewerUserId, activeRequest?.requestId);
+  // ── Remove handler ──
+  // Calls the InterviewRequestStatus controller DELETE endpoint.
+  // If that controller isn't deployed yet this will 404 — the error
+  // is shown inline so the rest of the popup stays usable.
+  const handleRemove = async (interviewerUserId) => {
+    if (!activeRequest?.requestId) return;
+
+    setRemovingId(interviewerUserId);
+    setRemoveError("");
+    try {
+      await api.delete(
+        `/company/interview-requests/status/${activeRequest.requestId}/interviewers/${interviewerUserId}`
+      );
+      // Persist to localStorage so the badge survives refresh/logout
+      setRemovedIds((prev) => {
+        const next = new Set(prev).add(interviewerUserId);
+        if (activeRequest?.requestId) {
+          try {
+            localStorage.setItem(
+              `removed_interviewers:${activeRequest.requestId}`,
+              JSON.stringify([...next])
+            );
+          } catch { /* storage full or private mode — fail silently */ }
+        }
+        return next;
+      });
+      // Re-fetch so the list reflects the updated state from DB
+      await fetchActiveRequest();
+    } catch (err) {
+      console.error("[RequestStatusPopup] remove failed:", err);
+      const msg =
+        err?.response?.data?.error   ||
+        err?.response?.data?.message ||
+        err?.message                 ||
+        "Failed to remove interviewer";
+      setRemoveError(msg);
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  // Resend — resets a rejected interviewer back to "pending" inline.
+  // No redirect needed; the popup re-fetches and the badge updates.
+  const handleResend = async (interviewerUserId) => {
+    if (!activeRequest?.requestId) return;
+    setResendingId(interviewerUserId);
+    setRemoveError("");
+    try {
+      await api.put(
+        `/company/interview-requests/status/${activeRequest.requestId}/interviewers/${interviewerUserId}/resend`
+      );
+      // Also clear from removedIds and localStorage in case it was admin-removed
+      // previously and admin wants to re-invite them.
+      setRemovedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(interviewerUserId);
+        if (activeRequest?.requestId) {
+          try {
+            localStorage.setItem(
+              `removed_interviewers:${activeRequest.requestId}`,
+              JSON.stringify([...next])
+            );
+          } catch { /* ignore */ }
+        }
+        return next;
+      });
+      await fetchActiveRequest();
+    } catch (err) {
+      console.error("[RequestStatusPopup] resend failed:", err);
+      const msg =
+        err?.response?.data?.error   ||
+        err?.response?.data?.message ||
+        err?.message                 ||
+        "Failed to resend request";
+      setRemoveError(msg);
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -126,7 +222,7 @@ const RequestStatusPopup = ({
     }
   };
 
-  // ── Render body depending on state ──
+  // ── Render ──
   const renderBody = () => {
     if (loading) {
       return (
@@ -139,9 +235,7 @@ const RequestStatusPopup = ({
     if (error) {
       return (
         <div className="ip-card">
-          <div className="ip-note-box" style={{ color: "crimson" }}>
-            {error}
-          </div>
+          <div className="ip-note-box" style={{ color: "crimson" }}>{error}</div>
         </div>
       );
     }
@@ -151,13 +245,9 @@ const RequestStatusPopup = ({
         <div className="ip-card">
           <div className="ip-note-box">
             No active interview request found for this candidate.
-            {candidate?.candidateName ? (
-              <>
-                <br />
-                Send a new request for <b>{candidate.candidateName}</b> to see
-                its status here.
-              </>
-            ) : null}
+            {candidate?.candidateName && (
+              <><br />Send a new request for <b>{candidate.candidateName}</b> to see its status here.</>
+            )}
           </div>
         </div>
       );
@@ -165,31 +255,23 @@ const RequestStatusPopup = ({
 
     return (
       <div className="ip-card">
-        {/* ── Header info row ── */}
+
+        {/* ── Header info ── */}
         <div className="ip-info-grid ip-info-grid-2">
           <div className="ip-info-box">
             <span className="ip-info-label">Interview ID</span>
-            <span className="ip-info-value">
-              {activeRequest.interviewId || "—"}
-            </span>
+            <span className="ip-info-value">{activeRequest.interviewId || "—"}</span>
           </div>
-
           <div className="ip-info-box">
             <span className="ip-info-label">Request Status</span>
-            <span className="ip-info-value">
-              {activeRequest.status || "pending"}
-            </span>
+            <span className="ip-info-value">{activeRequest.status || "pending"}</span>
           </div>
-
           <div className="ip-info-box">
             <span className="ip-info-label">Candidate</span>
-            <span className="ip-info-value">
-              {candidate?.candidateName || "—"}
-            </span>
+            <span className="ip-info-value">{candidate?.candidateName || "—"}</span>
           </div>
-
           <div className="ip-info-box">
-            <span className="ip-info-label">Date & Time</span>
+            <span className="ip-info-label">Date &amp; Time</span>
             <span className="ip-info-value">
               {activeRequest.interviewDate} {activeRequest.interviewTime}
             </span>
@@ -202,21 +284,16 @@ const RequestStatusPopup = ({
             <span className="ip-info-label">Panel Size</span>
             <span className="ip-info-value">{panelSize}</span>
           </div>
-
           <div className="ip-panel-box">
-            <span className="ip-info-label">Accepted Count</span>
-            <span className="ip-info-value">
-              {acceptedCount}/{panelSize}
-            </span>
+            <span className="ip-info-label">Accepted</span>
+            <span className="ip-info-value">{acceptedCount}/{panelSize}</span>
           </div>
         </div>
 
-        {/* ── Interviewers list with statuses ── */}
+        {/* ── Interviewer rows ── */}
         <div className="ip-status-list">
           {interviewers.length === 0 && (
-            <p className="ip-person-role">
-              No interviewers invited to this request.
-            </p>
+            <p className="ip-person-role">No interviewers invited to this request.</p>
           )}
 
           {interviewers.map((person) => (
@@ -227,32 +304,60 @@ const RequestStatusPopup = ({
               </div>
 
               <div className="ip-status-right">
-                <span
-                  className={`ip-badge ${getStatusClass(person.requestStatus)}`}
-                >
-                  {person.requestStatus}
-                </span>
+                {/* Status badge — "Removed" for admin-removed, normal otherwise */}
+                {person.adminRemoved ? (
+                  <span className="ip-badge ip-status-removed">
+                    Removed
+                  </span>
+                ) : (
+                  <span className={`ip-badge ${getStatusClass(person.requestStatus)}`}>
+                    {person.requestStatus}
+                  </span>
+                )}
 
-                {(person.requestStatus === "Rejected" ||
-                  person.requestStatus === "Pending" ||
-                  person.requestStatus === "Timed Out") &&
-                  typeof onResendRequest === "function" && (
+                {/* Resend — only for Rejected (interviewer declined).
+                    Resets their status to Pending inline, no redirect. */}
+                {!person.adminRemoved &&
+                  person.requestStatus === "Rejected" && (
                     <button
                       className="ip-small-btn"
+                      disabled={resendingId === person.id}
                       onClick={() => handleResend(person.id)}
                     >
-                      Resend
+                      {resendingId === person.id ? "Resending…" : "Resend"}
                     </button>
                   )}
+
+                {/* Remove button — shown for ALL statuses except already-removed.
+                    Accepted interviewers can also be removed if needed. */}
+                {!person.adminRemoved && (
+                  <button
+                    className="ip-remove-btn"
+                    disabled={removingId === person.id}
+                    onClick={() => handleRemove(person.id)}
+                  >
+                    {removingId === person.id ? "Removing…" : "Remove"}
+                  </button>
+                )}
+
+
               </div>
             </div>
           ))}
         </div>
 
+        {/* Remove error */}
+        {removeError && (
+          <div className="ip-note-box" style={{ color: "crimson", marginTop: 12 }}>
+            {removeError}
+          </div>
+        )}
+
+        {/* Finalize hint */}
         {!canFinalize && panelSize > 0 && (
           <div className="ip-note-box">
-            Finalize button will be enabled only when exactly{" "}
-            <b>{panelSize}</b> interviewers have accepted.
+            Finalize button will be enabled only when at least{" "}
+            <b>{panelSize}</b> interviewer{panelSize > 1 ? "s have" : " has"} accepted.
           </div>
         )}
       </div>

@@ -474,3 +474,20 @@
   border-radius: 20px;
   white-space: nowrap;
 }
+
+/* ── Admin-removed interviewer styles ── */
+
+/* Grey "Removed" badge — replaces the normal status badge */
+.ip-status-removed {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+/* Greyed-out disabled "Removed" button — replaces the red Remove button */
+.ip-removed-done {
+  background: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}

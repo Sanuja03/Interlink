@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import api from "../../lib/api"; // same axios instance used by InterviewRequestPopup
 import "./ShortlistedCandidates.css";
@@ -21,6 +21,9 @@ const ShortlistedCandidates = () => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showRequestPopup, setShowRequestPopup] = useState(false);
   const [showStatusPopup, setShowStatusPopup] = useState(false);
+  // Ref so RequestStatusPopup always gets the candidate synchronously,
+  // regardless of React's async setState batching.
+  const candidateRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,17 +75,13 @@ const ShortlistedCandidates = () => {
   //     values from your Supabase `jobs` table:
   //       SELECT id, company_id FROM jobs WHERE id IN (26, 27);
   // ════════════════════════════════════════════════════════════════
+  // ─── Hardcoded candidates for subject1@gmail.com (company_id: 0c97e983…) ───
+  // These two rows match the ACTIVE pending requests IN5011 and IN5012 in the DB.
+  // jobApplicationId 8 → IN5011 (panel_size 1, 1 interviewer invited)
+  // jobApplicationId 7 → IN5012 (panel_size 2, 2 interviewers invited)
+  // Both belong to company_id "0c97e983-ff86-48cb-95a4-96076da055c4" (subject1).
+  // When your teammate's real API is ready, replace this array with the API response.
   const allCandidates = [
-    {
-      candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
-      jobApplicationId: 6,
-      jobId:            27,
-      historyId:        6,
-      candidateName:    "Senithi Malalanayake",
-      jobTitle:         "Frontend Developer",
-      jobPostId:        "JOB27",
-      companyId:        "300b294a-5e53-4088-a86b-83badb77462a",  // company owning job 27
-    },
     {
       candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
       jobApplicationId: 8,
@@ -91,7 +90,7 @@ const ShortlistedCandidates = () => {
       candidateName:    "Senithi Vihara",
       jobTitle:         "Frontend Developer",
       jobPostId:        "JOB26",
-      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",  // company owning job 26
+      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",
     },
     {
       candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
@@ -101,7 +100,7 @@ const ShortlistedCandidates = () => {
       candidateName:    "Sanuja Alphonsus",
       jobTitle:         "Frontend Developer",
       jobPostId:        "JOB26",
-      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",  // company owning job 26
+      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",
     },
   ];
   // ▲▲▲ END TEAMMATE'S PART ▲▲▲
@@ -130,6 +129,11 @@ const ShortlistedCandidates = () => {
    * Decides which popup to open based on whether an active request exists.
    */
   const handleOpenForCandidate = async (candidate) => {
+    // Write to ref synchronously BEFORE any setState — this guarantees
+    // RequestStatusPopup's useCallback(fetchActiveRequest, [candidate])
+    // always sees a non-null candidate when the popup opens, avoiding
+    // the React async-setState race condition.
+    candidateRef.current = candidate;
     setSelectedCandidate(candidate);
 
     try {
@@ -140,18 +144,16 @@ const ShortlistedCandidates = () => {
         },
       });
 
-      // 204 No Content OR empty body → no active request → open create popup
       if (res.status === 204 || !res.data) {
-        setShowRequestPopup(true);
         setShowStatusPopup(false);
+        setShowRequestPopup(true);
       } else {
-        // Active request exists → show status popup with live statuses
-        setShowStatusPopup(true);
         setShowRequestPopup(false);
+        setShowStatusPopup(true);
       }
     } catch (err) {
       console.error("[ShortlistedCandidates] status check failed:", err);
-      // On error, fall back to the create popup so admin isn't blocked
+      setShowStatusPopup(false);
       setShowRequestPopup(true);
     }
   };
@@ -160,6 +162,7 @@ const ShortlistedCandidates = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
     setSelectedCandidate(null);
+    candidateRef.current = null;
   };
 
   /**
@@ -294,10 +297,13 @@ const ShortlistedCandidates = () => {
       />
 
       {/* ─── Request Status Popup (view live statuses of active request) ─── */}
+      {/* candidateRef.current is used instead of selectedCandidate to avoid
+          the async setState race — the ref is written synchronously before
+          setShowStatusPopup(true) so the popup always has the candidate. */}
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
-        candidate={selectedCandidate}
+        candidate={candidateRef.current || selectedCandidate}
         onEditRequest={handleEditFromStatus}
         onResendRequest={handleResend}
         onFinalizePanel={handleFinalize}
@@ -306,4 +312,4 @@ const ShortlistedCandidates = () => {
   );
 };
 
-export default ShortlistedCandidates; 
+export default ShortlistedCandidates;
