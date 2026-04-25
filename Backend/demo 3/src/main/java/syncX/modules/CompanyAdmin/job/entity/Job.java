@@ -10,18 +10,21 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "job_title")
     private String jobTitle;
     private String department;
     private String employmentType;
     private String category;
     private int interviewRounds;
+    @Column(name = "job_location")
     private String jobLocation;
     private String experienceLevel;
     private int vacancies;
 
-    @Column(length = 2000)
+    @Column(name = "key_requirements", length = 2000)
     private String keyRequirements;
 
+    @Column(name = "company_id")
     private Long companyId;
 
     // GETTERS AND SETTERS
