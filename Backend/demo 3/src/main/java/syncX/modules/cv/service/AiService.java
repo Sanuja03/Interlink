@@ -96,4 +96,74 @@ public class AiService {
             throw new RuntimeException("Failed to parse AI response: " + e.getMessage());
         }
     }
+
+    public String extractJobData(String text) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "gpt-4o-mini");
+        body.put("max_tokens", 200);
+
+        List<Map<String, String>> messages = new ArrayList<>();
+
+        messages.add(Map.of(
+                "role", "user",
+                "content", """
+Return ONLY valid JSON:
+
+{
+  "skills": [],
+  "experienceRequired": number,
+  "educationRequired": ""
+}
+
+Rules:
+Rules:
+- Extract ONLY skills explicitly mentioned in the text
+- Do NOT infer or add extra skills
+- Do NOT assume related technologies (e.g., React ≠ HTML/CSS)
+- Skills must be exact keywords from the text
+- Skills must be single keywords (React, Java, Communication)
+- Remove adjectives like "good", "strong"
+- Do NOT duplicate similar skills
+- Normalize skills to base form (e.g., "React", "Java")
+- Extract years of experience as a number
+- Keep education simple (Degree, Diploma, Masters)
+
+Text:
+""" + text
+        ));
+
+        body.put("messages", messages);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request =
+                new HttpEntity<>(body, headers);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response =
+                restTemplate.postForObject(URL, request, Map.class);
+
+        try {
+            List<Map<String, Object>> choices =
+                    (List<Map<String, Object>>) response.get("choices");
+
+            Map<String, Object> message =
+                    (Map<String, Object>) choices.get(0).get("message");
+
+            String content = (String) message.get("content");
+
+            return content
+                    .replace("```json", "")
+                    .replace("```", "")
+                    .trim();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse AI job response");
+        }
+    }
 }

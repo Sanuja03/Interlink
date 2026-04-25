@@ -39,7 +39,7 @@ const JobPostDetails = () => {
 
                     {/* Back to jobs button */}
                     <button
-                        onClick={() => navigate('/job-posts')}
+                        onClick={() => navigate('/candidate/jobposts')}
                         style={{
                             background: '#d1d5db',
                             border: 'none',
@@ -166,7 +166,7 @@ const JobPostDetails = () => {
                             {/* Action Buttons */}
                             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <button
-                                    onClick={() => navigate('/ai-questions', { state: { job } })}
+                                    onClick={() => navigate('/Candidate/aiquestions', { state: { job } })}
                                     style={{
                                         background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
                                         color: '#fff',
@@ -208,7 +208,7 @@ const JobPostDetails = () => {
                     {/* Previous / Next Navigation */}
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
-                            onClick={() => prevId && navigate(`/job-posts/${prevId}`)}
+                            onClick={() => prevId && navigate(`/candidate/jobposts/${prevId}`)}
                             disabled={!prevId}
                             style={{
                                 background: '#d1d5db',
@@ -224,7 +224,7 @@ const JobPostDetails = () => {
                             Previous
                         </button>
                         <button
-                            onClick={() => nextId && navigate(`/job-posts/${nextId}`)}
+                            onClick={() => nextId && navigate(`/candidate/jobposts/${nextId}`)}
                             disabled={!nextId}
                             style={{
                                 background: '#d1d5db',

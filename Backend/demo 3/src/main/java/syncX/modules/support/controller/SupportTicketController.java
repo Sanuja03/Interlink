@@ -1,72 +1,129 @@
 package syncX.modules.support.controller;
 
+import syncX.modules.support.dto.SupportTicketDTO;
+import syncX.modules.support.entity.Response;
+import syncX.modules.support.service.SupportTicketService;
 import syncX.modules.support.entity.SupportTicket;
-import syncX.modules.support.repository.SupportTicketRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import syncX.modules.support.dto.ResponseDTO;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("/api/tickets")
 @CrossOrigin(origins = "http://localhost:5173")
 public class SupportTicketController {
 
-    private final SupportTicketRepository repository;
+    private final SupportTicketService service;
 
-    public SupportTicketController(SupportTicketRepository repository) {
-        this.repository = repository;
+    public SupportTicketController(SupportTicketService service) {
+        this.service = service;
     }
+
+    // ─── CREATE ──────────────────────────────────────────────────────────────
 
     @PostMapping
-    public SupportTicket create(@RequestBody SupportTicket ticket) {
-        ticket.setStatus("OPEN");
-        ticket.setCreatedAt(LocalDateTime.now());
-        return repository.save(ticket);
+    public ResponseEntity<SupportTicket> create(
+            @RequestBody SupportTicket ticket,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId      = UUID.fromString(jwt.getSubject());
+        String email     = jwt.getClaimAsString("email");
+        String firstName = jwt.getClaimAsString("given_name");
+        String lastName  = jwt.getClaimAsString("family_name");
+
+        ticket.setUserId(userId);
+        ticket.setEmail(email);
+
+        if (firstName != null || lastName != null) {
+            String fullName = ((firstName != null ? firstName : "") + " " +
+                    (lastName  != null ? lastName  : "")).trim();
+            ticket.setSubmittedBy(fullName);
+        } else if (email != null) {
+            // Fall back to email prefix (e.g. "svmalalanayake" from "svmalalanayake@gmail.com")
+            ticket.setSubmittedBy(email.split("@")[0]);
+        } else {
+            ticket.setSubmittedBy("Unknown");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(ticket));
     }
+
+    // ─── LIST ─────────────────────────────────────────────────────────────────
 
     @GetMapping
-    public ResponseEntity<List<SupportTicket>> getAll() {
-        return ResponseEntity.ok(repository.findAll());
+    public ResponseEntity<List<SupportTicket>> getTickets(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        // Role is looked up from public.users — not from the JWT claim
+        List<SupportTicket> tickets = service.isSuperAdmin(userId)
+                ? service.getAll()
+                : service.getByUser(userId);
+
+        return ResponseEntity.ok(tickets);
     }
 
+    // ─── GET BY ID ────────────────────────────────────────────────────────────
+
     @GetMapping("/{id}")
-    public ResponseEntity<SupportTicket> getById(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(ticket -> ResponseEntity.ok(ticket))   // FIXED
-                .orElseGet(() -> ResponseEntity.notFound().build()); // FIXED
+    public ResponseEntity<SupportTicketDTO> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        SupportTicketDTO dto = service.getTicketDTO(id);
+
+        // Non-admins can only view their own tickets
+        if (!service.isSuperAdmin(userId) && !userId.equals(dto.getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(dto);
     }
+
+    // ─── UPDATE ───────────────────────────────────────────────────────────────
 
     @PutMapping("/{id}")
     public ResponseEntity<SupportTicket> update(
             @PathVariable Long id,
-            @RequestBody SupportTicket updatedTicket) {
+            @RequestBody SupportTicket updatedTicket,
+            @AuthenticationPrincipal Jwt jwt) {
 
-        return repository.findById(id)
-                .map(ticket -> {
-                    ticket.setTitle(updatedTicket.getTitle());
-                    ticket.setDescription(updatedTicket.getDescription());
-                    ticket.setStatus(updatedTicket.getStatus());
-                    return ResponseEntity.ok(repository.save(ticket));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(service.update(id, updatedTicket, userId));
     }
 
+    // ─── DELETE ───────────────────────────────────────────────────────────────
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
 
-        return repository.findById(id)
-                .map(ticket -> {
-                    if (!ticket.getStatus().equals("OPEN")) {
-                        return ResponseEntity
-                                .badRequest()
-                                .body("Only OPEN tickets can be deleted");
-                    }
+        UUID userId = UUID.fromString(jwt.getSubject());
+        service.delete(id, userId);
+        return ResponseEntity.noContent().build();
+    }
 
-                    repository.delete(ticket);
-                    return ResponseEntity.ok("Ticket deleted successfully");
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build()); // FIXED
+    // ─── REPLY ────────────────────────────────────────────────────────────────
+
+    @PostMapping("/{id}/reply")
+    public ResponseEntity<ResponseDTO> reply(
+            @PathVariable Long id,
+            @RequestBody Response response,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.addReply(id, response, userId));
     }
 }

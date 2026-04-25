@@ -1,56 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PlanCard from "../../components/TicketSubsPages/PlanCard";
 import PlanModal from "../../components/TicketSubsPages/PlanModal";
 import { Link } from "react-router-dom";
 import Footer from "../../components/TicketSubsPages/Footer";
 import logo from "../../assets/interlink-logo.png";
+import { toast } from "react-hot-toast";
+import api from "../../lib/api";
+
+const planIcons = {
+  Free: "📦",
+  Growth: "🎁",
+  Enterprise: "💳",
+};
+
+const planOrder = ["Free", "Growth", "Enterprise"];
 
 export default function SubscriptionPlans() {
-  const [plans, setPlans] = useState([
-    {
-      name: "Free",
-      price: "$0 / month",
-      icon: "📦",
-      activeJobs: 2,
-      applications: "Unlimited",
-      interviewers: 2,
-      aiCV: "Limited (~50)",
-      aiQuestions: "Limited (~50)",
-    },
-    {
-      name: "Growth",
-      price: "$5 / month",
-      icon: "🎁",
-      activeJobs: 10,
-      applications: "Unlimited",
-      interviewers: 5,
-      aiCV: "Limited (~300)",
-      aiQuestions: "Limited (~300)",
-    },
-    {
-      name: "Enterprise",
-      price: "$Custom",
-      icon: "💳",
-      activeJobs: "Unlimited",
-      applications: "Unlimited",
-      interviewers: "Unlimited",
-      aiCV: "Unlimited",
-      aiQuestions: "Unlimited",
-    },
-  ]);
-
+  const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
-  const updatePlan = (updatedPlan) => {
-    const updatedPlans = plans.map((p) =>
-      p.name === updatedPlan.name ? updatedPlan : p
-    );
-    setPlans(updatedPlans);
+  const fetchPlans = async () => {
+    try {
+      const res = await api.get("/subscriptions");
+  
+      const plansWithIcons = res.data.map(plan => ({
+        ...plan,
+        icon: planIcons[plan.name] || "📄",
+      }));
+  
+      const sortedPlans = plansWithIcons.sort(
+        (a, b) => planOrder.indexOf(a.name) - planOrder.indexOf(b.name)
+      );
+  
+      setPlans(sortedPlans);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load plans");
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const updatePlan = async (updatedPlan) => {
+    try {
+      await api.put(`/subscriptions/${updatedPlan.name}`, updatedPlan);
+  
+      toast.success("Plan updated successfully!");
+      fetchPlans();
+    } catch (err) {
+      console.error(err);
+      toast.error("Update failed!");
+    }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* HEADER */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto flex items-center gap-4 px-8 py-4">
           <img src={logo} alt="Interlink Logo" className="h-10" />
@@ -60,10 +66,9 @@ export default function SubscriptionPlans() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="flex-grow px-8 py-12">
         <div className="max-w-7xl mx-auto bg-white p-12 rounded-2xl shadow-md">
-          {/* Plans */}
+          
           <div className="grid md:grid-cols-3 gap-12">
             {plans.map((plan) => (
               <PlanCard
@@ -74,7 +79,6 @@ export default function SubscriptionPlans() {
             ))}
           </div>
 
-          {/* Active plans link */}
           <div className="mt-12 text-center">
             <Link
               to="/admin/active-plans"
@@ -94,7 +98,6 @@ export default function SubscriptionPlans() {
         )}
       </main>
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );

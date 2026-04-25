@@ -1,49 +1,83 @@
 package syncX.modules.CompanyAdmin.ApplicationManagement.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import syncX.modules.CompanyAdmin.ApplicationManagement.entity.ApplicationManagement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+
+import java.util.*;
+
+import syncX.modules.candidatedashboard.entity.JobApplication;
 import syncX.modules.CompanyAdmin.ApplicationManagement.service.ApplicationManagementService;
 
-import java.util.List;
-import java.util.UUID;
-
 @RestController
-@RequestMapping("/api/applications")
-@RequiredArgsConstructor
-@CrossOrigin(origins = "*") // allow frontend
+@RequestMapping("/api/company/applications")
+@CrossOrigin(origins = "*")
 public class ApplicationManagementController {
 
-    private final ApplicationManagementService service;
+    @Autowired
+    private ApplicationManagementService service;
 
-    // ✅ CREATE APPLICATION
-    @PostMapping
-    public ResponseEntity<ApplicationManagement> create(@RequestBody ApplicationManagement app) {
-        ApplicationManagement saved = service.save(app);
-        return ResponseEntity.ok(saved);
+    /**
+     * 🔹 Get all applications
+     */
+    @GetMapping("/{companyId}")
+    public ResponseEntity<?> getApplications(@PathVariable String companyId) {
+        try {
+            List<JobApplication> applications = service.getApplications(companyId);
+            return ResponseEntity.ok(applications);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Server error while fetching applications");
+        }
     }
 
-    // ✅ GET ALL APPLICATIONS
-    @GetMapping
-    public ResponseEntity<List<ApplicationManagement>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    /**
+     * 🔹 Get summary
+     */
+    @GetMapping("/summary/{companyId}")
+    public ResponseEntity<?> getSummary(@PathVariable String companyId) {
+        try {
+            Map<String, Long> summary = service.getSummary(companyId);
+            return ResponseEntity.ok(summary);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Server error while fetching summary");
+        }
     }
 
-    // 🔥 UPDATE STATUS (PROGRESS / REJECT)
+    /**
+     * 🔹 Update status (ONLY reject part improved)
+     */
     @PutMapping("/{id}/status")
-    public ResponseEntity<ApplicationManagement> updateStatus(
-            @PathVariable UUID id,
-            @RequestParam String action
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status
     ) {
-        ApplicationManagement updated = service.updateStatus(id, action);
-        return ResponseEntity.ok(updated);
-    }
+        try {
+            // ✅ Normalize input (important)
+            if (status != null) {
+                status = status.trim();
+            }
 
-    // ✅ DELETE APPLICATION
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable UUID id) {
-        service.delete(id);
-        return ResponseEntity.ok("Application deleted successfully");
+            // ✅ Only allow valid statuses
+            if (!status.equals("Shortlisted") && !status.equals("Rejected")) {
+                return ResponseEntity.badRequest().body("Invalid status value");
+            }
+
+            service.updateStatus(id, status);
+
+            // 🔥 Better response for reject
+            if (status.equals("Rejected")) {
+                return ResponseEntity.ok("Application rejected successfully");
+            }
+
+            return ResponseEntity.ok("Status updated successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error updating status");
+        }
     }
 }

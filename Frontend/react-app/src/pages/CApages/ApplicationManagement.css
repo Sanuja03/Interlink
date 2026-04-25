@@ -163,6 +163,7 @@
 .am-statusDot.red {
   background-color: red;
 }
+
 .am-view { background: var(--heading); color: white; }
 .am-shortlist { background: #19d319; color: white; }
 .am-reject { background: red; color: white; }
