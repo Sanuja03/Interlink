@@ -7,62 +7,121 @@ export default function CompanyDetailsModal({ open, onClose }) {
   const [companySize, setCompanySize] = useState("");
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
-
   const [website, setWebsite] = useState("");
   const [about, setAbout] = useState("");
   const [logo, setLogo] = useState("");
+  const [logoPreview, setLogoPreview] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const companyId = localStorage.getItem("companyId");
+  const token = localStorage.getItem("token"); // Get JWT token
+
+  // Helper to make authenticated requests
+  const authFetch = (url, options = {}) => {
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !companyId) return;
 
-    // 🔥 LOAD company_details
-    fetch(`http://localhost:8080/company/details/${companyId}`)
-      .then(res => res.json())
-      .then(data => {
-        setWebsite(data.website || "");
-        setAbout(data.about || "");
-        setLogo(data.logoUrl || "");
-      });
-
-    // 🔥 LOAD companies (basic data)
-    fetch(`http://localhost:8080/company/${companyId}`)
-      .then(res => res.json())
-      .then(data => {
+    // Load company details from your single endpoint
+    authFetch(`http://localhost:8080/api/company/${companyId}/details`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => {
         setName(data.companyName || "");
         setIndustry(data.industry || "");
         setCompanySize(data.companySize || "");
         setLocation(data.companyLocation || "");
         setEmail(data.companyEmail || "");
-      });
-
+        setWebsite(data.website || "");
+        setAbout(data.about || "");
+        setLogo(data.logoUrl || "");
+        setLogoPreview(data.logoUrl || "");
+      })
+      .catch((err) => console.error("Error loading company details:", err));
   }, [open, companyId]);
 
-  // 🔥 HANDLE SAVE
+  // HANDLE SAVE
   const handleSave = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      // 👉 Update company_details
-      await fetch(`http://localhost:8080/company/details/${companyId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          website,
-          about,
-          logoUrl: logo
-        })
-      });
+      const response = await authFetch(
+        `http://localhost:8080/api/company/${companyId}/details`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            companyName: name,
+            industry,
+            companySize,
+            companyLocation: location,
+            companyEmail: email,
+            website,
+            about,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to save");
 
       alert("Saved successfully!");
       onClose();
-
     } catch (err) {
       console.error(err);
       alert("Error saving data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // HANDLE LOGO UPLOAD
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate size (100KB)
+    if (file.size > 100 * 1024) {
+      alert("Image must be less than 100KB");
+      return;
+    }
+
+    // Show preview immediately
+    setLogoPreview(URL.createObjectURL(file));
+
+    // Upload to backend
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      const response = await authFetch(
+        `http://localhost:8080/api/company/${companyId}/logo`,
+        {
+          method: "POST",
+          body: formData,
+          // Don't set Content-Type - browser sets it with boundary
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to upload logo");
+
+      const data = await response.json();
+      setLogo(data.logoUrl);
+    } catch (err) {
+      console.error("Logo upload failed:", err);
+      alert("Failed to upload logo");
     }
   };
 
@@ -80,10 +139,14 @@ export default function CompanyDetailsModal({ open, onClose }) {
           </div>
         </div>
 
-        {/* 🔥 LOGO */}
+        {/* LOGO */}
         <div className="cdm-uploadRow">
           <div className="cdm-previewBox">
-            {logo ? <img src={logo} alt="logo" width="50" /> : "🖼️"}
+            {logoPreview ? (
+              <img src={logoPreview} alt="logo" width="50" />
+            ) : (
+              "🖼️"
+            )}
           </div>
 
           <div className="cdm-uploadRight">
@@ -98,12 +161,7 @@ export default function CompanyDetailsModal({ open, onClose }) {
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      setLogo(URL.createObjectURL(file)); // preview only
-                    }
-                  }}
+                  onChange={handleLogoChange}
                 />
               </label>
             </div>
@@ -127,9 +185,10 @@ export default function CompanyDetailsModal({ open, onClose }) {
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
             >
-              <option>Software & IT</option>
-              <option>Design</option>
-              <option>Finance</option>
+              <option value="">Select Industry</option>
+              <option value="Software & IT">Software & IT</option>
+              <option value="Design">Design</option>
+              <option value="Finance">Finance</option>
             </select>
           </Field>
 
@@ -139,10 +198,11 @@ export default function CompanyDetailsModal({ open, onClose }) {
               value={companySize}
               onChange={(e) => setCompanySize(e.target.value)}
             >
-              <option>50–100 employees</option>
-              <option>1–10 employees</option>
-              <option>10–50 employees</option>
-              <option>100–500 employees</option>
+              <option value="">Select Size</option>
+              <option value="1-10 employees">1–10 employees</option>
+              <option value="10-50 employees">10–50 employees</option>
+              <option value="50-100 employees">50–100 employees</option>
+              <option value="100-500 employees">100–500 employees</option>
             </select>
           </Field>
 
@@ -152,15 +212,17 @@ export default function CompanyDetailsModal({ open, onClose }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             >
-              <option>Colombo</option>
-              <option>Galle</option>
-              <option>Kandy</option>
+              <option value="">Select Location</option>
+              <option value="Colombo">Colombo</option>
+              <option value="Galle">Galle</option>
+              <option value="Kandy">Kandy</option>
             </select>
           </Field>
 
           <Field label="Company Email">
             <input
               className="cdm-input"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -187,8 +249,8 @@ export default function CompanyDetailsModal({ open, onClose }) {
             <button type="button" className="cdm-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="cdm-save">
-              Save Changes
+            <button type="submit" className="cdm-save" disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

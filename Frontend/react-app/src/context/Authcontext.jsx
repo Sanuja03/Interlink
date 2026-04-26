@@ -32,9 +32,9 @@ export function AuthProvider({ children }) {
     const [appUser, setAppUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [suspendedMessage, setSuspendedMessage] = useState("");  // ← new
-  
+
     const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
-  
+
     const fetchAppUser = useCallback(async () => {
       try {
         const response = await api.get("/auth/me");
@@ -44,20 +44,20 @@ export function AuthProvider({ children }) {
       } catch (err) {
         console.error("[AuthContext] fetchAppUser failed:", err);
         setAppUser(null);
-  
+
         // Handle suspended account — force full logout
         if (err?.response?.status === 403) {
           const message = err?.response?.data?.message
             || "Your account has been suspended. Please contact support.";
           setSuspendedMessage(message);
-  
+
           loggedInRef.current = false;
           sessionStorage.removeItem(LOGIN_FLAG);
           setUser(null);
           clearSupabaseLocalStorage();
           try { await supabase.auth.signOut(); } catch (_) {}
         }
-  
+
         return null;
       }
     }, []);

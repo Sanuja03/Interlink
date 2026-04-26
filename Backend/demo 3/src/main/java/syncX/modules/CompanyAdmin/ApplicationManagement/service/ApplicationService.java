@@ -34,7 +34,7 @@ public class ApplicationService {
             dto.setCandidateName(app.getCandidateName());
 
             // 🔥 FIX: Entity = Long → convert to UUID or change DTO (recommended below)
-            dto.setJobId(null); // ⚠ TEMP (see note below)
+            dto.setJobId(app.getJobId()); // ⚠ TEMP (see note below)
 
             dto.setJobTitle(app.getJobTitle());
 

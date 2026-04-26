@@ -9,11 +9,22 @@ public class DotenvConfig {
     static {
         Dotenv dotenv = Dotenv.configure()
                 .directory("Backend/demo 3")
+                .ignoreIfMalformed()
                 .ignoreIfMissing()
                 .load();
 
-        System.setProperty("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
-        System.setProperty("SUPABASE_SERVICE_KEY", dotenv.get("SUPABASE_SERVICE_KEY"));
-        System.setProperty("SUPABASE_URL", dotenv.get("SUPABASE_URL"));
+        // 🔥 MATCH EXACT .env KEYS
+        setIfNotNull("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
+        setIfNotNull("SERVICE_KEY", dotenv.get("SERVICE_KEY")); // ✅ FIXED
+        setIfNotNull("SUPABASE_URL", dotenv.get("SUPABASE_URL"));
+        setIfNotNull("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+    }
+
+    private static void setIfNotNull(String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            System.setProperty(key, value);
+        } else {
+            System.out.println("⚠️ Missing ENV variable: " + key);
+        }
     }
 }
