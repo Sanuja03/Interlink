@@ -12,29 +12,31 @@ export default function ApplicationManagement() {
 
   const BASE_URL = "http://localhost:8080/api/applications";
 
-  // ✅ Fetch data
+  // ✅ FETCH APPLICATIONS (FIXED)
   const fetchApplications = async () => {
     try {
-      const res = await axios.get(BASE_URL);
+      const companyId = localStorage.getItem("companyId");
+
+      if (!companyId) {
+        console.error("❌ No companyId found");
+        return;
+      }
+
+      const res = await axios.get(BASE_URL, {
+        params: { companyId }, // ✅ IMPORTANT FIX
+      });
+
+      console.log("✅ APPLICATION DATA:", res.data);
+
       setApplications(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("❌ FETCH ERROR:", err);
     }
   };
 
   useEffect(() => {
     fetchApplications();
   }, []);
-
-  // 🔥 STATUS UPDATE (IMPORTANT)
-  const updateStatus = async (id, action) => {
-    try {
-      await axios.put(`${BASE_URL}/${id}/status?action=${action}`);
-      fetchApplications();
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   // ✅ Stats
   const total = applications.length;
@@ -64,13 +66,6 @@ export default function ApplicationManagement() {
       case "REJECTED": return "Rejected";
       default: return status;
     }
-  };
-
-  // 🔥 Dynamic button label
-  const getNextActionLabel = (status) => {
-    if (status === "UNDER_REVIEW") return "Shortlist";
-    if (status === "SHORTLISTED") return "Interview";
-    return null;
   };
 
   return (
@@ -108,8 +103,8 @@ export default function ApplicationManagement() {
             <table className="am-table">
               <thead>
                 <tr>
-                  <th className="am-th">Candidate ID</th>
-                  <th className="am-th">Job ID</th>
+                  <th className="am-th">Candidate</th>
+                  <th className="am-th">Job</th>
                   <th className="am-th">AI Score</th>
                   <th className="am-th">Status</th>
                   <th className="am-th"></th>
@@ -119,20 +114,29 @@ export default function ApplicationManagement() {
               <tbody>
                 {visibleRows.map((r) => (
                   <tr key={r.id}>
-                    <td className="am-td">{r.candidateId}</td>
-                    <td className="am-td">{r.jobId}</td>
+
+                    {/* Candidate */}
+                    <td className="am-td">
+                      {r.candidateName || r.candidateId}
+                    </td>
+
+                    {/* Job */}
+                    <td className="am-td">
+                      {r.jobTitle || r.jobId}
+                    </td>
+
+                    {/* Score */}
                     <td className="am-td">{r.aiScore}%</td>
 
-                    {/* STATUS */}
+                    {/* Status */}
                     <td className="am-td">
                       <span className={`am-statusDot ${getStatusColor(r.status)}`}></span>
                       {formatStatus(r.status)}
                     </td>
 
-                    {/* ACTIONS */}
+                    {/* Actions (EMPTY as requested) */}
                     <td className="am-td">
 
-                      {/* View */}
                       <button
                         className="am-btn am-view"
                         onClick={() => navigate(`/candidate-profile/${r.candidateId}`)}
@@ -140,25 +144,13 @@ export default function ApplicationManagement() {
                         View Profile
                       </button>
 
-                      {/* 🔥 PROGRESS BUTTON */}
-                      {getNextActionLabel(r.status) && (
-                        <button
-                          className="am-btn am-shortlist"
-                          onClick={() => updateStatus(r.id, "PROGRESS")}
-                        >
-                          {getNextActionLabel(r.status)}
-                        </button>
-                      )}
+                      <button className="am-btn am-shortlist">
+                        Shortlist
+                      </button>
 
-                      {/* ❗ REJECT BUTTON */}
-                      {r.status !== "REJECTED" && (
-                        <button
-                          className="am-btn am-reject"
-                          onClick={() => updateStatus(r.id, "REJECT")}
-                        >
-                          Reject
-                        </button>
-                      )}
+                      <button className="am-btn am-reject">
+                        Reject
+                      </button>
 
                     </td>
                   </tr>

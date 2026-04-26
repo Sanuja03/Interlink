@@ -7,17 +7,20 @@ import "./Login.css";
 import interlink from "../../assets/interlink.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
+import api from "../../lib/api";
 
 import { useAuth } from "../../context/Authcontext";
 import { useForm } from "react-hook-form";
+import { supabase } from "../../lib/supabase";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated, role, loading } = useAuth();
+  const { login, isAuthenticated, role, loading, suspendedMessage, setSuspendedMessage } = useAuth();
   const [loginError, setLoginError] = useState("");
+
 
   const {
     register,
@@ -28,7 +31,6 @@ const Login = () => {
   // Redirect when genuinely authenticated
   useEffect(() => {
     if (loading) return;
-
     if (isAuthenticated && role) {
       const dashboardMap = {
         candidate: "/candidate/dashboard",
@@ -41,10 +43,43 @@ const Login = () => {
     }
   }, [isAuthenticated, role, loading, navigate, location]);
 
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          const provider = session.user?.app_metadata?.provider;
+          if (provider === "google") {
+            try {
+              await api.get("/auth/me", {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+              });
+            } catch (err) {
+              if (err?.response?.status === 403) {
+                // Suspended Google user
+                await supabase.auth.signOut();
+                setLoginError("Your account has been suspended. Please contact support.");
+              } else if (err?.response?.status === 500 || err?.response?.status === 404) {
+                await supabase.auth.signOut();
+                setLoginError("No account found for this Google email. Please sign up first.");
+              }
+            }
+          }
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
+
   const onSubmit = async (data) => {
     try {
       setLoginError("");
+      setSuspendedMessage("");  // clear previous suspension message
       await login(data.email.trim(), data.password);
+      // After login succeeds, AuthContext calls /auth/me.
+      // If the user is suspended, fetchAppUser will set suspendedMessage
+      // and force logout — the message will appear on re-render.
     } catch (err) {
       console.error("LOGIN ERROR:", err);
       setLoginError(err?.message || "Invalid email or password");
@@ -69,6 +104,15 @@ const Login = () => {
         </div>
 
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
+
+        {suspendedMessage && (
+            <p className="error-text" style={{ color: "#d32f2f", fontWeight: "bold" }}>
+              {suspendedMessage}
+            </p>
+          )}
+
+
+
           {loginError && <p className="error-text">{loginError}</p>}
 
           <div className="input-group">
@@ -120,7 +164,20 @@ const Login = () => {
           </div>
 
           <div className="google-signin">
-            <img src={signin} alt="Sign in with Google" />
+            <img
+              src={signin}
+              alt="Sign in with Google"
+              style={{ cursor: "pointer" }}
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: window.location.origin + "/login",
+                  },
+                });
+                if (error) setLoginError(error.message);
+              }}
+            />
           </div>
 
           <div>

@@ -1,15 +1,17 @@
+/* PAGE */
 .ej-page {
   background: #f5f7f9;
   min-height: 100vh;
   font-family: 'Outfit', sans-serif;
 }
 
+/* CONTAINER */
 .ej-container {
   padding: 30px;
-  text-align: center; /* 🔥 CENTER TITLE */
+  text-align: center;
 }
 
-/* 🔥 TITLE CENTER + BOLD */
+/* TITLE */
 .ej-title {
   color: #24698B;
   margin-bottom: 25px;
@@ -17,7 +19,7 @@
   font-weight: 700;
 }
 
-/* CARD SAME WIDTH AS CREATE */
+/* CARD */
 .ej-card {
   background: white;
   padding: 30px;
@@ -25,33 +27,78 @@
   max-width: 600px;
   margin: auto;
   text-align: left;
+
+  display: flex;
+  flex-direction: column;
 }
 
-/* INPUT FULL WIDTH */
-.ej-input {
+/* LABEL */
+.ej-card label {
+  display: block;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  color: #2c3e50;
+}
+
+/* INPUT */
+.ej-card input {
   width: 100%;
   padding: 14px;
-  margin-bottom: 18px;
   border-radius: 10px;
-  border: 1px solid #dcdcdc;
+  border: 1.5px solid #cfd8dc; /* 🔥 stronger border */
   font-size: 15px;
+  margin-bottom: 10px;
+  outline: none;
+  background: #fff;
 }
 
-/* REQUIREMENTS */
-.ej-req-row {
+/* 🔥 SELECT (DROPDOWN FIX) */
+.ej-card select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cfd8dc;
+  font-size: 15px;
+  margin-bottom: 10px;
+  outline: none;
+  background-color: #fff;
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* PLACEHOLDER */
+.ej-card input::placeholder {
+  color: #aaa;
+}
+
+/* 🔥 FOCUS EFFECT */
+.ej-card input:focus,
+.ej-card select:focus {
+  border-color: #24698B;
+  box-shadow: 0 0 0 2px rgba(36, 105, 139, 0.15);
+}
+
+/* 🔥 REQUIREMENTS ROW ONLY */
+.ej-card > div {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.ej-req-input {
+/* REQUIREMENT INPUT */
+.ej-card > div input {
   flex: 1;
 }
 
-.ej-req-btn {
-  width: 42px;
-  height: 42px;
+/* + - BUTTON */
+.ej-card button {
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   border: none;
   background: #e0e0e0;
@@ -59,53 +106,42 @@
   cursor: pointer;
 }
 
-/* 🔥 BUTTON AREA FIXED */
+/* ACTION BUTTONS */
 .ej-actions {
   display: flex;
-  justify-content: center; /* 🔥 CENTER BUTTONS */
-  gap: 25px;               /* 🔥 SAME SPACE */
+  justify-content: center;
+  gap: 25px;
   margin-top: 35px;
 }
 
-/* 🔥 ALL BUTTON SAME SIZE */
-.ej-save,
-.ej-cancel,
-.ej-delete {
+/* BUTTON BASE */
+.ej-actions button {
   min-width: 140px;
   padding: 14px 0;
   border-radius: 25px;
   border: none;
   font-size: 16px;
-  font-weight: 600; /* 🔥 BOLD TEXT */
+  font-weight: 600;
   cursor: pointer;
 }
 
-/* GREEN */
-.ej-save {
+/* COLORS */
+.ej-actions button:nth-child(1) {
   background: #00c853;
   color: white;
 }
 
-/* BLUE (LIKE CREATE POST) */
-.ej-cancel {
+.ej-actions button:nth-child(2) {
   background: #24698B;
   color: white;
 }
 
-/* RED */
-.ej-delete {
+.ej-actions button:nth-child(3) {
   background: #ff1a1a;
   color: white;
 }
 
-.ej-label {
-  display: block;
-  font-weight: 600;
-  margin: 10px 0 5px;
-  color: #2c3e50;
-}
-
-/* 🔥 HOVER EFFECT */
-.ej-save:hover { background: #00b248; }
-.ej-cancel:hover { background: #1e5a74; }
-.ej-delete:hover { background: #cc0000; }
+/* HOVER */
+.ej-actions button:nth-child(1):hover { background: #00b248; }
+.ej-actions button:nth-child(2):hover { background: #1e5a74; }
+.ej-actions button:nth-child(3):hover { background: #cc0000; }

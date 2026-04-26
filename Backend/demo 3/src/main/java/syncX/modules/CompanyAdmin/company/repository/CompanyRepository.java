@@ -1,21 +1,21 @@
-package syncX.modules.CompanyAdmin.companydetails.repository;
+package syncX.modules.CompanyAdmin.company.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import syncX.modules.CompanyAdmin.companydetails.entity.CompanyDetails;
+import syncX.modules.CompanyAdmin.company.entity.Company;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CompanyDetailsRepository extends JpaRepository<CompanyDetails, UUID> {
+public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
     // =========================================
-    // 🔹 FIND BY company_id (MAIN METHOD)
+    // 🔹 FIND BY company_id (MAIN LOOKUP)
     // =========================================
-    Optional<CompanyDetails> findByCompanyId(UUID companyId);
+    Optional<Company> findByCompanyId(UUID companyId);
 
     // =========================================
     // 🔹 CHECK EXISTENCE
@@ -23,18 +23,13 @@ public interface CompanyDetailsRepository extends JpaRepository<CompanyDetails, 
     boolean existsByCompanyId(UUID companyId);
 
     // =========================================
-    // 🔹 DELETE BY company_id (SAFE DELETE)
+    // 🔹 DELETE BY company_id (IMPORTANT 🔥)
     // =========================================
     @Transactional
     void deleteByCompanyId(UUID companyId);
 
     // =========================================
-    // 🔹 FIND BY EMAIL (optional)
+    // 🔹 FIND BY EMAIL (optional but useful)
     // =========================================
-    Optional<CompanyDetails> findByCompanyEmail(String companyEmail);
-
-    // =========================================
-    // 🔹 FIND BY COMPANY NAME (search feature)
-    // =========================================
-    Optional<CompanyDetails> findByCompanyName(String companyName);
+    Optional<Company> findByCompanyEmail(String companyEmail);
 }

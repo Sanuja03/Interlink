@@ -14,30 +14,37 @@ export default function JobManagement() {
     fetchJobs();
   }, []);
 
+  // ✅ FETCH JOBS
   const fetchJobs = async () => {
     try {
       const companyId = localStorage.getItem("companyId");
 
-      // ✅ FETCH ONLY COMPANY JOBS
+      if (!companyId) {
+        console.error("❌ companyId not found");
+        return;
+      }
+
       const res = await axios.get(
-        `http://localhost:8080/company/jobs/company/${companyId}`
+        `http://localhost:8080/api/jobs/company/${companyId}`
       );
 
-      console.log("API RESPONSE:", res.data);
+      console.log("✅ RAW API DATA:", res.data);
 
       const formatted = res.data.map((job) => ({
         id: job.id,
         title: job.jobTitle || "No Title",
         dept: job.department || "No Dept",
-        status: job.status || "OPEN",
+        status: job.status ? job.status.toUpperCase() : "OPEN", // ✅ FIXED
         date: job.createdAt
           ? new Date(job.createdAt).toLocaleDateString("en-GB")
           : "-",
       }));
 
+      console.log("✅ FORMATTED:", formatted);
+
       setRows(formatted);
     } catch (err) {
-      console.error("FETCH ERROR:", err);
+      console.error("❌ FETCH ERROR:", err.response?.data || err.message);
     }
   };
 
@@ -45,25 +52,22 @@ export default function JobManagement() {
   const handleToggle = async (id) => {
     try {
       await axios.put(
-        `http://localhost:8080/company/jobs/${id}/toggle`
+        `http://localhost:8080/api/jobs/${id}/toggle`
       );
       fetchJobs();
     } catch (err) {
-      console.error("TOGGLE ERROR:", err);
+      console.error("❌ TOGGLE ERROR:", err.response?.data || err.message);
     }
   };
 
   const rowsMemo = useMemo(() => rows, [rows]);
 
+  // ✅ SIMPLIFIED FILTER (NO BUGS)
   const filtered = rowsMemo.filter((r) => {
-    const matchesText =
+    return (
       r.title?.toLowerCase().includes(search.toLowerCase()) ||
-      r.dept?.toLowerCase().includes(search.toLowerCase());
-
-    const matchesFilter =
-      filter === "All" ? true : r.title === filter;
-
-    return matchesText && matchesFilter;
+      r.dept?.toLowerCase().includes(search.toLowerCase())
+    );
   });
 
   return (
@@ -83,6 +87,7 @@ export default function JobManagement() {
               <span className="jm-searchIcon">🔍</span>
             </div>
 
+            {/* OPTIONAL FILTER (SAFE NOW) */}
             <select
               className="jm-filter"
               value={filter}
@@ -125,7 +130,7 @@ export default function JobManagement() {
                       <td className="jm-td">{r.title}</td>
                       <td className="jm-td">{r.dept}</td>
 
-                      {/* ✅ STATUS */}
+                      {/* STATUS */}
                       <td className="jm-td">
                         <span className="jm-status">
                           <span

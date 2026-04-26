@@ -3,24 +3,34 @@ package syncX.modules.CompanyAdmin.companydetails.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "company_details")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CompanyDetails {
 
+    // =========================================
+    // 🔹 PRIMARY KEY
+    // =========================================
     @Id
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "company_id", unique = true, nullable = false)
+    // =========================================
+    // 🔹 FOREIGN KEY → companies.company_id
+    // =========================================
+    @Column(name = "company_id", nullable = false, unique = true, updatable = false)
     private UUID companyId;
 
-    // 🔥 BASIC COMPANY INFO (copied from companies table at signup)
-
+    // =========================================
+    // 🔹 BASIC INFO (SYNC WITH companies)
+    // =========================================
     @Column(name = "company_name")
     private String companyName;
 
@@ -35,34 +45,40 @@ public class CompanyDetails {
     @Column(name = "company_location")
     private String companyLocation;
 
-    // 🔥 EXTRA DETAILS (editable in settings UI)
-
+    // =========================================
+    // 🔹 EXTRA PROFILE DATA
+    // =========================================
     private String website;
 
-    @Column(length = 2000)
+    @Column(columnDefinition = "TEXT")
     private String about;
 
     @Column(name = "logo_url")
     private String logoUrl;
 
-    // 🔥 OPTIONAL: timestamps (good practice)
-
+    // =========================================
+    // 🔹 TIMESTAMPS
+    // =========================================
     @Column(name = "created_at", updatable = false)
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
-    // 🔥 AUTO SET TIMESTAMPS
-
+    // =========================================
+    // 🔹 AUTO TIMESTAMPS
+    // =========================================
     @PrePersist
     protected void onCreate() {
-        createdAt = java.time.LocalDateTime.now();
-        updatedAt = java.time.LocalDateTime.now();
+        if (id == null) {
+            id = UUID.randomUUID(); // 🔥 ensure UUID generation
+        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = java.time.LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

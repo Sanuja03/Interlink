@@ -18,9 +18,11 @@
     <name>InterLink</name>
     <description>Software Development project</description>
 
-    <!-- ✅ Java Version -->
+    <!-- ✅ FORCE JAVA VERSION -->
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <lombok.version>1.18.36</lombok.version>
     </properties>
 
@@ -32,13 +34,19 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- 🔥 WebClient (FIX) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
         <!-- 🔐 Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- 🔑 OAuth2 / JWT -->
+        <!-- 🔑 JWT -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
@@ -62,7 +70,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ✅ FIXED DOTENV -->
+        <!-- 🌱 ENV -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>java-dotenv</artifactId>
@@ -90,12 +98,6 @@
             <version>5.2.5</version>
         </dependency>
 
-        <!-- ⚡ Reactive (Optional – remove if not needed) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
         <!-- 🧪 Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -108,20 +110,14 @@
     <build>
         <plugins>
 
-            <!-- ✅ Compiler -->
+            <!-- ✅ FORCE JAVA 17 COMPILATION -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>17</release>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
 
