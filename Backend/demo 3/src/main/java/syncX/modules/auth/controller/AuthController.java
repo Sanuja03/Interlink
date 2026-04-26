@@ -31,6 +31,11 @@ public class AuthController {
     public Object getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         return authService.getCurrentUser(jwt);
     }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@AuthenticationPrincipal Jwt jwt) {
+        authService.logoutUser(jwt);
+        return ResponseEntity.ok("Logged out");
+    }
 
     // Public (permitAll in SecurityConfig) — called right after Supabase signup
     @PostMapping("/complete-candidate-signup")
@@ -87,5 +92,14 @@ public class AuthController {
             @PathVariable String interviewerId) {
         authService.deactivateInterviewer(jwt, interviewerId);
         return ResponseEntity.ok("Interviewer deactivated");
+    }
+
+    @PreAuthorize("hasRole('company_admin')")
+    @PutMapping("/interviewers/{interviewerId}/activate")
+    public ResponseEntity<String> activateInterviewer(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String interviewerId) {
+        authService.activateInterviewer(jwt, interviewerId);
+        return ResponseEntity.ok("Interviewer activated");
     }
 }

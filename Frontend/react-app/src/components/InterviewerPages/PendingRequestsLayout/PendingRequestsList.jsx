@@ -1,12 +1,16 @@
 import "./PendingRequestsList.css";
 
-const PendingRequestList = ({
+const PendingRequestsList = ({
   rows,
   onToggle,
   onSend,
   onViewHistory,
   modeDotClass,
 }) => {
+  if (!rows || rows.length === 0) {
+    return <p className="empty-state">No pending requests.</p>;
+  }
+
   return (
     <div className="schedule-card">
       <div className="table-wrapper">
@@ -21,51 +25,58 @@ const PendingRequestList = ({
               <th>Mode</th>
               <th>Admin Notes</th>
               <th>History</th>
-              <th>Accept</th>
-              <th className="align-right"></th>
+              <th>Decision</th>
+              <th className="align-right">Send</th>
             </tr>
           </thead>
 
           <tbody>
-            {rows.map((r, index) => (
-              <tr key={r.interviewId}>
-                <td className="bold">{r.interviewId}</td>
-                <td>{r.candidate}</td>
-                <td>{r.jobTitle}</td>
-                <td>{r.date}</td>
-                <td>{r.time}</td>
-
+            {rows.map((row, index) => (
+              <tr key={row.requestId || row.interviewId}>
+                <td className="bold">{row.interviewId}</td>
+                <td>{row.candidate}</td>
+                <td>{row.jobTitle}</td>
+                <td>{row.date}</td>
+                <td>{row.time}</td>
                 <td>
                   <div className="mode-cell">
-                    <span className={`mode-dot ${modeDotClass(r.mode)}`} />
-                    <span>{r.mode}</span>
+                    <span className={`mode-dot ${modeDotClass(row.mode)}`} />
+                    {row.mode}
                   </div>
                 </td>
+                <td className="notes-cell">{row.notes}</td>
 
-                <td className="notes-cell">{r.notes}</td>
-
+                {/* History */}
                 <td>
                   <button
                     className="history-btn"
-                    onClick={() => onViewHistory(r)}
+                    onClick={() => onViewHistory(row)}
                   >
                     View
                   </button>
                 </td>
 
+                {/* Accept / Reject toggle */}
                 <td>
                   <label className="switch">
                     <input
                       type="checkbox"
-                      checked={r.accepted}
+                      checked={row.accepted}
                       onChange={() => onToggle(index)}
                     />
-                    <span className="slider"></span>
+                    <span className="slider" />
                   </label>
+                  <span className="decision-label">
+                    {row.accepted ? "Accept" : "Reject"}
+                  </span>
                 </td>
 
+                {/* Send */}
                 <td className="align-right">
-                  <button className="view-btn" onClick={() => onSend(r)}>
+                  <button
+                    className="view-btn"
+                    onClick={() => onSend(row)}
+                  >
                     Send
                   </button>
                 </td>
@@ -78,4 +89,4 @@ const PendingRequestList = ({
   );
 };
 
-export default PendingRequestList;
+export default PendingRequestsList;

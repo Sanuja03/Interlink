@@ -1,5 +1,5 @@
 // ============================================================
-// FILE: src/main/java/syncX/security/SupabaseJwtRoleConverter.java (UPDATED)
+// FILE: src/main/java/syncX/security/SupabaseJwtRoleConverter.java (NEW)
 // PURPOSE: Reads user role from DB based on JWT subject (user_id)
 //          and converts it into Spring Security GrantedAuthority
 // ============================================================
@@ -40,47 +40,29 @@ public class SupabaseJwtRoleConverter implements Converter<Jwt, Collection<Grant
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         try {
-            // 🔥 ADDED: Debug log to verify JWT subject
-            System.out.println("JWT SUBJECT (userId): " + jwt.getSubject());
-
             String userId = jwt.getSubject();
-
-            // 🔥 ADDED: safety check
-            if (userId == null || userRepository == null) {
-                System.err.println("User ID or repository is null");
-                return authorities;
-            }
+            if (userId == null) return authorities;
 
             Optional<User> userOpt = userRepository.findById(UUID.fromString(userId));
-
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                String role = user.getRole();
 
-                // 🔥 ADDED: debug role from DB
-                System.out.println("USER ROLE FROM DB: " + role);
-
-                if (role != null && !role.isBlank()) {
-                    // ROLE_candidate, ROLE_company_admin, ROLE_interviewer, ROLE_super_admin
-                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-                } else {
-                    // 🔥 ADDED: fallback (prevents empty authority issue → 403/401)
-                    System.err.println("Role is null or empty for user");
+                // Suspended users get no authorities → 403 on all protected endpoints
+                if ("suspended".equals(user.getAccountStatus())) {
+                    return authorities;
                 }
-            } else {
-                // 🔥 ADDED: debug when user not found
-                System.err.println("User not found in DB for ID: " + userId);
-            }
 
+                String role = user.getRole();
+                if (role != null && !role.isBlank()) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                }
+            }
         } catch (Exception e) {
-            // If lookup fails, user gets no authorities → 403
             System.err.println("JWT role conversion failed: " + e.getMessage());
         }
 
         return authorities;
-    }
-}
+    }}

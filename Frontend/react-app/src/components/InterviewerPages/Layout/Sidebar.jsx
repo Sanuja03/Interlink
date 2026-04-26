@@ -4,7 +4,6 @@ import interlink from "../../../assets/interlink.png";
 import dashboardIcon from "../../../assets/dashboard.png";
 import interviewIcon from "../../../assets/interviews.png";
 import calendarIcon from "../../../assets/calendar.png";
-import settingsIcon from "../../../assets/settings.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 
 import { Link, useLocation } from "react-router-dom";
@@ -42,7 +41,7 @@ const Sidebar = () => {
     { label: "Dashboard", href: "/interviewer/dashboard", icon: dashboardIcon },
     { label: "Interview Management", href: "/interviews", icon: interviewIcon },
     { label: "Calendar", href: "/interviewer/calendar", icon: calendarIcon },
-    { label: "Settings", href: "/interviewer/settings", icon: settingsIcon },
+  
   ];
 
   return (

@@ -388,3 +388,132 @@
     background: #e5e7eb;
     color: #374151;
   }
+
+  /* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
+/* Add these to your existing InterviewPopups.css file                      */
+
+.ip-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.ip-scorecard-preview {
+  margin-top: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.ip-scorecard-preview-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 8px;
+}
+
+.ip-scorecard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ip-scorecard-chip {
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
+/* Add these to your existing InterviewPopups.css file                      */
+
+.ip-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.ip-scorecard-preview {
+  margin-top: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.ip-scorecard-preview-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 8px;
+}
+
+.ip-scorecard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ip-scorecard-chip {
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Admin-removed interviewer styles ── */
+
+/* Grey "Removed" badge — replaces the normal status badge */
+.ip-status-removed {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+/* Greyed-out disabled "Removed" button — replaces the red Remove button */
+.ip-removed-done {
+  background: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+/* ── Admin-removed interviewer styles ── */
+
+/* Grey "Removed" badge — replaces the normal status badge */
+.ip-status-removed {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+/* Greyed-out disabled "Removed" button — replaces the red Remove button */
+.ip-removed-done {
+  background: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+/* ── Add Interviewers inline panel ── */
+.ip-add-panel {
+  margin-top: 16px;
+  border: 1.5px dashed rgba(36, 105, 139, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  background: #f0f7fb;
+}

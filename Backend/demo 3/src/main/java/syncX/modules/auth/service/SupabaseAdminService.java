@@ -40,7 +40,7 @@ public class SupabaseAdminService {
         Map<String, Object> body = new HashMap<>();
         body.put("email", email);
         body.put("password", password);
-        body.put("email_confirm", true); //cuz of this no need to cinfirm email
+        body.put("email_confirm", true); //cuz of this no need to confirm email
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 

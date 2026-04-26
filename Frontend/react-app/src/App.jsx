@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
-import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/Authcontext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -125,18 +124,16 @@ function App() {
     },
   }}
 />
-  
+
       <Routes>
-        {/* Landing */}
+        {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
-  
-        {/* Auth */}
         <Route path="/Login" element={<Login />} />
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-  
-        
+        <Route path="/company/shortlisted-candidates" element={<CompanyShortlistedCandidates/>}/>
+        <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate/>}/>
 
 
         {/* Candidate */}
@@ -177,8 +174,8 @@ function App() {
         <Route path="/candidate-profile" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
 
         {/* All User Routes */}
-        <Route path="/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
-        <Route path="/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
+        <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
+        <Route path="/admin/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
 
         {/* Super Admin routes */}
         <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />
@@ -203,7 +200,6 @@ function App() {
         <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
       </Routes>
     </AuthProvider>
-    
   );
 }
 

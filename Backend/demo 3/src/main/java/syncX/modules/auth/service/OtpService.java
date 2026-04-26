@@ -15,6 +15,7 @@ public class OtpService {
     public String generateOtp(String email) {
         // Generate random 6-digit OTP
         String otp = String.valueOf(100000 + (int)(Math.random() * 900000));
+        System.out.println("Otp generated for email: " + otp + email);
         otpStore.put(email.toLowerCase(), new OtpEntry(otp, System.currentTimeMillis() + OTP_VALIDITY_MS));
         return otp;
     }

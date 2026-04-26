@@ -40,17 +40,27 @@ export default function InterviewerManagementModal({ open, onClose }) {
   const [fetchingExisting, setFetchingExisting] = useState(false);
   const [activeTab, setActiveTab] = useState("create");
   const [deactivatingId, setDeactivatingId] = useState(null);
+  const [activatingId, setActivatingId] = useState(null);
 
-  // Only count from existing interviewers (not the create form)
+  // Active = not suspended (includes "active" and "inactive" statuses)
   const activeCount = useMemo(
     () =>
-      existingInterviewers.filter((i) => i.accountStatus === "active").length,
+      existingInterviewers.filter((i) => i.accountStatus !== "suspended")
+        .length,
     [existingInterviewers]
   );
 
   // Total count = only existing interviewers from the server
   const totalCount = useMemo(
     () => existingInterviewers.length,
+    [existingInterviewers]
+  );
+
+  // Suspended count
+  const suspendedCount = useMemo(
+    () =>
+      existingInterviewers.filter((i) => i.accountStatus === "suspended")
+        .length,
     [existingInterviewers]
   );
 
@@ -115,26 +125,82 @@ export default function InterviewerManagementModal({ open, onClose }) {
   const validateRow = (row) => {
     const errors = {};
 
-    if (!row.employeeId.trim()) errors.employeeId = "Employee ID is required";
-    if (!row.name.trim()) errors.name = "Full name is required";
+    // Employee ID
+    if (!row.employeeId.trim()) {
+      errors.employeeId = "Employee ID is required";
+    } else if (row.employeeId.trim().length < 2) {
+      errors.employeeId = "Employee ID must be at least 2 characters";
+    } else if (!/^[A-Za-z0-9\-_]+$/.test(row.employeeId.trim())) {
+      errors.employeeId = "Only letters, numbers, hyphens, and underscores allowed";
+    }
 
+    // Full Name
+    if (!row.name.trim()) {
+      errors.name = "Full name is required";
+    } else if (row.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    } else if (!/^[A-Za-z\s'.()-]+$/.test(row.name.trim())) {
+      errors.name = "Name can only contain letters and spaces";
+    }
+
+    // Email
     if (!row.email.trim()) {
       errors.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(row.email)) {
-      errors.email = "Enter a valid email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email.trim())) {
+      errors.email = "Enter a valid email address";
     }
 
+    // Phone Number
     if (!row.phoneNumber.trim()) {
       errors.phoneNumber = "Phone number is required";
+    } else if (!/^[0-9+\-\s()]+$/.test(row.phoneNumber.trim())) {
+      errors.phoneNumber = "Phone number can only contain digits, +, -, (, )";
+    } else {
+      const digitsOnly = row.phoneNumber.replace(/\D/g, "");
+      if (digitsOnly.length < 7) {
+        errors.phoneNumber = "Phone number must have at least 7 digits";
+      } else if (digitsOnly.length > 15) {
+        errors.phoneNumber = "Phone number cannot exceed 15 digits";
+      }
     }
 
-    if (!row.role.trim()) errors.role = "Role is required";
-    if (!row.branch.trim()) errors.branch = "Branch is required";
+    // Role
+    if (!row.role.trim()) {
+      errors.role = "Role is required";
+    } else if (row.role.trim().length < 2) {
+      errors.role = "Role must be at least 2 characters";
+    }
 
+    // Branch
+    if (!row.branch.trim()) {
+      errors.branch = "Branch is required";
+    } else if (row.branch.trim().length < 2) {
+      errors.branch = "Branch must be at least 2 characters";
+    }
+
+    // Password
     if (!row.password.trim()) {
       errors.password = "Password is required";
     } else if (row.password.length < 8) {
       errors.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(row.password)) {
+      errors.password = "Password must include at least one uppercase letter";
+    } else if (!/[a-z]/.test(row.password)) {
+      errors.password = "Password must include at least one lowercase letter";
+    } else if (!/[0-9]/.test(row.password)) {
+      errors.password = "Password must include at least one number";
+    }
+
+    // Address (optional but validate if provided)
+    if (row.address.trim() && row.address.trim().length < 5) {
+      errors.address = "Address must be at least 5 characters if provided";
+    }
+
+    // About (optional but validate if provided)
+    if (row.about.trim() && row.about.trim().length < 10) {
+      errors.about = "About must be at least 10 characters if provided";
+    } else if (row.about.trim().length > 500) {
+      errors.about = "About cannot exceed 500 characters";
     }
 
     return errors;
@@ -177,6 +243,13 @@ After logging in, update your profile details if needed.`;
   };
 
   const buildCopyTextFromServer = (interviewer) => {
+    const statusLabel =
+      interviewer.accountStatus === "suspended"
+        ? "Suspended"
+        : interviewer.accountStatus === "active"
+        ? "Active"
+        : "Inactive";
+
     return `Hello ${interviewer.fullName || "Interviewer"},
 
 Your interviewer account details are below.
@@ -187,7 +260,7 @@ Email: ${interviewer.email}
 Phone Number: ${interviewer.phone || "—"}
 Role: ${interviewer.interviewerRole}
 Branch: ${interviewer.branch}
-Status: ${interviewer.accountStatus === "active" ? "Active" : "Inactive"}
+Status: ${statusLabel}
 
 Please log in using your email and the temporary password provided.
 After logging in, update your profile details if needed.`;
@@ -224,17 +297,40 @@ After logging in, update your profile details if needed.`;
       setExistingInterviewers((prev) =>
         prev.map((item) =>
           item.interviewerId === interviewerId
-            ? { ...item, accountStatus: "inactive" }
+            ? { ...item, accountStatus: "suspended" }
             : item
         )
       );
 
-      showMessage("Account deactivated successfully.", "success");
+      showMessage("Account deactivated (suspended) successfully.", "success");
     } catch (error) {
       console.error("Deactivate failed:", error);
       showMessage("Failed to deactivate account.", "error");
     } finally {
       setDeactivatingId(null);
+    }
+  };
+
+  const activateExistingAccount = async (interviewerId) => {
+    try {
+      setActivatingId(interviewerId);
+
+      await api.put(`/auth/interviewers/${interviewerId}/activate`);
+
+      setExistingInterviewers((prev) =>
+        prev.map((item) =>
+          item.interviewerId === interviewerId
+            ? { ...item, accountStatus: "inactive" }
+            : item
+        )
+      );
+
+      showMessage("Account activated successfully.", "success");
+    } catch (error) {
+      console.error("Activate failed:", error);
+      showMessage("Failed to activate account.", "error");
+    } finally {
+      setActivatingId(null);
     }
   };
 
@@ -333,10 +429,15 @@ After logging in, update your profile details if needed.`;
           </button>
         </div>
 
-        <div className="interviewer-stats two-cards">
+        <div className="interviewer-stats three-cards">
           <div className="interviewer-stat-card">
             <span>Active Accounts</span>
             <strong>{activeCount}</strong>
+          </div>
+
+          <div className="interviewer-stat-card">
+            <span>Suspended</span>
+            <strong>{suspendedCount}</strong>
           </div>
 
           <div className="interviewer-stat-card">
@@ -498,6 +599,8 @@ After logging in, update your profile details if needed.`;
                               className={`badge ${
                                 row.serverData.accountStatus === "active"
                                   ? "badge-active"
+                                  : row.serverData.accountStatus === "suspended"
+                                  ? "badge-suspended"
                                   : "badge-disabled"
                               }`}
                             >
@@ -539,9 +642,10 @@ After logging in, update your profile details if needed.`;
                         <input
                           type="text"
                           value={row.name}
-                          onChange={(e) =>
-                            updateRow(row.id, "name", e.target.value)
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^A-Za-z\s'.()-]/g, "");
+                            updateRow(row.id, "name", val);
+                          }}
                           placeholder="Enter full name"
                         />
                         {row.errors.name && (
@@ -571,12 +675,13 @@ After logging in, update your profile details if needed.`;
                       <div className="field">
                         <label>Phone Number *</label>
                         <input
-                          type="text"
+                          type="tel"
                           value={row.phoneNumber}
-                          onChange={(e) =>
-                            updateRow(row.id, "phoneNumber", e.target.value)
-                          }
-                          placeholder="Enter phone number"
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9+\-\s()]/g, "");
+                            updateRow(row.id, "phoneNumber", val);
+                          }}
+                          placeholder="e.g. +94 77 123 4567"
                         />
                         {row.errors.phoneNumber && (
                           <small className="error-text">
@@ -657,17 +762,34 @@ After logging in, update your profile details if needed.`;
                           }
                           placeholder="Enter address"
                         />
+                        {row.errors.address && (
+                          <small className="error-text">
+                            {row.errors.address}
+                          </small>
+                        )}
                       </div>
 
                       <div className="field full-width">
                         <label>About</label>
                         <textarea
                           value={row.about}
-                          onChange={(e) =>
-                            updateRow(row.id, "about", e.target.value)
-                          }
+                          onChange={(e) => {
+                            if (e.target.value.length <= 500) {
+                              updateRow(row.id, "about", e.target.value);
+                            }
+                          }}
                           placeholder="Enter a short professional summary"
                         />
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                          {row.errors.about ? (
+                            <small className="error-text">
+                              {row.errors.about}
+                            </small>
+                          ) : <span />}
+                          <small style={{ color: row.about.length > 450 ? "#dc2626" : "#94a3b8", fontSize: 11, fontWeight: 600 }}>
+                            {row.about.length}/500
+                          </small>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -702,11 +824,15 @@ After logging in, update your profile details if needed.`;
                         className={`badge ${
                           interviewer.accountStatus === "active"
                             ? "badge-active"
-                            : "badge-disabled"
+                            : interviewer.accountStatus === "suspended"
+                            ? "badge-suspended"
+                            : "badge-saved"
                         }`}
                       >
                         {interviewer.accountStatus === "active"
                           ? "Active"
+                          : interviewer.accountStatus === "suspended"
+                          ? "Suspended"
                           : "Inactive"}
                       </span>
 
@@ -733,7 +859,7 @@ After logging in, update your profile details if needed.`;
                         : "Copy Details"}
                     </button>
 
-                    {interviewer.accountStatus === "active" && (
+                    {interviewer.accountStatus !== "suspended" && (
                       <button
                         type="button"
                         className="btn danger"
@@ -745,6 +871,21 @@ After logging in, update your profile details if needed.`;
                         {deactivatingId === interviewer.interviewerId
                           ? "Deactivating..."
                           : "Deactivate"}
+                      </button>
+                    )}
+
+                    {interviewer.accountStatus === "suspended" && (
+                      <button
+                        type="button"
+                        className="btn primary"
+                        onClick={() =>
+                          activateExistingAccount(interviewer.interviewerId)
+                        }
+                        disabled={activatingId === interviewer.interviewerId}
+                      >
+                        {activatingId === interviewer.interviewerId
+                          ? "Activating..."
+                          : "Activate"}
                       </button>
                     )}
                   </div>
@@ -785,7 +926,11 @@ After logging in, update your profile details if needed.`;
                   <div className="detail-item">
                     <span className="detail-label">Status</span>
                     <span className="detail-value">
-                      {interviewer.accountStatus}
+                      {interviewer.accountStatus === "active"
+                        ? "Active"
+                        : interviewer.accountStatus === "suspended"
+                        ? "Suspended"
+                        : "Inactive"}
                     </span>
                   </div>
 

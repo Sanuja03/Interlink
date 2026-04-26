@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import syncX.modules.auth.exception.AccountSuspendedException;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -24,6 +25,18 @@ public class GlobalExceptionHandler {
                 .body(Map.of(
                         "error", "Forbidden",
                         "message", "You do not have permission to access this resource",
+                        "status", 403,
+                        "timestamp", OffsetDateTime.now().toString()
+                ));
+    }
+
+    @ExceptionHandler(AccountSuspendedException.class)
+    public ResponseEntity<Map<String, Object>> handleSuspended(AccountSuspendedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                        "error", "Forbidden",
+                        "message", ex.getMessage(),
                         "status", 403,
                         "timestamp", OffsetDateTime.now().toString()
                 ));
