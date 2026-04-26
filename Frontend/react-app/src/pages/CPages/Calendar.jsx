@@ -60,7 +60,7 @@ const CalendarPage = () => {
                 console.log('Join interview:', iv.title);
               }}
               onGenerateQuestions={(iv) => {
-                navigate('/ai-questions', { state: { job: iv.job } });
+                navigate('/Candidate/aiquestions', { state: { job: iv.job } });
               }}
             />
           </div>

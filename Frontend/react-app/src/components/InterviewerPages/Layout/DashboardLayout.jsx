@@ -2,15 +2,29 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import notificationicon from "../../../assets/notificationicon.png";
+import { useAuth } from "../../../context/Authcontext";
 
 
 
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
 
 
 const SIDEBAR_WIDTH = 240;
 
 const DashboardLayout = ({ children }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/");
+    }
+  };
 
 
 
@@ -43,7 +57,7 @@ const DashboardLayout = ({ children }) => {
 
 
 
-          <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+          <button onClick={handleLogout} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
                         bg-red-50 text-red-600 text-xs font-semibold
                         hover:bg-red-100 transition duration-200
                         cursor-pointer

@@ -1,20 +1,11 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8080/api/admin";
+import api from "../lib/api";
 
 export const fetchActivityLogs = ({
   page = 0,
-  size = 10,
-  userRole = "",
-  search = "",
-  fromDate = "",
-  toDate = ""
+  size = 5,
+  userRole = ""
 } = {}) => {
-  return axios.get(`${API_BASE_URL}/activity-logs`, {
-    params: { page, size, userRole: userRole || "", search: search || "", fromDate: fromDate || "", toDate: toDate || "" }
+  return api.get("/admin/activity-logs", {
+    params: { page, size, userRole }
   });
-};
-
-export const createActivityLog = (data) => {
-  return axios.post(`${API_BASE_URL}/activity-logs`, data);
 };

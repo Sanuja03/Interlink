@@ -1,5 +1,6 @@
 package syncX.modules.cv.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -7,33 +8,58 @@ import org.springframework.http.*;
 
 import java.util.*;
 
+/**
+ * Service for calling the OpenAI Chat Completions API.
+ *
+ * Design notes:
+ * - RestTemplate is injected as a shared Spring bean instead of being
+ *   created per-request (new RestTemplate() per call is wasteful and
+ *   prevents connection pooling).
+ * - The @Bean definition belongs in a @Configuration class — see
+ *   AppConfig.java (or add to your existing config class):
+ *
+ *   @Bean
+ *   public RestTemplate restTemplate() { return new RestTemplate(); }
+ */
 @Service
 public class AiService {
 
     @Value("${openai.api.key:}")
     private String apiKey;
 
-    private final String URL = "https://api.openai.com/v1/chat/completions";
+    private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
+    private final RestTemplate restTemplate;
+
+    /**
+     * Constructor injection of the shared RestTemplate bean.
+     */
+    @Autowired
+    public AiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    /**
+     * Sends CV text to OpenAI and returns a JSON string with extracted fields:
+     * name, skills, experienceYears, education.
+     *
+     * @param text  cleaned CV text content
+     * @return      raw JSON string from the AI
+     * @throws RuntimeException if the API key is missing or the response cannot be parsed
+     */
     public String sendToAI(String text) {
         if (apiKey == null || apiKey.isEmpty()) {
             throw new RuntimeException("AI feature is disabled (missing API key)");
         }
 
-        RestTemplate restTemplate = new RestTemplate();
-
         Map<String, Object> body = new HashMap<>();
         body.put("model", "gpt-4o-mini");
-
-        // ✅ limit output tokens (cost control, no accuracy loss)
-        body.put("max_tokens", 300);
+        body.put("max_tokens", 300); // Cost control — sufficient for structured JSON output
 
         List<Map<String, String>> messages = new ArrayList<>();
-
-        // ✅ SHORT + STRICT prompt (better + cheaper)
         messages.add(Map.of(
-            "role", "user",
-            "content", """
+                "role", "user",
+                "content", """
         Return ONLY valid JSON:
         
         {
@@ -52,41 +78,102 @@ public class AiService {
         CV:
         """ + text
         ));
-        
-
         body.put("messages", messages);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, Object>> request =
-                new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> response =
-                restTemplate.postForObject(URL, request, Map.class);
+        Map<String, Object> response = restTemplate.postForObject(OPENAI_URL, request, Map.class);
 
-        // 🔍 debug (you can remove later)
-        System.out.println(response);
+        return extractContent(response);
+    }
 
-        // ✅ SAFE extraction (avoid crashes)
+    /**
+     * Sends job description text to OpenAI and returns extracted requirements as JSON:
+     * skills, experienceRequired, educationRequired.
+     *
+     * @param text  job description text
+     * @return      raw JSON string from the AI
+     */
+    public String extractJobData(String text) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new RuntimeException("AI feature is disabled (missing API key)");
+        }
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "gpt-4o-mini");
+        body.put("max_tokens", 200);
+
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(Map.of(
+                "role", "user",
+                "content", """
+Return ONLY valid JSON:
+
+{
+  "skills": [],
+  "experienceRequired": number,
+  "educationRequired": ""
+}
+
+Rules:
+- Extract ONLY skills explicitly mentioned in the text
+- Do NOT infer or add extra skills
+- Do NOT assume related technologies (e.g., React does not imply HTML/CSS)
+- Skills must be exact keywords from the text
+- Skills must be single keywords (React, Java, Communication)
+- Remove adjectives like "good", "strong"
+- Do NOT duplicate similar skills
+- Normalize skills to base form (e.g., "React", "Java")
+- Extract years of experience as a number
+- Keep education simple (Degree, Diploma, Masters)
+
+Text:
+""" + text
+        ));
+        body.put("messages", messages);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = restTemplate.postForObject(OPENAI_URL, request, Map.class);
+
+        return extractContent(response);
+    }
+
+    // ─── Private helpers ──────────────────────────────────────────────────────
+
+    /**
+     * Extracts the text content from an OpenAI chat completion response.
+     * Also strips markdown code fences (```json ... ```) that the model sometimes adds.
+     *
+     * @param response  the raw Map returned by RestTemplate
+     * @return          clean JSON string
+     */
+    @SuppressWarnings("unchecked")
+    private String extractContent(Map<String, Object> response) {
         try {
             List<Map<String, Object>> choices =
                     (List<Map<String, Object>>) response.get("choices");
 
             if (choices == null || choices.isEmpty()) {
-                throw new RuntimeException("No AI response choices");
+                throw new RuntimeException("No choices in AI response");
             }
 
-            Map<String, Object> choice = choices.get(0);
-
             Map<String, Object> message =
-                    (Map<String, Object>) choice.get("message");
+                    (Map<String, Object>) choices.get(0).get("message");
 
             String content = (String) message.get("content");
 
-            // ✅ CLEAN response (remove ```json blocks if AI adds them)
+            // Strip markdown code fences the model occasionally wraps responses in
             return content
                     .replace("```json", "")
                     .replace("```", "")
