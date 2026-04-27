@@ -88,7 +88,21 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(26, 107, 138, 0.3);
 }
+.cas-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  justify-content: center;
+}
 
+.cas-company-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d0dce5;
+}
 @media (max-width: 600px) {
   .cd-stats-grid,
   .cd-links-grid {

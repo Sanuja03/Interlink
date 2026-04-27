@@ -117,7 +117,7 @@ function App() {
         <Route path="/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
         <Route path="/job-management" element={<CompanyAdmin><JobManagement /></CompanyAdmin>} />
          <Route path="/create-job" element={<CreateJob />} />
-         <Route path="/edit-job/:jobId" element={<CreateJob />} />
+         <Route path="/edit-job/:jobId" element={<CompanyAdmin><EditJob /></CompanyAdmin>} />
          <Route path="/company/shortlist/:applicationId" element={<Shortlist />} />
          <Route path="/shortlisted" element={<ShortlistedCandidates />} />
          <Route path="/application-management" element={<ApplicationManagement />} />

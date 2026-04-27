@@ -1,23 +1,39 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Sidebar.css";
 
 import { useAuth } from "../../../context/Authcontext";
+import api from "../../../lib/api";
 
-// ✅ FIXED PATHS
 import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
 
-// ICONS
 import dashboardIcon from "../../../assets/icons/dashboard.png";
 import fileIcon from "../../../assets/icons/file.png";
-import settingsIcon from "../../../assets/icons/settings.png";
 
 export default function Sidebar() {
   const [openManage, setOpenManage] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [companyName, setCompanyName] = useState("Company");
+  const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const navigate = useNavigate();
   const { logout } = useAuth();
+
+  useEffect(() => {
+    const companyId = localStorage.getItem("companyId");
+    if (!companyId) return;
+
+    api
+      .get(`/company/${companyId}/details`)
+      .then((res) => {
+        const data = res.data;
+        setCompanyName(data.companyName || "Company");
+        setCompanyLogo(data.logoUrl || null);
+        setCompanyWebsite(data.website || "");
+      })
+      .catch((err) => console.error("Failed to load company info:", err));
+  }, []);
 
   const handleManageClick = () => {
     if (collapsed) {
@@ -35,7 +51,6 @@ export default function Sidebar() {
 
   return (
     <div className={collapsed ? "sb collapsed" : "sb"}>
-
       <div className="sb-toggle">
         <button onClick={() => setCollapsed(!collapsed)}>
           {collapsed ? "›" : "‹"}
@@ -51,16 +66,14 @@ export default function Sidebar() {
       </div>
 
       <nav className="sb-nav">
-
-        <NavLink to="/" className="sb-link">
-          <img src={dashboardIcon} className="sb-iconImg" />
+        <NavLink to="/company/dashboard" className="sb-link">
+          <img src={dashboardIcon} className="sb-iconImg" alt="" />
           {!collapsed && "Dashboard"}
         </NavLink>
 
         <button className="sb-dropBtn" onClick={handleManageClick}>
-          <img src={fileIcon} className="sb-iconImg" />
+          <img src={fileIcon} className="sb-iconImg" alt="" />
           {!collapsed && "Management"}
-
           {!collapsed && (
             <span className={openManage ? "sb-arrow sb-arrowOpen" : "sb-arrow"}>
               ›
@@ -73,25 +86,17 @@ export default function Sidebar() {
             <NavLink to="/application-management" className="sb-sublink">
               Application Management
             </NavLink>
-
             <NavLink to="/job-management" className="sb-sublink">
               Job Management
             </NavLink>
-
             <NavLink to="/create-job" className="sb-sublink">
               Create Job
             </NavLink>
-
             <NavLink to="/shortlisted" className="sb-sublink">
-              Shortlisted
-            </NavLink>
+                         Shortlisted
+                       </NavLink>
           </div>
         )}
-
-        <NavLink to="/company/settings" className="sb-link">
-          <img src={settingsIcon} className="sb-iconImg" />
-          {!collapsed && "Settings"}
-        </NavLink>
       </nav>
 
       <div className="sb-logout">
@@ -102,11 +107,20 @@ export default function Sidebar() {
       </div>
 
       {!collapsed && (
-        <div className="sb-bottom">
-          <img className="sb-bottomAvatar" src={defaultAvatar} />
+        <div
+          className="sb-bottom"
+          onClick={() => navigate("/company/settings")}
+          style={{ cursor: "pointer" }}
+          title="Go to Company Settings"
+        >
+          <img
+            className="sb-bottomAvatar"
+            src={companyLogo || defaultAvatar}
+            alt="Company"
+          />
           <div className="sb-bottomText">
-            <div className="sb-bottomName">Horizon Global</div>
-            <div className="sb-bottomMail">horizonglobal.com</div>
+            <div className="sb-bottomName">{companyName}</div>
+            <div className="sb-bottomMail">{companyWebsite}</div>
           </div>
         </div>
       )}

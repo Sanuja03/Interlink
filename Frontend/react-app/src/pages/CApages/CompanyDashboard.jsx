@@ -51,7 +51,7 @@ export default function CompanyDashboard() {
   const quickLinks = [
     { label: "Job Management", path: "/job-management" },
     { label: "Application Management", path: "/application-management" },
-    { label: "Company Admin Settings", path: "/company/settings" },
+    { label: "Company Admin Profile", path: "/company/settings" },
     { label: "Create Job", path: "/create-job" },
   ];
 
