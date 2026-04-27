@@ -7,6 +7,7 @@ public class ShortlistResponseDTO {
     private UUID candidateId;
     private String candidateName;
     private Long jobId;
+    private String jobPostId;          // NEW: synthesized as "JOB" + jobId so the React popups can show it.
     private String jobTitle;
     private Long jobApplicationId;
     private Long historyId;
@@ -29,6 +30,9 @@ public class ShortlistResponseDTO {
 
     public Long getJobId() { return jobId; }
     public void setJobId(Long jobId) { this.jobId = jobId; }
+
+    public String getJobPostId() { return jobPostId; }
+    public void setJobPostId(String jobPostId) { this.jobPostId = jobPostId; }
 
     public String getJobTitle() { return jobTitle; }
     public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
