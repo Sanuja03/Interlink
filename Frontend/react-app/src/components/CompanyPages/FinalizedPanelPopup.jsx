@@ -183,10 +183,6 @@ const FinalizedPanelPopup = ({
             </div>
             <div className="ip-info-box">
               <span className="ip-info-label">Interview Time</span>
-              <span className="ip-info-value">
-                {interviewDetails.time || "10:30 AM"}
-              </span>
-            </div>
               <span className="ip-info-value">{details.time || "—"}</span>
             </div>
             {details.adminNotes && (
@@ -201,21 +197,6 @@ const FinalizedPanelPopup = ({
           <div className="ip-field">
             <label className="ip-label">Finalized Interviewers</label>
             <div className="ip-status-list">
-              {acceptedInterviewers.length > 0 ? (
-                acceptedInterviewers.map((person) => (
-                  <div key={person.id} className="ip-status-card">
-                    <div>
-                      <p className="ip-person-name">{person.name}</p>
-                      <p className="ip-person-role">{person.role}</p>
-                    </div>
-                    <span className="ip-badge ip-accepted">Accepted</span>
-                  </div>
-                ))
-              ) : (
-                <div className="ip-note-box">
-                  No accepted interviewers available.
-                </div>
-              )}
               {displayInterviewers.length > 0
                 ? displayInterviewers.map((person) => (
                     <div key={person.id} className="ip-status-card">

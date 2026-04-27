@@ -73,6 +73,7 @@
 }
 
 .profile-avatar-wrap {
+  position: relative;
   width: 176px;
   height: 176px;
   border-radius: 12px;
@@ -85,6 +86,24 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* uploading overlay */
+.avatar-uploading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border-radius: 12px;
+}
+
+.avatar-uploading-overlay span {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .change-photo-btn {
@@ -100,6 +119,11 @@
 
 .change-photo-btn:hover {
   opacity: 0.9;
+}
+
+.change-photo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* readonly */
@@ -123,6 +147,7 @@
   border: 1px solid #e5e7eb;
   font-weight: 600;
   background: #ffffff;
+  word-break: break-word;
 }
 
 /* right */
@@ -215,6 +240,21 @@
   background: #cddfe8;
 }
 
+.cancel-btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  color: #374151;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #d1d5db;
+}
+
 .save-btn {
   padding: 12px 20px;
   border-radius: 12px;
@@ -228,6 +268,11 @@
 
 .save-btn:hover {
   background: #092f41;
+}
+
+.save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* responsive */
@@ -252,6 +297,7 @@
   }
 
   .edit-btn,
+  .cancel-btn,
   .save-btn {
     width: 100%;
   }

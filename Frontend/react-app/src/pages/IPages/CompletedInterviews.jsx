@@ -196,9 +196,6 @@ const CompletedInterviews = () => {
         };
       });
 
-  const closeModal = () => {
-    setOpenHistory(false);
-    setSelectedRow(null);
       setCompletedInterviews(mapped);
       setFilteredInterviews(mapped);
 

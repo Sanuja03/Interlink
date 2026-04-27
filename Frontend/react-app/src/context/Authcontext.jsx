@@ -226,8 +226,6 @@ export function AuthProvider({ children }) {
         hasAnyRole,
         isAuthenticated: !!user && !!appUser,
         role: appUser?.role || null,
-        suspendedMessage,        // ← expose it
-        setSuspendedMessage,     // ← so Login.jsx can clear it
         suspendedMessage,        // expose it
         setSuspendedMessage,     // so Login.jsx can clear it
       }}

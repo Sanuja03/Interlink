@@ -1,4 +1,6 @@
 import "./Dashboard.css";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import interviewscheduled from "../../assets/interviewscheduled.png";
 import pendingrequests from "../../assets/pendingrequests.png";

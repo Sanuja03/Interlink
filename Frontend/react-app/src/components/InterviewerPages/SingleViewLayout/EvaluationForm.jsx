@@ -80,8 +80,6 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
     }
   };
 
-const EvaluationForm = () => {
-  const [submitted, setSubmitted] = useState(false);
   // Auto-calculate recommendation from current scores 
   const scoreResult = useMemo(() => {
     const fieldScores = fields.map((f) => ({
