@@ -104,13 +104,27 @@ function App() {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate/>}/>
+
 
         {/* Candidate */}
-        <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
-        <Route path="/candidate/dashboard" element={<Candidate><CandidateDashboard /></Candidate>} />
+                <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
+                <Route path="/candidate/dashboard" element={<Candidate><CandidateDashboard /></Candidate>} />
+                <Route path="/candidate/profile" element={<Candidate><CandidateProfile /></Candidate>} />
+                <Route path="/candidate/jobposts" element={<Candidate><CandidateJobPosts /></Candidate>} />
+                <Route path="/candidate/jobposts/:id" element={<Candidate><CandidateJobPostDetails /></Candidate>} />
+                <Route path="/candidate/aiquestions" element={<Candidate><CandidateAIQuestions /></Candidate>} />
+                <Route path="/candidate/calendar" element={<Candidate><CandidateCalendar /></Candidate>} />
+                <Route path="/candidate/jobapply/:id" element={<Candidate><CandidateJobApply /></Candidate>} />
 
         {/* Interviewer */}
-        <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
+                <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
+                <Route path="/interviewer/calendar" element={<InterviewerRole><InterviewerCalendar /></InterviewerRole>} />
+                <Route path="/interviewer/profile" element={<InterviewerRole><InterviewerProfile /></InterviewerRole>} />
+                <Route path="/interviewer/pending-requests" element={<InterviewerRole><InterviewerPendingRequests /></InterviewerRole>} />
+                <Route path="/interviewer/completed-interviews" element={<InterviewerRole><InterviewerCompletedInterviews /></InterviewerRole>} />
+                <Route path="/interviewer/scheduled-interviews" element={<InterviewerRole><InterviewerScheduledInterviews /></InterviewerRole>} />
+                <Route path="/interviewer/single-view/:interviewId" element={<InterviewerRole><InterviewerCandidateSingleView /></InterviewerRole>} />
 
         {/* Company Admin */}
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
@@ -125,8 +139,28 @@ function App() {
          <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
          <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
 
-        {/* Super Admin */}
-        <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
+      {/* All User Routes */}
+              <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
+              <Route path="/admin/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
+
+       {/* Super Admin routes */}
+               <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />
+               <Route path="/admin/tickets/:id" element={<SuperAdmin><AdminTicketDetails /></SuperAdmin>} />
+               <Route path="/admin/subscription-plans" element={<SuperAdmin><SubscriptionPlans /></SuperAdmin>} />
+               <Route path="/admin/active-plans" element={<SuperAdmin><ActivePlans /></SuperAdmin>} />
+
+               <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/AllActivities" element={<SuperAdmin><DashboardLayout><AllActivitiesPage /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Companies" element={<SuperAdmin><DashboardLayout><SuperAdminCompanies /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Interviews" element={<SuperAdmin><DashboardLayout><SuperAdminInterviews /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Profile" element={<SuperAdmin><DashboardLayout><SuperAdminProfile /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/SystemSettings" element={<SuperAdmin><DashboardLayout><SystemSettings /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Jobs" element={<SuperAdmin><DashboardLayout><SuperAdminJobs /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Jobs/:id" element={<SuperAdmin><DashboardLayout><SuperAdminJobDetails /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Users" element={<SuperAdmin><DashboardLayout><SuperAdminUsers /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/ChatBot" element={<SuperAdmin><DashboardLayout><ChatBot /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/User/:id" element={<SuperAdmin><DashboardLayout><UserProfileWrapper /></DashboardLayout></SuperAdmin>} />
+               <Route path="/admin/Company/:id" element={<SuperAdmin><DashboardLayout><SuperAdminViewCompany /></DashboardLayout></SuperAdmin>} />
 
         {/* Fallback */}
         <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
