@@ -9,6 +9,40 @@
   margin-bottom: 16px;
 }
 
+/* success / error banners */
+.profile-success-msg {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.profile-error-msg {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* loading / error states */
+.profile-loading,
+.profile-error {
+  padding: 48px 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.profile-error p {
+  margin-bottom: 16px;
+}
+
 /* outer card */
 .profile-card {
   background: #ffffff;

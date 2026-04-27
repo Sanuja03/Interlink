@@ -7,6 +7,7 @@ const ScheduledInterviewCard = ({ interview }) => {
 
   const {
     interviewId,
+    scheduledId,
     date,
     time,
     jobTitle,
@@ -15,6 +16,8 @@ const ScheduledInterviewCard = ({ interview }) => {
     meetingLink,
     panelMembers,
     adminNote,
+    candidateId,
+    jobApplicationId,
   } = interview;
 
   const handleOpenPanelInfo = (e) => {
@@ -41,16 +44,22 @@ const ScheduledInterviewCard = ({ interview }) => {
   const handleJoinMeeting = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(meetingLink, "_blank", "noopener,noreferrer");
+    if (meetingLink) {
+      window.open(meetingLink, "_blank", "noopener,noreferrer");
+    }
   };
 
   const statusClass =
     meetingStatus?.toLowerCase() === "ongoing"
       ? "status-ongoing"
+      : meetingStatus?.toLowerCase() === "completed"
+      ? "status-completed"
       : "status-scheduled";
 
   const modeClass =
     mode?.toLowerCase() === "online" ? "si-mode-online" : "si-mode-physical";
+
+  const isOnline = mode?.toLowerCase() === "online";
 
   return (
     <>
@@ -79,11 +88,13 @@ const ScheduledInterviewCard = ({ interview }) => {
 
             <div className="si-row">
               <span className="si-label">Mode</span>
-              <span className={`si-mode-pill ${modeClass}`}>{mode}</span>
+              <span className={`si-mode-pill ${modeClass}`}>
+                {mode?.toUpperCase()}
+              </span>
             </div>
           </div>
 
-          {mode?.toLowerCase() === "online" && (
+          {isOnline && meetingLink && (
             <button className="si-join" onClick={handleJoinMeeting}>
               Join Meeting
             </button>
@@ -97,8 +108,9 @@ const ScheduledInterviewCard = ({ interview }) => {
 
           <p className="si-hint"></p>
 
+          {/* Pass interview data via state to SingleView */}
           <Link
-            to={`/interviewer/single-view/:interviewId${interviewId}`}
+            to={`/interviewer/single-view/${interviewId}`}
             state={{ interview }}
             className="si-view-link"
           >
@@ -130,8 +142,8 @@ const ScheduledInterviewCard = ({ interview }) => {
                   </thead>
                   <tbody>
                     {panelMembers && panelMembers.length > 0 ? (
-                      panelMembers.map((member) => (
-                        <tr key={member.emNo}>
+                      panelMembers.map((member, idx) => (
+                        <tr key={member.emNo || idx}>
                           <td>{member.emNo}</td>
                           <td>{member.name}</td>
                           <td>{member.position}</td>

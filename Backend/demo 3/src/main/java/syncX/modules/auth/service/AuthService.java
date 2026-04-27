@@ -4,6 +4,7 @@ import syncX.modules.auth.dto.CandidateSignupDTO;
 import syncX.modules.auth.dto.CompanySignupDTO;
 import syncX.modules.auth.dto.InterviewerSignupDTO;
 import syncX.modules.auth.dto.InterviewerResponseDTO;
+import syncX.modules.auth.dto.InterviewerUpdateDTO;
 import syncX.modules.auth.entity.Candidate;
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.entity.Interviewer;
@@ -41,7 +42,7 @@ public class AuthService {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
-    // ── UPDATED: clears isFirstLogin on first access & updates lastLoginAt ──
+    // ── clears isFirstLogin on first access & updates lastLoginAt ──
     public Object getCurrentUser(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         User user = userRepository.findById(userId)
@@ -52,15 +53,11 @@ public class AuthService {
         }
 
         OffsetDateTime now = OffsetDateTime.now();
-        boolean changed = false;
 
-        // Clear first login flag when user actually logs in / calls /me
         if (Boolean.TRUE.equals(user.getIsFirstLogin())) {
             user.setIsFirstLogin(false);
-            changed = true;
         }
 
-        // Always update last login timestamp
         user.setAccountStatus("active");
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
@@ -130,7 +127,6 @@ public class AuthService {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        // 1. Verify admin
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -138,7 +134,6 @@ public class AuthService {
             throw new RuntimeException("Only company admins can create interviewers");
         }
 
-        // Get company
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
@@ -146,7 +141,6 @@ public class AuthService {
             throw new RuntimeException("Email already exists in system");
         }
 
-        // CREATE USER IN SUPABASE
         String supabaseUserId = supabaseAdminService.createUser(
                 dto.getEmail(),
                 dto.getPassword()
@@ -154,7 +148,6 @@ public class AuthService {
 
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
-        // SAVE INTO USERS TABLE
         User user = new User();
         user.setUserId(interviewerUserId);
         user.setEmail(dto.getEmail());
@@ -166,7 +159,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // SAVE INTO INTERVIEWERS TABLE
         Interviewer interviewer = new Interviewer();
         interviewer.setInterviewerId(dto.getInterviewerId());
         interviewer.setUserId(interviewerUserId);
@@ -186,7 +178,6 @@ public class AuthService {
 
         interviewerRepository.save(interviewer);
 
-        // Return the created interviewer details
         return mapToResponseDTO(interviewer, user);
     }
 
@@ -200,7 +191,6 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    // ── Fetch all interviewers for the admin's company ──
     public List<InterviewerResponseDTO> getInterviewersByCompany(Jwt jwt) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
 
@@ -224,7 +214,6 @@ public class AuthService {
                 .collect(Collectors.toList());
     }
 
-    // ── Fetch single interviewer by interviewer_id ──
     public InterviewerResponseDTO getInterviewerById(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
 
@@ -241,7 +230,6 @@ public class AuthService {
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Make sure this interviewer belongs to the admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
@@ -250,8 +238,6 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    // ── NEW: Deactivate an interviewer account ──
-    // ── Deactivate → sets status to "suspended" (blocks login) ──
     public void deactivateInterviewer(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
@@ -281,7 +267,6 @@ public class AuthService {
         userRepository.save(interviewerUser);
     }
 
-    // ── Activate → sets status to "inactive" (allows login again) ──
     public void activateInterviewer(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
@@ -310,6 +295,72 @@ public class AuthService {
         interviewerUser.setUpdatedAt(now);
         userRepository.save(interviewerUser);
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // Interviewer self-profile methods
+    // ══════════════════════════════════════════════════════════════
+
+    public InterviewerResponseDTO getInterviewerOwnProfile(Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Interviewer interviewer = interviewerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Interviewer profile not found"));
+
+        return mapToResponseDTO(interviewer, user);
+    }
+
+    public InterviewerResponseDTO updateInterviewerOwnProfile(Jwt jwt, InterviewerUpdateDTO dto) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        OffsetDateTime now = OffsetDateTime.now();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Interviewer interviewer = interviewerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Interviewer profile not found"));
+
+        if (dto.getInterviewerRole() != null) {
+            interviewer.setInterviewerRole(dto.getInterviewerRole());
+        }
+        if (dto.getBranch() != null) {
+            interviewer.setBranch(dto.getBranch());
+        }
+        if (dto.getAddress() != null) {
+            interviewer.setAddress(dto.getAddress());
+        }
+        if (dto.getAbout() != null) {
+            interviewer.setAbout(dto.getAbout());
+        }
+
+        interviewer.setUpdatedAt(now);
+        interviewerRepository.save(interviewer);
+
+        return mapToResponseDTO(interviewer, user);
+    }
+
+    /**
+     * Updates only the interviewer's photo URL.
+     */
+    public InterviewerResponseDTO updateInterviewerPhoto(Jwt jwt, String photoUrl) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        OffsetDateTime now = OffsetDateTime.now();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Interviewer interviewer = interviewerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Interviewer profile not found"));
+
+        interviewer.setPhotoUrl(photoUrl);
+        interviewer.setUpdatedAt(now);
+        interviewerRepository.save(interviewer);
+
+        return mapToResponseDTO(interviewer, user);
+    }
+
     // ── Helper: map entity to response DTO ──
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();

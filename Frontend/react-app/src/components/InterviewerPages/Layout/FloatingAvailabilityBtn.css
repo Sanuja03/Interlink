@@ -35,7 +35,7 @@
   }
   
   
-  /* pending state — dark bg with red indicator */
+  /* pending - red indicator */
   
   .floating-availability-btn.pending {
     background: #111827;
@@ -43,7 +43,7 @@
   }
   
   
-  /* done state — dark bg with green indicator */
+  /* done - green indicator */
   
   .floating-availability-btn.done {
     background: #111827;
@@ -51,7 +51,7 @@
   }
   
   
-  /* dot indicator — sits top-right of the button */
+  /* dot */
   
   .floating-btn-dot {
     position: absolute;
@@ -64,7 +64,7 @@
   }
   
   
-  /* red pulsing dot when availability is not set */
+  /* red dot  */
   
   .floating-btn-dot.pending {
     background: #ef4444;

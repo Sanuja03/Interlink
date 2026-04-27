@@ -13,6 +13,7 @@ import SignUpCompany from "./pages/LoginSignup/SignUpCompany";
 import Login from "./pages/LoginSignup/Login";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 
+
 // Candidate pages
 import CandidateHome from "./pages/CPages/Home";
 import CandidateProfile from "./pages/CPages/Profile";

@@ -15,10 +15,10 @@ const api = axios.create({
   },
 });
 
-// ── REQUEST INTERCEPTOR: attach fresh Supabase JWT ──
+// attach fresh Supabase JWT 
 api.interceptors.request.use(
   async (config) => {
-    // Skip auto-attaching token during signup flow (token is attached manually)
+    // Skip auto(token is attached manually)
     if (sessionStorage.getItem("is_signing_up") === "true") {
       return config;
     }
@@ -42,7 +42,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── RESPONSE INTERCEPTOR: handle 401 by refreshing token ──
+// handle 401 by refreshing token 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

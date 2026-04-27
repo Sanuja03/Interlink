@@ -2,18 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { calculateScore } from "./scorecardUtils";
 import "./CreateEvaluationTemplate.css";
 
-/**
- * CreateEvaluationTemplate
- *
- * Now works as a POPUP MODAL called from ScorecardManager.
- *
- * Props:
- *  - open            : boolean
- *  - onClose         : () => void
- *  - initialData     : { name, fields } | null  — null = create new
- *  - readOnly        : boolean — true for finalized cards (view only)
- *  - onSaveTemplate  : ({ name, fields }) => void
- */
+
+
 const CreateEvaluationTemplate = ({
   open,
   onClose,
@@ -27,10 +17,10 @@ const CreateEvaluationTemplate = ({
     { id: 2, label: "Communication", maxScore: 10 },
   ]);
 
-  // Preview scores (simulated to show the scoring system)
+
   const [previewScores, setPreviewScores] = useState({});
 
-  // Load initial data when editing
+
   useEffect(() => {
     if (initialData) {
       setTemplateName(initialData.name || "");
@@ -46,7 +36,7 @@ const CreateEvaluationTemplate = ({
     }
   }, [initialData]);
 
-  // Calculate preview result
+ 
   const previewResult = useMemo(() => {
     const fieldScores = fields.map((f) => ({
       score: previewScores[f.id] || 0,
@@ -57,7 +47,7 @@ const CreateEvaluationTemplate = ({
 
   if (!open) return null;
 
-  /* ---- Field CRUD ---- */
+ 
   const addField = () => {
     if (readOnly) return;
     setFields([

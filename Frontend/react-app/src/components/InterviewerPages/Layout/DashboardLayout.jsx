@@ -1,11 +1,14 @@
-import { useState } from "react";
+
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/Authcontext";
+
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import FloatingAvailabilityBtn from "./FloatingAvailabilityBtn";
 import notificationicon from "../../../assets/notificationicon.png";
-import { useAuth } from "../../../context/Authcontext";
 
-import { Link, useNavigate } from "react-router-dom";
+
+
 
 const SIDEBAR_WIDTH = 240;
 
@@ -43,7 +46,7 @@ const DashboardLayout = ({ children }) => {
         {/* top bar */}
         <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
 
-          {/* Notification */}
+          {/* notification */}
           <img
             src={notificationicon}
             alt="Notifications"
@@ -80,7 +83,7 @@ const DashboardLayout = ({ children }) => {
 
       </div>
 
-      {/* Floating availability button — visible on all interviewer pages */}
+      {/* availability button */}
       <FloatingAvailabilityBtn />
 
     </div>

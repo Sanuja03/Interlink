@@ -113,16 +113,7 @@ const ShortlistedCandidates = () => {
   const handleOpenForCandidate = async (candidate) => {
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
-    setEditMode(false);
-
-    const knownRid = finalizedMap[candidate.jobApplicationId];
-    if (knownRid) {
-      setFinalizedRequestId(knownRid);
-      setShowRequestPopup(false);
-      setShowStatusPopup(false);
-      setShowFinalizedPopup(true);
-      return;
-    }
+    setEditMode(false); // fresh open — not from Cancel & Redo
 
     try {
       const res = await api.get(
@@ -136,7 +127,6 @@ const ShortlistedCandidates = () => {
       );
 
       if (res.status === 204 || !res.data) {
-        setShowFinalizedPopup(false);
         setShowStatusPopup(false);
         setShowRequestPopup(true);
       } else if (res.data.overallStatus === "finalized") {
@@ -150,7 +140,6 @@ const ShortlistedCandidates = () => {
         setShowStatusPopup(false);
         setShowFinalizedPopup(true);
       } else {
-        setShowFinalizedPopup(false);
         setShowRequestPopup(false);
         setShowStatusPopup(true);
       }
@@ -162,27 +151,19 @@ const ShortlistedCandidates = () => {
     }
   };
 
-  const handleOpenFinalizedDirect = (candidate) => {
-    const rid = finalizedMap[candidate.jobApplicationId];
-    if (!rid) return;
-    candidateRef.current = candidate;
-    setSelectedCandidate(candidate);
-    setFinalizedRequestId(rid);
-    setShowRequestPopup(false);
-    setShowStatusPopup(false);
-    setShowFinalizedPopup(true);
-  };
-
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
-    setShowFinalizedPopup(false);
-    setFinalizedRequestId(null);
     setSelectedCandidate(null);
     candidateRef.current = null;
     setEditMode(false);
   };
 
+  /**
+   * From the status popup, admin clicks "Edit Request".
+   * We close the status popup and open the request popup, which will
+   * auto-pre-fill from GET /current.
+   */
   const handleEditFromStatus = () => {
     setEditMode(true);
     setShowStatusPopup(false);
@@ -344,14 +325,21 @@ const ShortlistedCandidates = () => {
         onClose={closeAllPopups}
         candidate={selectedCandidate}
         startInEditMode={editMode}
+        /* After a successful send, InterviewRequestPopup sets isSent=true
+           and stays open with the confirmation view. If you want to auto-
+           switch to the status popup instead, expose an onSent callback
+           from InterviewRequestPopup and call:
+             setShowRequestPopup(false);
+             setShowStatusPopup(true);
+        */
       />
 
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
         candidate={candidateRef.current || selectedCandidate}
-        scorecards={scorecards}
         onEditRequest={handleEditFromStatus}
+        onResendRequest={handleResend}
         onFinalizePanel={handleFinalize}
       />
 

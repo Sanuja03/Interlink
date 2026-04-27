@@ -53,14 +53,14 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
 
     try {
       await submitAvailability(selectedDays);
-
-      console.log("Week:", weekKey);
-      console.log("Available days:", selectedDays);
-
       setAlreadySubmitted(true);
       if (onSubmitSuccess) onSubmitSuccess();
     } catch (error) {
       console.error("Failed to submit availability:", error);
+      alert(
+        error?.response?.data?.message ||
+        "Failed to submit availability. Please refresh the page and try again."
+      );
     } finally {
       setSubmitting(false);
     }

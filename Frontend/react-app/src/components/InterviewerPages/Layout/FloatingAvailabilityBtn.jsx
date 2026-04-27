@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import "./FloatingAvailabilityBtn.css";
 
+import "./FloatingAvailabilityBtn.css";
 import { checkWeekStatus } from "../../../utils/weekUtils";
 import AvailabilityPopup from "../../../pages/IPages/AvailabilityPopup";
 

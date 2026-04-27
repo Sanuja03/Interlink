@@ -2,87 +2,61 @@
   padding: 8px 24px 32px;
 }
 
+.completed-header {
+  margin-bottom: 16px;
+}
+
 .completed-title {
   font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 16px;
+  margin: 0 0 6px;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+/* Reuse scheduled-container, scheduled-grid, scheduled-empty
+   from ScheduledInterviews.css — these class names are shared
+   via the ScheduledInterviewCard component */
+.scheduled-container {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.scheduled-grid {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
+  padding-left: 30px;
 }
 
-.modal-card {
-  width: 500px;
-  max-width: 90%;
-  background: white;
-  border-radius: 14px;
-  padding: 20px;
-}
-
-.modal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.modal-close {
-  border: none;
-  background: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.modal-sub {
-  margin-top: 12px;
-  font-size: 14px;
-}
-
-.modal-label {
-  font-weight: 600;
-}
-
-.modal-body {
-  margin-top: 16px;
-}
-
-.history-list {
-  list-style: none;
-  padding: 0;
-}
-
-.history-item {
-  display: flex;
-  gap: 14px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.history-date {
-  font-size: 13px;
+.scheduled-empty {
+  padding: 32px 8px;
+  text-align: center;
   color: #6b7280;
-  min-width: 95px;
 }
 
-.history-event {
+.scheduled-empty-title {
   font-size: 14px;
-  color: #111827;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
 }
 
-.modal-actions {
-  margin-top: 18px;
-  display: flex;
-  justify-content: flex-end;
+.scheduled-empty-sub {
+  font-size: 12px;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .completed-page {
+    padding: 8px 14px 28px;
+  }
+
+  .scheduled-container {
+    padding: 16px;
+  }
 }

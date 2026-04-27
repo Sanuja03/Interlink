@@ -1,85 +1,110 @@
 import { useState } from "react";
+import api from "../../lib/api";
 import CreateEvaluationTemplate from "./CreateEvaluationTemplate";
 import "./ScorecardManager.css";
 
-/**
- * ScorecardManager
- *
- * Props:
- *  - open        : boolean — controls visibility
- *  - onClose     : () => void
- *  - jobTitle    : string
- *  - jobPostId   : string
- *  - scorecards  : array  — [{ id, name, fields:[{id,label,maxScore}], finalized }]
- *  - onSave      : (updatedList) => void — persist the full list to parent state
- */
+
 const ScorecardManager = ({
   open,
   onClose,
   jobTitle = "",
   jobPostId = "",
+  jobId = null,
   scorecards = [],
   onSave,
 }) => {
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null); // null = create new
+  const [editingCard, setEditingCard] = useState(null);
 
   if (!open) return null;
 
-  /* ---- CRUD helpers ---- */
+  
+  const reload = async () => {
+    try {
+      const res = await api.get("/company/scorecards", { params: { jobId } });
+      onSave(res.data); 
+    } catch (err) {
+      console.error("[ScorecardManager] reload failed:", err);
+    }
+  };
 
+ 
   const handleCreateNew = () => {
     setEditingCard(null);
     setEditorOpen(true);
   };
 
+  
   const handleEdit = (card) => {
-    if (card.finalized) return; // can't edit finalized cards
     setEditingCard(card);
     setEditorOpen(true);
   };
 
-  const handleDelete = (id) => {
+ 
+  const handleSaveTemplate = async (templateData) => {
+    try {
+      if (editingCard) {
+       
+        const res = await api.put(`/company/scorecards/${editingCard.id}`, {
+          templateName: templateData.name,
+          jobId,
+          fields: templateData.fields.map((f, i) => ({
+            fieldLabel:   f.label,
+            maxScore:     f.maxScore,
+            displayOrder: i,
+          })),
+        });
+       
+        onSave(scorecards.map((c) => (c.id === editingCard.id ? res.data : c)));
+      } else {
+       
+        const res = await api.post("/company/scorecards", {
+          templateName: templateData.name,
+          jobId,
+          fields: templateData.fields.map((f, i) => ({
+            fieldLabel:   f.label,
+            maxScore:     f.maxScore,
+            displayOrder: i,
+          })),
+        });
+        onSave([...scorecards, res.data]);
+      }
+      setEditorOpen(false);
+      setEditingCard(null);
+    } catch (err) {
+      alert(err?.response?.data?.error || "Failed to save scorecard.");
+    }
+  };
+
+  
+  const handleFinalize = async (id) => {
+    if (!window.confirm("Finalizing locks this template from editing. Continue?")) return;
+    try {
+      const res = await api.patch(`/company/scorecards/${id}/finalize`);
+      onSave(scorecards.map((c) => (c.id === id ? res.data : c)));
+    } catch (err) {
+      alert(err?.response?.data?.error || "Failed to finalize.");
+    }
+  };
+
+ 
+  const handleDelete = async (id) => {
     const card = scorecards.find((c) => c.id === id);
     if (card?.finalized) return;
     if (!window.confirm("Are you sure you want to delete this scorecard template?")) return;
-    const updated = scorecards.filter((c) => c.id !== id);
-    onSave(updated);
-  };
-
-  const handleFinalize = (id) => {
-    if (!window.confirm("Finalizing locks this template from editing. Continue?")) return;
-    const updated = scorecards.map((c) =>
-      c.id === id ? { ...c, finalized: true } : c
-    );
-    onSave(updated);
-  };
-
-  const handleSaveTemplate = (templateData) => {
-    let updated;
-    if (editingCard) {
-      // editing existing
-      updated = scorecards.map((c) =>
-        c.id === editingCard.id ? { ...editingCard, ...templateData } : c
-      );
-    } else {
-      // creating new
-      const newCard = {
-        id: `sc_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-        ...templateData,
-        finalized: false,
-      };
-      updated = [...scorecards, newCard];
+    try {
+      await api.delete(`/company/scorecards/${id}`);
+      onSave(scorecards.filter((c) => c.id !== id));
+    } catch (err) {
+      alert(err?.response?.data?.error || "Failed to delete.");
     }
-    onSave(updated);
-    setEditorOpen(false);
-    setEditingCard(null);
   };
 
   return (
     <>
       <div className="scm-overlay" onClick={onClose}>
         <div className="scm-modal" onClick={(e) => e.stopPropagation()}>
+
           {/* Header */}
           <div className="scm-header">
             <div>
@@ -154,7 +179,7 @@ const ScorecardManager = ({
                   {card.finalized && (
                     <button
                       className="scm-action-btn scm-view-btn"
-                      onClick={() => handleEdit({ ...card })} // opens read-only
+                      onClick={() => handleEdit({ ...card })}
                       title="View only — finalized templates cannot be edited"
                     >
                       View
@@ -165,7 +190,7 @@ const ScorecardManager = ({
             ))}
           </div>
 
-          {/* Close */}
+          {/* Footer */}
           <div className="scm-footer">
             <button className="scm-close-btn" onClick={onClose}>
               Close

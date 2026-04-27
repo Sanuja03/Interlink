@@ -6,11 +6,11 @@ const NextInterviewCard = ({ interview }) => {
   return (
     <div className="next-card">
 
-      {/* HEADER */}
+      {/* title */}
       <div className="next-card-header">
         <h3 className="next-card-title">Next Interview</h3>
 
-        {/* to cjnage colour of the badge */}
+        {/* changing colour of the badge */}
         <span
           className={`status-badge ${
             isEmpty
@@ -24,21 +24,20 @@ const NextInterviewCard = ({ interview }) => {
         </span>
       </div>
 
-      {/* cards body */}
+      {/* card body */}
       <div className="next-card-body">
 
         {/* if empty */}
         {isEmpty ? (
           <div className="next-empty">
-         
             <p className="next-empty-title">No upcoming interviews</p>
             <p className="next-empty-sub">
-               New interviews will appear here once scheduled.
+              New interviews will appear here once scheduled.
             </p>
           </div>
         ) : (
           <>
-            {/* interview detais*/}
+            {/* interview details */}
             <div className="interview-details">
               <div className="detail-row">
                 <span className="label">Interview ID</span>
@@ -61,7 +60,7 @@ const NextInterviewCard = ({ interview }) => {
               </div>
             </div>
 
-            {/* join button */}
+            {/* join button — only for online interviews with link */}
             {interview.meetingLink && (
               <a
                 href={interview.meetingLink}
@@ -90,23 +89,28 @@ const NextInterviewCard = ({ interview }) => {
                   Candidate ID: {interview.candidate.id}
                 </p>
 
-                <div className="candidate-links">
-                  <span className="cv-name">
-                    {interview.candidate.cvName}
-                  </span>
-                  <a
-                    href={interview.candidate.profileLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="profile-link"
-                  >
-                    Profile
-                  </a>
-                </div>
+                {/* only show CV / profile row if at least one exists */}
+                {(interview.candidate.cvName || interview.candidate.profileLink) && (
+                  <div className="candidate-links">
+                    {interview.candidate.cvName && (
+                      <span className="cv-name">{interview.candidate.cvName}</span>
+                    )}
+                    {interview.candidate.profileLink && (
+                      <a
+                        href={interview.candidate.profileLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="profile-link"
+                      >
+                        Profile
+                      </a>
+                    )}
+                  </div>
+                )}
 
-                <p className="candidate-note">
-                  {interview.candidate.note}
-                </p>
+                {interview.candidate.note && (
+                  <p className="candidate-note">{interview.candidate.note}</p>
+                )}
               </div>
             </div>
           </>

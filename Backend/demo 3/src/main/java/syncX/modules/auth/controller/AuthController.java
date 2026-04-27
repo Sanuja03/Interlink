@@ -1,11 +1,13 @@
 // ============================================================
 // FILE: src/main/java/syncX/modules/auth/controller/AuthController.java (UPDATED)
-// PURPOSE: Added @PreAuthorize for method-level role checks
+// PURPOSE: Added interviewer self-profile + photo upload endpoints
 // ============================================================
 package syncX.modules.auth.controller;
 
 import syncX.modules.auth.dto.InterviewerSignupDTO;
 import syncX.modules.auth.dto.InterviewerResponseDTO;
+import syncX.modules.auth.dto.InterviewerUpdateDTO;
+import syncX.modules.auth.dto.PhotoUpdateDTO;
 import syncX.modules.auth.service.AuthService;
 import syncX.modules.auth.dto.CandidateSignupDTO;
 import syncX.modules.auth.dto.CompanySignupDTO;
@@ -31,6 +33,7 @@ public class AuthController {
     public Object getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         return authService.getCurrentUser(jwt);
     }
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@AuthenticationPrincipal Jwt jwt) {
         authService.logoutUser(jwt);
@@ -101,5 +104,34 @@ public class AuthController {
             @PathVariable String interviewerId) {
         authService.activateInterviewer(jwt, interviewerId);
         return ResponseEntity.ok("Interviewer activated");
+    }
+
+    // ── Interviewer views their own profile ──
+    @PreAuthorize("hasRole('interviewer')")
+    @GetMapping("/interviewer/profile")
+    public ResponseEntity<InterviewerResponseDTO> getOwnProfile(
+            @AuthenticationPrincipal Jwt jwt) {
+        InterviewerResponseDTO profile = authService.getInterviewerOwnProfile(jwt);
+        return ResponseEntity.ok(profile);
+    }
+
+    // ── Interviewer updates their own profile (only editable fields) ──
+    @PreAuthorize("hasRole('interviewer')")
+    @PutMapping("/interviewer/profile")
+    public ResponseEntity<InterviewerResponseDTO> updateOwnProfile(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody InterviewerUpdateDTO dto) {
+        InterviewerResponseDTO updated = authService.updateInterviewerOwnProfile(jwt, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    // ── Interviewer updates their profile photo ──
+    @PreAuthorize("hasRole('interviewer')")
+    @PutMapping("/interviewer/profile/photo")
+    public ResponseEntity<InterviewerResponseDTO> updateProfilePhoto(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody PhotoUpdateDTO dto) {
+        InterviewerResponseDTO updated = authService.updateInterviewerPhoto(jwt, dto.getPhotoUrl());
+        return ResponseEntity.ok(updated);
     }
 }

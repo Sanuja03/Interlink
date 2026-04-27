@@ -4,18 +4,17 @@ import ScorecardManager from "../../components/CompanyPages/ScoreCardManager";
 /**
  * ManageScorecardsButton
  *
- * Self-contained component: renders the trigger button and manages
- * its own popup open/close state internally.
- *
  * Props:
  *  - jobTitle    : string
  *  - jobPostId   : string
+ *  - jobId       : number — needed by ScorecardManager to call the API
  *  - scorecards  : array  — lifted state from page
- *  - onSave      : (updatedList) => void — callback to update page state
+ *  - onSave      : (updatedList) => void
  */
 const ManageScorecardsButton = ({
   jobTitle = "",
   jobPostId = "",
+  jobId = null,
   scorecards = [],
   onSave,
 }) => {
@@ -35,6 +34,7 @@ const ManageScorecardsButton = ({
         onClose={() => setOpen(false)}
         jobTitle={jobTitle}
         jobPostId={jobPostId}
+        jobId={jobId}
         scorecards={scorecards}
         onSave={onSave}
       />
