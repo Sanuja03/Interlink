@@ -1,102 +1,93 @@
-import "./CompanyDashboard.css";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// ✅ FIXED
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
-import CalendarSection from "../../components/CompanyPages/layout/CalendarSection";
-
-// 🔥 NEW IMPORTS
-import axios from "axios";
-import { useEffect, useState } from "react";
-
-// IMPORT ICONS (these are already correct ✅)
-import jobIcon from "../../assets/icons/job.png";
-import applyIcon from "../../assets/icons/apply.png";
-import handIcon from "../../assets/icons/hand.png";
-import calendarIcon from "../../assets/icons/calendar.png";
-
-// 🔥 Stat Card Component
-function StatCard({ title, value, icon }) {
-  return (
-    <div className="il-stat-card">
-      <div className="il-icon-box">
-        <img src={icon} alt={title} className="il-stat-icon" />
-      </div>
-
-      <div className="il-stat-content">
-        <div className="il-stat-title">{title}</div>
-        <div className="il-stat-value">{value}</div>
-      </div>
-    </div>
-  );
-}
+import api from "../../lib/api";
+import "./CompanyDashboard.css";
 
 export default function CompanyDashboard() {
   const navigate = useNavigate();
-
-  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({
+    totalJobPosts: 0,
+    totalApplications: 0,
+    shortlistedCandidates: 0,
+    upcomingInterviews: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/users")
-      .then((res) => {
-        console.log(res.data);
-        setUsers(res.data);
-      })
-      .catch((err) => console.error(err));
+    const companyId = localStorage.getItem("companyId");
+    if (!companyId) return;
+
+    api
+      .get(`/company/dashboard/stats/${companyId}`)
+      .then((res) => setStats(res.data))
+      .catch((err) => console.error("Failed to load dashboard stats:", err))
+      .finally(() => setLoading(false));
   }, []);
 
-  const stats = [
-    { title: "Total Users", value: users.length, icon: jobIcon },
-    { title: "Total Applications", value: "128", icon: applyIcon },
-    { title: "Shortlisted Candidates", value: "23", icon: handIcon },
-    { title: "Upcoming Interviews", value: "18", icon: calendarIcon },
+  const statCards = [
+    {
+      title: "Total Job Posts",
+      value: stats.totalJobPosts,
+      icon: "💼",
+    },
+    {
+      title: "Total Applications",
+      value: stats.totalApplications,
+      icon: "👤",
+    },
+    {
+      title: "Shortlisted Candidates",
+      value: stats.shortlistedCandidates,
+      icon: "🤝",
+    },
+    {
+      title: "Upcoming Interviews",
+      value: stats.upcomingInterviews,
+      icon: "📋",
+    },
+  ];
+
+  const quickLinks = [
+    { label: "Job Management", path: "/job-management" },
+    { label: "Application Management", path: "/application-management" },
+    { label: "Company Admin Settings", path: "/company/settings" },
+    { label: "Create Job", path: "/create-job" },
   ];
 
   return (
     <DashboardLayout>
-      <div className="il-dashboard">
+      <div className="cd-page">
+        <div className="cd-container">
 
-        <div className="il-panel">
-          <div className="il-stats-grid">
-            {stats.map((s) => (
-              <StatCard key={s.title} {...s} />
+          {/* Stats Grid */}
+          <div className="cd-stats-grid">
+            {statCards.map((card, idx) => (
+              <div key={idx} className="cd-stat-card">
+                <div className="cd-stat-icon">{card.icon}</div>
+                <div className="cd-stat-info">
+                  <div className="cd-stat-title">{card.title}</div>
+                  <div className="cd-stat-value">
+                    {loading ? "..." : card.value}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Links */}
+          <div className="cd-links-grid">
+            {quickLinks.map((link, idx) => (
+              <button
+                key={idx}
+                className="cd-link-btn"
+                onClick={() => navigate(link.path)}
+              >
+                {link.label}
+              </button>
             ))}
           </div>
         </div>
-
-        <div className="il-actions">
-          <button
-            className="il-action-btn"
-            onClick={() => navigate("/job-management")}
-          >
-            Job Management
-          </button>
-
-          <button
-            className="il-action-btn"
-            onClick={() => navigate("/application-management")}
-          >
-            Application Management
-          </button>
-
-          <button
-            className="il-action-btn"
-            onClick={() => navigate("/company-admin-settings")}
-          >
-            Company Admin Settings
-          </button>
-
-          <button
-            className="il-action-btn"
-            onClick={() => navigate("/create-job")}
-          >
-            Create Job
-          </button>
-        </div>
-
-        <CalendarSection />
-
       </div>
     </DashboardLayout>
   );

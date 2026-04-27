@@ -123,6 +123,7 @@ function App() {
          <Route path="/application-management" element={<ApplicationManagement />} />
          <Route path="/company/settings" element={<CompanyAdminSettings />} />
          <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
+         <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
 
         {/* Super Admin */}
         <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
