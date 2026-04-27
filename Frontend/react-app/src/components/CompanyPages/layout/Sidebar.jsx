@@ -82,7 +82,7 @@ export default function Sidebar() {
               Create Job
             </NavLink>
 
-            <NavLink to="/company/shortlisted-candidates" className="sb-sublink">
+            <NavLink to="/shortlisted" className="sb-sublink">
               Shortlisted
             </NavLink>
           </div>

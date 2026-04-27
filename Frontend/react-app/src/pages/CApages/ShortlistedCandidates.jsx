@@ -1,318 +1,375 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
-import api from "../../lib/api"; // same axios instance used by InterviewRequestPopup
+import api from "../../lib/api";
 import "./ShortlistedCandidates.css";
 
-// ─── Component imports ───
 import ManageScorecardsButton from "./ManageScorecardsButton";
 import CandidateActionButtons from "./CandidateActionButtons";
 import InterviewRequestPopup from "../../components/CompanyPages/InterviewRequestPopup";
 import RequestStatusPopup from "../../components/CompanyPages/RequestStatusPopup";
+import FinalizedPanelPopup from "../../components/CompanyPages/FinalizedPanelPopup";
 
 const ShortlistedCandidates = () => {
-
-  // ─── Scorecard state (shared across components via props) ───
+  const [jobGroups, setJobGroups] = useState([]);
+  const [selectedJobIndex, setSelectedJobIndex] = useState(0);
   const [scorecards, setScorecards] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ─── Logged-in admin's company ID (fetched on mount) ───
-  const [loggedInCompanyId, setLoggedInCompanyId] = useState(null);
-
-  // ─── Popup orchestration state ───
+  // Popup state
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showRequestPopup, setShowRequestPopup] = useState(false);
   const [showStatusPopup, setShowStatusPopup] = useState(false);
-  // Ref so RequestStatusPopup always gets the candidate synchronously,
-  // regardless of React's async setState batching.
+  const [showFinalizedPopup, setShowFinalizedPopup] = useState(false);
+  const [finalizedRequestId, setFinalizedRequestId] = useState(null);
   const candidateRef = useRef(null);
-  const [editMode, setEditMode]   = useState(false); // true = opened via Cancel & Redo
+  const [editMode, setEditMode] = useState(false);
+  const [finalizedMap, setFinalizedMap] = useState({});
 
+  // Fetch shortlisted candidates grouped by job
   useEffect(() => {
-    let cancelled = false;
-    const fetchCompanyId = async () => {
-      try {
-        // Adjust this endpoint to match your app's "get my company" route.
-        // The JWT is sent automatically by the api (axios) interceptor.
-        const res = await api.get("/company/me");
-        if (!cancelled && res.data?.companyId) {
-          setLoggedInCompanyId(res.data.companyId);
-        }
-      } catch (err) {
-        console.error("[ShortlistedCandidates] failed to fetch company:", err);
-      }
-    };
-    fetchCompanyId();
-    return () => { cancelled = true; };
+    const companyId = localStorage.getItem("companyId");
+    if (!companyId) return;
+
+    setLoading(true);
+    api
+      .get(`/company/shortlist/company/${companyId}`)
+      .then((res) => {
+        setJobGroups(res.data || []);
+        setSelectedJobIndex(0);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch shortlisted candidates:", err);
+        setJobGroups([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  // ════════════════════════════════════════════════════════════════
-  // ▼▼▼ TEAMMATE'S PART — HARDCODED FOR NOW ▼▼▼
-  // This section will later be replaced by an API call that fetches
-  // shortlisted candidates for the logged-in company admin's jobs.
-  //
-  // Expected backend endpoint (when your teammate builds it):
-  //   GET /api/company/shortlisted-candidates
-  //   → returns rows from this SQL query:
-  //
-  //   SELECT ja.candidate_id,
-  //          ja.id              AS job_application_id,
-  //          ja.job_id,
-  //          ch.history_id,
-  //          ja.candidate_name,
-  //          j.job_title,
-  //          j.id               AS job_post_id,
-  //          j.company_id
-  //     FROM job_applications ja
-  //     JOIN jobs j              ON ja.job_id = j.id
-  //     JOIN candidate_history ch ON ch.candidate_id = ja.candidate_id
-  //    WHERE j.company_id = <admin's company_id>
-  //      AND ja.status = 'shortlisted';
-  //
-  // The values below are REAL rows copied from Supabase so the
-  // interview-request popup actually works against the DB.
-  //
-  // ⚠️  IMPORTANT: Each candidate now has a `companyId` field
-  //     matching the company_id of the job they applied to.
-  //     Replace the placeholder UUIDs below with REAL company_id
-  //     values from your Supabase `jobs` table:
-  //       SELECT id, company_id FROM jobs WHERE id IN (26, 27);
-  // ════════════════════════════════════════════════════════════════
-  // ─── Hardcoded candidates for subject1@gmail.com (company_id: 0c97e983…) ───
-  // These two rows match the ACTIVE pending requests IN5011 and IN5012 in the DB.
-  // jobApplicationId 8 → IN5011 (panel_size 1, 1 interviewer invited)
-  // jobApplicationId 7 → IN5012 (panel_size 2, 2 interviewers invited)
-  // Both belong to company_id "0c97e983-ff86-48cb-95a4-96076da055c4" (subject1).
-  // When your teammate's real API is ready, replace this array with the API response.
-  const allCandidates = [
-    {
-      candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
-      jobApplicationId: 8,
-      jobId:            26,
-      historyId:        6,
-      candidateName:    "Senithi Vihara",
-      jobTitle:         "Frontend Developer",
-      jobPostId:        "JOB26",
-      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",
-    },
-    {
-      candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
-      jobApplicationId: 7,
-      jobId:            26,
-      historyId:        6,
-      candidateName:    "Sanuja Alphonsus",
-      jobTitle:         "Frontend Developer",
-      jobPostId:        "JOB26",
-      companyId:        "0c97e983-ff86-48cb-95a4-96076da055c4",
-    },
-  ];
-  // ▲▲▲ END TEAMMATE'S PART ▲▲▲
-  // ════════════════════════════════════════════════════════════════
+  // Current selected job group
+  const currentJob = jobGroups[selectedJobIndex] || null;
+  const candidates = currentJob?.candidates || [];
+  const jobTitle = currentJob?.jobTitle || "—";
+  const jobId = currentJob?.jobId || null;
+  const jobPostId = jobId ? `JOB${jobId}` : "—";
 
-  // ─── Filter: only show candidates belonging to logged-in admin's company ───
-  const candidates = useMemo(() => {
-    if (!loggedInCompanyId) return []; // still loading
-    return allCandidates.filter((c) => c.companyId === loggedInCompanyId);
-  }, [loggedInCompanyId]);
+  // Load scorecards when job changes
+  useEffect(() => {
+    if (!jobId) return;
+    api
+      .get("/company/scorecards", { params: { jobId } })
+      .then((res) => setScorecards(res.data))
+      .catch((err) =>
+        console.error("Load scorecards failed:", err)
+      );
+  }, [jobId]);
 
+  // Pre-check finalized status
+  useEffect(() => {
+    if (candidates.length === 0) return;
+    let cancelled = false;
 
-  // ─── Job-card meta (derived from first candidate row) ───
-  // If your page shows ONE job at a time, this stays simple.
-  // If it eventually shows multiple jobs, group `candidates` by jobId.
-  const firstCandidate = candidates[0] || {};
-  const jobPostId = firstCandidate.jobPostId || "—";
-  const jobTitle  = firstCandidate.jobTitle  || "—";
+    Promise.all(
+      candidates.map(async (c) => {
+        try {
+          const res = await api.get(
+            "/company/interview-requests/status/current",
+            {
+              params: {
+                candidateId: c.candidateId,
+                jobApplicationId: c.jobApplicationId,
+              },
+            }
+          );
+          if (
+            !cancelled &&
+            res.data?.overallStatus === "finalized" &&
+            res.data?.requestId
+          ) {
+            return {
+              jobApplicationId: c.jobApplicationId,
+              requestId: res.data.requestId,
+            };
+          }
+        } catch {
+          /* ignore */
+        }
+        return null;
+      })
+    ).then((results) => {
+      if (cancelled) return;
+      const updates = {};
+      results.forEach((r) => {
+        if (r) updates[r.jobApplicationId] = r.requestId;
+      });
+      if (Object.keys(updates).length > 0)
+        setFinalizedMap((prev) => ({ ...prev, ...updates }));
+    });
 
-  // ════════════════════════════════════════════════════════════════
-  // ─── Popup orchestration handlers ───
-  // ════════════════════════════════════════════════════════════════
+    return () => {
+      cancelled = true;
+    };
+  }, [candidates.length, selectedJobIndex]);
 
-  /**
-   * Called when admin clicks the action button on a candidate row.
-   * Decides which popup to open based on whether an active request exists.
-   */
+  // Popup handlers
   const handleOpenForCandidate = async (candidate) => {
-    // Write to ref synchronously BEFORE any setState — this guarantees
-    // RequestStatusPopup's useCallback(fetchActiveRequest, [candidate])
-    // always sees a non-null candidate when the popup opens, avoiding
-    // the React async-setState race condition.
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
-    setEditMode(false); // fresh open — not from Cancel & Redo
+    setEditMode(false);
+
+    const knownRid = finalizedMap[candidate.jobApplicationId];
+    if (knownRid) {
+      setFinalizedRequestId(knownRid);
+      setShowRequestPopup(false);
+      setShowStatusPopup(false);
+      setShowFinalizedPopup(true);
+      return;
+    }
 
     try {
-      const res = await api.get("/company/interview-requests/current", {
-        params: {
-          candidateId: candidate.candidateId,
-          jobApplicationId: candidate.jobApplicationId,
-        },
-      });
+      const res = await api.get(
+        "/company/interview-requests/status/current",
+        {
+          params: {
+            candidateId: candidate.candidateId,
+            jobApplicationId: candidate.jobApplicationId,
+          },
+        }
+      );
 
       if (res.status === 204 || !res.data) {
+        setShowFinalizedPopup(false);
         setShowStatusPopup(false);
         setShowRequestPopup(true);
+      } else if (res.data.overallStatus === "finalized") {
+        const rid = res.data.requestId;
+        setFinalizedMap((prev) => ({
+          ...prev,
+          [candidate.jobApplicationId]: rid,
+        }));
+        setFinalizedRequestId(rid);
+        setShowRequestPopup(false);
+        setShowStatusPopup(false);
+        setShowFinalizedPopup(true);
       } else {
+        setShowFinalizedPopup(false);
         setShowRequestPopup(false);
         setShowStatusPopup(true);
       }
     } catch (err) {
-      console.error("[ShortlistedCandidates] status check failed:", err);
+      console.error("Status check failed:", err);
+      setShowFinalizedPopup(false);
       setShowStatusPopup(false);
       setShowRequestPopup(true);
     }
   };
 
+  const handleOpenFinalizedDirect = (candidate) => {
+    const rid = finalizedMap[candidate.jobApplicationId];
+    if (!rid) return;
+    candidateRef.current = candidate;
+    setSelectedCandidate(candidate);
+    setFinalizedRequestId(rid);
+    setShowRequestPopup(false);
+    setShowStatusPopup(false);
+    setShowFinalizedPopup(true);
+  };
+
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
+    setShowFinalizedPopup(false);
+    setFinalizedRequestId(null);
     setSelectedCandidate(null);
     candidateRef.current = null;
     setEditMode(false);
   };
 
-  /**
-   * From the status popup, admin clicks "Edit Request".
-   * We close the status popup and open the request popup, which will
-   * auto-pre-fill from GET /current.
-   */
   const handleEditFromStatus = () => {
-    setEditMode(true);   // open request form in edit mode (unlocked)
+    setEditMode(true);
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
 
-  /**
-   * Optional: resend to a single interviewer.
-   * Currently the backend doesn't have a per-interviewer resend endpoint,
-   * so the simplest path is to reopen the create popup pre-selecting the
-   * existing interviewers — the admin can keep/remove/add and re-submit,
-   * which auto-cancels the old row and creates a new one.
-   */
-  const handleResend = (_interviewerUserId) => {
-    setShowStatusPopup(false);
-    setShowRequestPopup(true);
+  const handleFinalize = (requestId) => {
+    const candidate = candidateRef.current || selectedCandidate;
+    if (candidate && requestId) {
+      setFinalizedMap((prev) => ({
+        ...prev,
+        [candidate.jobApplicationId]: requestId,
+      }));
+      setFinalizedRequestId(requestId);
+    }
   };
 
-  const handleFinalize = async (requestId) => {
-    // TODO: wire to your finalize endpoint, e.g.
-    // await api.put(`/company/interview-requests/${requestId}/finalize`);
-    console.log("Finalize requested for", requestId);
-  };
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="sc-page">
+          <p>Loading shortlisted candidates...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="sc-page">
         <div className="sc-container">
-
           <h2 className="sc-title">Shortlisted Candidates</h2>
 
-          {/* ─── Job Card ─── */}
-          <div className="sc-job-card">
-            <div>
-              <p className="sc-job-label">Selected Job Post</p>
-              <h3 className="sc-job-title">{jobTitle}</h3>
+          {/* Job Selector — if multiple jobs have shortlisted candidates */}
+          {jobGroups.length > 1 && (
+            <div className="sc-job-selector">
+              <label>Select Job: </label>
+              <select
+                value={selectedJobIndex}
+                onChange={(e) =>
+                  setSelectedJobIndex(Number(e.target.value))
+                }
+                className="sc-job-select"
+              >
+                {jobGroups.map((group, idx) => (
+                  <option key={group.jobId} value={idx}>
+                    {group.jobTitle} ({group.shortlistedCount} candidates)
+                  </option>
+                ))}
+              </select>
             </div>
+          )}
 
-            <div className="sc-job-meta-wrap">
-              <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Job Post ID</span>
-                <span className="sc-job-meta-value">{jobPostId}</span>
+          {jobGroups.length === 0 ? (
+            <div className="sc-empty">
+              <p>No shortlisted candidates yet.</p>
+            </div>
+          ) : (
+            <>
+              {/* Job Card */}
+              <div className="sc-job-card">
+                <div>
+                  <p className="sc-job-label">Selected Job Post</p>
+                  <h3 className="sc-job-title">{jobTitle}</h3>
+                </div>
+                <div className="sc-job-meta-wrap">
+                  <div className="sc-job-meta-box">
+                    <span className="sc-job-meta-label">Job Post ID</span>
+                    <span className="sc-job-meta-value">{jobPostId}</span>
+                  </div>
+                  <div className="sc-job-meta-box">
+                    <span className="sc-job-meta-label">Round</span>
+                    <span className="sc-job-meta-value">Round 1</span>
+                  </div>
+                  <div className="sc-job-meta-box">
+                    <span className="sc-job-meta-label">
+                      Shortlisted Count
+                    </span>
+                    <span className="sc-job-meta-value">
+                      {currentJob?.shortlistedCount || 0}
+                    </span>
+                  </div>
+                  <ManageScorecardsButton
+                    jobTitle={jobTitle}
+                    jobPostId={jobPostId}
+                    jobId={jobId}
+                    scorecards={scorecards}
+                    onSave={(updated) => setScorecards(updated)}
+                  />
+                </div>
               </div>
 
-              <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Round</span>
-                <span className="sc-job-meta-value">Round 1</span>
+              {/* Candidates Table */}
+              <div className="sc-table-card">
+                <div className="sc-table-wrap">
+                  <table className="sc-table">
+                    <thead>
+                      <tr>
+                        <th>Candidate ID</th>
+                        <th>Candidate Name</th>
+                        <th>History ID</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {candidates.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: "center" }}>
+                            No candidates shortlisted for this job
+                          </td>
+                        </tr>
+                      ) : (
+                        candidates.map((candidate, idx) => (
+                          <tr
+                            key={`${candidate.shortlistId}-${idx}`}
+                          >
+                            <td
+                              className="sc-bold"
+                              title={candidate.candidateId}
+                            >
+                              {String(candidate.candidateId).slice(0, 8)}…
+                            </td>
+                            <td>{candidate.candidateName}</td>
+                            <td className="sc-bold">
+                              {candidate.historyId != null
+                                ? `#${candidate.historyId}`
+                                : "—"}
+                            </td>
+                            <td>
+                              <CandidateActionButtons
+                                isFinalized={
+                                  !!finalizedMap[
+                                    candidate.jobApplicationId
+                                  ]
+                                }
+                                onOpenRequest={() =>
+                                  handleOpenForCandidate(candidate)
+                                }
+                                onOpenFinalized={() =>
+                                  handleOpenFinalizedDirect(candidate)
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-
-              <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Shortlisted Count</span>
-                <span className="sc-job-meta-value">{candidates.length}</span>
-              </div>
-
-              <ManageScorecardsButton
-                jobTitle={jobTitle}
-                jobPostId={jobPostId}
-                scorecards={scorecards}
-                onSave={(updated) => setScorecards(updated)}
-              />
-            </div>
-          </div>
-
-          {/* ─── Candidates Table ─── */}
-          <div className="sc-table-card">
-            <div className="sc-table-wrap">
-              <table className="sc-table">
-                <thead>
-                  <tr>
-                    <th>Candidate ID</th>
-                    <th>Candidate Name</th>
-                    <th>History ID</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {candidates.map((candidate, idx) => (
-                    <tr key={`${candidate.jobApplicationId}-${idx}`}>
-                      <td className="sc-bold" title={candidate.candidateId}>
-                        {String(candidate.candidateId).slice(0, 8)}…
-                      </td>
-                      <td>{candidate.candidateName}</td>
-                      <td className="sc-bold">
-                        {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
-                      </td>
-                      <td>
-                        {/* ═══════════════════════════════════════════════════
-                            ▼ YOUR PART — Interview Request flow ▼
-                            The action button now triggers handleOpenForCandidate,
-                            which checks for an existing active request and opens
-                            either the Status popup (if one exists) or the
-                            Request popup (if none exists).
-                            ═══════════════════════════════════════════════════ */}
-                        <CandidateActionButtons
-                          candidate={candidate}
-                          scorecards={scorecards}
-                          onOpenRequest={() => handleOpenForCandidate(candidate)}
-                          onResendRequest={(id) => console.log("Resend to", id)}
-                          onFinalizePanel={() => console.log("Finalize panel")}
-                          onSendDetails={(payload) => console.log("Send details:", payload)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+            </>
+          )}
         </div>
       </div>
 
-      {/* ─── Interview Request Popup (create / edit) ─── */}
+      {/* Popups */}
       <InterviewRequestPopup
         open={showRequestPopup}
         onClose={closeAllPopups}
         candidate={selectedCandidate}
         startInEditMode={editMode}
-        /* After a successful send, InterviewRequestPopup sets isSent=true
-           and stays open with the confirmation view. If you want to auto-
-           switch to the status popup instead, expose an onSent callback
-           from InterviewRequestPopup and call:
-             setShowRequestPopup(false);
-             setShowStatusPopup(true);
-        */
       />
 
-      {/* ─── Request Status Popup (view live statuses of active request) ─── */}
-      {/* candidateRef.current is used instead of selectedCandidate to avoid
-          the async setState race — the ref is written synchronously before
-          setShowStatusPopup(true) so the popup always has the candidate. */}
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
         candidate={candidateRef.current || selectedCandidate}
+        scorecards={scorecards}
         onEditRequest={handleEditFromStatus}
-        onResendRequest={handleResend}
         onFinalizePanel={handleFinalize}
       />
+
+      {showFinalizedPopup && finalizedRequestId && (
+        <FinalizedPanelPopup
+          open={showFinalizedPopup}
+          onClose={closeAllPopups}
+          interviewDetails={{
+            jobTitle:
+              (candidateRef.current || selectedCandidate)?.jobTitle ||
+              "—",
+          }}
+          acceptedInterviewers={[]}
+          scorecards={scorecards}
+          viewOnly={true}
+          requestId={finalizedRequestId}
+        />
+      )}
     </DashboardLayout>
   );
 };

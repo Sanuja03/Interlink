@@ -1,7 +1,6 @@
 package syncX.modules.CompanyAdmin.ApplicationManagement.controller;
 
 import org.springframework.web.bind.annotation.*;
-
 import syncX.modules.CompanyAdmin.ApplicationManagement.service.ApplicationService;
 import syncX.modules.CompanyAdmin.ApplicationManagement.DTO.ApplicationResponseDTO;
 
@@ -15,14 +14,17 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    // ✅ Constructor Injection
     public ApplicationController(ApplicationService applicationService) {
         this.applicationService = applicationService;
     }
 
-    // 🔹 GET ALL APPLICATIONS BY COMPANY ID
     @GetMapping("/{companyId}")
     public List<ApplicationResponseDTO> getApplications(@PathVariable UUID companyId) {
         return applicationService.getApplications(companyId);
+    }
+
+    @GetMapping("/detail/{applicationId}")
+    public ApplicationResponseDTO getApplicationDetail(@PathVariable Long applicationId) {
+        return applicationService.getApplicationDetail(applicationId);
     }
 }

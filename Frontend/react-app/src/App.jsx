@@ -46,6 +46,7 @@ import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
 import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
+import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -115,7 +116,12 @@ function App() {
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
         <Route path="/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
         <Route path="/job-management" element={<CompanyAdmin><JobManagement /></CompanyAdmin>} />
-
+         <Route path="/create-job" element={<CreateJob />} />
+         <Route path="/edit-job/:jobId" element={<CreateJob />} />
+         <Route path="/company/shortlist/:applicationId" element={<Shortlist />} />
+         <Route path="/shortlisted" element={<ShortlistedCandidates />} />
+         <Route path="/application-management" element={<ApplicationManagement />} />
+         <Route path="/company/settings" element={<CompanyAdminSettings />} />
 
         {/* Super Admin */}
         <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
