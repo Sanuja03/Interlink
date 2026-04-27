@@ -1,11 +1,4 @@
-/**
- * CandidateActionButtons
- *
- * Props:
- *   onOpenRequest   : () => void   — opens Request/Status popup (pending state)
- *   onOpenFinalized : () => void   — opens view-only Finalized Panel popup
- *   isFinalized     : boolean      — true once "Send Scheduled Interview Details" succeeded
- */
+
 const CandidateActionButtons = ({ onOpenRequest, onOpenFinalized, isFinalized = false }) => {
   if (isFinalized) {
     return (

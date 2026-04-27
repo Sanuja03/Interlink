@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public class InterviewSchedulingDTO {
 
-    // ─────────────────────────────────────────────
+
     // REQUEST: company admin finalizes the panel
-    // ─────────────────────────────────────────────
+
     public static class FinalizeRequest {
         private UUID requestId;
         private String meetingLink;
@@ -18,10 +18,10 @@ public class InterviewSchedulingDTO {
         public void   setMeetingLink(String meetingLink) { this.meetingLink = meetingLink; }
     }
 
-    // ─────────────────────────────────────────────
+
     // REQUEST: save scorecard ID when admin clicks
     //          "Send Scheduled Interview Details"
-    // ─────────────────────────────────────────────
+
     public static class SaveScorecardRequest {
         private UUID scorecardId;   // ← changed from String to UUID
 
@@ -29,9 +29,9 @@ public class InterviewSchedulingDTO {
         public void setScorecardId(UUID scorecardId) { this.scorecardId = scorecardId; }
     }
 
-    // ─────────────────────────────────────────────
+
     // RESPONSE: returned after finalize or GET
-    // ─────────────────────────────────────────────
+
     public static class ScheduledResponse {
         private String scheduledId;
         private String requestId;
@@ -82,9 +82,9 @@ public class InterviewSchedulingDTO {
         public List<AcceptedInterviewer> getAcceptedInterviewers() { return acceptedInterviewers; }
     }
 
-    // ─────────────────────────────────────────────
+
     // Each accepted interviewer in the response
-    // ─────────────────────────────────────────────
+
     public static class AcceptedInterviewer {
         private String userId;
         private String fullName;

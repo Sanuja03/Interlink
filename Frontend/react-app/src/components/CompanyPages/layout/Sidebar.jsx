@@ -83,16 +83,16 @@ export default function Sidebar() {
 
         {openManage && !collapsed && (
           <div className="sb-sub">
-            <NavLink to="/application-management" className="sb-sublink">
+            <NavLink to="/company/application-management" className="sb-sublink">
               Application Management
             </NavLink>
-            <NavLink to="/job-management" className="sb-sublink">
+            <NavLink to="/company/job-management" className="sb-sublink">
               Job Management
             </NavLink>
-            <NavLink to="/create-job" className="sb-sublink">
+            <NavLink to="/company/create-job" className="sb-sublink">
               Create Job
             </NavLink>
-            <NavLink to="/shortlisted" className="sb-sublink">
+            <NavLink to="/company/shortlisted" className="sb-sublink">
                          Shortlisted
                        </NavLink>
           </div>

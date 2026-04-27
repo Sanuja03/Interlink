@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public class InterviewRequestDTO {
 
-    // ────────────────────────────────────────────────
+
     // REQUEST: admin creates an interview request
-    // ────────────────────────────────────────────────
+
     public static class CreateRequest {
         private UUID candidateId;
         private Long jobApplicationId;
@@ -53,9 +53,9 @@ public class InterviewRequestDTO {
         }
     }
 
-    // ────────────────────────────────────────────────
+
     // RESPONSE: interviewer option for the picker
-    // ────────────────────────────────────────────────
+
     public static class InterviewerOption {
         private String userId;
         private String interviewerId;
@@ -96,9 +96,9 @@ public class InterviewRequestDTO {
         public List<InterviewerOption> getOther() { return other; }
     }
 
-    // ────────────────────────────────────────────────
+
     // RESPONSE: after creating a request
-    // ────────────────────────────────────────────────
+
     public static class CreateResponse {
         private String requestId;
         private String interviewId;
@@ -119,9 +119,9 @@ public class InterviewRequestDTO {
         public List<String> getInvitedInterviewerUserIds() { return invitedInterviewerUserIds; }
     }
 
-    // ────────────────────────────────────────────────
+
     // RESPONSE: existing request (for popup pre-fill)
-    // ────────────────────────────────────────────────
+
     public static class InvitedInterviewer {
         private String userId;
         private String fullName;
@@ -181,9 +181,9 @@ public class InterviewRequestDTO {
         public List<InvitedInterviewer> getInvitedInterviewers() { return invitedInterviewers; }
     }
 
-    // ────────────────────────────────────────────────
+
 // RESPONSE: pending request as seen by an interviewer
-// ────────────────────────────────────────────────
+
     public static class PendingRequestForInterviewer {
         private String interviewId;
         private String requestId;
@@ -221,9 +221,9 @@ public class InterviewRequestDTO {
         public Long getHistoryId() { return historyId; }
     }
 
-    // ────────────────────────────────────────────────
+
 // REQUEST: interviewer responds (accept/decline)
-// ────────────────────────────────────────────────
+
     public static class RespondRequest {
         private String response; // "accepted" or "declined"
 

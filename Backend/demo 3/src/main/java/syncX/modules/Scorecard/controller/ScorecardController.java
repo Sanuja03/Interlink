@@ -28,7 +28,7 @@ public class ScorecardController {
                 .getCompanyId();
     }
 
-    // ── GET /api/company/scorecards?jobId=26 ─────────────────────────
+
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> list(
@@ -46,7 +46,7 @@ public class ScorecardController {
         return ResponseEntity.ok(result);
     }
 
-    // ── POST /api/company/scorecards ─────────────────────────────────
+
     @PostMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<Map<String, Object>> create(
@@ -67,7 +67,7 @@ public class ScorecardController {
         return ResponseEntity.ok(toResponse(repo.save(t)));
     }
 
-    // ── PUT /api/company/scorecards/{id} ─────────────────────────────
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> update(
@@ -89,7 +89,7 @@ public class ScorecardController {
         return ResponseEntity.ok(toResponse(repo.save(t)));
     }
 
-    // ── PATCH /api/company/scorecards/{id}/finalize ───────────────────
+
     @PatchMapping("/{id}/finalize")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> finalize(
@@ -105,7 +105,7 @@ public class ScorecardController {
         return ResponseEntity.ok(toResponse(repo.save(t)));
     }
 
-    // ── DELETE /api/company/scorecards/{id} ───────────────────────────
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> delete(
@@ -123,7 +123,7 @@ public class ScorecardController {
         return ResponseEntity.ok().build();
     }
 
-    // ── helpers ───────────────────────────────────────────────────────
+
     private void applyFields(ScorecardTemplate t, List<Map<String, Object>> inputs) {
         if (inputs == null) return;
         for (int i = 0; i < inputs.size(); i++) {

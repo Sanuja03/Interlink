@@ -42,7 +42,7 @@ public class AuthService {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
-    // ── clears isFirstLogin on first access & updates lastLoginAt ──
+    // clears isFirstLogin on first access & updates lastLoginAt
     public Object getCurrentUser(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         User user = userRepository.findById(userId)
@@ -296,9 +296,8 @@ public class AuthService {
         userRepository.save(interviewerUser);
     }
 
-    // ══════════════════════════════════════════════════════════════
     // Interviewer self-profile methods
-    // ══════════════════════════════════════════════════════════════
+
 
     public InterviewerResponseDTO getInterviewerOwnProfile(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -361,7 +360,7 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    // ── Helper: map entity to response DTO ──
+    // Helper: map entity to response DTO
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();
         response.setInterviewerId(interviewer.getInterviewerId());

@@ -17,11 +17,7 @@ public class InterviewerAvailabilityController {
     @Autowired
     private AvailabilityService availabilityService;
 
-    /**
-     * Check if this week's availability has been submitted.
-     * Used by the floating button to show red/green.
-     * GET /api/interviewer/availability/status?weekKey=2026-W17
-     */
+
     @GetMapping("/status")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.StatusResponse> getStatus(
@@ -33,10 +29,7 @@ public class InterviewerAvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get saved availability for this week (pre-fill the popup).
-     * GET /api/interviewer/availability/my-week?weekKey=2026-W17
-     */
+
     @GetMapping("/my-week")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.MyWeekResponse> getMyWeek(
@@ -48,10 +41,7 @@ public class InterviewerAvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Submit availability for the current week.
-     * POST /api/interviewer/availability/submit
-     */
+
     @PostMapping("/submit")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.StatusResponse> submitAvailability(

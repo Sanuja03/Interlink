@@ -34,9 +34,9 @@ public class InterviewerDashboardService {
     private static final DateTimeFormatter CARD_TIME_FMT  = DateTimeFormatter.ofPattern("h:mm a");
     private static final DateTimeFormatter ISO_DATE_FMT   = DateTimeFormatter.ISO_LOCAL_DATE;
 
-    // ════════════════════════════════════════════════════════════
+
     // PUBLIC: build the full dashboard payload
-    // ════════════════════════════════════════════════════════════
+
     public InterviewerDashboardDTO.DashboardResponse getDashboard(Jwt jwt) {
 
         UUID interviewerUserId = UUID.fromString(jwt.getSubject());
@@ -79,9 +79,9 @@ public class InterviewerDashboardService {
         return new InterviewerDashboardDTO.DashboardResponse(stats, todaySchedule, next);
     }
 
-    // ════════════════════════════════════════════════════════════
+
     // PRIVATE helpers
-    // ════════════════════════════════════════════════════════════
+
 
     private InterviewerDashboardDTO.NextInterview buildNextInterview(InterviewScheduled s) {
 

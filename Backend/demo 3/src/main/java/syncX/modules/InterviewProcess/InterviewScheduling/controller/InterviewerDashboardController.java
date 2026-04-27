@@ -12,14 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import syncX.modules.InterviewProcess.InterviewScheduling.dto.InterviewerDashboardDTO;
 import syncX.modules.InterviewProcess.InterviewScheduling.service.InterviewerDashboardService;
 
-/**
- * InterviewerDashboardController
- *
- * Base path: /api/interviewer/dashboard
- *
- * GET  /                  → returns full dashboard payload
- *                            { stats, todaySchedule[], nextInterview }
- */
+
 @RestController
 @RequestMapping("/api/interviewer/dashboard")
 public class InterviewerDashboardController {

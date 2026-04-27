@@ -27,9 +27,9 @@ public class InterviewSchedulingService {
     @Autowired private CompanyRepository            companyRepo;
     @Autowired private InterviewerRepository        interviewerRepo;
 
-    // ════════════════════════════════════════════════════════════
+
     // POST: finalize panel → create interview_scheduled row
-    // ════════════════════════════════════════════════════════════
+
     @Transactional
     public InterviewSchedulingDTO.ScheduledResponse finalizePanel(
             Jwt jwt, InterviewSchedulingDTO.FinalizeRequest req) {
@@ -67,7 +67,7 @@ public class InterviewSchedulingService {
         if (scheduledRepo.existsByRequestId(ir.getRequestId()))
             throw new IllegalStateException("This panel has already been finalized");
 
-        // ── Create the scheduled record ──
+        // Create the scheduled record
         InterviewScheduled scheduled = new InterviewScheduled();
         scheduled.setRequestId(ir.getRequestId());
         scheduled.setInterviewId(ir.getInterviewId());
@@ -104,9 +104,9 @@ public class InterviewSchedulingService {
         return buildResponse(saved, ir);
     }
 
-    // ════════════════════════════════════════════════════════════
+
     // GET: fetch the scheduled record for a given requestId
-    // ════════════════════════════════════════════════════════════
+
     public InterviewSchedulingDTO.ScheduledResponse getByRequestId(Jwt jwt, UUID requestId) {
 
         UUID companyId = resolveCompanyId(jwt);
@@ -123,10 +123,10 @@ public class InterviewSchedulingService {
         return buildResponse(scheduled, ir);
     }
 
-    // ════════════════════════════════════════════════════════════
+
     // PATCH: save scorecardId when admin clicks
     //        "Send Scheduled Interview Details"
-    // ════════════════════════════════════════════════════════════
+
     @Transactional
     public InterviewSchedulingDTO.ScheduledResponse saveScorecard(
             Jwt jwt, UUID requestId, InterviewSchedulingDTO.SaveScorecardRequest req) {
@@ -152,9 +152,9 @@ public class InterviewSchedulingService {
         return buildResponse(scheduled, ir);
     }
 
-    // ════════════════════════════════════════════════════════════
+
     // PRIVATE helpers
-    // ════════════════════════════════════════════════════════════
+
 
     private InterviewSchedulingDTO.ScheduledResponse buildResponse(
             InterviewScheduled s, InterviewRequest ir) {

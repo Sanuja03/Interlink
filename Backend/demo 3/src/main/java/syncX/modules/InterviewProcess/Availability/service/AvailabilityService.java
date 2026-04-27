@@ -36,9 +36,9 @@ public class AvailabilityService {
     @Autowired
     private CompanyRepository companyRepository;
 
-    // ─────────────────────────────────────────
+
     // INTERVIEWER: Check status for a week
-    // ─────────────────────────────────────────
+
 
     public AvailabilityDTO.StatusResponse getStatus(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -60,9 +60,9 @@ public class AvailabilityService {
         return new AvailabilityDTO.StatusResponse(submitted, days);
     }
 
-    // ─────────────────────────────────────────
+
     // INTERVIEWER: Get my week (pre-fill popup)
-    // ─────────────────────────────────────────
+
 
     public AvailabilityDTO.MyWeekResponse getMyWeek(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -82,9 +82,9 @@ public class AvailabilityService {
         return new AvailabilityDTO.MyWeekResponse(wa.getWeekKey(), wa.getStatus(), days);
     }
 
-    // ─────────────────────────────────────────
+
     // INTERVIEWER: Submit availability
-    // ─────────────────────────────────────────
+
 
     @Transactional
     public AvailabilityDTO.StatusResponse submitAvailability(Jwt jwt, AvailabilityDTO.SubmitRequest request) {
@@ -149,9 +149,9 @@ public class AvailabilityService {
 
         return new AvailabilityDTO.StatusResponse(true, savedDays);
     }
-    // ─────────────────────────────────────────
+
     // COMPANY ADMIN: All interviewers for a week
-    // ─────────────────────────────────────────
+
 
     public List<AvailabilityDTO.InterviewerWeekSummary> getCompanyWeekAvailability(
             Jwt jwt, String weekKey) {
@@ -197,9 +197,9 @@ public class AvailabilityService {
         return result;
     }
 
-    // ─────────────────────────────────────────
+
     // COMPANY ADMIN: Interviewers available on a date
-    // ─────────────────────────────────────────
+
 
     public List<AvailabilityDTO.InterviewerDateEntry> getAvailableOnDate(
             Jwt jwt, String dateStr) {

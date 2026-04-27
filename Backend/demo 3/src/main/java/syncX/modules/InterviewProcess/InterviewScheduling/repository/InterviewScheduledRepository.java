@@ -15,18 +15,12 @@ import java.util.UUID;
 public interface InterviewScheduledRepository
         extends JpaRepository<InterviewScheduled, UUID> {
 
-    // ── existing ────────────────────────────────────────────────
+
     boolean existsByRequestId(UUID requestId);
 
     Optional<InterviewScheduled> findByRequestId(UUID requestId);
 
-    // ════════════════════════════════════════════════════════════
-    // INTERVIEWER-SCOPED queries
-    //
-    // The link from interviewer → scheduled record is via
-    // interview_request_interviewers (response_status = 'accepted').
-    // We join on s.requestId = iri.interviewRequest.requestId.
-    // ════════════════════════════════════════════════════════════
+
 
     /** Count of scheduled rows for this interviewer with a given status. */
     @Query("""

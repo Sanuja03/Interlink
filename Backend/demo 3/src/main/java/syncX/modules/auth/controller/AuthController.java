@@ -1,7 +1,4 @@
-// ============================================================
-// FILE: src/main/java/syncX/modules/auth/controller/AuthController.java (UPDATED)
-// PURPOSE: Added interviewer self-profile + photo upload endpoints
-// ============================================================
+
 package syncX.modules.auth.controller;
 
 import syncX.modules.auth.dto.InterviewerSignupDTO;
@@ -106,7 +103,7 @@ public class AuthController {
         return ResponseEntity.ok("Interviewer activated");
     }
 
-    // ── Interviewer views their own profile ──
+    // Interviewer views their own profile
     @PreAuthorize("hasRole('interviewer')")
     @GetMapping("/interviewer/profile")
     public ResponseEntity<InterviewerResponseDTO> getOwnProfile(
@@ -115,7 +112,7 @@ public class AuthController {
         return ResponseEntity.ok(profile);
     }
 
-    // ── Interviewer updates their own profile (only editable fields) ──
+    // Interviewer updates their own profile (only editable fields)
     @PreAuthorize("hasRole('interviewer')")
     @PutMapping("/interviewer/profile")
     public ResponseEntity<InterviewerResponseDTO> updateOwnProfile(
@@ -125,7 +122,7 @@ public class AuthController {
         return ResponseEntity.ok(updated);
     }
 
-    // ── Interviewer updates their profile photo ──
+    // Interviewer updates their profile photo
     @PreAuthorize("hasRole('interviewer')")
     @PutMapping("/interviewer/profile/photo")
     public ResponseEntity<InterviewerResponseDTO> updateProfilePhoto(

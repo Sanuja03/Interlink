@@ -12,27 +12,7 @@ import syncX.modules.InterviewProcess.InterviewScheduling.service.InterviewSched
 
 import java.util.UUID;
 
-/**
- * InterviewSchedulingController
- *
- * Base path: /api/company/interview-scheduling
- *
- * ┌─────────────────────────────────────────────────────────────────────┐
- * │ POST /finalize                                                       │
- * │   Body: { requestId, meetingLink? }                                  │
- * │   Finalizes a panel → creates interview_scheduled row,              │
- * │   sets request status = "finalised".                                │
- * │   Returns ScheduledResponse (includes accepted interviewers)        │
- * ├─────────────────────────────────────────────────────────────────────┤
- * │ GET /{requestId}                                                     │
- * │   Returns the scheduled record for a finalized request.             │
- * ├─────────────────────────────────────────────────────────────────────┤
- * │ PATCH /{requestId}/scorecard                                         │
- * │   Body: { scorecardId }                                              │
- * │   Saves the chosen scorecard ID — called when admin clicks          │
- * │   "Send Scheduled Interview Details" in FinalizedPanelPopup.        │
- * └─────────────────────────────────────────────────────────────────────┘
- */
+
 @RestController
 @RequestMapping("/api/company/interview-scheduling")
 public class InterviewSchedulingController {

@@ -1,18 +1,7 @@
 import { useState } from "react";
 import FinalizedPanelPopup from "../../components/CompanyPages/FinalizedPanelPopup";
 
-/**
- * FinalizedPanelButton
- *
- * Self-contained component: renders the trigger button and manages
- * its own popup open/close state internally.
- *
- * Props:
- *  - interviewDetails     : object
- *  - acceptedInterviewers : array
- *  - scorecards           : array — passed down from page so the dropdown works
- *  - onSendDetails        : (payload) => void
- */
+
 const FinalizedPanelButton = ({
   interviewDetails = {},
   acceptedInterviewers = [],

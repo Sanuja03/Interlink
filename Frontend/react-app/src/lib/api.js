@@ -1,8 +1,4 @@
-// ============================================================
-// FILE: src/lib/api.js
-// PURPOSE: Axios instance with automatic Supabase token
-//          attachment and 401 refresh/retry logic
-// ============================================================
+
 import axios from "axios";
 import { supabase } from "./supabase";
 

@@ -4,9 +4,9 @@ import java.util.List;
 
 public class InterviewerDashboardDTO {
 
-    // ─────────────────────────────────────────────
+
     // Top-level response: stats + today + next
-    // ─────────────────────────────────────────────
+
     public static class DashboardResponse {
         private Stats stats;
         private List<TodayRow> todaySchedule;
@@ -25,9 +25,9 @@ public class InterviewerDashboardDTO {
         public NextInterview   getNextInterview() { return nextInterview; }
     }
 
-    // ─────────────────────────────────────────────
+
     // Stat counts
-    // ─────────────────────────────────────────────
+
     public static class Stats {
         private long scheduled;
         private long pending;
@@ -44,9 +44,9 @@ public class InterviewerDashboardDTO {
         public long getCompleted() { return completed; }
     }
 
-    // ─────────────────────────────────────────────
+
     // One row in today's schedule table
-    // ─────────────────────────────────────────────
+
     public static class TodayRow {
         private String interviewId;
         private String candidate;     // candidate full name
@@ -73,9 +73,9 @@ public class InterviewerDashboardDTO {
         public String getRequestId()   { return requestId; }
     }
 
-    // ─────────────────────────────────────────────
+
     // The next upcoming interview card payload
-    // ─────────────────────────────────────────────
+
     public static class NextInterview {
         private String interviewId;
         private String date;            // "yyyy-MM-dd"
@@ -109,9 +109,9 @@ public class InterviewerDashboardDTO {
         public Candidate getCandidate()     { return candidate; }
     }
 
-    // ─────────────────────────────────────────────
+
     // Candidate sub-object on NextInterview
-    // ─────────────────────────────────────────────
+
     public static class Candidate {
         private String image;          // URL or null → frontend uses default avatar
         private String id;             // candidate id (string form)

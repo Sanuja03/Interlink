@@ -1,18 +1,7 @@
 import { useState } from "react";
 import RequestStatusPopup from "../../components/CompanyPages/RequestStatusPopup";
 
-/**
- * StatusButton
- *
- * Self-contained component: renders the trigger button and manages
- * its own popup open/close state internally.
- *
- * Props:
- *  - panelSize        : number
- *  - interviewers     : array
- *  - onResendRequest  : (id) => void
- *  - onFinalizePanel  : () => void
- */
+
 const StatusButton = ({
   panelSize = 2,
   interviewers = [],

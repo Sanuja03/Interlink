@@ -5,7 +5,7 @@ import java.util.List;
 
 public class AvailabilityDTO {
 
-    // ── Request: interviewer submitting availability ──
+    // Request: interviewer submitting availability
 
     public static class SubmitRequest {
         private String weekKey;
@@ -34,7 +34,7 @@ public class AvailabilityDTO {
     }
 
 
-    // ── Response: status check ──
+    //  Response: status check
 
     public static class StatusResponse {
         private boolean submitted;
@@ -50,7 +50,7 @@ public class AvailabilityDTO {
     }
 
 
-    // ── Response: my week availability ──
+    // Response: my week availability
 
     public static class MyWeekResponse {
         private String weekKey;
@@ -69,7 +69,7 @@ public class AvailabilityDTO {
     }
 
 
-    // ── Response: company admin — interviewer summary for a week ──
+    // Response: company admin — interviewer summary for a week
 
     public static class InterviewerWeekSummary {
         private String userId;
@@ -103,7 +103,7 @@ public class AvailabilityDTO {
     }
 
 
-    // ── Response: company admin — interviewers available on a specific date ──
+    // Response: company admin — interviewers available on a specific date
 
     public static class InterviewerDateEntry {
         private String userId;

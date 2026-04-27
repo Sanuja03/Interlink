@@ -1,8 +1,4 @@
-// ============================================================
-// FILE: src/main/java/syncX/security/SupabaseJwtRoleConverter.java (NEW)
-// PURPOSE: Reads user role from DB based on JWT subject (user_id)
-//          and converts it into Spring Security GrantedAuthority
-// ============================================================
+
 package syncX.security;
 
 import org.springframework.core.convert.converter.Converter;
@@ -17,17 +13,7 @@ import syncX.modules.auth.repository.UserRepository;
 
 import java.util.*;
 
-/**
- * Supabase JWTs don't carry your app's roles.
- * This converter:
- *   1. Extracts the user_id (sub claim) from the JWT
- *   2. Looks up the user in your DB
- *   3. Returns ROLE_{role} as a GrantedAuthority
- *
- * This allows you to use:
- *   - .hasAuthority("ROLE_company_admin") in SecurityConfig
- *   - @PreAuthorize("hasRole('company_admin')") on methods
- */
+
 @Component
 public class SupabaseJwtRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 

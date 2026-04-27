@@ -1,10 +1,7 @@
-// ============================================================
-// FILE: src/utils/weekUtils.js
-// PURPOSE: Week date calculations + API calls for availability
-// ============================================================
+
 import api from "../lib/api";
 
-// ── Date helpers ──
+
 
 /**
  * Returns the Monday of the current week.

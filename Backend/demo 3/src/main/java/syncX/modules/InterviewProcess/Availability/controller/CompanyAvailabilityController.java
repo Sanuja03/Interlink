@@ -19,11 +19,7 @@ public class CompanyAvailabilityController {
     @Autowired
     private AvailabilityService availabilityService;
 
-    /**
-     * Get all interviewers' availability for a given week.
-     * Used by admin to see who's available before sending requests.
-     * GET /api/company/availability/week?weekKey=2026-W17
-     */
+
     @GetMapping("/week")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<AvailabilityDTO.InterviewerWeekSummary>> getWeekAvailability(
@@ -35,11 +31,7 @@ public class CompanyAvailabilityController {
         return ResponseEntity.ok(result);
     }
 
-    /**
-     * Get interviewers available on a specific date.
-     * Used by admin when scheduling an interview for a specific day.
-     * GET /api/company/availability/date?date=2026-04-23
-     */
+
     @GetMapping("/date")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<AvailabilityDTO.InterviewerDateEntry>> getDateAvailability(
