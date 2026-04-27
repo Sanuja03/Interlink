@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import api from "../../lib/api";
 import "./CompanyDetailsModal.css";
 
 export default function CompanyDetailsModal({ open, onClose }) {
@@ -14,29 +15,14 @@ export default function CompanyDetailsModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
 
   const companyId = localStorage.getItem("companyId");
-  const token = localStorage.getItem("token"); // Get JWT token
-
-  // Helper to make authenticated requests
-  const authFetch = (url, options = {}) => {
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  };
 
   useEffect(() => {
     if (!open || !companyId) return;
 
-    // Load company details from your single endpoint
-    authFetch(`http://localhost:8080/api/company/${companyId}/details`)
+    api
+      .get(`/company/${companyId}/details`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
-      })
-      .then((data) => {
+        const data = res.data;
         setName(data.companyName || "");
         setIndustry(data.industry || "");
         setCompanySize(data.companySize || "");
@@ -50,32 +36,20 @@ export default function CompanyDetailsModal({ open, onClose }) {
       .catch((err) => console.error("Error loading company details:", err));
   }, [open, companyId]);
 
-  // HANDLE SAVE
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await authFetch(
-        `http://localhost:8080/api/company/${companyId}/details`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            companyName: name,
-            industry,
-            companySize,
-            companyLocation: location,
-            companyEmail: email,
-            website,
-            about,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to save");
+      await api.put(`/company/${companyId}/details`, {
+        companyName: name,
+        industry,
+        companySize,
+        companyLocation: location,
+        companyEmail: email,
+        website,
+        about,
+      });
 
       alert("Saved successfully!");
       onClose();
@@ -87,38 +61,30 @@ export default function CompanyDetailsModal({ open, onClose }) {
     }
   };
 
-  // HANDLE LOGO UPLOAD
   const handleLogoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate size (100KB)
     if (file.size > 100 * 1024) {
       alert("Image must be less than 100KB");
       return;
     }
 
-    // Show preview immediately
     setLogoPreview(URL.createObjectURL(file));
 
-    // Upload to backend
     try {
       const formData = new FormData();
       formData.append("logo", file);
 
-      const response = await authFetch(
-        `http://localhost:8080/api/company/${companyId}/logo`,
+      const response = await api.post(
+        `/company/${companyId}/logo`,
+        formData,
         {
-          method: "POST",
-          body: formData,
-          // Don't set Content-Type - browser sets it with boundary
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to upload logo");
-
-      const data = await response.json();
-      setLogo(data.logoUrl);
+      setLogo(response.data.logoUrl);
     } catch (err) {
       console.error("Logo upload failed:", err);
       alert("Failed to upload logo");
@@ -139,7 +105,6 @@ export default function CompanyDetailsModal({ open, onClose }) {
           </div>
         </div>
 
-        {/* LOGO */}
         <div className="cdm-uploadRow">
           <div className="cdm-previewBox">
             {logoPreview ? (
@@ -148,12 +113,10 @@ export default function CompanyDetailsModal({ open, onClose }) {
               "🖼️"
             )}
           </div>
-
           <div className="cdm-uploadRight">
             <p className="cdm-uploadHint">
               Please upload square image, size less than 100KB
             </p>
-
             <div className="cdm-fileRow">
               <label className="cdm-fileBtn">
                 Choose File

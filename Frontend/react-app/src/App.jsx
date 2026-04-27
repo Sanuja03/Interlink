@@ -122,6 +122,7 @@ function App() {
          <Route path="/shortlisted" element={<ShortlistedCandidates />} />
          <Route path="/application-management" element={<ApplicationManagement />} />
          <Route path="/company/settings" element={<CompanyAdminSettings />} />
+         <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
 
         {/* Super Admin */}
         <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />

@@ -88,7 +88,7 @@ export default function Sidebar() {
           </div>
         )}
 
-        <NavLink to="/company-admin-settings" className="sb-link">
+        <NavLink to="/company/settings" className="sb-link">
           <img src={settingsIcon} className="sb-iconImg" />
           {!collapsed && "Settings"}
         </NavLink>
