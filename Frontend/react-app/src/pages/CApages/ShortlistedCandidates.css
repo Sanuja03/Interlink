@@ -87,9 +87,8 @@
 .btn:hover {
   opacity: 0.85;
 }
-/* ===== Additional styles for the Manage Scorecards button ===== */
-/* Add these to your existing ShortlistedCandidates.css file       */
 
+/* ===== Manage Scorecards button ===== */
 .sc-template-btn {
   display: flex;
   align-items: center;
@@ -126,19 +125,25 @@
   text-align: center;
 }
 
+/* ===== Job Picker ===== */
 .sc-job-picker {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  background: #ffffff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
- 
+
 .sc-job-picker-label {
   font-size: 14px;
   font-weight: 600;
   color: #24698b;
 }
- 
+
 .sc-job-picker-select {
   padding: 8px 12px;
   border: 1px solid #cbd5e1;
@@ -149,11 +154,28 @@
   font-family: inherit;
   cursor: pointer;
   outline: none;
-  min-width: 280px;
+  min-width: 320px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
- 
+
 .sc-job-picker-select:focus {
   border-color: #24698b;
   box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}
+
+.sc-job-picker-select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  color: #6b7280;
+}
+
+.sc-job-picker-hint {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.sc-job-picker-error {
+  color: crimson;
+  font-style: normal;
 }

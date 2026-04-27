@@ -16,7 +16,7 @@ const ShortlistedCandidates = () => {
 
   // ── Jobs that this company has shortlisted candidates for ──
   const [jobs, setJobs]               = useState([]);
-  const [selectedJobId, setSelectedJobId] = useState(null);
+  const [selectedJobId, setSelectedJobId] = useState(null); // null = "All Jobs"
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [jobsError, setJobsError]     = useState("");
 
@@ -82,17 +82,19 @@ const ShortlistedCandidates = () => {
 
   // ════════════════════════════════════════════════════════════════
   // 3) Fetch shortlisted candidates whenever the selected job changes
+  //     - If selectedJobId === null → fetch ALL shortlisted (no jobId param)
+  //     - If selectedJobId is set    → fetch only that job's shortlisted
   // ════════════════════════════════════════════════════════════════
   useEffect(() => {
-    if (!selectedJobId) {
-      setCandidates([]);
-      return;
-    }
+    if (!loggedInCompanyId) return;
+
     let cancelled = false;
     setLoadingCandidates(true);
     setCandidatesError("");
 
-    api.get("/company/shortlisted-candidates", { params: { jobId: selectedJobId } })
+    const params = selectedJobId ? { jobId: selectedJobId } : {};
+
+    api.get("/company/shortlisted-candidates", { params })
       .then((res) => {
         if (cancelled) return;
         setCandidates(Array.isArray(res.data) ? res.data : []);
@@ -106,7 +108,7 @@ const ShortlistedCandidates = () => {
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
-  }, [selectedJobId]);
+  }, [selectedJobId, loggedInCompanyId]);
 
   // ════════════════════════════════════════════════════════════════
   // 4) Load scorecards for the selected job
@@ -151,8 +153,17 @@ const ShortlistedCandidates = () => {
   // Job picker helpers
   // ════════════════════════════════════════════════════════════════
   const selectedJob = jobs.find((j) => j.jobId === selectedJobId) || {};
-  const jobTitle    = selectedJob.jobTitle  || "—";
-  const jobPostId   = selectedJob.jobPostId || "—";
+  const jobTitle    = selectedJobId ? (selectedJob.jobTitle  || "—") : "All Jobs";
+  const jobPostId   = selectedJobId ? (selectedJob.jobPostId || "—") : "—";
+
+  const handleJobChange = (e) => {
+    const val = e.target.value;
+    if (val === "ALL") {
+      setSelectedJobId(null);
+    } else {
+      setSelectedJobId(Number(val));
+    }
+  };
 
   // ════════════════════════════════════════════════════════════════
   // Popup orchestration (unchanged logic)
@@ -245,23 +256,37 @@ const ShortlistedCandidates = () => {
 
           <h2 className="sc-title">Shortlisted Candidates</h2>
 
-          {/* ── Job Picker ── */}
-          {!loadingJobs && jobs.length > 1 && (
-            <div className="sc-job-picker">
-              <label className="sc-job-picker-label">Job Post:</label>
-              <select
-                className="sc-job-picker-select"
-                value={selectedJobId || ""}
-                onChange={(e) => setSelectedJobId(Number(e.target.value))}
-              >
-                {jobs.map((j) => (
-                  <option key={j.jobId} value={j.jobId}>
-                    {j.jobTitle} ({j.jobPostId})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* ══════════════════════════════════════════════════════
+              JOB PICKER — always visible (even with 0 or 1 job)
+              ══════════════════════════════════════════════════════ */}
+          <div className="sc-job-picker">
+            <label className="sc-job-picker-label" htmlFor="sc-job-picker-select">
+              Job Picker:
+            </label>
+            <select
+              id="sc-job-picker-select"
+              className="sc-job-picker-select"
+              value={selectedJobId == null ? "ALL" : String(selectedJobId)}
+              onChange={handleJobChange}
+              disabled={loadingJobs || jobs.length === 0}
+            >
+              <option value="ALL">— All Jobs —</option>
+              {jobs.map((j) => (
+                <option key={j.jobId} value={j.jobId}>
+                  {j.jobTitle} ({j.jobPostId})
+                </option>
+              ))}
+            </select>
+            {loadingJobs && (
+              <span className="sc-job-picker-hint">Loading jobs…</span>
+            )}
+            {!loadingJobs && jobs.length === 0 && !jobsError && (
+              <span className="sc-job-picker-hint">No jobs with shortlisted candidates yet.</span>
+            )}
+            {!loadingJobs && jobsError && (
+              <span className="sc-job-picker-hint sc-job-picker-error">{jobsError}</span>
+            )}
+          </div>
 
           {/* ── Job Card ── */}
           <div className="sc-job-card">
@@ -282,13 +307,15 @@ const ShortlistedCandidates = () => {
                 <span className="sc-job-meta-label">Shortlisted Count</span>
                 <span className="sc-job-meta-value">{candidates.length}</span>
               </div>
-              <ManageScorecardsButton
-                jobTitle={jobTitle}
-                jobPostId={jobPostId}
-                jobId={selectedJobId}
-                scorecards={scorecards}
-                onSave={(updated) => setScorecards(updated)}
-              />
+              {selectedJobId && (
+                <ManageScorecardsButton
+                  jobTitle={jobTitle}
+                  jobPostId={jobPostId}
+                  jobId={selectedJobId}
+                  scorecards={scorecards}
+                  onSave={(updated) => setScorecards(updated)}
+                />
+              )}
             </div>
           </div>
 
@@ -300,6 +327,8 @@ const ShortlistedCandidates = () => {
                   <tr>
                     <th>Candidate ID</th>
                     <th>Candidate Name</th>
+                    {/* Show Job Title column when "All Jobs" is selected so users know which job each row belongs to */}
+                    {!selectedJobId && <th>Job Title</th>}
                     <th>History ID</th>
                     <th>Actions</th>
                   </tr>
@@ -307,54 +336,57 @@ const ShortlistedCandidates = () => {
                 <tbody>
 
                   {/* Top-level loading: still figuring out which job to show */}
-                  {(loadingJobs || (loggedInCompanyId && !selectedJobId && jobs.length === 0 && !jobsError)) && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", padding: 24 }}>
+                  {(loadingJobs && jobs.length === 0) && (
+                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
                       Loading…
                     </td></tr>
                   )}
 
-                  {/* Job fetch error */}
-                  {!loadingJobs && jobsError && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
-                      {jobsError}
-                    </td></tr>
-                  )}
-
-                  {/* No jobs found at all */}
+                  {/* No jobs at all */}
                   {!loadingJobs && !jobsError && jobs.length === 0 && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       No shortlisted candidates yet. Once candidates are shortlisted for a job, they'll show up here.
                     </td></tr>
                   )}
 
                   {/* Candidate fetch in progress */}
-                  {selectedJobId && loadingCandidates && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", padding: 24 }}>
+                  {jobs.length > 0 && loadingCandidates && (
+                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
                       Loading candidates…
                     </td></tr>
                   )}
 
                   {/* Candidate fetch error */}
-                  {selectedJobId && !loadingCandidates && candidatesError && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
+                  {jobs.length > 0 && !loadingCandidates && candidatesError && (
+                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
                       {candidatesError}
                     </td></tr>
                   )}
 
                   {/* No candidates for the selected job */}
-                  {selectedJobId && !loadingCandidates && !candidatesError && candidates.length === 0 && (
-                    <tr><td colSpan={4} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
-                      No shortlisted candidates for this job.
+                  {jobs.length > 0 && !loadingCandidates && !candidatesError && candidates.length === 0 && (
+                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                      {selectedJobId ? "No shortlisted candidates for this job." : "No shortlisted candidates."}
                     </td></tr>
                   )}
 
                   {/* Real rows */}
-                  {selectedJobId && !loadingCandidates && !candidatesError && candidates.map((candidate, idx) => (
+                  {!loadingCandidates && !candidatesError && candidates.map((candidate, idx) => (
                     <tr key={`${candidate.jobApplicationId}-${idx}`}>
                       <td className="sc-bold" title={candidate.candidateId}>
                         {String(candidate.candidateId).slice(0, 8)}…
                       </td>
                       <td>{candidate.candidateName}</td>
+                      {!selectedJobId && (
+                        <td>
+                          {candidate.jobTitle || "—"}
+                          {candidate.jobPostId && (
+                            <span style={{ color: "#6b7280", marginLeft: 6, fontSize: 12 }}>
+                              ({candidate.jobPostId})
+                            </span>
+                          )}
+                        </td>
+                      )}
                       <td className="sc-bold">
                         {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
                       </td>
