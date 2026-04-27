@@ -45,6 +45,7 @@ public class SecurityConfig {
 
                         // ── Interviewer endpoints ──
                         .requestMatchers("/api/interviewer/**").hasAuthority("ROLE_interviewer")
+                        .requestMatchers("/api/auth/interviewer/**").hasAuthority("ROLE_interviewer")
 
                         // ── Company admin endpoints ──
                         .requestMatchers("/api/company/**").hasAuthority("ROLE_company_admin")
@@ -57,6 +58,7 @@ public class SecurityConfig {
                         // ── Shared endpoints (any authenticated user) ──
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/logout").authenticated()
 
                         // ── Everything else requires authentication ──
                         .anyRequest().authenticated()

@@ -21,7 +21,7 @@ const Signup = () => {
     formState: { errors, isSubmitting }
   } = useForm({ mode: "onTouched" })
 
-  // Step 1: Submit form → send OTP
+  // Submit form → send OTP
   const onSubmit = async (data) => {
     try {
       setSubmitError("")
@@ -38,7 +38,7 @@ const Signup = () => {
     }
   }
 
-  // Step 2: Verify OTP → create account
+  // Verify OTP → create account
   const [verifying, setVerifying] = useState(false)
 
   const handleVerifyOtp = async () => {

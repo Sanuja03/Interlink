@@ -90,15 +90,33 @@ public class AvailabilityService {
     public AvailabilityDTO.StatusResponse submitAvailability(Jwt jwt, AvailabilityDTO.SubmitRequest request) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
-        // Get interviewer to find their company_id
         Interviewer interviewer = interviewerRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
         UUID companyId = interviewer.getCompanyId();
         String weekKey = request.getWeekKey();
         LocalDate weekStartDate = LocalDate.parse(request.getWeekStartDate());
+        LocalDate weekEndDate = weekStartDate.plusDays(6);
 
-        // Find existing or create new weekly record
+        // ── Server-side: enforce that the submission is for the CURRENT week only
+        LocalDate todayMonday = LocalDate.now()
+                .with(java.time.DayOfWeek.MONDAY);
+        if (!weekStartDate.equals(todayMonday)) {
+            throw new IllegalArgumentException(
+                    "Availability can only be submitted for the current week. " +
+                            "Expected week starting " + todayMonday + " but got " + weekStartDate);
+        }
+
+        // ── Validate every submitted date falls within the declared week
+        for (AvailabilityDTO.DayEntry entry : request.getDays()) {
+            LocalDate d = LocalDate.parse(entry.getDate());
+            if (d.isBefore(weekStartDate) || d.isAfter(weekEndDate)) {
+                throw new IllegalArgumentException(
+                        "Date " + d + " is outside week " + weekKey +
+                                " (" + weekStartDate + " to " + weekEndDate + ")");
+            }
+        }
+
         WeeklyAvailability wa = weeklyRepo.findByUserIdAndWeekKey(userId, weekKey)
                 .orElseGet(() -> {
                     WeeklyAvailability newWa = new WeeklyAvailability();
@@ -109,10 +127,8 @@ public class AvailabilityService {
                     return newWa;
                 });
 
-        // Clear old days (handles re-submit / edit)
         wa.getDays().clear();
 
-        // Add new days
         for (AvailabilityDTO.DayEntry entry : request.getDays()) {
             AvailabilityDay day = new AvailabilityDay();
             day.setWeeklyAvailability(wa);
@@ -122,7 +138,6 @@ public class AvailabilityService {
             wa.getDays().add(day);
         }
 
-        // Mark as submitted
         wa.setStatus("submitted");
         wa.setSubmittedAt(OffsetDateTime.now());
 
@@ -134,7 +149,6 @@ public class AvailabilityService {
 
         return new AvailabilityDTO.StatusResponse(true, savedDays);
     }
-
     // ─────────────────────────────────────────
     // COMPANY ADMIN: All interviewers for a week
     // ─────────────────────────────────────────
@@ -193,13 +207,16 @@ public class AvailabilityService {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         LocalDate date = LocalDate.parse(dateStr);
 
-        // Get admin's company
         Company company = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
         UUID companyId = company.getCompanyId();
 
-        List<AvailabilityDay> availDays = dayRepo.findAvailableByDateAndCompany(date, companyId);
+        // ── The Monday of the week this date belongs to
+        LocalDate weekStartForDate = date.with(java.time.DayOfWeek.MONDAY);
+
+        List<AvailabilityDay> availDays =
+                dayRepo.findAvailableByDateAndCompanyAndWeek(date, companyId, weekStartForDate);
 
         List<AvailabilityDTO.InterviewerDateEntry> result = new ArrayList<>();
 

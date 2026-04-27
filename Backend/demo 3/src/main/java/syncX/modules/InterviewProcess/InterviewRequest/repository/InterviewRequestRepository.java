@@ -80,4 +80,14 @@ public interface InterviewRequestRepository
     ORDER BY ir.interviewDate ASC, ir.interviewTime ASC
 """)
     List<InterviewRequest> findPendingForInterviewer(@Param("userId") UUID userId);
+
+
+    @Query("""
+    SELECT COUNT(iri)
+    FROM InterviewRequestInterviewer iri
+    WHERE iri.interviewerUserId = :interviewerUserId
+      AND LOWER(iri.responseStatus) = 'pending'
+      AND LOWER(iri.interviewRequest.status) = 'pending'
+""")
+    long countPendingForInterviewer(@Param("interviewerUserId") UUID interviewerUserId);
 }

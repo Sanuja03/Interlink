@@ -14,6 +14,7 @@ import java.util.UUID;
 @Repository
 public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay, AvailabilityDayId> {
 
+    // Old method — keep it or remove it depending on usage.
     @Query("""
         SELECT ad FROM AvailabilityDay ad
         JOIN FETCH ad.weeklyAvailability wa
@@ -25,4 +26,19 @@ public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay
     List<AvailabilityDay> findAvailableByDateAndCompany(
             @Param("date") LocalDate date,
             @Param("companyId") UUID companyId);
+
+    // New: only return rows whose parent week matches the week the date belongs to.
+    @Query("""
+        SELECT ad FROM AvailabilityDay ad
+        JOIN FETCH ad.weeklyAvailability wa
+        WHERE ad.availableDate = :date
+          AND ad.isAvailable = true
+          AND wa.status = 'submitted'
+          AND wa.companyId = :companyId
+          AND wa.weekStartDate = :weekStartDate
+    """)
+    List<AvailabilityDay> findAvailableByDateAndCompanyAndWeek(
+            @Param("date") LocalDate date,
+            @Param("companyId") UUID companyId,
+            @Param("weekStartDate") LocalDate weekStartDate);
 }

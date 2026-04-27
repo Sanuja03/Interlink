@@ -36,6 +36,7 @@ public class InterviewRequestService {
     @Autowired private AvailabilityDayRepository availabilityDayRepo;
     @Autowired private CompanyRepository companyRepository;
     @Autowired private CandidateRepository candidateRepository;
+    @Autowired private JobRepository jobRepository;   // ← used to resolve real job titles
 
     // ════════════════════════════════════════════════════════════════
     public InterviewRequestDTO.AssignableInterviewersResponse getAssignable(
@@ -113,7 +114,7 @@ public class InterviewRequestService {
                 ir.getInterviewTime().toString().substring(0, 5),
                 ir.getMode(),
                 ir.getAdminNotes(),
-                ir.getHistoryId(),    // ← plain Long, no toString
+                ir.getHistoryId(),
                 invited);
     }
 
@@ -169,8 +170,6 @@ public class InterviewRequestService {
         if (existing.isPresent()) {
             InterviewRequest old = existing.get();
             old.setStatus("cancelled");
-            // Flip all pending interviewers to rejected so the request
-            // disappears from their pending page immediately
             for (InterviewRequestInterviewer iri : old.getInterviewers()) {
                 if ("pending".equalsIgnoreCase(iri.getResponseStatus())) {
                     iri.setResponseStatus("rejected");
@@ -192,7 +191,7 @@ public class InterviewRequestService {
         ir.setCandidateId(req.getCandidateId());
         ir.setJobApplicationId(req.getJobApplicationId());
         ir.setJobId(req.getJobId());
-        ir.setHistoryId(req.getHistoryId());   // ← Long forwarded to DB
+        ir.setHistoryId(req.getHistoryId());
         ir.setPanelSize(req.getPanelSize());
         ir.setInterviewDate(interviewDate);
         ir.setInterviewTime(interviewTime);
@@ -224,23 +223,52 @@ public class InterviewRequestService {
     }
 
     // ════════════════════════════════════════════════════════════════
-// Interviewer: get my pending requests
-// ════════════════════════════════════════════════════════════════
+    // Interviewer: get my pending requests
+    //
+    // Job title is now resolved from the jobs table via ir.getJobId().
+    // Falls back to "N/A" only if the request has no job_id at all,
+    // or if the job row exists but has no job_title set.
+    // ════════════════════════════════════════════════════════════════
     public List<InterviewRequestDTO.PendingRequestForInterviewer> getPendingForInterviewer(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         List<InterviewRequest> requests = requestRepo.findPendingForInterviewer(userId);
 
+        // Pre-fetch all candidate names + job titles in batches so we don't
+        // hammer the DB with one query per row.
+        Set<UUID> candidateIds = requests.stream()
+                .map(InterviewRequest::getCandidateId)
+                .collect(Collectors.toSet());
+        Set<Long> jobIds = requests.stream()
+                .map(InterviewRequest::getJobId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<UUID, String> candidateNames = new HashMap<>();
+        for (UUID cid : candidateIds) {
+            candidateRepository.findById(cid).ifPresent(c ->
+                    candidateNames.put(cid, c.getFirstName() + " " + c.getLastName()));
+        }
+
+        Map<Long, String> jobTitles = new HashMap<>();
+        for (Long jid : jobIds) {
+            jobRepository.findById(jid).ifPresent(j -> {
+                String t = j.getJobTitle();
+                if (t == null || t.isBlank()) t = "N/A";
+                jobTitles.put(jid, t);
+            });
+        }
+
         return requests.stream().map(ir -> {
-            // Look up candidate name — adjust getter to match your Candidate entity
-            String candidateName = candidateRepository.findById(ir.getCandidateId())
-                    .map(c -> c.getFirstName() + " " + c.getLastName())
-                    .orElse("Unknown");
+            String candidateName = candidateNames.getOrDefault(ir.getCandidateId(), "Unknown");
+            String jobTitle = ir.getJobId() != null
+                    ? jobTitles.getOrDefault(ir.getJobId(), "N/A")
+                    : "N/A";
 
             return new InterviewRequestDTO.PendingRequestForInterviewer(
                     ir.getInterviewId(),
                     ir.getRequestId().toString(),
                     candidateName,
-                    "N/A", // ← hardcoded, no jobs table
+                    jobTitle,
                     ir.getInterviewDate().toString(),
                     ir.getInterviewTime().toString().substring(0, 5),
                     ir.getMode(),
@@ -251,8 +279,6 @@ public class InterviewRequestService {
     }
 
     // ════════════════════════════════════════════════════════════════
-// Interviewer: accept or decline
-// ════════════════════════════════════════════════════════════════
     @Transactional
     public void respondToRequest(UUID requestId, UUID userId, String response) {
         if (!"accepted".equals(response) && !"rejected".equals(response)) {
@@ -284,7 +310,7 @@ public class InterviewRequestService {
     public List<InterviewRequestDTO.ExistingRequestResponse> listForCompany(
             Jwt jwt, Long jobApplicationId, Long jobId) {
 
-        UUID companyId = resolveCompanyId(jwt);   // ← scopes to caller's company
+        UUID companyId = resolveCompanyId(jwt);
         List<InterviewRequest> rows =
                 requestRepo.findForCompany(companyId, jobApplicationId, jobId);
 

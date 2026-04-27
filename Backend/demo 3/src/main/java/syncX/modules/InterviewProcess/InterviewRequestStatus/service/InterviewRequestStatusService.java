@@ -73,7 +73,7 @@ public class InterviewRequestStatusService {
         }
 
         // Guard: cannot mutate a finalised or cancelled request
-        if ("finalised".equalsIgnoreCase(ir.getStatus()) ||
+        if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
                 "cancelled".equalsIgnoreCase(ir.getStatus())) {
             throw new IllegalStateException(
                     "Cannot remove an interviewer from a " + ir.getStatus() + " request");
@@ -126,7 +126,7 @@ public class InterviewRequestStatusService {
             throw new SecurityException("You do not own this interview request");
         }
 
-        if ("finalised".equalsIgnoreCase(ir.getStatus()) ||
+        if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
                 "cancelled".equalsIgnoreCase(ir.getStatus())) {
             throw new IllegalStateException(
                     "Cannot resend for a " + ir.getStatus() + " request");
@@ -168,7 +168,7 @@ public class InterviewRequestStatusService {
         if (!ir.getCompanyId().equals(companyId))
             throw new SecurityException("You do not own this interview request");
 
-        if ("finalised".equalsIgnoreCase(ir.getStatus()) ||
+        if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
                 "cancelled".equalsIgnoreCase(ir.getStatus()))
             throw new IllegalStateException(
                     "Cannot add interviewers to a " + ir.getStatus() + " request");

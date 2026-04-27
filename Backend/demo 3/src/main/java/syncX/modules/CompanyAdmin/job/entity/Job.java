@@ -2,6 +2,8 @@ package syncX.modules.CompanyAdmin.job.entity;
 
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "jobs")
 public class Job {
@@ -10,21 +12,40 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "job_title")
     private String jobTitle;
+
     private String department;
+
+    @Column(name = "employment_type")
     private String employmentType;
+
     private String category;
+
+    @Column(name = "interview_rounds")
     private int interviewRounds;
+
+    @Column(name = "job_location")
     private String jobLocation;
+
+    @Column(name = "experience_level")
     private String experienceLevel;
+
     private int vacancies;
 
-    @Column(length = 2000)
+    @Column(name = "key_requirements", length = 2000)
     private String keyRequirements;
 
-    private Long companyId;
+    /**
+     * companyId is a UUID in the database (jobs.company_id is of type uuid).
+     * Previously this was declared as Long, which caused
+     *   "Bad value for type long : <uuid>"
+     * whenever Hibernate tried to load any job that had company_id populated.
+     */
+    @Column(name = "company_id")
+    private UUID companyId;
 
-    // GETTERS AND SETTERS
+    // ── GETTERS AND SETTERS ───────────────────────────────────────
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -56,6 +77,6 @@ public class Job {
     public String getKeyRequirements() { return keyRequirements; }
     public void setKeyRequirements(String keyRequirements) { this.keyRequirements = keyRequirements; }
 
-    public Long getCompanyId() { return companyId; }
-    public void setCompanyId(Long companyId) { this.companyId = companyId; }
+    public UUID getCompanyId() { return companyId; }
+    public void setCompanyId(UUID companyId) { this.companyId = companyId; }
 }

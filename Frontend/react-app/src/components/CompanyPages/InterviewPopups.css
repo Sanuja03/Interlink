@@ -389,8 +389,7 @@
     color: #374151;
   }
 
-  /* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
-/* Add these to your existing InterviewPopups.css file                      */
+
 
 .ip-select {
   appearance: none;
@@ -432,8 +431,7 @@
   white-space: nowrap;
 }
 
-/* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
-/* Add these to your existing InterviewPopups.css file                      */
+
 
 .ip-select {
   appearance: none;
@@ -475,7 +473,7 @@
   white-space: nowrap;
 }
 
-/* ── Admin-removed interviewer styles ── */
+
 
 /* Grey "Removed" badge — replaces the normal status badge */
 .ip-status-removed {
@@ -492,7 +490,7 @@
   box-shadow: none !important;
 }
 
-/* ── Admin-removed interviewer styles ── */
+
 
 /* Grey "Removed" badge — replaces the normal status badge */
 .ip-status-removed {
@@ -509,7 +507,7 @@
   box-shadow: none !important;
 }
 
-/* ── Add Interviewers inline panel ── */
+/*  Add Interviewers inline panel */
 .ip-add-panel {
   margin-top: 16px;
   border: 1.5px dashed rgba(36, 105, 139, 0.4);

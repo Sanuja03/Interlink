@@ -13,7 +13,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Step 1: Send reset OTP
+  // sent reset OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true); setError(""); setMessage("");
@@ -28,7 +28,7 @@ const ForgotPassword = () => {
     setLoading(false);
   };
 
-  // Step 2: Verify OTP
+  // verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setLoading(true); setError(""); setMessage("");
@@ -42,7 +42,7 @@ const ForgotPassword = () => {
     setLoading(false);
   };
 
-  // Step 3: Set new password
+  // set new password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError("");
@@ -78,7 +78,7 @@ const ForgotPassword = () => {
         {error && <p className="error-text">{error}</p>}
         {message && <p style={{ color: "green" }}>{message}</p>}
 
-        {/* Step 1: Enter email */}
+        {/* Enter email */}
         {step === 1 && (
           <form onSubmit={handleSendOtp}>
             <p>Enter your email and we'll send you a reset code.</p>
@@ -93,7 +93,7 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* Step 2: Enter OTP */}
+        {/* Enter OTP */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp}>
             <p>Enter the 6-digit code sent to {email}</p>
@@ -109,7 +109,7 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* Step 3: New password */}
+        {/* New password */}
         {step === 3 && (
           <form onSubmit={handleResetPassword}>
             <div className="input-group">

@@ -1,34 +1,47 @@
-import FinalizedPanelButton from "./FinalizedPanelButton";
-
 /**
  * CandidateActionButtons
  *
- * The "Request / Status" button calls onOpenRequest (handleOpenForCandidate
- * in ShortlistedCandidates) which checks /current and opens either the
- * Request popup or Status popup with the candidate passed correctly.
- *
- * StatusButton removed — its logic is owned by ShortlistedCandidates.
+ * Props:
+ *   onOpenRequest   : () => void   — opens Request/Status popup (pending state)
+ *   onOpenFinalized : () => void   — opens view-only Finalized Panel popup
+ *   isFinalized     : boolean      — true once "Send Scheduled Interview Details" succeeded
  */
-const CandidateActionButtons = ({
-  candidate,
-  interviewDetails,
-  acceptedInterviewers,
-  scorecards,
-  onOpenRequest,
-  onSendDetails,
-}) => {
+const CandidateActionButtons = ({ onOpenRequest, onOpenFinalized, isFinalized = false }) => {
+  if (isFinalized) {
+    return (
+      <div className="sc-action-group">
+        {/* Greyed disabled Request/Status */}
+        <button
+          className="sc-request-btn"
+          disabled
+          style={{ opacity: 0.35, cursor: "not-allowed", pointerEvents: "none" }}
+        >
+          Request / Status
+        </button>
+
+        {/* Green Finalized button */}
+        <button
+          className="sc-request-btn"
+          onClick={onOpenFinalized}
+          style={{
+            marginLeft: 8,
+            background: "#166534",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          ✓ Finalized
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="sc-action-group">
       <button className="sc-request-btn" onClick={onOpenRequest}>
         Request / Status
       </button>
-
-      <FinalizedPanelButton
-        interviewDetails={interviewDetails}
-        acceptedInterviewers={acceptedInterviewers}
-        scorecards={scorecards}
-        onSendDetails={onSendDetails}
-      />
     </div>
   );
 };

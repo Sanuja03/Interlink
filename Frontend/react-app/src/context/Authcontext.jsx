@@ -1,7 +1,3 @@
-// ============================================================
-// FILE: src/context/AuthContext.jsx
-// PURPOSE: Global auth state, token refresh, role access
-// ============================================================
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import api from "../lib/api";
@@ -16,7 +12,7 @@ export const useAuth = () => {
 
 const LOGIN_FLAG = "interlink_logged_in";
 
-// ── Helper: nuke every Supabase token from localStorage ──
+// nuke every Supabase token from localStorage 
 function clearSupabaseLocalStorage() {
   try {
     Object.keys(localStorage).forEach((key) => {
@@ -62,7 +58,7 @@ export function AuthProvider({ children }) {
       }
     }, []);
 
-  // ── Bootstrap + listener (runs once) ──
+  //bootstrap + listener (runs once)
   useEffect(() => {
     let mounted = true;
 
@@ -116,10 +112,7 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // ▸ THE CRITICAL GUARD ◂
-        // If the ref says "not logged in", check if this is a Google OAuth return.
-        // Google OAuth redirects back to the app with a fresh page load,
-        // so loggedInRef will be false — we need to let it through.
+ 
         if (!loggedInRef.current) {
             console.log("[AuthContext] provider check:", session?.user?.app_metadata?.provider, "identities:", session?.user?.app_metadata?.providers);
             const isOAuthReturn = event === "SIGNED_IN" && session?.user?.app_metadata?.providers?.includes("google");
@@ -157,7 +150,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // ── Fetch /auth/me when user changes ──
+  //  Fetch /auth/me when user changes 
   useEffect(() => {
     if (user && loggedInRef.current) {
       fetchAppUser().finally(() => setLoading(false));
@@ -167,11 +160,13 @@ export function AuthProvider({ children }) {
     }
   }, [user, fetchAppUser]);
 
-  // ─────────────────────────────────────────────────────
+
+
   //  login
-  // ─────────────────────────────────────────────────────
+  
   const login = async (email, password) => {
-    // Set BOTH the ref and sessionStorage before calling Supabase
+
+    // Set the ref and sessionStorage before calling Supabase
     loggedInRef.current = true;
     sessionStorage.setItem(LOGIN_FLAG, "true");
 
@@ -186,13 +181,13 @@ export function AuthProvider({ children }) {
     return true;
   };
 
-  // ─────────────────────────────────────────────────────
-  //  logout  (the order here is critical)
-  // ─────────────────────────────────────────────────────
+
+  //  logout 
+
   const logout = async () => {
     console.log("[AuthContext] logout called");
 
-    // Hit backend FIRST while we still have a valid token
+    // Hit backend first while we still have a valid token
     try {
         await api.post("/auth/logout");
     } catch (err) {
@@ -231,8 +226,8 @@ export function AuthProvider({ children }) {
         hasAnyRole,
         isAuthenticated: !!user && !!appUser,
         role: appUser?.role || null,
-        suspendedMessage,        // ← expose it
-        setSuspendedMessage,     // ← so Login.jsx can clear it
+        suspendedMessage,        // expose it
+        setSuspendedMessage,     // so Login.jsx can clear it
       }}
     >
       {children}

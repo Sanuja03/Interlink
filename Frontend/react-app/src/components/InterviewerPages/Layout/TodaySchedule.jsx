@@ -1,55 +1,39 @@
+import { Link } from "react-router-dom";
 import "./TodaySchedule.css";
 
-const TodaySchedule = () => {
-  // dummy data
-  const rows = [
-    {
-        interviewId: "IN5690",
-        candidate: "Amal Dissanayaka",
-        jobTitle: "UI/UX Designer",
-        time: "10.30 AM",
-        mode: "Online",
-        action: "View",
-      },
-      {
-        interviewId: "IN5691",
-        candidate: "Sumudu Perera",
-        jobTitle: "Software Engineer",
-        time: "11.00 AM",
-        mode: "Physical",
-        action: "View",
-      },
-      {
-        interviewId: "IN5692",
-        candidate: "Kamal Ranjan",
-        jobTitle: "QA",
-        time: "11.30 AM",
-        mode: "Online",
-        action: "View",
-      },
-      {
-        interviewId: "IN5693",
-        candidate: "Nilkamal Perera",
-        jobTitle: "HR Manager",
-        time: "12.00 PM",
-        mode: "Physical",
-        action: "View",
-      },
-      
-    
-  ];
-
-  // if empty show message
+const TodaySchedule = ({ rows = [], loading = false }) => {
   const hasSchedule = rows.length > 0;
 
   const modeDotClass = (mode) =>
     mode === "Online" ? "mode-online" : "mode-physical";
 
+  // Build the interview object SingleView expects via location.state.interview
+  const buildInterviewState = (r) => ({
+    interviewId:      r.interviewId,
+    scheduledId:      r.scheduledId,
+    requestId:        r.requestId,
+    date:             r.date,
+    time:             r.time,
+    jobTitle:         r.jobTitle,
+    mode:             r.mode,
+    meetingLink:      r.meetingLink || "",
+    meetingStatus:    r.meetingStatus || "SCHEDULED",
+    candidateId:      r.candidateId,
+    jobApplicationId: r.jobApplicationId,
+    candidateName:    r.candidate,
+    panelMembers:     r.panelMembers || [],
+    adminNote:        r.adminNote || "",
+  });
+
   return (
     <div className="schedule-card">
       <h2 className="schedule-title">Today Schedule</h2>
 
-      {hasSchedule ? (
+      {loading ? (
+        <div className="schedule-empty">
+          <p className="schedule-empty-title">Loading…</p>
+        </div>
+      ) : hasSchedule ? (
         <div className="table-wrapper">
           <table className="schedule-table">
             <thead>
@@ -64,7 +48,6 @@ const TodaySchedule = () => {
             </thead>
 
             <tbody>
-               {/* loops to create tr for each interview */} 
               {rows.map((r) => (
                 <tr key={r.interviewId}>
                   <td className="bold">{r.interviewId}</td>
@@ -74,21 +57,25 @@ const TodaySchedule = () => {
 
                   <td>
                     <div className="mode-cell">
-                        {/*dot*/}
                       <span className={`mode-dot ${modeDotClass(r.mode)}`} />
                       <span>{r.mode}</span>
                     </div>
                   </td>
 
                   <td className="align-right">
-                    <button className="view-btn">{r.action}</button>
+                    <Link
+                      to={`/interviewer/single-view/${r.interviewId}`}
+                      state={{ interview: buildInterviewState(r) }}
+                      className="view-btn"
+                    >
+                      {r.action || "View"}
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
       ) : (
         <div className="schedule-empty">
           <div className="schedule-empty-icon"></div>
@@ -103,9 +90,3 @@ const TodaySchedule = () => {
 };
 
 export default TodaySchedule;
-
-
-
-
-
-

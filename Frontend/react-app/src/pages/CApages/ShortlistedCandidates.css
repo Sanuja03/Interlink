@@ -125,3 +125,35 @@
   min-width: 20px;
   text-align: center;
 }
+
+.sc-job-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+ 
+.sc-job-picker-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #24698b;
+}
+ 
+.sc-job-picker-select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #111827;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  min-width: 280px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+ 
+.sc-job-picker-select:focus {
+  border-color: #24698b;
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}

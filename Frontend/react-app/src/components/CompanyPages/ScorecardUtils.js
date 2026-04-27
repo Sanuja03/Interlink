@@ -1,20 +1,4 @@
-/**
- * Scoring System Utility
- * 
- * Each scorecard field has a label and maxScore.
- * The final result is calculated as a WEIGHTED PERCENTAGE:
- * 
- *   Total Score = (sum of scores given) / (sum of max possible scores) * 100
- * 
- * This ensures all scorecards — regardless of how many fields
- * or different maxScore values — produce a comparable 0–100% result.
- * 
- * Grade bands:
- *   90–100%  → "Strong Hire"   (A+)
- *   75–89%   → "Hire"          (A / B+)
- *   60–74%   → "Hold"          (B / C+)
- *   0–59%    → "Reject"        (C / D / F)
- */
+
 
 export const GRADE_BANDS = [
     { min: 90, label: "Strong Hire", color: "#16a34a", letter: "A+" },
@@ -47,6 +31,6 @@ export const GRADE_BANDS = [
   };
   
   /**
-   * Generate a unique ID.
+   * generate a unique ID.
    */
   export const generateId = () => `sc_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;

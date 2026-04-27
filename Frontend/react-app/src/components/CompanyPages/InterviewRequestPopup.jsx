@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api"; // adjust path if needed
+import api from "../../lib/api"; 
 import "./InterviewPopups.css";
 
 const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = false }) => {
@@ -25,7 +25,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
   const [submitting, setSubmitting] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
 
-  // ── On open, check for existing active request ──
+  // when open, check for existing active request
   useEffect(() => {
     if (!open || !candidate) return;
 
@@ -79,8 +79,10 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
 
         setSelectedInterviewers(invitedMapped);
         setRequestedInterviewers(invitedMapped);
+
         // If opened from "Cancel & Redo", skip the locked view so the admin
         // can immediately edit all fields and send a fresh request.
+
         setIsSent(startInEditMode ? false : true);
       } catch (err) {
         if (cancelled) return;
@@ -94,7 +96,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     return () => { cancelled = true; };
   }, [open, candidate]);
 
-  // ── Fetch assignable interviewers on date change ──
+  //  fetch assignable interviewers on date change 
   useEffect(() => {
     if (!open || !date || isSent) return;
 
@@ -169,6 +171,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       candidateId: candidate.candidateId,
       jobApplicationId: candidate.jobApplicationId,
       jobId: candidate.jobId || null,
+      
       // historyId is a plain number (bigint). Send null if missing.
       historyId: candidate.historyId != null ? Number(candidate.historyId) : null,
       panelSize,

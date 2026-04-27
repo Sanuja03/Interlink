@@ -28,7 +28,6 @@ import CandidateJobApply from "./pages/CPages/JobApply";
 import InterviewerDashboard from "./pages/IPages/Dashboard";
 import InterviewerCalendar from "./pages/IPages/Calendar";
 import InterviewerProfile from "./pages/IPages/InterviewerProfile";
-import InterviewerSettings from "./pages/IPages/InterviewerSettings";
 import InterviewerPendingRequests from "./pages/IPages/PendingRequests";
 import InterviewerCompletedInterviews from "./pages/IPages/CompletedInterviews";
 import InterviewerScheduledInterviews from "./pages/IPages/ScheduledInterviews";
@@ -122,7 +121,6 @@ function App() {
         <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
         <Route path="/interviewer/calendar" element={<InterviewerRole><InterviewerCalendar /></InterviewerRole>} />
         <Route path="/interviewer/profile" element={<InterviewerRole><InterviewerProfile /></InterviewerRole>} />
-        <Route path="/interviewer/settings" element={<InterviewerRole><InterviewerSettings /></InterviewerRole>} />
         <Route path="/interviewer/pending-requests" element={<InterviewerRole><InterviewerPendingRequests /></InterviewerRole>} />
         <Route path="/interviewer/completed-interviews" element={<InterviewerRole><InterviewerCompletedInterviews /></InterviewerRole>} />
         <Route path="/interviewer/scheduled-interviews" element={<InterviewerRole><InterviewerScheduledInterviews /></InterviewerRole>} />

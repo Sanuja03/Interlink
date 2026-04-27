@@ -1,7 +1,3 @@
-// ============================================================
-// FILE: src/pages/LoginSignup/Login.jsx
-// PURPOSE: Uses AuthContext for login + proper redirect logic
-// ============================================================
 import "./Login.css";
 
 import interlink from "../../assets/interlink.png";
@@ -28,7 +24,7 @@ const Login = () => {
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched" });
 
-  // Redirect when genuinely authenticated
+  // redirect when genuinely authenticated
   useEffect(() => {
     if (loading) return;
     if (isAuthenticated && role) {
@@ -44,7 +40,7 @@ const Login = () => {
   }, [isAuthenticated, role, loading, navigate, location]);
 
 
-  // Handle Google OAuth callback
+  // handle Google OAuth callback
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -57,7 +53,7 @@ const Login = () => {
               });
             } catch (err) {
               if (err?.response?.status === 403) {
-                // Suspended Google user
+                // suspended google user
                 await supabase.auth.signOut();
                 setLoginError("Your account has been suspended. Please contact support.");
               } else if (err?.response?.status === 500 || err?.response?.status === 404) {
@@ -77,6 +73,7 @@ const Login = () => {
       setLoginError("");
       setSuspendedMessage("");  // clear previous suspension message
       await login(data.email.trim(), data.password);
+      
       // After login succeeds, AuthContext calls /auth/me.
       // If the user is suspended, fetchAppUser will set suspendedMessage
       // and force logout — the message will appear on re-render.
