@@ -5,7 +5,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import syncX.modules.CompanyAdmin.job.repository.JobRepository;
+import syncX.modules.job.repository.JobRepository;
 import syncX.modules.InterviewProcess.Availability.repository.AvailabilityDayRepository;
 
 import syncX.modules.InterviewProcess.InterviewRequest.dto.InterviewRequestDTO;

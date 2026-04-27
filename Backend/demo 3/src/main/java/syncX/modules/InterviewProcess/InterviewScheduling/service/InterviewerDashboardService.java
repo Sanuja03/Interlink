@@ -28,7 +28,7 @@ public class InterviewerDashboardService {
 
     // Job title repo is optional — wire in your actual one if you have it.
     // If absent, jobTitle falls back to "—".
-    @Autowired(required = false) private syncX.modules.CompanyAdmin.job.repository.JobRepository jobRepo;
+    @Autowired(required = false) private syncX.modules.job.repository.JobRepository jobRepo;
 
     private static final DateTimeFormatter TABLE_TIME_FMT = DateTimeFormatter.ofPattern("h.mm a");
     private static final DateTimeFormatter CARD_TIME_FMT  = DateTimeFormatter.ofPattern("h:mm a");
