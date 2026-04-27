@@ -41,8 +41,6 @@ import CompanyAdminSettings from "./pages/CApages/CompanyAdminSettings";
 import JobManagement from "./pages/CApages/JobManagement";
 import CreateJob from "./pages/CApages/CreateJob";
 import EditJob from "./pages/CApages/EditJob";
-import InterviewScheduling from "./pages/CApages/InterviewScheduling";
-import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
 import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
@@ -103,7 +101,7 @@ function App() {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/company/shortlisted-candidates" element={<CompanyShortlistedCandidates/>}/>
+        <Route path="/company/shortlisted-candidates" element={<ShortlistedCandidates/>}/>
         <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate/>}/>
 
 
@@ -134,12 +132,12 @@ function App() {
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
         <Route path="/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
         <Route path="/job-management" element={<CompanyAdmin><JobManagement /></CompanyAdmin>} />
-         <Route path="/create-job" element={<CreateJob />} />
+         <Route path="/create-job" element={<CompanyAdmin><CreateJob /></CompanyAdmin>} />
          <Route path="/edit-job/:jobId" element={<CompanyAdmin><EditJob /></CompanyAdmin>} />
-         <Route path="/company/shortlist/:applicationId" element={<Shortlist />} />
-         <Route path="/shortlisted" element={<ShortlistedCandidates />} />
-         <Route path="/application-management" element={<ApplicationManagement />} />
-         <Route path="/company/settings" element={<CompanyAdminSettings />} />
+         <Route path="/company/shortlist/:applicationId" element={<CompanyAdmin><Shortlist /></CompanyAdmin>} />
+         <Route path="/shortlisted" element={<CompanyAdmin><ShortlistedCandidates /></CompanyAdmin>} />
+         <Route path="/application-management" element={<CompanyAdmin><ApplicationManagement /></CompanyAdmin>} />
+         <Route path="/company/settings" element={<CompanyAdmin><CompanyAdminSettings /></CompanyAdmin>} />
          <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
          <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
 

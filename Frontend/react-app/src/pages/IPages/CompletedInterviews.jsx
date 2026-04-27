@@ -90,6 +90,21 @@ const CompletedInterviews = () => {
         .eq("status", "completed")
         .order("interview_date", { ascending: false });
 
+
+        const jobIds = [...new Set(scheduledRows.map(r => r.job_id).filter(Boolean))];
+
+let jobMap = {};
+if (jobIds.length > 0) {
+  const { data: jobRows } = await supabase
+    .from("jobs") // or whatever your jobs table is named
+    .select("id, job_title")
+    .in("id", jobIds);
+
+  (jobRows || []).forEach(j => {
+    jobMap[j.id] = j.job_title;
+  });
+}
+
       if (scheduledError) {
         setError("Failed to load completed interviews.");
         console.error("[CompletedInterviews] scheduledError:", scheduledError);
@@ -184,7 +199,7 @@ const CompletedInterviews = () => {
           requestId:        item.request_id,
           date:             item.interview_date,
           time:             formatTime(item.interview_time),
-          jobTitle:         hardcoded?.jobTitle || "—",
+          jobTitle: jobMap[item.job_id] || hardcoded?.jobTitle || "—",
           meetingStatus:    "COMPLETED",
           mode:             item.mode,
           meetingLink:      item.meeting_link || "",

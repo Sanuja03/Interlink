@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   corePlugins: {
-    preflight: true,
+    preflight: false,
   },
   content: [
     "./index.html",

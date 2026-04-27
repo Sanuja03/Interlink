@@ -7,24 +7,6 @@ const TodaySchedule = ({ rows = [], loading = false }) => {
   const modeDotClass = (mode) =>
     mode === "Online" ? "mode-online" : "mode-physical";
 
-  // Build the interview object SingleView expects via location.state.interview
-  const buildInterviewState = (r) => ({
-    interviewId:      r.interviewId,
-    scheduledId:      r.scheduledId,
-    requestId:        r.requestId,
-    date:             r.date,
-    time:             r.time,
-    jobTitle:         r.jobTitle,
-    mode:             r.mode,
-    meetingLink:      r.meetingLink || "",
-    meetingStatus:    r.meetingStatus || "SCHEDULED",
-    candidateId:      r.candidateId,
-    jobApplicationId: r.jobApplicationId,
-    candidateName:    r.candidate,
-    panelMembers:     r.panelMembers || [],
-    adminNote:        r.adminNote || "",
-  });
-
   return (
     <div className="schedule-card">
       <h2 className="schedule-title">Today Schedule</h2>
@@ -64,8 +46,7 @@ const TodaySchedule = ({ rows = [], loading = false }) => {
 
                   <td className="align-right">
                     <Link
-                      to={`/interviewer/single-view/${r.interviewId}`}
-                      state={{ interview: buildInterviewState(r) }}
+                      to="/interviewer/scheduled-interviews"
                       className="view-btn"
                     >
                       {r.action || "View"}
