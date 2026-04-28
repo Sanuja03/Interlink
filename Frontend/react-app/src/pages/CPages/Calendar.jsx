@@ -23,8 +23,6 @@ const CalendarPage = () => {
   useEffect(() => {
     const fetchCalendarData = async () => {
       try {
-        // Mock UUID for candidate (replace with actual auth context later)
-        const candidateId = "e46b559e-89a1-41ae-b794-4d94b232c19f";
         // Fetching 1 year range around today
         const start = new Date();
         start.setMonth(start.getMonth() - 6);
@@ -33,7 +31,7 @@ const CalendarPage = () => {
         const startDate = start.toISOString().split('T')[0];
         const endDate = end.toISOString().split('T')[0];
 
-        const response = await api.get(`/calendar/candidate?candidateId=${candidateId}&startDate=${startDate}&endDate=${endDate}`);
+        const response = await api.get(`/calendar/candidate/me?startDate=${startDate}&endDate=${endDate}`);
         if (response.status === 200) {
           const data = response.data;
           const map = {};

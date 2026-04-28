@@ -131,10 +131,28 @@ const uiStyles = `
 `;
 
 const statusClass = (s) => {
-  if (s === "Completed") return "ui-badge--completed";
-  if (s === "Scheduled") return "ui-badge--scheduled";
-  if (s === "Rescheduled") return "ui-badge--rescheduled";
+  const status = String(s || "").toUpperCase();
+  if (status === "COMPLETED") return "ui-badge--completed";
+  if (status === "SCHEDULED") return "ui-badge--scheduled";
+  if (status === "RESCHEDULED") return "ui-badge--rescheduled";
   return "ui-badge--scheduled";
+};
+
+const formatTime = (time) => {
+  if (!time) return "-";
+  const [hourValue, minute = "00"] = String(time).split(":");
+  const hour = Number(hourValue);
+  if (Number.isNaN(hour)) return time;
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minute} ${suffix}`;
+};
+
+const displayStatus = (status) => {
+  if (!status) return "Scheduled";
+  return String(status)
+    .toLowerCase()
+    .replace(/^\w/, (letter) => letter.toUpperCase());
 };
 
 const CalIcon = () => (
@@ -168,18 +186,18 @@ const UpcomingInterviews = ({ interviews }) => (
       {interviews.map((iv, i) => (
         <div className="ui-card" key={i}>
           <div className="ui-card__header">
-            <p className="ui-card__company">{iv.company}</p>
-            <p className="ui-card__role">{iv.role}</p>
+            <p className="ui-card__company">{iv.company || "-"}</p>
+            <p className="ui-card__role">{iv.jobTitle || iv.role || "-"}</p>
           </div>
           <div className="ui-card__meta">
-            <span className="ui-card__meta-item"><CalIcon />{iv.date}</span>
-            <span className="ui-card__meta-item"><ClockIcon />{iv.time}</span>
+            <span className="ui-card__meta-item"><CalIcon />{iv.date || "-"}</span>
+            <span className="ui-card__meta-item"><ClockIcon />{formatTime(iv.time)}</span>
           </div>
           <div className="ui-card__footer">
-            <span className="ui-card__mode"><LinkIcon />{iv.mode}</span>
+            <span className="ui-card__mode"><LinkIcon />{iv.mode || "-"}</span>
             <span className={`ui-badge ${statusClass(iv.status)}`}>
               <span className="ui-badge__dot" />
-              {iv.status}
+              {displayStatus(iv.status)}
             </span>
           </div>
         </div>

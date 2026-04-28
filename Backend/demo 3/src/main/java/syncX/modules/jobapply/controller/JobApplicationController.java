@@ -17,17 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * REST controller for the job application feature.
- *
- * Base path: /api/candidate/applications  (secured to ROLE_candidate in SecurityConfig)
- *
- * Endpoints:
- *   GET  /api/candidate/applications/prefill              → pre-fill form with candidate data
- *   POST /api/candidate/applications                      → submit application (multipart)
- *   GET  /api/candidate/applications                      → list all my applications
- *   GET  /api/candidate/applications/{id}                 → get single application
- */
+
+ 
 @RestController
 @RequestMapping("/api/candidate/applications")
 public class JobApplicationController {
@@ -94,7 +85,7 @@ public class JobApplicationController {
     /**
      * Returns all job applications submitted by the logged-in candidate.
      */
-    @GetMapping
+    @GetMapping({"", "/me"})
     public ResponseEntity<?> getMyApplications(@AuthenticationPrincipal Jwt jwt) {
         try {
             UUID userId = extractUserId(jwt);

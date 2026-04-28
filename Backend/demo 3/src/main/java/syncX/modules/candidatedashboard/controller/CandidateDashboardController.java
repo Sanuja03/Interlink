@@ -1,42 +1,37 @@
 package syncX.modules.candidatedashboard.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import syncX.modules.candidatedashboard.dto.DashboardResponseDto;
 import syncX.modules.candidatedashboard.service.CandidateDashboardService;
-import java.util.UUID;
 
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dashboard/candidate")
 @CrossOrigin(origins = "http://localhost:5173")
 public class CandidateDashboardController {
 
-    @Autowired
-    private CandidateDashboardService dashboardService;
+    private final CandidateDashboardService dashboardService;
 
-    @GetMapping("/{candidateId}")
-    public ResponseEntity<?> getDashboardData(@PathVariable UUID candidateId) {
-        try {
-            DashboardResponseDto data = dashboardService.getDashboardData(candidateId);
-            return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        } finally {
-            System.out.println("getDashboardData execution completed.");
-        }
+    public CandidateDashboardController(CandidateDashboardService dashboardService) {
+        this.dashboardService = dashboardService;
     }
 
-    @PostMapping("/seed/{candidateId}")
-    public ResponseEntity<?> seedData(@PathVariable UUID candidateId) {
+    @GetMapping("/me")
+    public ResponseEntity<?> getDashboardData() {
         try {
-            dashboardService.seedDummyData(candidateId);
-            return ResponseEntity.ok("Dummy data seeded successfully for candidate " + candidateId);
+            DashboardResponseDto data = dashboardService.getDashboardDataForCurrentCandidate();
+            return ResponseEntity.ok(data);
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("message", e.getReason()));
         } catch (Exception e) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        } finally {
-            System.out.println("seedData execution completed.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error fetching candidate dashboard: " + e.getMessage()));
         }
     }
 }

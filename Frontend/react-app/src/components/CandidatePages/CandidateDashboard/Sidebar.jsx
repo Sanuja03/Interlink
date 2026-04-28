@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/Authcontext";
+import api from "../../../lib/api";
 import logo from "../../../assets/logo.png";
 
 const sidebarStyles = `
@@ -255,8 +256,42 @@ const sidebarStyles = `
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "Candidate",
+    email: "",
+    avatar: "",
+  });
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const buildProfile = useCallback((data = {}) => {
+    const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ").trim();
+
+    return {
+      name: fullName || data.email || user?.email || "Candidate",
+      email: data.email || user?.email || "",
+      avatar: data.profilePictureUrl || "",
+    };
+  }, [user?.email]);
+
+  const loadProfile = useCallback(async () => {
+    try {
+      const { data } = await api.get("/candidate/profile/me");
+      setProfile(buildProfile(data));
+    } catch (err) {
+      setProfile(buildProfile({ email: user?.email }));
+      console.error("Failed to load sidebar profile", err);
+    }
+  }, [buildProfile, user?.email]);
+
+  useEffect(() => {
+    loadProfile();
+    window.addEventListener("candidate-profile-updated", loadProfile);
+
+    return () => {
+      window.removeEventListener("candidate-profile-updated", loadProfile);
+    };
+  }, [loadProfile]);
 
   const handleLogout = async () => {
     try {
@@ -268,14 +303,15 @@ const Sidebar = () => {
     }
   };
 
-  const profile = {
-    name: "Kamal Perera",
-    email: "kamal.perera@interlink.com",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-  };
-
   const location = useLocation();
   const currentPath = location.pathname;
+  const initials = profile.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "C";
 
   const menuItems = [
     {
@@ -385,16 +421,23 @@ const Sidebar = () => {
         {/* Bottom Profile */}
         <div className="sidebar-profile">
           <Link to="/candidate/profile" className="sidebar-profile-link" title={!expanded ? profile.name : undefined}>
-            <img
-              src={profile.avatar}
-              alt={profile.name}
-              className="sidebar-avatar"
-              onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "flex";
-              }}
-            />
-            <span className="sidebar-avatar-fallback">KP</span>
+            {profile.avatar ? (
+              <img
+                src={profile.avatar}
+                alt={profile.name}
+                className="sidebar-avatar"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextElementSibling.style.display = "flex";
+                }}
+              />
+            ) : null}
+            <span
+              className="sidebar-avatar-fallback"
+              style={{ display: profile.avatar ? undefined : "flex" }}
+            >
+              {initials}
+            </span>
             <div className="sidebar-profile-info">
               <p className="sidebar-profile-name">{profile.name}</p>
               <p className="sidebar-profile-email">{profile.email}</p>

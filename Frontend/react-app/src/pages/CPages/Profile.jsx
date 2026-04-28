@@ -116,7 +116,7 @@ const Profile = () => {
 
     // Personal Info
     const [editingPersonal, setEditingPersonal] = useState(false);
-    const [personal, setPersonal] = useState({ 
+    const [personal, setPersonal] = useState({
         firstName: '', lastName: '', location: '', email: '', phone: '', bio: '', availability: 'full time', profilePictureUrl: null, dob: '', headline: ''
     });
     const [personalDraft, setPersonalDraft] = useState({ ...personal });
@@ -177,7 +177,7 @@ const Profile = () => {
     }, []);
 
     const startEditPersonal = () => { setPersonalDraft({ ...personal }); setValidationErrs({}); setEditingPersonal(true); };
-    
+
     const savePersonal = async () => {
         setValidationErrs({});
         try {
@@ -190,11 +190,12 @@ const Profile = () => {
                 dateOfBirth: personalDraft.dob || null,
                 headline: personalDraft.headline
             });
-            setPersonal(prev => ({ 
-                ...prev, 
+            setPersonal(prev => ({
+                ...prev,
                 ...res.data,
                 dob: res.data.dateOfBirth || ''
             }));
+            window.dispatchEvent(new Event('candidate-profile-updated'));
             setEditingPersonal(false);
         } catch (err) {
             if (err.response?.status === 400) {
@@ -203,7 +204,7 @@ const Profile = () => {
                     const errs = {};
                     err.response.data.errors.forEach(e => errs[e.field] = e.defaultMessage);
                     setValidationErrs(errs);
-                } 
+                }
                 // Or if we return a custom map {"message": ...}
                 else if (err.response.data?.message) {
                     setValidationErrs({ global: err.response.data.message });
@@ -221,15 +222,16 @@ const Profile = () => {
     const handleProfilePicChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         const formData = new FormData();
         formData.append('file', file);
-        
+
         try {
             const res = await api.post('/candidate/profile/me/picture', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setPersonal(prev => ({ ...prev, profilePictureUrl: res.data.profilePictureUrl }));
+            window.dispatchEvent(new Event('candidate-profile-updated'));
         } catch (err) {
             alert(err.response?.data?.message || "Failed to upload picture");
         }
@@ -407,14 +409,14 @@ const Profile = () => {
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 {/* Profile Picture Wrapper with onClick */}
-                                <div 
+                                <div
                                     className="w-16 h-16 rounded-full bg-gray-300 overflow-hidden ring-2 ring-blue-100 cursor-pointer relative group"
                                     onClick={() => fileInputRef.current?.click()}
                                 >
-                                    <img 
-                                        src={personal.profilePictureUrl || "https://randomuser.me/api/portraits/men/32.jpg"} 
-                                        alt="Profile" 
-                                        className="w-full h-full object-cover" 
+                                    <img
+                                        src={personal.profilePictureUrl || "https://randomuser.me/api/portraits/men/32.jpg"}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
                                     />
                                     {/* Hover overlay for edit icon */}
                                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -422,12 +424,12 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 {/* Hidden file input */}
-                                <input 
-                                    type="file" 
-                                    accept=".jpg,.jpeg,.png,.webp" 
-                                    ref={fileInputRef} 
-                                    style={{ display: 'none' }} 
-                                    onChange={handleProfilePicChange} 
+                                <input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleProfilePicChange}
                                 />
                                 <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white"></span>
                             </div>
@@ -443,19 +445,6 @@ const Profile = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-5 py-3 border border-gray-100">
-                            <div className="relative w-12 h-12">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" />
-                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="75 25" strokeLinecap="round" />
-                                </svg>
-                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-600">75%</span>
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-gray-700">Profile Completion</p>
-                                <p className="text-xs text-gray-400">Complete to apply</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -463,7 +452,7 @@ const Profile = () => {
                 {editingPersonal ? (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
                         <CardTitle label="Personal Information" />
-                        
+
                         {validationErrs.global && (
                             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
                                 {validationErrs.global}
@@ -471,52 +460,52 @@ const Profile = () => {
                         )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Field 
-                                label="First Name" 
-                                value={personalDraft.firstName} 
-                                onChange={v => setPersonalDraft(d => ({ ...d, firstName: v }))} 
+                            <Field
+                                label="First Name"
+                                value={personalDraft.firstName}
+                                onChange={v => setPersonalDraft(d => ({ ...d, firstName: v }))}
                                 error={validationErrs.firstName}
                             />
-                            <Field 
-                                label="Last Name" 
-                                value={personalDraft.lastName} 
-                                onChange={v => setPersonalDraft(d => ({ ...d, lastName: v }))} 
+                            <Field
+                                label="Last Name"
+                                value={personalDraft.lastName}
+                                onChange={v => setPersonalDraft(d => ({ ...d, lastName: v }))}
                                 error={validationErrs.lastName}
                             />
                         </div>
-                        
-                        <Field 
-                            label="Location" 
-                            value={personalDraft.location} 
-                            onChange={v => setPersonalDraft(d => ({ ...d, location: v }))} 
+
+                        <Field
+                            label="Location"
+                            value={personalDraft.location}
+                            onChange={v => setPersonalDraft(d => ({ ...d, location: v }))}
                             error={validationErrs.location}
                         />
-                        
-                        <Field 
-                            label="Email Address" 
-                            value={personalDraft.email} 
-                            onChange={() => {}} // Readonly as it's tied to Auth
-                            type="email" 
+
+                        <Field
+                            label="Email Address"
+                            value={personalDraft.email}
+                            onChange={() => { }} // Readonly as it's tied to Auth
+                            type="email"
                         />
-                        
-                        <Field 
-                            label="Phone Number" 
-                            value={personalDraft.phone} 
-                            onChange={v => setPersonalDraft(d => ({ ...d, phone: v }))} 
+
+                        <Field
+                            label="Phone Number"
+                            value={personalDraft.phone}
+                            onChange={v => setPersonalDraft(d => ({ ...d, phone: v }))}
                             error={validationErrs.phone}
                         />
-                        
-                        <Field 
-                            label="Bio" 
-                            value={personalDraft.bio} 
-                            onChange={v => setPersonalDraft(d => ({ ...d, bio: v }))} 
+
+                        <Field
+                            label="Bio"
+                            value={personalDraft.bio}
+                            onChange={v => setPersonalDraft(d => ({ ...d, bio: v }))}
                             error={validationErrs.bio}
                         />
 
-                        <Field 
-                            label="Headline" 
-                            value={personalDraft.headline} 
-                            onChange={v => setPersonalDraft(d => ({ ...d, headline: v }))} 
+                        <Field
+                            label="Headline"
+                            value={personalDraft.headline}
+                            onChange={v => setPersonalDraft(d => ({ ...d, headline: v }))}
                             error={validationErrs.headline}
                             placeholder="e.g. Junior Software Engineer"
                         />

@@ -74,18 +74,32 @@ const atStyles = `
   .at-result--pending  { color: #92400e; }
   .at-result--rejected { color: #b91c1c; }
   .at-result--accepted { color: #15803d; }
+  .at-result--selected { color: #15803d; }
+  .at-result--shortlisted { color: #1d4ed8; }
 `;
 
 const resultStyle = (r) => {
-  if (r === "Rejected") return "at-result--rejected";
-  if (r === "Accepted") return "at-result--accepted";
+  const result = String(r || "").toUpperCase();
+  if (result === "REJECTED") return "at-result--rejected";
+  if (result === "ACCEPTED") return "at-result--accepted";
+  if (result === "SELECTED") return "at-result--selected";
+  if (result === "SHORTLISTED") return "at-result--shortlisted";
   return "at-result--pending";
 };
 
 const dotColor = (r) => {
-  if (r === "Rejected") return "#ef4444";
-  if (r === "Accepted") return "#22c55e";
+  const result = String(r || "").toUpperCase();
+  if (result === "REJECTED") return "#ef4444";
+  if (result === "ACCEPTED" || result === "SELECTED") return "#22c55e";
+  if (result === "SHORTLISTED") return "#3b82f6";
   return "#f59e0b";
+};
+
+const displayResult = (result) => {
+  if (!result) return "-";
+  return String(result)
+    .toLowerCase()
+    .replace(/^\w/, (letter) => letter.toUpperCase());
 };
 
 const ApplicationTracker = ({ applications }) => (
@@ -119,7 +133,7 @@ const ApplicationTracker = ({ applications }) => (
               </td>
               <td>
                 <span className={`at-badge ${resultStyle(app.result)}`}>
-                  {app.result}
+                  {displayResult(app.result)}
                 </span>
               </td>
             </tr>

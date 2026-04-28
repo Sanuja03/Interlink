@@ -200,17 +200,19 @@ const JobPostDetails = () => {
                                     cursor: 'pointer',
                                     minWidth: '140px',
                                 }}>save</button>
-                                <button style={{
-                                    background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '30px',
-                                    padding: '12px 40px',
-                                    fontSize: '14px',
-                                    fontWeight: '700',
-                                    cursor: 'pointer',
-                                    minWidth: '140px',
-                                }}>apply now</button>
+                                <button
+                                    onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '30px',
+                                        padding: '12px 40px',
+                                        fontSize: '14px',
+                                        fontWeight: '700',
+                                        cursor: 'pointer',
+                                        minWidth: '140px',
+                                    }}>apply now</button>
                             </div>
                         </div>
                     </div>

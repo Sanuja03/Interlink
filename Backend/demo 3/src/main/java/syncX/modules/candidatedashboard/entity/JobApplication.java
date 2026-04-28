@@ -4,6 +4,7 @@ import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import syncX.modules.jobpostdetails.entity.JobDetails;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,10 +23,12 @@ public class JobApplication {
     @Column(name = "candidate_id")
     private UUID candidateId;
     
-    @Column(name = "company_id")
-    private UUID companyId;
     @Column(name = "job_id")
     private Long jobId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", insertable = false, updatable = false)
+    private JobDetails job;
 
     // ── Auto-filled from candidates table ─────────────
     @Column(name = "candidate_name")

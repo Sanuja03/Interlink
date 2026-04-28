@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import syncX.modules.candidateprofile.entity.CandidateProfile;
 import syncX.modules.candidateprofile.repository.CandidateProfileRepository;
 import syncX.modules.jobapply.dto.CandidatePrefillDTO;
@@ -44,6 +47,9 @@ public class JobApplicationService {
 
     @Autowired
     private JobDetailsRepository jobDetailsRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // ── PRE-FILL ──────────────────────────────────────────────────────────────────
 
@@ -133,9 +139,15 @@ public class JobApplicationService {
         JobDetails jobDetails = jobDetailsRepository.findById(req.getJobId())
                 .orElseThrow(() -> new IllegalArgumentException("Job not found with ID: " + req.getJobId()));
         
+        UUID companyId = null;
         if (jobDetails.getCompanyDetails() != null) {
-            app.setCompanyId(jobDetails.getCompanyDetails().getCompanyid());
+            companyId = jobDetails.getCompanyDetails().getCompanyid();
             app.setCompany(jobDetails.getCompanyDetails().getCompanyName());
+        } else if (jobDetails.getCompany() != null && !jobDetails.getCompany().isBlank()) {
+            app.setCompany(jobDetails.getCompany());
+        }
+        if (companyId == null) {
+            throw new IllegalStateException("Job company not found. Cannot submit application without Company_Id.");
         }
         app.setJobTitle(jobDetails.getTitle());
 
@@ -158,9 +170,10 @@ public class JobApplicationService {
         app.setPortfolioUrl(req.getPortfolioUrl());
         app.setGithubUrl(req.getGithubUrl());
 
-
-        JobApplication saved = jobApplicationRepository.save(app);
-        return toResponse(saved);
+        Long savedId = insertApplication(app, companyId);
+        app.setId(savedId);
+        app.setStatus("PENDING");
+        return toResponse(app);
     }
 
     // ── READ ──────────────────────────────────────────────────────────────────────
@@ -200,6 +213,66 @@ public class JobApplicationService {
         if (preferred != null && !preferred.isBlank()) return preferred.trim();
         if (fallback != null && !fallback.isBlank()) return fallback.trim();
         return null;
+    }
+
+    private Long insertApplication(JobApplication app, UUID companyId) {
+        Number id = (Number) entityManager.createNativeQuery("""
+                        INSERT INTO job_applications (
+                            address,
+                            applied_date,
+                            candidate_id,
+                            candidate_name,
+                            city,
+                            company,
+                            "Company_Id",
+                            cover_letter,
+                            email,
+                            github_url,
+                            job_id,
+                            job_title,
+                            linkedin_url,
+                            phone,
+                            portfolio_url,
+                            resume_url
+                        )
+                        VALUES (
+                            :address,
+                            :appliedDate,
+                            :candidateId,
+                            :candidateName,
+                            :city,
+                            :company,
+                            :companyId,
+                            :coverLetter,
+                            :email,
+                            :githubUrl,
+                            :jobId,
+                            :jobTitle,
+                            :linkedinUrl,
+                            :phone,
+                            :portfolioUrl,
+                            :resumeUrl
+                        )
+                        RETURNING id
+                        """)
+                .setParameter("address", app.getAddress())
+                .setParameter("appliedDate", app.getAppliedDate())
+                .setParameter("candidateId", app.getCandidateId())
+                .setParameter("candidateName", app.getCandidateName())
+                .setParameter("city", app.getCity())
+                .setParameter("company", app.getCompany())
+                .setParameter("companyId", companyId)
+                .setParameter("coverLetter", app.getCoverLetter())
+                .setParameter("email", app.getEmail())
+                .setParameter("githubUrl", app.getGithubUrl())
+                .setParameter("jobId", app.getJobId())
+                .setParameter("jobTitle", app.getJobTitle())
+                .setParameter("linkedinUrl", app.getLinkedinUrl())
+                .setParameter("phone", app.getPhone())
+                .setParameter("portfolioUrl", app.getPortfolioUrl())
+                .setParameter("resumeUrl", app.getResumeUrl())
+                .getSingleResult();
+        return id.longValue();
     }
 
     /** Maps a JobApplication entity to a response DTO. */

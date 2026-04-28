@@ -5,6 +5,7 @@ import StatCard from "../../components/CandidatePages/CandidateDashboard/StatCar
 import UpcomingInterviews from "../../components/CandidatePages/CandidateDashboard/UpcomingInterviews";
 import ApplicationTracker from "../../components/CandidatePages/CandidateDashboard/ApplicationTracker";
 import Searchbar from "../../components/CandidatePages/CandidateJobPosts/Searchbar";
+import api from "../../lib/api";
 
 /* ── Static Data (Used for Icons) ──────────────────────────────────────── */
 const statsIcons = [
@@ -142,17 +143,10 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Hardcoded candidate ID for now (usually this would come from auth context)
-                const candidateId = 1;
-                const response = await fetch(`http://localhost:8080/api/dashboard/candidate/${candidateId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setDashboardData(data);
-                } else {
-                    console.error("Failed to fetch dashboard data.");
-                }
+                const response = await api.get("/dashboard/candidate/me");
+                setDashboardData(response.data);
             } catch (error) {
-                console.error("Error connecting to backend:", error);
+                console.error("Error fetching dashboard data:", error);
             } finally {
                 setLoading(false);
             }
@@ -170,36 +164,41 @@ const Dashboard = () => {
         );
     }
 
+    const summary = dashboardData?.summary || dashboardData?.stats || {};
+    const upcomingInterviews = dashboardData?.upcomingInterviews || dashboardData?.interviews || [];
+    const applicationTracker = dashboardData?.applicationTracker || dashboardData?.applications || [];
+
     // Safely map fetched statistics for StatCards
     const dynamicStats = [
         {
             label: "Interviews",
-            count: dashboardData?.stats?.interviews || 0,
+            count: summary.interviews || 0,
             icon: statsIcons[0].icon
         },
         {
             label: "Applications",
-            count: dashboardData?.stats?.applications || 0,
+            count: summary.applications || 0,
             icon: statsIcons[1].icon
         },
         {
             label: "Pending",
-            count: dashboardData?.stats?.pending || 0,
+            count: summary.pending || 0,
             icon: statsIcons[2].icon
         },
         {
             label: "Rejected",
-            count: dashboardData?.stats?.rejected || 0,
+            count: summary.rejected || 0,
             icon: statsIcons[3].icon
         }
     ];
 
     // Safely map backend "date" fields to frontend's expected properties
-    const dynamicApplications = (dashboardData?.applications || []).map(app => ({
+    const dynamicApplications = applicationTracker.map(app => ({
         ...app,
         applied: app.appliedDate || "-",
         shortlisted: app.shortlistedDate || "-",
-        interview: app.interviewDate || "-"
+        interview: app.interviewDate || "-",
+        result: app.status || app.result || "PENDING"
     }));
 
     return (
@@ -237,7 +236,7 @@ const Dashboard = () => {
 
                             {/* Upcoming interviews */}
                             <div className="db-interviews">
-                                <UpcomingInterviews interviews={dashboardData?.interviews || []} />
+                                <UpcomingInterviews interviews={upcomingInterviews} />
                             </div>
                         </div>
 

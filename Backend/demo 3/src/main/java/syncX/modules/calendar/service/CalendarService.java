@@ -1,9 +1,16 @@
 package syncX.modules.calendar.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import syncX.modules.calendar.dto.CalendarEventDTO;
 import syncX.modules.calendar.entity.InterviewScheduled;
 import syncX.modules.calendar.repository.InterviewScheduledRepository;
+import syncX.modules.candidateprofile.entity.CandidateProfile;
+import syncX.modules.candidateprofile.repository.CandidateProfileRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,13 +22,17 @@ import java.util.stream.Collectors;
 public class CalendarService {
 
     private final InterviewScheduledRepository interviewScheduledRepository;
+    private final CandidateProfileRepository candidateProfileRepository;
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
-    public CalendarService(InterviewScheduledRepository interviewScheduledRepository) {
+    public CalendarService(InterviewScheduledRepository interviewScheduledRepository,
+                           CandidateProfileRepository candidateProfileRepository) {
         this.interviewScheduledRepository = interviewScheduledRepository;
+        this.candidateProfileRepository = candidateProfileRepository;
     }
 
-    public List<CalendarEventDTO> getCandidateEvents(UUID candidateId, LocalDate startDate, LocalDate endDate) {
+    public List<CalendarEventDTO> getCurrentCandidateEvents(LocalDate startDate, LocalDate endDate) {
+        UUID candidateId = resolveCurrentCandidateId();
         List<InterviewScheduled> events = interviewScheduledRepository.findCandidateEvents(candidateId, startDate, endDate);
         return events.stream().map(e -> mapToDTO(e, true)).collect(Collectors.toList());
     }
@@ -29,6 +40,12 @@ public class CalendarService {
     public List<CalendarEventDTO> getInterviewerEvents(UUID companyId, LocalDate startDate, LocalDate endDate) {
         List<InterviewScheduled> events = interviewScheduledRepository.findInterviewerEvents(companyId, startDate, endDate);
         return events.stream().map(e -> mapToDTO(e, false)).collect(Collectors.toList());
+    }
+
+    public List<CalendarEventDTO> getCurrentCandidateEventsByDay(LocalDate date) {
+        UUID candidateId = resolveCurrentCandidateId();
+        List<InterviewScheduled> events = interviewScheduledRepository.findCandidateEventsByDate(candidateId, date);
+        return events.stream().map(e -> mapToDTO(e, true)).collect(Collectors.toList());
     }
 
     public List<CalendarEventDTO> getEventsByDay(UUID userId, String role, LocalDate date) {
@@ -43,6 +60,34 @@ public class CalendarService {
         }
         
         return events.stream().map(e -> mapToDTO(e, isCandidate)).collect(Collectors.toList());
+    }
+
+    private UUID resolveCurrentCandidateId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        String subject = jwt.getSubject();
+        if (subject == null || subject.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        UUID userId;
+        try {
+            userId = UUID.fromString(subject);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        CandidateProfile candidate = candidateProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+
+        if (candidate.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        return candidate.getId();
     }
 
     private CalendarEventDTO mapToDTO(InterviewScheduled entity, boolean isCandidate) {

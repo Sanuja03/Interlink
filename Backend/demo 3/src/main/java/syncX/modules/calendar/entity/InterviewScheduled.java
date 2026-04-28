@@ -2,6 +2,7 @@ package syncX.modules.calendar.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import syncX.modules.jobpostdetails.entity.CompanyDetails;
 import syncX.modules.jobpostdetails.entity.JobDetails;
 
 import java.time.LocalDate;
@@ -27,6 +28,10 @@ public class InterviewScheduled {
 
     @Column(name = "company_id")
     private UUID companyId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", referencedColumnName = "company_id", insertable = false, updatable = false)
+    private CompanyDetails companyDetails;
 
     @Column(name = "candidate_id")
     private UUID candidateId;
