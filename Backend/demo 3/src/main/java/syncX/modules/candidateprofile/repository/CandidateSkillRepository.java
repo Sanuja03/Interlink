@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface CandidateSkillRepository extends JpaRepository<CandidateSkill, Long> {
     List<CandidateSkill> findByCandidateId(UUID candidateId);
     void deleteByCandidateIdAndId(UUID candidateId, Long skillId);
+    void deleteByCandidateId(UUID candidateId);
 }

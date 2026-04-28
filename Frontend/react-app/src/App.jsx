@@ -99,14 +99,14 @@ function App() {
     <AuthProvider>
       <Routes>
         {/* Public routes */}
-        {/* <Route path="/" element={<CandidateHome />} /> */}
-        {/* <Route path="/Login" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/Login" element={<Login />} />
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/company/shortlisted-candidates" element={<CompanyShortlistedCandidates />} />
         <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate />} />
- */}
+
 
         {/* Candidate */}
         <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />

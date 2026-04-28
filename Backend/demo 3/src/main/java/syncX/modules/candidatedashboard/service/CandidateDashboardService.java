@@ -1,5 +1,4 @@
 package syncX.modules.candidatedashboard.service;
-import syncX.modules.enums.ApplicationStatus;
 import syncX.modules.enums.InterviewStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,8 +32,8 @@ public class CandidateDashboardService {
         // Compute Stats
         long totalApplications = applicationRepository.countByCandidateId(candidateId);
         long totalInterviews = interviewRepository.countByCandidateId(candidateId);
-        long pending = applicationRepository.countByCandidateIdAndResult(candidateId, ApplicationStatus.PENDING);
-        long rejected = applicationRepository.countByCandidateIdAndResult(candidateId, ApplicationStatus.REJECTED);
+        long pending = applicationRepository.countByCandidateIdAndResult(candidateId, "PENDING");
+        long rejected = applicationRepository.countByCandidateIdAndResult(candidateId, "REJECTED");
 
         DashboardStatsDto stats = new DashboardStatsDto();
         stats.setApplications(totalApplications);
@@ -70,7 +69,7 @@ public class CandidateDashboardService {
             app.setAppliedDate(LocalDate.of(2025, 6, 9));
             app.setShortlistedDate(LocalDate.of(2025, 6, 10));
             app.setInterviewDate(LocalDate.of(2025, 6, 11));
-            app.setResult(ApplicationStatus.valueOf(statuses[i].toUpperCase()));
+            app.setResult(statuses[i].toUpperCase());
             applicationRepository.save(app);
         }
 

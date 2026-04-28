@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "job_skills")
+@Table(name = "candidate_skills")
 public class CandidateSkill {
 
     @Id
@@ -17,7 +17,7 @@ public class CandidateSkill {
     @Column(name = "candidate_id")
     private UUID candidateId;
 
-    @Column(name = "skill_name")
+    @Column(name = "skills")
     private String skillName;
 
 }

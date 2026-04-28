@@ -1,35 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import CalendarWidget from '../../components/CandidatePages/CandidateCalendar/CalendarWidget';
-
-/* ─── Interview data for the job-seeker view ─────────────────── */
-const INTERVIEWS = {
-  '2025-09-18': {
-    title: 'Software Engineer – CodeWave Solutions',
-    time: '10:00 AM – 11:00 AM',
-    mode: 'Online Interview',
-    job: { title: 'Software Engineer', company: 'CodeWave Solutions', techStack: 'React' },
-  },
-  '2025-09-24': {
-    title: 'UI/UX Designer – PixelCraft Studio',
-    time: '02:00 PM – 03:00 PM',
-    mode: 'Online Interview',
-    job: { title: 'UI/UX Designer', company: 'PixelCraft Studio', techStack: 'Figma' },
-  },
-  '2026-03-19': {
-    title: 'Project Manager – Inova',
-    time: '09:00 AM – 09:30 AM',
-    mode: 'Online Interview',
-    job: { title: 'Project Manager', company: 'Inova', techStack: 'Agile' },
-  },
-  '2026-03-23': {
-    title: 'Software Engineer – Alpha Tech',
-    time: '11:00 AM – 12:00 PM',
-    mode: 'Online Interview',
-    job: { title: 'Software Engineer', company: 'Alpha Tech', techStack: 'Node.js' },
-  },
-};
+import api from '../../lib/api';
 
 const pageStyles = `
   .cal-page-root { display:flex; min-height:100vh; background:#f3f7fa; font-family:'Inter','Segoe UI',sans-serif; }
@@ -43,6 +17,50 @@ const pageStyles = `
 
 const CalendarPage = () => {
   const navigate = useNavigate();
+  const [interviews, setInterviews] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      try {
+        // Mock UUID for candidate (replace with actual auth context later)
+        const candidateId = "e46b559e-89a1-41ae-b794-4d94b232c19f";
+        // Fetching 1 year range around today
+        const start = new Date();
+        start.setMonth(start.getMonth() - 6);
+        const end = new Date();
+        end.setMonth(end.getMonth() + 6);
+        const startDate = start.toISOString().split('T')[0];
+        const endDate = end.toISOString().split('T')[0];
+
+        const response = await api.get(`/calendar/candidate?candidateId=${candidateId}&startDate=${startDate}&endDate=${endDate}`);
+        if (response.status === 200) {
+          const data = response.data;
+          const map = {};
+          data.forEach(ev => {
+            if (!map[ev.date]) {
+              map[ev.date] = [];
+            }
+            map[ev.date].push({
+              title: `${ev.jobTitle} – ${ev.companyName}`,
+              time: `${ev.time} – ${ev.endTime}`,
+              mode: ev.mode,
+              job: { title: ev.jobTitle, company: ev.companyName },
+              meetingLink: ev.meetingLink,
+              ...ev
+            });
+          });
+          setInterviews(map);
+        }
+      } catch (error) {
+        console.error("Error connecting to backend:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCalendarData();
+  }, []);
 
   return (
     <>
@@ -51,18 +69,25 @@ const CalendarPage = () => {
         <Sidebar />
         <div className="cal-page-main">
           <div className="cal-page-body">
-            <CalendarWidget
-              interviews={INTERVIEWS}
-              showJoinButton={true}
-              showGenerateButton={true}
-              onJoinInterview={(iv) => {
-                /* TODO: open meeting link or modal */
-                console.log('Join interview:', iv.title);
-              }}
-              onGenerateQuestions={(iv) => {
-                navigate('/Candidate/aiquestions', { state: { job: iv.job } });
-              }}
-            />
+            {loading ? (
+              <div>Loading Calendar...</div>
+            ) : (
+              <CalendarWidget
+                interviews={interviews}
+                showJoinButton={true}
+                showGenerateButton={true}
+                onJoinInterview={(iv) => {
+                  if (iv.meetingLink) {
+                    window.open(iv.meetingLink, '_blank');
+                  } else {
+                    console.log('Join interview:', iv.title);
+                  }
+                }}
+                onGenerateQuestions={(iv) => {
+                  navigate('/Candidate/aiquestions', { state: { job: iv.job } });
+                }}
+              />
+            )}
           </div>
           <Footer />
         </div>

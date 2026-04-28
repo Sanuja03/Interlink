@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
+import api from '../../lib/api';
 
 const JobPostDetails = () => {
     const formatMode = (mode) => {
@@ -34,20 +35,15 @@ const JobPostDetails = () => {
     const [allJobs, setAllJobs] = useState([]);
 
     useEffect(() => {
-        fetch(`http://localhost:8080/api/jobpostdetails/${id}`)
-            .then(async res => {
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`Server Error ${res.status}: ${text}`);
-                }
-                return res.json();
-            })
-            .then(data => setJob(data))
-            .catch(err => console.error("Error fetching job details:", err.message));
+        api.get(`/jobpostdetails/${id}`)
+            .then(res => setJob(res.data))
+            .catch(err => {
+                const text = err.response?.data || err.message;
+                console.error("Error fetching job details:", text);
+            });
 
-        fetch('http://localhost:8080/api/jobs')
-            .then(res => res.json())
-            .then(data => setAllJobs(data))
+        api.get('/jobs')
+            .then(res => setAllJobs(res.data))
             .catch(err => console.error("Error fetching jobs:", err));
 
         window.scrollTo(0, 0);

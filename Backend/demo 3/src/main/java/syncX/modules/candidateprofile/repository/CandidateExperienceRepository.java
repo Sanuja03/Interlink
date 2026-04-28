@@ -1,0 +1,14 @@
+package syncX.modules.candidateprofile.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import syncX.modules.candidateprofile.entity.CandidateExperience;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface CandidateExperienceRepository extends JpaRepository<CandidateExperience, Long> {
+    List<CandidateExperience> findByCandidateId(UUID candidateId);
+    void deleteByCandidateIdAndId(UUID candidateId, Long id);
+}

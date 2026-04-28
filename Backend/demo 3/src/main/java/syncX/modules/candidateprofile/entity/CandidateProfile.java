@@ -11,8 +11,12 @@ import java.util.UUID;
 public class CandidateProfile {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "candidate_id")
     private UUID id;
+
+    @Column(name = "user_id")
+    private UUID userId;
 
     @Column(name = "first_name")
     private String firstName;
@@ -34,4 +38,10 @@ public class CandidateProfile {
 
     @Column(name = "location")
     private String location;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(name = "headline", columnDefinition = "TEXT")
+    private String headline;
 }

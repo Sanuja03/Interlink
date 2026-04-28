@@ -20,6 +20,8 @@ public class CandidateProfileDTO {
     private String bio;
     private String profilePictureUrl;
     private String location;
+    private java.time.LocalDate dateOfBirth;
+    private String headline;
 
     // Skills
     private List<CandidateSkill> skills;
@@ -29,4 +31,7 @@ public class CandidateProfileDTO {
 
     // Resumes
     private List<CandidateResume> resumes;
+
+    // Experience
+    private List<syncX.modules.candidateprofile.entity.CandidateExperience> experiences;
 }

@@ -380,6 +380,8 @@ const IconArrow = () => (
   </svg>
 );
 
+import api from '../../lib/api';
+
 const JobApply = () => {
   const formatEnum = (val) => {
       if (!val) return '';
@@ -395,10 +397,35 @@ const JobApply = () => {
   const [job, setJob] = useState(null);
 
   useEffect(() => {
-      fetch(`http://localhost:8080/api/jobs/${id}`)
-          .then(res => res.json())
-          .then(data => setJob(data))
-          .catch(err => console.error("Error fetching job details:", err));
+      api.get(`/jobs/${id}`)
+          .then(res => setJob(res.data))
+          .catch(err => {
+              const text = err.response?.data || err.message;
+              console.error("Error fetching job details:", text);
+          });
+
+      api.get(`/candidate/applications/prefill`)
+          .then(res => {
+              const data = res.data;
+              setForm(p => ({
+                  ...p,
+                  firstName: data.firstName || '',
+                  lastName: data.lastName || '',
+                  email: data.email || '',
+                  phone: data.phone || '',
+                  address: data.location || '',
+                  linkedin: data.linkedinUrl || '',
+                  portfolio: data.portfolioUrl || '',
+                  github: data.githubUrl || '',
+                  yearsExp: data.yearsOfExperience ? String(data.yearsOfExperience) : '',
+                  currentRole: data.currentRole || '',
+                  currentCompany: data.currentCompany || '',
+                  salary: data.expectedSalary ? String(data.expectedSalary) : ''
+              }));
+          })
+          .catch(err => {
+              console.error("Error fetching prefill data:", err);
+          });
   }, [id]);
 
   const [form, setForm] = useState({
@@ -407,8 +434,7 @@ const JobApply = () => {
     linkedin: '', portfolio: '', github: '',
     yearsExp: '', currentRole: '', currentCompany: '',
     coverLetter: '',
-    availability: '', salary: '', noticePeriod: '',
-    hearAbout: '',
+    availability: '', salary: '', hearAbout: '',
   });
   const [resumeFile, setResumeFile] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -428,9 +454,45 @@ const JobApply = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (!validate()) return;
+
+    try {
+        const applicationRequest = {
+            jobId: id,
+            email: form.email,
+            phone: form.phone,
+            address: form.address,
+            city: form.city,
+            linkedinUrl: form.linkedin,
+            portfolioUrl: form.portfolio,
+            coverLetter: form.coverLetter,
+            githubUrl: form.github,
+            yearsOfExperience: form.yearsExp && !isNaN(parseInt(form.yearsExp, 10)) ? parseInt(form.yearsExp, 10) : null,
+            currentRole: form.currentRole,
+            currentCompany: form.currentCompany,
+            expectedSalary: form.salary ? parseFloat(form.salary.replace(/,/g, '')) : null,
+            availableStartDate: form.availability || null,
+            source: form.hearAbout
+        };
+
+        const formData = new FormData();
+        formData.append('application', new Blob([JSON.stringify(applicationRequest)], { type: 'application/json' }));
+        if (resumeFile) {
+            formData.append('resume', resumeFile);
+        }
+
+        await api.post(`/candidate/applications`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        setSubmitted(true);
+    } catch (err) {
+        console.error("Error submitting application:", err);
+        alert("Failed to submit application: " + (err.response?.data?.message || err.message));
+    }
   };
 
   if (!job) return (
@@ -596,7 +658,7 @@ const JobApply = () => {
                   <span className="apply-card__title-icon"><IconBriefcase /></span>
                   Work Experience
                 </h2>
-                <div className="apply-frow">
+                <div className="apply-frow apply-frow--full">
                   <div className="apply-field">
                     <label className="apply-label">Years of Experience</label>
                     <select className="apply-select" value={form.yearsExp} onChange={set('yearsExp')}>
@@ -606,17 +668,6 @@ const JobApply = () => {
                       <option>3 – 5 years</option>
                       <option>5 – 8 years</option>
                       <option>8+ years</option>
-                    </select>
-                  </div>
-                  <div className="apply-field">
-                    <label className="apply-label">Notice Period</label>
-                    <select className="apply-select" value={form.noticePeriod} onChange={set('noticePeriod')}>
-                      <option value="">Select...</option>
-                      <option>Immediately available</option>
-                      <option>1 week</option>
-                      <option>2 weeks</option>
-                      <option>1 month</option>
-                      <option>2+ months</option>
                     </select>
                   </div>
                 </div>

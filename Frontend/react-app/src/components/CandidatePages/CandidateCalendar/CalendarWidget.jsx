@@ -2,7 +2,7 @@
  * CalendarWidget — reusable calendar component
  *
  * Props:
- *   interviews          {Object}   - Map of 'YYYY-MM-DD' → { title, time, mode, job }
+ *   interviews          {Object}   - Map of 'YYYY-MM-DD' → [{ title, time, mode, job }, ...]
  *   showJoinButton      {boolean}  - Show "Join Interview" button (default: true)
  *   showGenerateButton  {boolean}  - Show "Generate Questions" button (default: true)
  *   onJoinInterview     {Function} - Called with (interview) when Join is clicked
@@ -162,7 +162,7 @@ const MonthGrid = ({ viewYear, viewMonth, todayKey, selectedDate, setSelectedDat
                     const key = cell.type === 'current' ? `${viewYear}-${pad(viewMonth + 1)}-${pad(cell.day)}` : null;
                     const isToday = key === todayKey;
                     const isSelected = key === selectedDate;
-                    const hasIv = key && interviews[key];
+                    const hasIv = key && interviews[key] && interviews[key].length > 0;
                     let cls = 'cw-cell';
                     if (cell.type !== 'current') cls += ' cw-cell--empty cw-cell--other-month';
                     if (isToday) cls += ' cw-cell--today';
@@ -191,7 +191,7 @@ const WeekGrid = ({ pivotDate, todayKey, setSelectedDate, interviews }) => {
             <div className="cw-week-grid">
                 {days.map((d, i) => {
                     const key = toKey(d);
-                    const iv = interviews[key];
+                    const ivs = interviews[key] || [];
                     const isToday = key === todayKey;
                     return (
                         <div key={i} className="cw-week-col">
@@ -200,11 +200,13 @@ const WeekGrid = ({ pivotDate, todayKey, setSelectedDate, interviews }) => {
                                 <div className={`cw-week-date${isToday ? ' today-circle' : ''}`}>{d.getDate()}</div>
                             </div>
                             <div className="cw-week-body">
-                                {iv ? (
-                                    <div className="cw-iv-card" onClick={() => setSelectedDate(key)}>
-                                        <div className="cw-iv-card__title">{iv.title}</div>
-                                        <div className="cw-iv-card__time">⏰ {iv.time}</div>
-                                    </div>
+                                {ivs.length > 0 ? (
+                                    ivs.map((iv, idx) => (
+                                        <div key={idx} className="cw-iv-card" onClick={() => setSelectedDate(key)}>
+                                            <div className="cw-iv-card__title">{iv.title}</div>
+                                            <div className="cw-iv-card__time">⏰ {iv.time}</div>
+                                        </div>
+                                    ))
                                 ) : (
                                     <div className="cw-week-empty">—</div>
                                 )}
@@ -219,16 +221,16 @@ const WeekGrid = ({ pivotDate, todayKey, setSelectedDate, interviews }) => {
 
 /** Single day header card */
 const DayCard = ({ pivotDate, interviews }) => {
-    const iv = interviews[toKey(pivotDate)];
+    const ivs = interviews[toKey(pivotDate)] || [];
     const label = `${DAY_FULL[pivotDate.getDay()]}, ${formatLong(
         pivotDate.getFullYear(), pivotDate.getMonth(), pivotDate.getDate())}`;
     return (
         <div className="cw-card">
             <div className="cw-day-hdr">
                 <div className="cw-day-hdr__title">{label}</div>
-                <div className="cw-day-hdr__sub">{iv ? '1 interview scheduled' : 'No interviews today'}</div>
+                <div className="cw-day-hdr__sub">{ivs.length > 0 ? `${ivs.length} interview${ivs.length > 1 ? 's' : ''} scheduled` : 'No interviews today'}</div>
             </div>
-            {!iv && <div className="cw-day-body"><div className="cw-day-empty">🗓️ No interviews scheduled for this day.</div></div>}
+            {ivs.length === 0 && <div className="cw-day-body"><div className="cw-day-empty">🗓️ No interviews scheduled for this day.</div></div>}
         </div>
     );
 };
@@ -243,30 +245,34 @@ export const DetailPanel = ({
     onGenerateQuestions,
 }) => {
     if (!dateKey) return null;
-    const iv = interviews[dateKey];
+    const ivs = interviews[dateKey] || [];
     const [y, m, d] = dateKey.split('-');
     return (
         <div className="cw-detail">
             <div className="cw-detail__date">{formatLong(y, parseInt(m) - 1, parseInt(d))}</div>
-            {iv ? (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-                    <div>
-                        <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.title}</div>
-                        <div className="cw-detail__row"><span className="cw-detail__icon">⏰</span>{iv.time}</div>
-                        <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.mode}</div>
-                    </div>
-                    <div className="cw-detail__actions">
-                        {showJoinButton && (
-                            <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
-                                Join Interview
-                            </button>
-                        )}
-                        {showGenerateButton && (
-                            <button className="cw-btn" onClick={() => onGenerateQuestions?.(iv)}>
-                                Generate Questions
-                            </button>
-                        )}
-                    </div>
+            {ivs.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {ivs.map((iv, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', paddingBottom: idx < ivs.length - 1 ? '20px' : '0', borderBottom: idx < ivs.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+                            <div>
+                                <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.title}</div>
+                                <div className="cw-detail__row"><span className="cw-detail__icon">⏰</span>{iv.time}</div>
+                                <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.mode}</div>
+                            </div>
+                            <div className="cw-detail__actions">
+                                {showJoinButton && (
+                                    <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
+                                        Join Interview
+                                    </button>
+                                )}
+                                {showGenerateButton && (
+                                    <button className="cw-btn" onClick={() => onGenerateQuestions?.(iv)}>
+                                        Generate Questions
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className="cw-no-iv">No interviews scheduled for this date.</div>

@@ -35,7 +35,8 @@ export default function CalendarWidget({
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
-      const hasEvent = interviews[dateKey];
+      const ivs = interviews[dateKey] || [];
+      const hasEvent = ivs.length > 0;
 
       cells.push(
         <div
@@ -64,19 +65,22 @@ export default function CalendarWidget({
       d.setDate(start.getDate() + i);
 
       const key = toKey(d);
-      const iv = interviews[key];
+      const ivs = interviews[key] || [];
 
       days.push(
         <div key={i} className="cw-week-day">
           <div className="cw-week-date">{d.getDate()}</div>
 
-          {iv ? (
-            <div
-              className="cw-event"
-              onClick={() => setSelectedDate(key)}
-            >
-              {iv.title}
-            </div>
+          {ivs.length > 0 ? (
+            ivs.map((iv, idx) => (
+              <div
+                key={idx}
+                className="cw-event"
+                onClick={() => setSelectedDate(key)}
+              >
+                {iv.title}
+              </div>
+            ))
           ) : (
             <div className="cw-empty">—</div>
           )}
@@ -90,16 +94,18 @@ export default function CalendarWidget({
   /* ─── Day View ─────────────────── */
   const renderDay = () => {
     const key = toKey(currentDate);
-    const iv = interviews[key];
+    const ivs = interviews[key] || [];
 
     return (
       <div className="cw-day">
-        {iv ? (
-          <div className="cw-day-card">
-            <h4>{iv.title}</h4>
-            <p>{iv.time}</p>
-            <p>{iv.mode}</p>
-          </div>
+        {ivs.length > 0 ? (
+          ivs.map((iv, idx) => (
+            <div key={idx} className="cw-day-card">
+              <h4>{iv.title}</h4>
+              <p>{iv.time}</p>
+              <p>{iv.mode}</p>
+            </div>
+          ))
         ) : (
           <p>No interviews for this day</p>
         )}
@@ -125,9 +131,9 @@ export default function CalendarWidget({
   };
 
   /* ─── Selected Detail ───────────────── */
-  const selectedInterview = selectedDate
-    ? interviews[selectedDate]
-    : null;
+  const selectedInterviews = selectedDate
+    ? interviews[selectedDate] || []
+    : [];
 
   return (
     <div className="cw-container">
@@ -152,25 +158,29 @@ export default function CalendarWidget({
       {view === "Day" && renderDay()}
 
       {/* Detail Panel */}
-      {selectedInterview && (
+      {selectedInterviews.length > 0 && (
         <div className="cw-detail">
-          <h3>{selectedInterview.title}</h3>
-          <p>{selectedInterview.time}</p>
-          <p>{selectedInterview.mode}</p>
+          {selectedInterviews.map((selectedInterview, idx) => (
+            <div key={idx} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: idx < selectedInterviews.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+              <h3>{selectedInterview.title}</h3>
+              <p>{selectedInterview.time}</p>
+              <p>{selectedInterview.mode}</p>
 
-          <div className="cw-actions">
-            <button onClick={() => onJoinInterview?.(selectedInterview)}>
-              Join Interview
-            </button>
+              <div className="cw-actions">
+                <button onClick={() => onJoinInterview?.(selectedInterview)}>
+                  Join Interview
+                </button>
 
-            <button
-              onClick={() =>
-                onGenerateQuestions?.(selectedInterview)
-              }
-            >
-              Generate Questions
-            </button>
-          </div>
+                <button
+                  onClick={() =>
+                    onGenerateQuestions?.(selectedInterview)
+                  }
+                >
+                  Generate Questions
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

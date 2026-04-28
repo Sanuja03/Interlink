@@ -1,39 +1,7 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import CalendarWidget from "../../components/CandidatePages/CandidateCalendar/CalendarWidget";
-
-/* ─── Interview data for the interviewer view ─────────────────── */
-const INTERVIEWS = {
-  '2025-09-18': {
-    title: 'Software Engineer – Amara Silva',
-    time: '10:00 AM – 11:00 AM',
-    mode: 'Online Interview',
-    candidate: { name: 'Amara Silva', role: 'Software Engineer' },
-  },
-  '2025-09-24': {
-    title: 'UI/UX Designer – Kasun Fernando',
-    time: '02:00 PM – 03:00 PM',
-    mode: 'Online Interview',
-    candidate: { name: 'Kasun Fernando', role: 'UI/UX Designer' },
-  },
-  '2026-03-19': {
-    title: 'Project Manager – Dilini Rajapaksa',
-    time: '09:00 AM – 09:30 AM',
-    mode: 'Online Interview',
-    candidate: { name: 'Dilini Rajapaksa', role: 'Project Manager' },
-  },
-  '2026-03-23': {
-    title: 'Backend Developer – Ruchira Mendis',
-    time: '11:00 AM – 12:00 PM',
-    mode: 'Online Interview',
-    candidate: { name: 'Ruchira Mendis', role: 'Backend Developer' },
-  },
-  '2026-04-25': {
-    title: 'Data Analyst – Nisha Perera',
-    time: '03:00 PM – 03:45 PM',
-    mode: 'Online Interview',
-    candidate: { name: 'Nisha Perera', role: 'Data Analyst' },
-  },
-};
+import api from "../../lib/api";
 
 const pageStyles = `
   .ical-page-body { padding: 28px 32px 40px; max-width: 960px; width: 100%; margin: 0 auto; }
@@ -44,19 +12,71 @@ const pageStyles = `
 `;
 
 const Calendar = () => {
+  const [interviews, setInterviews] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      try {
+        // Mock UUID for company/interviewer (replace with actual auth context later)
+        const interviewerId = "0c97e983-ff86-48cb-95a4-96076da055c4";
+        // Fetching 1 year range around today
+        const start = new Date();
+        start.setMonth(start.getMonth() - 6);
+        const end = new Date();
+        end.setMonth(end.getMonth() + 6);
+        const startDate = start.toISOString().split('T')[0];
+        const endDate = end.toISOString().split('T')[0];
+
+        const response = await api.get(`/calendar/interviewer?interviewerId=${interviewerId}&startDate=${startDate}&endDate=${endDate}`);
+        if (response.status === 200) {
+          const data = response.data;
+          const map = {};
+          data.forEach(ev => {
+            if (!map[ev.date]) {
+              map[ev.date] = [];
+            }
+            map[ev.date].push({
+              title: `${ev.jobTitle} – Candidate`, // Mock candidate name since it's not in the DTO
+              time: `${ev.time} – ${ev.endTime}`,
+              mode: ev.mode,
+              candidate: { name: 'Candidate', role: ev.jobTitle },
+              meetingLink: ev.meetingLink,
+              ...ev
+            });
+          });
+          setInterviews(map);
+        }
+      } catch (error) {
+        console.error("Error connecting to backend:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCalendarData();
+  }, []);
+
   return (
     <DashboardLayout>
       <style>{pageStyles}</style>
       <div className="ical-page-body">
-        <CalendarWidget
-          interviews={INTERVIEWS}
-          showJoinButton={true}
-          showGenerateButton={false}
-          onJoinInterview={(iv) => {
-            /* TODO: open meeting link or modal */
-            console.log('Join interview:', iv.title);
-          }}
-        />
+        {loading ? (
+          <div>Loading Calendar...</div>
+        ) : (
+          <CalendarWidget
+            interviews={interviews}
+            showJoinButton={true}
+            showGenerateButton={false}
+            onJoinInterview={(iv) => {
+              if (iv.meetingLink) {
+                window.open(iv.meetingLink, '_blank');
+              } else {
+                console.log('Join interview:', iv.title);
+              }
+            }}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

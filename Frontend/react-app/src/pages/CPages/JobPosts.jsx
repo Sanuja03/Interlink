@@ -4,6 +4,8 @@ import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/Filte
 import Searchbar from '../../components/CandidatePages/CandidateJobPosts/Searchbar';
 import { useNavigate } from 'react-router-dom';
 
+import api from '../../lib/api';
+
 const JobPosts = () => {
     const [allJobs, setAllJobs] = useState([]);
 
@@ -21,7 +23,7 @@ const JobPosts = () => {
     });
 
     useEffect(() => {
-        let url = 'http://localhost:8080/api/jobs';
+        let url = '/jobs';
         const params = new URLSearchParams();
         if (filters.category) {
             params.append('category', filters.category);
@@ -39,14 +41,10 @@ const JobPosts = () => {
         if (params.toString()) {
             url += '?' + params.toString();
         }
-        fetch(url)
+        
+        api.get(url)
             .then(res => {
-                if (!res.ok) {
-                    throw new Error("Server error: " + res.status);
-                }
-                return res.json();
-            })
-            .then(data => {
+                const data = res.data;
                 if (Array.isArray(data)) {
                     setAllJobs(data);
                 } else if (data && Array.isArray(data.content)) {
