@@ -3,10 +3,10 @@ package syncX.modules.SuperAdmin.Admin_users.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import syncX.modules.SuperAdmin.Admin_companies.repository.AdminCompanyRepository;
 import syncX.modules.SuperAdmin.Admin_users.dto.*;
 import syncX.modules.SuperAdmin.Admin_users.entity.*;
 import syncX.modules.SuperAdmin.Admin_users.repository.*;
-
 import syncX.modules.SuperAdmin.Admin_activities.entity.ActivityLog;
 import syncX.modules.SuperAdmin.Admin_activities.repository.ActivityLogRepository;
 
@@ -17,24 +17,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminUserService {
 
+    // Repositories for user and related data
     private final AdminUserRepository userRepo;
     private final AdminCandidateRepository candidateRepo;
     private final AdminInterviewerRepository interviewerRepo;
     private final AdminCandidateSkillsRepository skillsRepo;
     private final AdminCandidateStatsRepository candidateStatsRepo;
-    private final AdminCandidateInterviewRequestRepository candidateInterviewRequestRepo; // for candidate stats only
-    private final AdminInterviewRequestInterviewerRepository interviewerRequestRepo;      // for interviewer stats
+    private final AdminCandidateInterviewRequestRepository candidateInterviewRequestRepo;
+    private final AdminInterviewRequestInterviewerRepository interviewerRequestRepo;
     private final AdminInterviewerAvailabilityDayRepository availabilityRepo;
     private final ActivityLogRepository activityLogRepo;
+    private final AdminCompanyRepository companyRepo;
 
-    // ================================================
-    // 🔹 LIST ALL USERS
-    // ================================================
+    // Fetch all users with optional filters
     public List<AdminUsersListDto> getAllUsers(String search, String role) {
         List<AdminUser> users = userRepo.searchUsers(role, search);
 
         return users.stream().map(user -> {
-            String name = resolveDisplayName(user);
+            String name = resolveDisplayName(user); // Resolve display name based on role
             return new AdminUsersListDto(
                     user.getUserId(),
                     name,
@@ -45,6 +45,7 @@ public class AdminUserService {
         }).collect(Collectors.toList());
     }
 
+    // Determine display name depending on user role
     private String resolveDisplayName(AdminUser user) {
         try {
             return switch (user.getRole().toLowerCase()) {
@@ -57,13 +58,11 @@ public class AdminUserService {
                 default -> user.getEmail();
             };
         } catch (Exception e) {
-            return user.getEmail();
+            return user.getEmail(); // Fallback to email if anything fails
         }
     }
 
-    // ================================================
-    // 🔹 GET PROFILE (routes by role)
-    // ================================================
+    // Get full profile based on user role
     public Object getUserProfile(UUID userId) {
         AdminUser user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -76,21 +75,19 @@ public class AdminUserService {
         };
     }
 
-    // ================================================
-    // 🔹 CANDIDATE PROFILE
-    // ================================================
+    // Build candidate profile with stats, skills, and logs
     private AdminCandidateProfileDto buildCandidateProfile(AdminUser user) {
         AdminCandidate candidate = candidateRepo.findByUserId(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Candidate profile not found"));
 
         UUID candidateId = candidate.getCandidateId();
 
-        List<Long> skills = skillsRepo.findByCandidateId(candidateId)
+        List<String> skills = skillsRepo.findByCandidateId(candidateId)
                 .stream()
                 .map(AdminCandidateSkill::getSkillId)
                 .collect(Collectors.toList());
 
-        AdminUserStatsDto stats = buildCandidateStats(candidateId);
+        AdminUserStatsDto stats = buildCandidateStats(user.getUserId());
         List<AdminUsersActivityLogDto> logs = getActivityLogs(user.getUserId(), 5);
 
         return new AdminCandidateProfileDto(
@@ -107,9 +104,7 @@ public class AdminUserService {
         );
     }
 
-    // ================================================
-    // 🔹 INTERVIEWER PROFILE
-    // ================================================
+    // Build interviewer profile with stats, availability, and logs
     private AdminInterviewerProfileDto buildInterviewerProfile(AdminUser user) {
         AdminInterviewer interviewer = interviewerRepo.findById(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer profile not found"));
@@ -122,7 +117,7 @@ public class AdminUserService {
 
         return new AdminInterviewerProfileDto(
                 user.getUserId(),
-                interviewer.getInterviewerId(),  // String — display only
+                interviewer.getInterviewerId(),
                 user.getEmail(),
                 user.getAccountStatus(),
                 interviewer.getAbout(),
@@ -133,9 +128,7 @@ public class AdminUserService {
         );
     }
 
-    // ================================================
-    // 🔹 COMPANY ADMIN PROFILE
-    // ================================================
+    // Build company admin profile with activity logs
     private AdminCompanyAdminProfileDto buildCompanyAdminProfile(AdminUser user) {
         List<AdminUsersActivityLogDto> logs = getActivityLogs(user.getUserId(), 5);
 
@@ -147,35 +140,31 @@ public class AdminUserService {
         );
     }
 
-    // ================================================
-    // 🔹 CANDIDATE STATS
-    // ================================================
+    // Build candidate statistics with safe fallback
     private AdminUserStatsDto buildCandidateStats(UUID candidateId) {
-        long applications = candidateStatsRepo.countByCandidateId(candidateId);
-        long interviews   = candidateInterviewRequestRepo.countByCandidateId(candidateId);
-        long offers       = candidateStatsRepo.countByCandidateIdAndStatus(candidateId, "accepted");
-        return new AdminUserStatsDto(applications, interviews, offers);
+        try {
+            long applications = candidateStatsRepo.countByCandidateId(candidateId);
+            long interviews   = candidateInterviewRequestRepo.countByCandidateId(candidateId);
+            long offers       = candidateStatsRepo.countByCandidateIdAndStatus(candidateId, "accepted");
+            return new AdminUserStatsDto(applications, interviews, offers);
+        } catch (Exception e) {
+            System.out.println("Stats load failed for candidateId " + candidateId + ": " + e.getMessage());
+            return new AdminUserStatsDto(0L, 0L, 0L); // Return defaults if error occurs
+        }
     }
 
-    // ================================================
-    // 🔹 INTERVIEWER STATS — from interview_request_interviewers
-    //    totalInterviews  = all rows for this interviewer
-    //    pendingRequests  = responseStatus = 'pending'
-    //    responseRate     = (accepted + rejected) / total * 100
-    // ================================================
+    // Build interviewer statistics from request data
     private AdminInterviewerStatsDto buildInterviewerStats(UUID userId) {
-        long total    = interviewerRequestRepo.countByInterviewerUserId(userId);
-        long pending  = interviewerRequestRepo.countByInterviewerUserIdAndResponseStatus(userId, "pending");
-        long responded = total - pending;  // accepted + rejected
+        long total = interviewerRequestRepo.countByInterviewerUserId(userId);
+        long pending = interviewerRequestRepo.countByInterviewerUserIdAndResponseStatus(userId, "pending");
+        long responded = total - pending;
 
         long responseRate = total > 0 ? (responded * 100) / total : 0;
 
         return new AdminInterviewerStatsDto(total, pending, responseRate);
     }
 
-    // ================================================
-    // 🔹 WEEKLY AVAILABILITY
-    // ================================================
+    // Build weekly availability list for interviewer
     private List<AdminInterviewerAvailabilityDayDto> buildWeeklyAvailability(UUID userId) {
         List<String> orderedDays = List.of(
                 "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
@@ -194,59 +183,108 @@ public class AdminUserService {
                 .collect(Collectors.toList());
     }
 
-    // ================================================
-    // 🔹 ACTIVITY LOGS
-    // ================================================
+    // Fetch recent activity logs with limit
     private List<AdminUsersActivityLogDto> getActivityLogs(UUID userId, int limit) {
-        return activityLogRepo.findByUserId(userId)
-                .stream()
-                .sorted(Comparator.comparing(ActivityLog::getCreatedAt).reversed())
-                .limit(limit)
-                .map(log -> new AdminUsersActivityLogDto(
-                        log.getAction(),
-                        log.getDescription(),
-                        log.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
+        try {
+            return activityLogRepo.findByUserId(userId)
+                    .stream()
+                    .sorted(Comparator.comparing(ActivityLog::getCreatedAt).reversed())
+                    .limit(limit)
+                    .map(log -> new AdminUsersActivityLogDto(
+                            log.getAction(),
+                            log.getDescription(),
+                            log.getCreatedAt()
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println("Activity log fetch failed for userId " + userId + ": " + e.getMessage());
+            return List.of(); // Return empty list if error occurs
+        }
     }
 
-    // ================================================
-    // 🔹 SUSPEND / RESTORE / FLAG
-    // ================================================
+    // Suspend a user account
     public void suspendUser(UUID userId) {
         AdminUser user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setAccountStatus("suspended");
         userRepo.save(user);
-        logAction(userId, user.getRole(), "UPDATE", "USER", "User account suspended");
     }
 
+    // Check if a company is suspended
+    private boolean isCompanySuspended(UUID companyId) {
+        if (companyId == null) return false;
+        return companyRepo.findById(companyId)
+                .map(c -> "suspended".equals(c.getCompanyActivityStatus()))
+                .orElse(false);
+    }
+
+    // Restore a user account with company hierarchy validation
     public void restoreUser(UUID userId) {
         AdminUser user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String role = user.getRole().toLowerCase();
+
+        if ("company_admin".equals(role)) {
+            companyRepo.findByUserId(userId).ifPresent(company -> {
+                if ("suspended".equals(company.getCompanyActivityStatus())) {
+                    throw new RuntimeException(
+                            "Cannot restore company admin while their company is suspended. Restore the company first."
+                    );
+                }
+            });
+        }
+
+        if ("interviewer".equals(role)) {
+            interviewerRepo.findById(userId).ifPresent(interviewer -> {
+                if (isCompanySuspended(interviewer.getCompanyId())) {
+                    throw new RuntimeException(
+                            "Cannot restore interviewer while their company is suspended. Restore the company first."
+                    );
+                }
+            });
+        }
+
         user.setAccountStatus("active");
         userRepo.save(user);
-        logAction(userId, user.getRole(), "UPDATE", "USER", "User account restored");
     }
 
+    // Flag a user account
     public void flagUser(UUID userId) {
         AdminUser user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        logAction(userId, user.getRole(), "FLAG", "USER", "User account flagged");
+        user.setAccountStatus("flagged");
+        userRepo.save(user);
     }
 
-    // ================================================
-    // 🔹 INTERNAL ACTIVITY LOGGER
-    // ================================================
-    private void logAction(UUID userId, String userRole, String action, String entityType, String description) {
-        ActivityLog log = ActivityLog.builder()
-                .userId(userId)
-                .userRole(userRole)
-                .action(action)
-                .entityType(entityType)
-                .description(description)
-                .createdAt(java.time.LocalDateTime.now())
-                .build();
-        activityLogRepo.save(log);
+    // Remove flag with hierarchy validation
+    public void unflagUser(UUID userId) {
+        AdminUser user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String role = user.getRole().toLowerCase();
+
+        if ("company_admin".equals(role)) {
+            companyRepo.findByUserId(userId).ifPresent(company -> {
+                if ("suspended".equals(company.getCompanyActivityStatus())) {
+                    throw new RuntimeException(
+                            "Cannot unflag company admin while their company is suspended."
+                    );
+                }
+            });
+        }
+
+        if ("interviewer".equals(role)) {
+            interviewerRepo.findById(userId).ifPresent(interviewer -> {
+                if (isCompanySuspended(interviewer.getCompanyId())) {
+                    throw new RuntimeException(
+                            "Cannot unflag interviewer while their company is suspended."
+                    );
+                }
+            });
+        }
+
+        user.setAccountStatus("active");
+        userRepo.save(user);
     }
 }

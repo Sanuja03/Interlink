@@ -12,6 +12,6 @@ public record AdminCandidateProfileDto(
         String workMode,
         String dob,
         AdminUserStatsDto stats,
-        List<Long> skills,
+        List<String> skills,
         List<AdminUsersActivityLogDto> activityLogs
 ) {}

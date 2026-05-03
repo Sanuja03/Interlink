@@ -20,6 +20,6 @@ public class AdminCandidateSkill {
     @Column(name = "candidate_id")
     private UUID candidateId;
 
-    @Column(name = "skill_id")
-    private Long skillId;
+    @Column(name = "skills")
+    private String skillId;
 }

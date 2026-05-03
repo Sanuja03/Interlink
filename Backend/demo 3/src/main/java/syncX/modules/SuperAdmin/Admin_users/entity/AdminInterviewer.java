@@ -28,4 +28,7 @@ public class AdminInterviewer {
 
     @Column(name = "photo_url")
     private String photoUrl;
+
+    @Column(name = "company_id")
+    private UUID companyId;
 }

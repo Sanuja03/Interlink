@@ -6,5 +6,5 @@ import syncX.modules.SuperAdmin.Admin_users.entity.AdminInterviewer;
 import java.util.UUID;
 
 public interface AdminInterviewerRepository extends JpaRepository<AdminInterviewer, UUID> {
-    // No custom methods needed — userId is the @Id, so use findById(userId) directly
+    // No custom methods using findById(userId) directly
 }
