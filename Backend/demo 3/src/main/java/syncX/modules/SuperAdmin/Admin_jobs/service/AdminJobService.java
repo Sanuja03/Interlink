@@ -3,7 +3,9 @@ package syncX.modules.SuperAdmin.Admin_jobs.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import syncX.modules.SuperAdmin.Admin_companies.repository.AdminCompanyRepository;
 import syncX.modules.SuperAdmin.Admin_jobs.dto.*;
+import syncX.modules.SuperAdmin.Admin_jobs.entity.AdminJob;
 import syncX.modules.SuperAdmin.Admin_jobs.repository.AdminJobRepository;
 
 import java.time.OffsetDateTime;
@@ -15,11 +17,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminJobService {
 
-    private final AdminJobRepository repo;
+    private final AdminJobRepository JobRepo;
+    private final AdminCompanyRepository companyRepo;
 
-    // =========================
     // GET ALL JOBS
-    // =========================
     public Page<AdminJobListDto> getJobs(
             String search,
             String status,
@@ -35,7 +36,7 @@ public class AdminJobService {
         type     = (type     == null) ? "" : type;
         category = (category == null) ? "" : category;
 
-        return repo.searchJobsWithCompany(search, status, type, category, pageable)
+        return JobRepo.searchJobsWithCompany(search, status, type, category, pageable)
                 .map(row -> new AdminJobListDto(
                         ((Number) row[0]).longValue(),  // id
                         (String)  row[1],               // title
@@ -47,13 +48,10 @@ public class AdminJobService {
                 ));
     }
 
-    // =========================
     // GET JOB DETAILS (FIXED)
-    // =========================
     public AdminJobDetailsDto getJobDetails(Long id) {
 
-        // 🔥 FIX → use List<Object[]>
-        List<Object[]> results = repo.findJobWithCompany(id);
+        List<Object[]> results = JobRepo.findJobWithCompany(id);
 
         if (results.isEmpty()) {
             throw new RuntimeException("Job not found: " + id);
@@ -61,7 +59,7 @@ public class AdminJobService {
 
         Object[] row = results.get(0);
 
-        long applications = repo.countApplications(id);
+        long applications = JobRepo.countApplications(id);
 
         // companyId (UUID)
         UUID companyId = null;
@@ -88,48 +86,50 @@ public class AdminJobService {
                 (String)  row[5],               // status
                 createdAt,
                 companyId,
-                (String)  row[8],               // companyName ✅ CORRECT INDEX
+                (String)  row[8],               // companyName
                 applications
         );
     }
 
-    // =========================
     // FLAG JOB
-    // =========================
     public void flagJob(Long id) {
-        var job = repo.findById(id)
+        var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
         job.setStatus("FLAGGED");
-        repo.save(job);
+        JobRepo.save(job);
     }
 
-    // =========================
     // UNFLAG JOB
-    // =========================
     public void unflagJob(Long id) {
-        var job = repo.findById(id)
+        var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
         job.setStatus("OPEN");
-        repo.save(job);
+        JobRepo.save(job);
     }
 
-    // =========================
     // SUSPEND JOB
-    // =========================
     public void suspendJob(Long id) {
-        var job = repo.findById(id)
+        var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
         job.setStatus("SUSPENDED");
-        repo.save(job);
+        JobRepo.save(job);
     }
 
-    // =========================
     // RESTORE JOB
-    // =========================
-    public void restoreJob(Long id) {
-        var job = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found: " + id));
+    public void restoreJob(Long jobId) {
+        AdminJob job = JobRepo.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Block restore if the owning company is still suspended
+        companyRepo.findById(job.getCompanyId()).ifPresent(company -> {
+            if ("suspended".equals(company.getCompanyActivityStatus())) {
+                throw new RuntimeException(
+                        "Cannot restore job while the company is suspended. Restore the company first."
+                );
+            }
+        });
+
         job.setStatus("OPEN");
-        repo.save(job);
+        JobRepo.save(job);
     }
 }

@@ -17,7 +17,7 @@ public class ActivityLogController {
 
     private final ActivityLogService service;
 
-    // 🔹 GET LOGS (DTO)
+    // GET LOGS (DTO)
     @GetMapping
     public Page<ActivityLogDto> getLogs(
             @RequestParam(defaultValue = "") String userRole,
@@ -30,7 +30,7 @@ public class ActivityLogController {
         return service.getLogs(userRole, search, fromDate, toDate, page, size);
     }
 
-    // 🔹 CREATE LOG (DTO)
+    // CREATE LOG (DTO)
     @PostMapping
     public ActivityLogDto createActivityLog(@RequestBody CreateActivityLogDto dto) {
         return service.createLog(dto);

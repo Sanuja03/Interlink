@@ -16,13 +16,13 @@ public class SASettingsController {
 
     private final SASettingsService service;
 
-    // 🔹 GET
+    // GET Settings
     @GetMapping("/{category}")
     public List<SASettingsDto> getSettings(@PathVariable String category) {
         return service.getSettings(category);
     }
 
-    // 🔹 SAVE
+    // SAVE Settings
     @PostMapping("/{category}")
     public List<SASettingsDto> saveSettings(
             @PathVariable String category,
