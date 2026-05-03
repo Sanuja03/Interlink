@@ -1,11 +1,25 @@
 import React from "react";
 import Sidebar from "./Sidebar";
+import { useNavigate } from "react-router-dom";
 import notificationicon from "../../../assets/notification.png";
 import Footer from "./Footer";
+import { useAuth } from "../../../context/Authcontext";
 
 
 
 const DashboardLayout = ({ children }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      navigate("/");
+    }
+  };
   return (
     <div className="h-screen flex bg-gray-50 overflow-hidden">
 
@@ -28,7 +42,7 @@ const DashboardLayout = ({ children }) => {
             className="w-9 h-9 cursor-pointer opacity-80 hover:opacity-100"
           />
 
-          <div className="flex items-center gap-3 cursor-pointer">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogout}>
             <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
                         bg-red-50 text-red-600 text-xs font-semibold
                         hover:bg-red-100 transition duration-200

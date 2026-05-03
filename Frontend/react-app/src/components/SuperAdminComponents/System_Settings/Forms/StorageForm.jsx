@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
 import { createActivityLog } from "../../../../api/ActivityLogsApi";
+import {useAuth} from "../../../../context/Authcontext"
 
 export default function StorageForm({ loading, setLoading, onClose }) {
+    
+  const { appUser } = useAuth();
 
   const [settings, setSettings] = useState({
     provider: "",
@@ -13,22 +16,21 @@ export default function StorageForm({ loading, setLoading, onClose }) {
   });
 
 
-  // 🔹 LOAD
+  // LOAD
   useEffect(() => {
-    getSettings("STORAGE")
-      .then(res => {
-        const obj = {};
+  getSettings("STORAGE")
+    .then(res => {
+      const items = Array.isArray(res) ? res : [];
+      const obj = {};
+      items.forEach(item => {
+        obj[item.keyName] = item.value;
+      });
+      setSettings(prev => ({ ...prev, ...obj }));
+    })
+    .catch(err => console.error(err));
+}, []);
 
-        res.data.forEach(item => {
-          obj[item.keyName] = item.value;
-        });
-
-        setSettings(prev => ({ ...prev, ...obj }));
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  // 🔹 HANDLE CHANGE
+  // HANDLE CHANGE
   const handleChange = (key, value) => {
     setSettings(prev => ({
       ...prev,
@@ -36,7 +38,7 @@ export default function StorageForm({ loading, setLoading, onClose }) {
     }));
   };
 
-  // 🔹 SAVE
+  // SAVE
   const handleSave = async () => {
     if (settings.maxUploadSize <= 0 || settings.retentionPeriod <= 0) {
       showError("Invalid max upload size or retention period");
@@ -56,8 +58,8 @@ export default function StorageForm({ loading, setLoading, onClose }) {
       showSuccess("Storage settings saved ✅");
 
       await createActivityLog({
-        userId: 1,
-        userRole: "SUPER ADMIN",
+        userId: appUser?.userId ?? null,
+        userRole: appUser?.role ?? "UNKNOWN",
         action: "UPDATE",
         entityType: "STORAGE_SETTINGS",
         description: "Updated Storage Settings"

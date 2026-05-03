@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
 import { createActivityLog } from "../../../../api/ActivityLogsApi";
+import {useAuth} from "../../../../context/Authcontext";
 
 export default function SystemForm({ loading, setLoading, onClose }) {
+
+  const { appUser } = useAuth();
 
   const [settings, setSettings] = useState({
     timezone: "",
@@ -12,26 +15,25 @@ export default function SystemForm({ loading, setLoading, onClose }) {
     maintenanceMode: false
   });
 
-  // 🔹 LOAD DATA FROM BACKEND
+  // LOAD DATA FROM BACKEND
   useEffect(() => {
-    getSettings("SYSTEM")
-      .then(res => {
-        const obj = {};
+  getSettings("SYSTEM")
+    .then(res => {
+      const items = Array.isArray(res) ? res : [];
+      const obj = {};
+      items.forEach(item => {
+        if (item.keyName === "maintenanceMode") {
+          obj[item.keyName] = item.value === "true";
+        } else {
+          obj[item.keyName] = item.value;
+        }
+      });
+      setSettings(prev => ({ ...prev, ...obj }));
+    })
+    .catch(err => console.error(err));
+}, []);
 
-        res.data.forEach(item => {
-          if (item.keyName === "maintenanceMode") {
-            obj[item.keyName] = item.value === "true";
-          } else {
-            obj[item.keyName] = item.value;
-          }
-        });
-
-        setSettings(prev => ({ ...prev, ...obj }));
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  // 🔹 HANDLE INPUT CHANGE
+  // HANDLE INPUT CHANGE
   const handleChange = (key, value) => {
     setSettings(prev => ({
       ...prev,
@@ -39,7 +41,7 @@ export default function SystemForm({ loading, setLoading, onClose }) {
     }));
   };
 
-  // 🔹 SAVE
+  // SAVE
   const handleSave = async () => {
       if (settings.cacheExpiration <= 0) { 
       showError("Invalid cache expiration value");
@@ -57,8 +59,8 @@ export default function SystemForm({ loading, setLoading, onClose }) {
       await saveSettings("SYSTEM", payload);
       showSuccess("Settings saved successfully ✅");
       await createActivityLog({
-        userId: 1,
-        userRole: "ADMIN",
+        userId: appUser?.userId ?? null,
+        userRole: appUser?.role ?? "UNKNOWN",
         action: "UPDATE",
         entityType: "SYSTEM_SETTINGS",
         description: "Updated System Settings"

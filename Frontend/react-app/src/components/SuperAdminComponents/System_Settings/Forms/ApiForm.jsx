@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../../../../api/SAdminSettingsApi";
 import { showSuccess, showError } from "../../SAToast";
 import { createActivityLog } from "../../../../api/ActivityLogsApi";
+import { useAuth } from "../../../../context/Authcontext";
 
 export default function ApiForm({ loading, setLoading, onClose }) {
+  const { appUser } = useAuth();
 
   const [settings, setSettings] = useState({
     rateLimit: "",
@@ -14,26 +16,25 @@ export default function ApiForm({ loading, setLoading, onClose }) {
 
 
 
-  // 🔹 LOAD
+  // LOAD
   useEffect(() => {
-    getSettings("API")
-      .then(res => {
-        const obj = {};
+  getSettings("API")
+    .then(res => {
+      const items = Array.isArray(res) ? res : [];
+      const obj = {};
+      items.forEach(item => {
+        if (item.keyName === "apiEnabled") {
+          obj[item.keyName] = item.value === "true";
+        } else {
+          obj[item.keyName] = item.value;
+        }
+      });
+      setSettings(prev => ({ ...prev, ...obj }));
+    })
+    .catch(err => console.error(err));
+}, []);
 
-        res.data.forEach(item => {
-          if (item.keyName === "apiEnabled") {
-            obj[item.keyName] = item.value === "true";
-          } else {
-            obj[item.keyName] = item.value;
-          }
-        });
-
-        setSettings(prev => ({ ...prev, ...obj }));
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  // 🔹 HANDLE CHANGE
+  //  HANDLE CHANGE
   const handleChange = (key, value) => {
     setSettings(prev => ({
       ...prev,
@@ -41,7 +42,7 @@ export default function ApiForm({ loading, setLoading, onClose }) {
     }));
   };
 
-  // 🔹 SAVE
+  // SAVE
   const handleSave = async () => {
      if (!settings.apiKey) {
       showError("Please fill all required fields");
@@ -68,8 +69,8 @@ export default function ApiForm({ loading, setLoading, onClose }) {
       await saveSettings("API", payload);
       showSuccess("API settings saved ✅");
       await createActivityLog({
-        userId: 1,
-        userRole: "ADMIN",
+        userId: appUser?.userId ?? null,
+        userRole: appUser?.role ?? "UNKNOWN",
         action: "UPDATE",
         entityType: "API_SETTINGS",
         description: "Updated API Settings"

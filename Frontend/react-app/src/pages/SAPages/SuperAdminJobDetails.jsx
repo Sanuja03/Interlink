@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import BackButton from "../../components/SuperAdminComponents/Layout/Back";
 import { getJobById, flagJob, unflagJob, suspendJob, restoreJob } from "../../api/SAdminJobApi";
+import { createActivityLog } from "../../api/ActivityLogsApi";
+import { useAuth } from "../../context/AuthContext";
 
 const STATUS_BADGE = {
   OPEN:      "bg-green-100 text-green-700",
@@ -9,8 +12,17 @@ const STATUS_BADGE = {
   SUSPENDED: "bg-red-100 text-red-600",
 };
 
+// Toast messages per action
+const ACTION_TOAST = {
+  FLAG:    () => toast("Job flagged",    { style: { background: "#facc15", color: "#000" } }),
+  UNFLAG:  () => toast.success("Job unflagged."),
+  SUSPEND: () => toast("Job suspended", { style: { background: "#ef4444", color: "#fff" } }),
+  RESTORE: () => toast.success("Job restored successfully."),
+};
+
 export default function JobDetails() {
   const { id } = useParams();
+  const { appUser } = useAuth(); // appUser.role reads from /auth/me — correct role, not JWT "authenticated"
 
   const [job,     setJob]     = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,14 +43,28 @@ export default function JobDetails() {
     load();
   }, [id]);
 
-  const perform = async (action, newStatus, confirmMsg) => {
+  /**
+   * Executes a job action, logs it, shows a toast, and updates local state.
+   * confirmMsg is shown before proceeding — returning false cancels the action.
+   */
+  const perform = async (action, newStatus, confirmMsg, logAction) => {
     if (!window.confirm(confirmMsg)) return;
     setActing(true);
     try {
       await action(id);
+      await createActivityLog({
+        userId:      appUser?.userId ?? null,
+        userRole:    appUser?.role   ?? "UNKNOWN",
+        action:      logAction,
+        entityType:  "JOB",
+        description: `${logAction} job: ${job?.title ?? id}`,
+      });
       setJob(prev => ({ ...prev, status: newStatus }));
+      ACTION_TOAST[logAction]?.();
     } catch (err) {
-      console.error("Action failed", err);
+      // Surface backend hierarchy error message if present
+      const msg = err.response?.data ?? "Action failed. Please try again.";
+      toast.error(typeof msg === "string" ? msg : "Action failed. Please try again.");
     } finally {
       setActing(false);
     }
@@ -63,7 +89,6 @@ export default function JobDetails() {
 
   const statusKey  = (job.status || "").toUpperCase();
   const badgeClass = STATUS_BADGE[statusKey] || "bg-gray-100 text-gray-600";
-
   const isFlagged   = statusKey === "FLAGGED";
   const isSuspended = statusKey === "SUSPENDED";
 
@@ -71,10 +96,8 @@ export default function JobDetails() {
     <div className="space-y-6 font-outfit">
       <BackButton label="Back to Jobs" to="/admin/Jobs" />
 
-      {/* HEADER CARD */}
-      <div className="bg-[#24698B]/15 p-6 rounded-xl border border-[#DADEE0]
-                      flex justify-between items-start gap-4">
-
+      {/* HEADER CARD — info only*/}
+      <div className="bg-[#24698B]/15 p-6 rounded-xl border border-[#DADEE0]">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-[#24698B]">{job.title}</h2>
           <p className="text-sm text-gray-600">{job.companyName || "—"}</p>
@@ -85,53 +108,6 @@ export default function JobDetails() {
           <span className={`text-xs px-2 py-1 rounded mt-1 inline-block font-medium ${badgeClass}`}>
             {job.status}
           </span>
-        </div>
-
-        {/* ACTION BUTTONS — toggle based on current status */}
-        <div className="flex gap-2 flex-shrink-0">
-
-          {/* Flag / Unflag button */}
-          {!isFlagged ? (
-            <button
-              onClick={() => perform(flagJob, "FLAGGED", "Flag this job?")}
-              disabled={acting || isSuspended}
-              className="bg-yellow-400 hover:bg-yellow-500 disabled:opacity-40
-                         text-white px-4 py-1.5 rounded-md text-sm transition-colors"
-            >
-              Flag
-            </button>
-          ) : (
-            <button
-              onClick={() => perform(unflagJob, "OPEN", "Unflag this job? It will return to Open.")}
-              disabled={acting}
-              className="bg-yellow-100 hover:bg-yellow-200 disabled:opacity-40
-                         text-yellow-700 border border-yellow-400 px-4 py-1.5 rounded-md text-sm transition-colors"
-            >
-              Unflag
-            </button>
-          )}
-
-          {/* Suspend / Restore button */}
-          {!isSuspended ? (
-            <button
-              onClick={() => perform(suspendJob, "SUSPENDED", "Suspend this job?")}
-              disabled={acting}
-              className="bg-red-500 hover:bg-red-600 disabled:opacity-40
-                         text-white px-4 py-1.5 rounded-md text-sm transition-colors"
-            >
-              Suspend
-            </button>
-          ) : (
-            <button
-              onClick={() => perform(restoreJob, "OPEN", "Restore this job? It will return to Open.")}
-              disabled={acting}
-              className="bg-red-100 hover:bg-red-200 disabled:opacity-40
-                         text-red-600 border border-red-400 px-4 py-1.5 rounded-md text-sm transition-colors"
-            >
-              Restore
-            </button>
-          )}
-
         </div>
       </div>
 
@@ -158,6 +134,52 @@ export default function JobDetails() {
         ))}
       </div>
 
+      {/* ACTION BUTTONS */}
+      <div className="flex justify-center gap-4 pt-2">
+
+        {/* Suspend / Restore — outlined green when restoring */}
+        {!isSuspended ? (
+          <button
+            onClick={() => perform(suspendJob, "SUSPENDED", "Suspend this job?", "SUSPEND")}
+            disabled={acting}
+            className="bg-red-500 hover:bg-red-600 disabled:opacity-40
+                       text-white px-6 py-2 rounded-full text-sm font-medium transition-colors"
+          >
+            Suspend Job
+          </button>
+        ) : (
+          <button
+            onClick={() => perform(restoreJob, "OPEN", "Restore this job?", "RESTORE")}
+            disabled={acting}
+            className="bg-white border border-green-500 text-green-600 hover:bg-green-50
+                       disabled:opacity-40 px-6 py-2 rounded-full text-sm font-medium transition-colors"
+          >
+            Restore Job
+          </button>
+        )}
+
+        {/* Flag / Unflag — outlined yellow when unflagging */}
+        {!isFlagged ? (
+          <button
+            onClick={() => perform(flagJob, "FLAGGED", "Flag this job?", "FLAG")}
+            disabled={acting || isSuspended}
+            className="bg-yellow-400 hover:bg-yellow-500 disabled:opacity-40
+                       text-white px-6 py-2 rounded-full text-sm font-medium transition-colors"
+          >
+            Flag Job
+          </button>
+        ) : (
+          <button
+            onClick={() => perform(unflagJob, "OPEN", "Unflag this job?", "UNFLAG")}
+            disabled={acting}
+            className="bg-white border border-yellow-400 text-yellow-600 hover:bg-yellow-50
+                       disabled:opacity-40 px-6 py-2 rounded-full text-sm font-medium transition-colors"
+          >
+            Unflag Job
+          </button>
+        )}
+
+      </div>
     </div>
   );
 }
