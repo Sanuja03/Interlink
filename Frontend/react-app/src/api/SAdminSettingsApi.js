@@ -1,13 +1,11 @@
-import axios from "axios";
+import api from "../lib/api";
 
-const BASE_URL = "http://localhost:8080/api/admin/settings";
-
-// GET settings by category
-export const getSettings = (category) => {
-  return axios.get(`${BASE_URL}/${category}`);
+export const getSettings = async (category) => {
+  const res = await api.get(`/admin/settings/${category}`);
+  return res.data;
 };
 
-// SAVE settings
-export const saveSettings = (category, data) => {
-  return axios.post(`${BASE_URL}/${category}`, data);
+export const saveSettings = async (category, data) => {
+  const res = await api.post(`/admin/settings/${category}`, data);
+  return res.data;
 };

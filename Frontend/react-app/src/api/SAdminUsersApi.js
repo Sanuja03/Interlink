@@ -1,34 +1,39 @@
-import axios from "axios";
+import api from "../lib/api";
 
-const BASE_URL = "http://localhost:8080/api/admin/users";
-
-// =========================================
-// 🔹 GET ALL USERS (users list page)
-//    Optional: search by name/email, filter by role
-//    role: "candidate" | "interviewer" | "company_admin" | ""
-// =========================================
+// Fetch all users with optional search and role filters
 export const getUsers = async ({ search = "", role = "" } = {}) => {
-  const res = await axios.get(BASE_URL, {
+  const res = await api.get("/admin/users", {
     params: { search, role },
   });
   return res.data;
 };
 
-// =========================================
-// 🔹 GET USER PROFILE (role-specific)
-//    Returns different shape based on role:
-//    - candidate     → AdminCandidateProfileDto
-//    - interviewer   → AdminInterviewerProfileDto
-//    - company_admin → AdminCompanyAdminProfileDto
-// =========================================
+// Fetch a single user profile by ID
 export const getUserProfile = async (userId) => {
-  const res = await axios.get(`${BASE_URL}/${userId}`);
+  const res = await api.get(`/admin/users/${userId}`);
   return res.data;
 };
 
-// =========================================
-// 🔹 USER ACTIONS
-// =========================================
-export const suspendUser = async (userId) => axios.put(`${BASE_URL}/${userId}/suspend`);
-export const restoreUser = async (userId) => axios.put(`${BASE_URL}/${userId}/restore`);
-export const flagUser    = async (userId) => axios.put(`${BASE_URL}/${userId}/flag`);
+// Suspend a user by ID
+export const suspendUser = async (userId) => {
+  const res = await api.put(`/admin/users/${userId}/suspend`);
+  return res.data;
+};
+
+// Restore a suspended user by ID
+export const restoreUser = async (userId) => {
+  const res = await api.put(`/admin/users/${userId}/restore`);
+  return res.data;
+};
+
+// Flag a user for issues by ID
+export const flagUser = async (userId) => {
+  const res = await api.put(`/admin/users/${userId}/flag`);
+  return res.data;
+};
+
+// Remove flag from a user by ID
+export const unflagUser = async (userId) => {
+  const res = await api.put(`/admin/users/${userId}/unflag`);
+  return res.data;
+};
