@@ -5,14 +5,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+
 import syncX.modules.SuperAdmin.Admin_companies.entity.AdminCompanyUsers;
 
 import java.util.UUID;
 
 public interface AdminCompanyUsersRepository extends JpaRepository<AdminCompanyUsers, UUID> {
 
-    @Modifying
-    @Transactional
+    // Suspend all users linked to a company (both company and interviewer users)
+    @Modifying // Indicates this query modifies data
+    @Transactional // Ensures execution within a transaction
     @Query(value = """
         UPDATE users
         SET account_status = 'suspended'
@@ -22,10 +24,11 @@ public interface AdminCompanyUsersRepository extends JpaRepository<AdminCompanyU
             SELECT user_id FROM interviewers WHERE company_id = :companyId
         )
     """, nativeQuery = true)
-    void deactivateCompanyUsers(@Param("companyId") UUID companyId);
+    void deactivateCompanyUsers(@Param("companyId") UUID companyId); // Company ID parameter
 
-    @Modifying
-    @Transactional
+    // Activate all users linked to a company (both company and interviewer users)
+    @Modifying // Indicates this query modifies data
+    @Transactional // Ensures execution within a transaction
     @Query(value = """
         UPDATE users
         SET account_status = 'active'
@@ -35,5 +38,5 @@ public interface AdminCompanyUsersRepository extends JpaRepository<AdminCompanyU
             SELECT user_id FROM interviewers WHERE company_id = :companyId
         )
     """, nativeQuery = true)
-    void activateCompanyUsers(@Param("companyId") UUID companyId);
+    void activateCompanyUsers(@Param("companyId") UUID companyId); // Company ID parameter
 }

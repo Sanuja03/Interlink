@@ -17,6 +17,9 @@ public class AdminCompany {
     @Column(name = "company_id")
     private UUID id;
 
+    @Column(name = "user_id")
+    private UUID userId;
+
     @Column(name = "company_name")
     private String companyName;
 
