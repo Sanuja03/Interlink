@@ -1,7 +1,6 @@
-// ============================================================
-// FILE: src/main/java/syncX/security/SecurityConfig.java (UPDATED)
+
 // PURPOSE: Role-based URL authorization + JWT auth
-// ============================================================
+
 package syncX.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +32,14 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // ── Public: signup endpoints (called right after Supabase signup) ──
+                        // ── Public: no login needed
                         .requestMatchers(
                                 "/api/auth/complete-candidate-signup",
                                 "/api/auth/complete-company-signup",
                                 "/api/otp/**"
                         ).permitAll()
 
+                        //Role-based endpoints
                         // ── Candidate endpoints ──
                         .requestMatchers("/api/candidate/**").hasAuthority("ROLE_candidate")
 
@@ -55,12 +55,12 @@ public class SecurityConfig {
                         // ── Super admin endpoints ──
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_super_admin")
 
-                        // ── Shared endpoints (any authenticated user) ──
+                        // ── Shared endpoints (any authenticated user)
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/logout").authenticated()
 
-                        // ── Everything else requires authentication ──
+                        // ── Everything else requires authentication(login) ──
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-
 import "./FloatingAvailabilityBtn.css";
+
 import { checkWeekStatus } from "../../../utils/weekUtils";
 import AvailabilityPopup from "../../../pages/IPages/AvailabilityPopup";
 
@@ -43,6 +43,7 @@ const FloatingAvailabilityBtn = () => {
         onClick={() => setShowPopup(true)}
         title={submitted ? "Availability set for this week" : "Set your weekly availability"}
       >
+        {/* creating teh calendar image */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"

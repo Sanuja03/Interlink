@@ -50,19 +50,19 @@ public class AuthController {
     @PostMapping("/complete-company-signup")
     public String completeCompanySignup(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CompanySignupDTO dto) {
-        authService.completeCompanySignup(jwt, dto);
+            @RequestBody CompanySignupDTO dto) { //json data sent from frontend about company will be converted to a dto
+        authService.completeCompanySignup(jwt, dto);//call service
         return "Company created";
     }
 
     // Only company admins can create interviewers
-    @PreAuthorize("hasRole('company_admin')")
+    @PreAuthorize("hasRole('company_admin')")//security check
     @PostMapping("/complete-interviewer-signup")
     public ResponseEntity<InterviewerResponseDTO> completeInterviewerSignup(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody InterviewerSignupDTO dto) {
         InterviewerResponseDTO created = authService.completeInterviewerSignup(jwt, dto);
-        return ResponseEntity.ok(created);
+        return ResponseEntity.ok(created);//created is a Java object (DTO) -interviewerResponseDTO
     }
 
     // Only company admins can list interviewers

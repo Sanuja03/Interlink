@@ -1,8 +1,7 @@
-// ============================================================
-// FILE: src/main/java/syncX/security/GlobalExceptionHandler.java (NEW)
+
 // PURPOSE: Returns clean JSON error responses for auth failures
 //          instead of Spring's default HTML error pages
-// ============================================================
+
 package syncX.security;
 
 import org.springframework.http.HttpStatus;

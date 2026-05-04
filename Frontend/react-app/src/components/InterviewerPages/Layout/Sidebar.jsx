@@ -8,16 +8,12 @@ import defaultAvatar from "../../../assets/default-avatar.png";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useInterviewerProfile } from "../../../context/InterviewerProfileContext";
 
 const Sidebar = () => {
-  const profile = {
-    name: "Sanj Perera",
-    email: "senithi.perera@interlink.com",
-    avatar: null,
-  };
-
+  const { profile } = useInterviewerProfile();//get profile details we are in
   const location = useLocation();
-  const currentPath = location.pathname;
+  const currentPath = location.pathname;//get current url
 
   const interviewSubItems = [
     { label: "Scheduled", href: "/interviewer/scheduled-interviews" },
@@ -25,6 +21,7 @@ const Sidebar = () => {
     { label: "Completed", href: "/interviewer/completed-interviews" },
   ];
 
+  //check we are in main menue page or submenue page so we can open the drop down
   const isInterviewRoute =
     currentPath === "/interviews" ||
     interviewSubItems.some((sub) => sub.href === currentPath);
@@ -32,34 +29,31 @@ const Sidebar = () => {
   const [openInterviews, setOpenInterviews] = useState(isInterviewRoute);
 
   useEffect(() => {
-    if (isInterviewRoute) {
-      setOpenInterviews(true);
-    }
+    if (isInterviewRoute) setOpenInterviews(true);
   }, [isInterviewRoute]);
 
   const menuItems = [
     { label: "Dashboard", href: "/interviewer/dashboard", icon: dashboardIcon },
     { label: "Interview Management", href: "/interviews", icon: interviewIcon },
     { label: "Calendar", href: "/interviewer/calendar", icon: calendarIcon },
-  
   ];
 
   return (
     <aside className="sidebar">
-      {/* interlink logo */}
       <div className="sidebar-logo">
         <img src={interlink} alt="InterLink logo" />
       </div>
 
-      {/* Menu */}
       <nav className="sidebar-nav">
+
+       {/* runs this block 3 times (Dashboard, Interview Management, Calendar) */}
         {menuItems.map((item) => {
           const isInterviewParent = item.href === "/interviews";
-
           const isActive = isInterviewParent
             ? isInterviewRoute
             : currentPath === item.href;
 
+          // only runs for Interview Management menu item, if we are in interview management  
           if (isInterviewParent) {
             return (
               <div key={item.href}>
@@ -69,7 +63,7 @@ const Sidebar = () => {
                 >
                   <img src={item.icon} alt={`${item.label} icon`} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-
+                  {/* the arrow  */}
                   <span
                     style={{
                       fontSize: 12,
@@ -81,18 +75,16 @@ const Sidebar = () => {
                   </span>
                 </div>
 
+                {/* if openiterviewes true show submenues    */}
                 {openInterviews && (
                   <div className="sidebar-submenu">
                     {interviewSubItems.map((sub) => {
                       const subActive = currentPath === sub.href;
-
                       return (
                         <Link
                           key={sub.href}
                           to={sub.href}
-                          className={`sidebar-subitem ${
-                            subActive ? "active" : ""
-                          }`}
+                          className={`sidebar-subitem ${subActive ? "active" : ""}`}
                         >
                           {sub.label}
                         </Link>
@@ -117,12 +109,15 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* bottom profile */}
       <div className="sidebar-profile">
         <Link to="/interviewer/profile">
-          <img src={profile.avatar || defaultAvatar} alt={profile.name} />
+          <img
+            src={profile.avatar || defaultAvatar}
+            alt={profile.name}
+            onError={(e) => { e.target.src = defaultAvatar; }}
+          />
           <div className="sidebar-profile-text">
-            <p className="sidebar-profile-name">{profile.name}</p>
+            <p className="sidebar-profile-name">{profile.name || "Loading..."}</p>
             <p className="sidebar-profile-email">{profile.email}</p>
           </div>
         </Link>

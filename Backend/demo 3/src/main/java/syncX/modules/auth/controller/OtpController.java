@@ -26,7 +26,7 @@ public class OtpController {
 
 
     @PostMapping("/send-signup-otp")
-    public ResponseEntity<?> sendSignupOtp(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> sendSignupOtp(@RequestBody Map<String, String> body) {//data from frontend will be stored in key value pairs
         String email = body.get("email");
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
@@ -77,7 +77,7 @@ public class OtpController {
             new Thread(() -> InterLinkMailSender.sendPasswordResetOTP(email.trim(), otp)).start();
         }
 
-        // Always return success (prevents email enumeration)
+        // Always return success
         return ResponseEntity.ok(Map.of("message", "If this email is registered, you'll receive a reset code"));
     }
 

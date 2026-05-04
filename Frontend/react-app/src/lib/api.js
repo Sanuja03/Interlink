@@ -1,9 +1,9 @@
-
 import axios from "axios";
 import { supabase } from "./supabase";
 
 const LOGIN_FLAG = "interlink_logged_in";
 
+//creates a customized version of axios called api
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
   headers: {
@@ -11,47 +11,52 @@ const api = axios.create({
   },
 });
 
-// attach fresh Supabase JWT 
+// Wait for Supabase to finish restoring the session from localStorage
+async function waitForSession(maxAttempts = 20, delayMs = 50) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) return session;
+    if (i === maxAttempts - 1) return null;
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return null;
+}
+
+// attach fresh Supabase JWT to the request sent to backend
 api.interceptors.request.use(
   async (config) => {
-    // Skip auto(token is attached manually)
+    // dont ask subapase for a token when signing up - token is atatched manually in there
     if (sessionStorage.getItem("is_signing_up") === "true") {
       return config;
     }
-
-    // Don't touch Supabase at all if user isn't logged in
+    // dont ask subapase for a token if logged out 
     if (sessionStorage.getItem(LOGIN_FLAG) !== "true") {
       return config;
     }
-
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await waitForSession();
       if (session?.access_token) {
         config.headers.Authorization = `Bearer ${session.access_token}`;
-      }
+      }      
     } catch (_) {
-      // Send request without token
+      
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// handle 401 by refreshing token 
+// the response will be checked by axios and if 401(unauthorized) the belwo tries to attach a new token and send the reqest agaian
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Skip retry/logout logic for signup endpoints and during signup flow
-    const isSignupCall = originalRequest.url?.includes("/complete-candidate-signup") ||
-                         originalRequest.url?.includes("/complete-company-signup");
+  (response) => response, 
+  async (error) => { const originalRequest = error.config;
+ 
+    const isSignupCall = originalRequest.url?.includes("/complete-candidate-signup") || originalRequest.url?.includes("/complete-company-signup");
     const isSigningUp = sessionStorage.getItem("is_signing_up") === "true";
 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&
+      !originalRequest._retry && //prevent infinte loop 
       sessionStorage.getItem(LOGIN_FLAG) === "true" &&
       !isSignupCall &&
       !isSigningUp

@@ -1,6 +1,5 @@
 
-
-.scm-overlay {
+.scm-overlay {/*overlay - dark background behind modal*/
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
@@ -8,7 +7,6 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 20px;
   }
   
   .scm-modal {
@@ -18,7 +16,7 @@
     max-width: 720px;
     max-height: 85vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /*stack the form cards and close button vertically*/
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
     overflow: hidden;
   }
@@ -30,14 +28,15 @@
     justify-content: space-between;
     padding: 24px 28px 16px;
     border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
   }
   
+
   .scm-title {
     font-size: 20px;
     font-weight: 700;
     color: #111827;
-    margin: 0;
+    margin: 0; /*This excludes default spacing - it sets:Top margin = 0Right margin = 0Bottom margin = 0Left margin = 0
+    */
   }
   
   .scm-subtitle {
@@ -55,8 +54,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
   }
   .scm-create-btn:hover {
     background: #4338ca;
@@ -64,8 +61,8 @@
   
   /* List */
   .scm-list {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1;/*Take up all remaining space*/
+    overflow-y: auto;/*Only show scrollbar if content is too long*/
     padding: 16px 28px;
   }
   
@@ -85,8 +82,6 @@
     margin-bottom: 12px;
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   .scm-card:hover {
@@ -100,7 +95,6 @@
   
   .scm-card-info {
     flex: 1;
-    min-width: 0;
   }
   
   .scm-card-name {
@@ -110,8 +104,7 @@
     margin: 0 0 4px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 8px;  
   }
   
   .scm-finalized-badge {
@@ -121,7 +114,7 @@
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 20px;
-    letter-spacing: 0.02em;
+
   }
   
   .scm-card-meta {
@@ -133,7 +126,7 @@
   .scm-card-fields-preview {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 3px;
   }
   
   .scm-field-chip {
@@ -148,9 +141,7 @@
   /* Card actions */
   .scm-card-actions {
     display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
+    gap: 6px; 
   }
   
   .scm-action-btn {
@@ -160,7 +151,7 @@
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, opacity 0.2s;
+    transition:0.2s;
     white-space: nowrap;
   }
   
@@ -171,7 +162,7 @@
   .scm-edit-btn:hover {
     background: #c7d2fe;
   }
-  
+
   .scm-finalize-btn {
     background: #d1fae5;
     color: #15803d;
@@ -214,7 +205,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
   }
   .scm-close-btn:hover {
     background: #e5e7eb;

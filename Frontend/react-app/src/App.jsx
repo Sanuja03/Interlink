@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import "./App.css";
 
 import { AuthProvider } from "./context/Authcontext";
+import { InterviewerProfileProvider } from "./context/InterviewerProfileContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Landing
@@ -113,16 +114,24 @@ function App() {
         <Route path="/candidate/calendar" element={<Candidate><CandidateCalendar /></Candidate>} />
         <Route path="/candidate/jobapply/:id" element={<Candidate><CandidateJobApply /></Candidate>} />
 
-        {/* Interviewer */}
-        <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
-        <Route path="/interviewer/calendar" element={<InterviewerRole><InterviewerCalendar /></InterviewerRole>} />
-        <Route path="/interviewer/profile" element={<InterviewerRole><InterviewerProfile /></InterviewerRole>} />
-        <Route path="/interviewer/pending-requests" element={<InterviewerRole><InterviewerPendingRequests /></InterviewerRole>} />
-        <Route path="/interviewer/completed-interviews" element={<InterviewerRole><InterviewerCompletedInterviews /></InterviewerRole>} />
-        <Route path="/interviewer/scheduled-interviews" element={<InterviewerRole><InterviewerScheduledInterviews /></InterviewerRole>} />
-        <Route path="/interviewer/single-view/:interviewId" element={<InterviewerRole><InterviewerCandidateSingleView /></InterviewerRole>} />
-
-        {/* Company */}
+        <Route
+          path="/interviewer/*"
+          element={
+            <InterviewerRole>
+              <InterviewerProfileProvider>
+                <Routes>
+                  <Route path="dashboard" element={<InterviewerDashboard />} />
+                  <Route path="calendar" element={<InterviewerCalendar />} />
+                  <Route path="profile" element={<InterviewerProfile />} />
+                  <Route path="pending-requests" element={<InterviewerPendingRequests />} />
+                  <Route path="completed-interviews" element={<InterviewerCompletedInterviews />} />
+                  <Route path="scheduled-interviews" element={<InterviewerScheduledInterviews />} />
+                  <Route path="single-view/:interviewId" element={<InterviewerCandidateSingleView />} />
+                </Routes>
+              </InterviewerProfileProvider>
+            </InterviewerRole>
+          }
+        />
       
 
         {/* Company Admin routes */}

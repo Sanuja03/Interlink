@@ -52,8 +52,9 @@ public class AuthService {
             throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
         }
 
-        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now(); //get current time
 
+        //if first time logging in set it to false
         if (Boolean.TRUE.equals(user.getIsFirstLogin())) {
             user.setIsFirstLogin(false);
         }
@@ -61,9 +62,19 @@ public class AuthService {
         user.setAccountStatus("active");
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
-        userRepository.save(user);
+        userRepository.save(user); //update teh database with the updated details such as lastlogin etc
 
         return user;
+    }
+
+    public void logoutUser(Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setAccountStatus("inactive");
+        user.setUpdatedAt(OffsetDateTime.now());
+        userRepository.save(user);
     }
 
     public void completeCandidateSignup(Jwt jwt, CandidateSignupDTO dto) {
@@ -85,7 +96,7 @@ public class AuthService {
         Candidate candidate = new Candidate();
         candidate.setCandidateId(UUID.randomUUID());
         candidate.setUserId(userId);
-        candidate.setFirstName(dto.getFirstName());
+        candidate.setFirstName(dto.getFirstName());//these are wat given by the frontend
         candidate.setLastName(dto.getLastName());
         candidate.setEmail(dto.getEmail());
         candidate.setCreatedAt(now);
@@ -97,7 +108,7 @@ public class AuthService {
         UUID userId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        User user = userRepository.findById(userId).orElseGet(User::new);
+        User user = userRepository.findById(userId).orElseGet(User::new);//try to find the user by user id and if not found create a new user
         user.setUserId(userId);
         user.setEmail(dto.getEmail());
         user.setRole("company_admin");
@@ -122,30 +133,37 @@ public class AuthService {
         companyRepository.save(company);
     }
 
+    //creates a new interviewer account and returns the details
     public InterviewerResponseDTO completeInterviewerSignup(Jwt jwt, InterviewerSignupDTO dto) {
-
+        //get the logged in user's(companyadmin) userid
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();//Get current date and time
 
+        //find the logged in user(companyadmin) in database using user id
         User admin = userRepository.findById(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
 
         if (!admin.getRole().equals("company_admin")) {
             throw new RuntimeException("Only company admins can create interviewers");
         }
 
+        //check whether  this userid has a companyid in company table
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        //Check email already exists give for the interviewer
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already exists in system");
         }
 
+        //create a user in the user table and return its id
         String supabaseUserId = supabaseAdminService.createUser(
                 dto.getEmail(),
                 dto.getPassword()
         );
 
+        //convert that user_id into uuid
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
         User user = new User();
@@ -178,18 +196,10 @@ public class AuthService {
 
         interviewerRepository.save(interviewer);
 
-        return mapToResponseDTO(interviewer, user);
+        return mapToResponseDTO(interviewer, user);//Convert data into a clean response and send back to frontend
     }
 
-    public void logoutUser(Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setAccountStatus("inactive");
-        user.setUpdatedAt(OffsetDateTime.now());
-        userRepository.save(user);
-    }
 
     public List<InterviewerResponseDTO> getInterviewersByCompany(Jwt jwt) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
@@ -206,6 +216,7 @@ public class AuthService {
 
         List<Interviewer> interviewers = interviewerRepository.findByCompanyId(adminCompany.getCompanyId());
 
+        //interviewer objects will be convert to a response dto and then returned as a list
         return interviewers.stream()
                 .map(interviewer -> {
                     User user = userRepository.findById(interviewer.getUserId()).orElse(null);
@@ -230,6 +241,7 @@ public class AuthService {
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
+        //check interviewer belongs to the company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
@@ -340,9 +352,8 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    /**
-     * Updates only the interviewer's photo URL.
-     */
+
+     //Updates only the interviewer's photo URL.
     public InterviewerResponseDTO updateInterviewerPhoto(Jwt jwt, String photoUrl) {
         UUID userId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
@@ -360,13 +371,13 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    // Helper: map entity to response DTO
+    //  map entity to response DTO - combines interviewer and user object and give oen to front end
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();
         response.setInterviewerId(interviewer.getInterviewerId());
         response.setUserId(interviewer.getUserId());
         response.setCompanyId(interviewer.getCompanyId());
-        response.setFullName(interviewer.getFullName());
+        response.setFullName(interviewer.getFullName());//get full name from the interviewer object and put it into the response object
         response.setPhone(interviewer.getPhone());
         response.setInterviewerRole(interviewer.getInterviewerRole());
         response.setBranch(interviewer.getBranch());
@@ -377,6 +388,7 @@ public class AuthService {
         response.setUpdatedAt(interviewer.getUpdatedAt());
 
         if (user != null) {
+            //copy account/login-related details from the User object into the response.
             response.setEmail(user.getEmail());
             response.setAccountStatus(user.getAccountStatus());
             response.setFirstLogin(user.getIsFirstLogin());

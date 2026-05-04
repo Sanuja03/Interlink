@@ -25,9 +25,18 @@ public class InterviewerRequestController {
      */
     @GetMapping("/pending")
     @PreAuthorize("hasRole('interviewer')")
-    public ResponseEntity<List<InterviewRequestDTO.PendingRequestForInterviewer>> getMyPending(
+    public ResponseEntity<?> getMyPending(
             @AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(service.getPendingForInterviewer(jwt));
+        try {
+            List<InterviewRequestDTO.PendingRequestForInterviewer> result =
+                    service.getPendingForInterviewer(jwt);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
     }
 
     /**
@@ -39,9 +48,16 @@ public class InterviewerRequestController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID requestId,
             @RequestParam String response) {
-
-        UUID userId = UUID.fromString(jwt.getSubject());
-        service.respondToRequest(requestId, userId, response);
-        return ResponseEntity.ok().build();
+        try {
+            UUID userId = UUID.fromString(jwt.getSubject());
+            service.respondToRequest(requestId, userId, response);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 }

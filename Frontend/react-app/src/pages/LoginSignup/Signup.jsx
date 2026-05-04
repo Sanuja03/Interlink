@@ -1,6 +1,8 @@
 import './Signup.css'
+
 import interlink from '../../assets/interlink.png'
 import homeicon from '../../assets/homeicon.png'
+
 import { supabase } from "../../lib/supabase"
 import api from "../../lib/api"
 
@@ -12,35 +14,30 @@ const Signup = () => {
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState("")
   const [submitSuccess, setSubmitSuccess] = useState("")
-  const [step, setStep] = useState(1) // 1 = form, 2 = OTP
+  const [step, setStep] = useState(1) // 1 = form screen, 2 = OTP input screen 
   const [otp, setOtp] = useState("")
   const [formData, setFormData] = useState(null)
+  const [verifying, setVerifying] = useState(false)
 
   const {
     register, handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm({ mode: "onTouched" })
 
-  // Submit form → send OTP
+  // submit form and send otp
   const onSubmit = async (data) => {
     try {
       setSubmitError("")
       const email = data.email.trim()
-
-      // Ask backend to send OTP
       await api.post("/otp/send-signup-otp", { email })
-
-      // Save form data and go to OTP step
-      setFormData({ ...data })
+      setFormData({ ...data }) // save form data
       setStep(2)
     } catch (err) {
       setSubmitError(err?.response?.data?.message || "Failed to send OTP")
     }
   }
 
-  // Verify OTP → create account
-  const [verifying, setVerifying] = useState(false)
-
+  //verify otp and create account
   const handleVerifyOtp = async () => {
   if (verifying) return
   setVerifying(true)
@@ -52,11 +49,11 @@ const Signup = () => {
 
     sessionStorage.setItem("is_signing_up", "true")
 
+    //create a user is supabase auth system
     const { error: authError } = await supabase.auth.signUp({
       email,
       password: formData.password,
     })
-
     if (authError) {
       sessionStorage.removeItem("is_signing_up")
       setSubmitError(authError.message)
@@ -72,6 +69,7 @@ const Signup = () => {
       return
     }
 
+    //sends user info and jwt token to backend
     await api.post("/auth/complete-candidate-signup", {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -80,23 +78,27 @@ const Signup = () => {
       headers: { Authorization: `Bearer ${session.access_token}` }
     })
 
+    //log out user
     sessionStorage.removeItem("is_signing_up")
     await supabase.auth.signOut()
 
     setSubmitSuccess("Signup successful!")
     navigate("/Login")
-  } catch (err) {
+
+  }catch (err) {
     sessionStorage.removeItem("is_signing_up")
     setSubmitError(err?.response?.data?.message || err.message || "Verification failed")
     setVerifying(false)
   }
 }
 
-  // OTP screen
+  // OTP input screen
   if (step === 2) {
     return (
       <div className='page'>
+
         <div className='container'>
+
           <div className='header'>
             <div className='text'>
               <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
@@ -119,9 +121,9 @@ const Signup = () => {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
               />
             </div>
-
-            <button className='signup-button' onClick={handleVerifyOtp} disabled={otp.length !== 6 || verifying}>
-              {verifying ? "Creating account..." : "Verify & Create Account"}
+            
+            <button className='signup-button' onClick={handleVerifyOtp} disabled={otp.length !== 6 || verifying}> 
+              {verifying ? "Creating account..." : "Verify & Create Account"} 
             </button>
 
             <p>
@@ -129,20 +131,25 @@ const Signup = () => {
                 ← Go back
               </a>
             </p>
+
           </div>
+
         </div>
+
       </div>
     )
   }
 
-  // Main signup form (same as before)
+  // signup form 
   return (
     <div className='page'>
+
       <div className="home-button">
         <a href="/"><img src={homeicon} alt="Home" /></a>
       </div>
 
       <div className='container'>
+
         <div className='header'>
           <div className='text'>
             <img src={interlink} alt="InterLink Logo" className="interlinklogo" />

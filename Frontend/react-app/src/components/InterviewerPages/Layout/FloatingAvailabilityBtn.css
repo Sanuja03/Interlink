@@ -35,21 +35,7 @@
   }
   
   
-  /* pending - red indicator */
-  
-  .floating-availability-btn.pending {
-    background: #111827;
-    color: #ffffff;
-  }
-  
-  
-  /* done - green indicator */
-  
-  .floating-availability-btn.done {
-    background: #111827;
-    color: #ffffff;
-  }
-  
+
   
   /* dot */
   
@@ -63,13 +49,18 @@
     border: 2.5px solid #ffffff;
   }
   
-  
   /* red dot  */
   
   .floating-btn-dot.pending {
     background: #ef4444;
     animation: dotPulse 2s ease-in-out infinite;
   }
+    /* green static dot when availability is set */
+  
+    .floating-btn-dot.done {
+      background: #22c55e;
+      animation: none;
+    }
   
   @keyframes dotPulse {
     0%, 100% {
@@ -81,9 +72,3 @@
   }
   
   
-  /* green static dot when availability is set */
-  
-  .floating-btn-dot.done {
-    background: #22c55e;
-    animation: none;
-  }

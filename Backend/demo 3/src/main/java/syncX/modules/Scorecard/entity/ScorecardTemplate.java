@@ -38,8 +38,9 @@ public class ScorecardTemplate {
     @Column(name = "updated_at", insertable = false)
     private OffsetDateTime updatedAt;
 
+
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL,
-            orphanRemoval = true, fetch = FetchType.EAGER)
+            orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("displayOrder ASC")
     private List<ScorecardTemplateField> fields = new ArrayList<>();
 }

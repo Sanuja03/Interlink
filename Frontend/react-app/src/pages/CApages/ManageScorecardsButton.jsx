@@ -1,16 +1,7 @@
 import { useState } from "react";
 import ScorecardManager from "../../components/CompanyPages/ScoreCardManager";
 
-/**
- * ManageScorecardsButton
- *
- * Props:
- *  - jobTitle    : string
- *  - jobPostId   : string
- *  - jobId       : number — needed by ScorecardManager to call the API
- *  - scorecards  : array  — lifted state from page
- *  - onSave      : (updatedList) => void
- */
+//scorecardmanagaer passes these inputs or keep empty if not available
 const ManageScorecardsButton = ({
   jobTitle = "",
   jobPostId = "",
@@ -23,11 +14,12 @@ const ManageScorecardsButton = ({
   return (
     <>
       <button className="sc-template-btn" onClick={() => setOpen(true)}>
-        📋 Manage Scorecards
+        Manage Scorecards
         {scorecards.length > 0 && (
           <span className="sc-template-count">{scorecards.length}</span>
         )}
       </button>
+      
 
       <ScorecardManager
         open={open}
