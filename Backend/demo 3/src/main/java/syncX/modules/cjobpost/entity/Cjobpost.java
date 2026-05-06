@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
 import java.util.List;
 import syncX.modules.enums.Category;
 import syncX.modules.enums.CategoryConverter;
@@ -49,6 +50,9 @@ public class Cjobpost {
 
     @Column(length = 2000)
     private String description;
+
+    @Column(name = "`Deadline`")
+    private LocalDate deadline;
 
 //    @ElementCollection
 //    @CollectionTable(name = "cjobpost_requirements", joinColumns = @JoinColumn(name = "jobpost_id"))

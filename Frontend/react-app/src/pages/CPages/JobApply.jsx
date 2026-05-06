@@ -383,6 +383,16 @@ const IconArrow = () => (
 import api from '../../lib/api';
 
 const JobApply = () => {
+  const formatDeadline = (value) => {
+      if (!value) return 'No date';
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return 'No date';
+      return parsed.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+      });
+  };
+
   const formatEnum = (val) => {
       if (!val) return '';
       return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
@@ -535,7 +545,7 @@ const JobApply = () => {
           </div>
           <div className="apply-hero__badge">
             <span className="apply-hero__badge-label">Deadline</span>
-            <span className="apply-hero__badge-val">Apr 30</span>
+            <span className="apply-hero__badge-val">{formatDeadline(job.deadline)}</span>
           </div>
         </div>
 
