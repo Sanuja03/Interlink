@@ -5,8 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import syncX.modules.InterviewProcess.InterviewRequest.dto.CompanyMeResponse;
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.repository.CompanyRepository;
 
@@ -21,10 +24,10 @@ public class CompanyMeController {
 
     /**
      * GET /api/company/me
-     *
      * Returns the logged-in company admin's company info.
      * Used by the frontend to scope shortlisted candidates
-     * to only those belonging to this company.
+     * to only those belonging to this company - ./api/auth/me
+     * returns only user info (id, email, role) but NOT company details
      */
     @GetMapping("/me")
     @PreAuthorize("hasRole('company_admin')")
@@ -44,22 +47,5 @@ public class CompanyMeController {
                 company.getCompanyName(),
                 company.getCompanyEmail()
         ));
-    }
-
-    /** Minimal response DTO — kept as inner class for simplicity */
-    public static class CompanyMeResponse {
-        private final String companyId;
-        private final String companyName;
-        private final String companyEmail;
-
-        public CompanyMeResponse(String companyId, String companyName, String companyEmail) {
-            this.companyId = companyId;
-            this.companyName = companyName;
-            this.companyEmail = companyEmail;
-        }
-
-        public String getCompanyId() { return companyId; }
-        public String getCompanyName() { return companyName; }
-        public String getCompanyEmail() { return companyEmail; }
     }
 }

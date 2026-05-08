@@ -58,7 +58,7 @@
   flex-wrap: wrap;
 }
 
-/* left side */
+/* LEFT SIDE ---- */
 .profile-left {
   width: 340px;
   border: 1px solid #e5e7eb;
@@ -114,7 +114,7 @@
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+ 
 }
 
 .change-photo-btn:hover {
@@ -127,13 +127,8 @@
 }
 
 /* readonly */
-.profile-readonly-list {
-  margin-top: 24px;
-}
 
-.readonly-block {
-  margin-bottom: 16px;
-}
+
 
 .readonly-label {
   font-size: 12px;
@@ -233,7 +228,7 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
+  
 }
 
 .edit-btn:hover {
@@ -248,7 +243,7 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
+  
 }
 
 .cancel-btn:hover {
@@ -263,7 +258,7 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
+ 
 }
 
 .save-btn:hover {

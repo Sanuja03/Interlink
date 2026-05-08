@@ -107,7 +107,6 @@ public class InterviewSchedulingService {
 
 
     // GET: fetch the scheduled record for a given requestId
-
     @Transactional(readOnly = true)
     public InterviewSchedulingDTO.ScheduledResponse getByRequestId(Jwt jwt, UUID requestId) {
 
@@ -127,7 +126,6 @@ public class InterviewSchedulingService {
     }
 
 
-    // PATCH: save scorecardId
 
     @Transactional
     public InterviewSchedulingDTO.ScheduledResponse saveScorecard(
@@ -156,7 +154,6 @@ public class InterviewSchedulingService {
 
 
     // PRIVATE helpers
-
     private InterviewSchedulingDTO.ScheduledResponse buildResponse(
             InterviewScheduled s, InterviewRequest ir) {
 

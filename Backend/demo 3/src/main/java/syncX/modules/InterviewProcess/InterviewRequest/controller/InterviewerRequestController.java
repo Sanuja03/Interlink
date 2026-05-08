@@ -20,9 +20,7 @@ public class InterviewerRequestController {
     @Autowired
     private InterviewRequestService service;
 
-    /**
-     * GET /api/interviewer/interview-requests/pending
-     */
+
     @GetMapping("/pending")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<?> getMyPending(

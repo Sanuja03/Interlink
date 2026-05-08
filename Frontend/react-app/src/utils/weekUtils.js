@@ -2,10 +2,7 @@
 import api from "../lib/api";
 
 
-
-/**
- * Returns the Monday of the current week.
- */
+/*returns the monday of the current week*/
 export const getMonday = (date = new Date()) => {
   const d = new Date(date);
   const day = d.getDay();
@@ -52,9 +49,7 @@ export const getCurrentWeekDates = (refDate = new Date()) => {
   });
 };
 
-/**
- * Returns ISO-like week key, e.g. "2026-W17"
- */
+/*returns ISO-like week key, e.g. "2026-W17"*/
 export const getWeekKey = (refDate = new Date()) => {
   const monday = getMonday(refDate);
   const year = monday.getFullYear();

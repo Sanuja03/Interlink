@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import api from "../../lib/api";
-import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
-import defaultAvatar from "../../assets/default-avatar.png";
 import "./InterviewerProfile.css";
+
+import defaultAvatar from "../../assets/default-avatar.png";
+
+import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import { useInterviewerProfile } from "../../context/InterviewerProfileContext";
 
 const BUCKET_NAME = "profile-photos";
@@ -103,6 +105,7 @@ const InterviewerProfile = () => {
     setError(null);
     setSuccessMsg("");
 
+    //upload photo to supabase
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${profile.userId}.${fileExt}`;
@@ -131,7 +134,7 @@ const InterviewerProfile = () => {
         photoUrl: `${publicUrl}?t=${Date.now()}`,
       }));
 
-      refreshSidebar(); // ← updates sidebar avatar instantly
+      refreshSidebar(); // updates sidebar avatar instantly
 
       setSuccessMsg("Profile photo updated!");
       setTimeout(() => setSuccessMsg(""), 3000);
@@ -182,11 +185,8 @@ const InterviewerProfile = () => {
     if (!editableDetails.branch.trim()) {
       newErrors.branch = "Branch is required.";
       valid = false;
-    } else if (/\d/.test(editableDetails.branch)) {
-      newErrors.branch = "Branch cannot contain numbers.";
-      valid = false;
-    }
-
+    } 
+    
     if (!editableDetails.address.trim()) {
       newErrors.address = "Address cannot be empty.";
       valid = false;
@@ -216,7 +216,7 @@ const InterviewerProfile = () => {
 
       setOriginalDetails({ ...editableDetails });
       setIsEditing(false);
-      refreshSidebar(); // ← updates sidebar name if changed
+      refreshSidebar(); // updates sidebar name if changed
       setSuccessMsg("Profile updated successfully!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
@@ -258,6 +258,7 @@ const InterviewerProfile = () => {
     );
   }
 
+  /*correct one*/
   return (
     <DashboardLayout>
       <div className="profile-page">
@@ -337,6 +338,7 @@ const InterviewerProfile = () => {
               <div className="profile-form">
                 <div>
                   <label className="field-label">Role</label>
+
                   <input
                     type="text"
                     name="interviewerRole"
@@ -413,6 +415,7 @@ const InterviewerProfile = () => {
                       >
                         Cancel
                       </button>
+
                       <button
                         type="button"
                         className="save-btn"

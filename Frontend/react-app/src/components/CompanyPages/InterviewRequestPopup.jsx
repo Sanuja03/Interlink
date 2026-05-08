@@ -1,34 +1,34 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api"; 
+import api from "../../lib/api";
 import "./InterviewPopups.css";
 
 const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = false }) => {
-  const [panelSize, setPanelSize] = useState(2);
-  const [mode, setMode] = useState("Online");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [adminNotes, setAdminNotes] = useState("");
+  const [panelSize, setPanelSize]     = useState(2);
+  const [mode, setMode]               = useState("Online");
+  const [date, setDate]               = useState("");
+  const [time, setTime]               = useState("");
+  const [adminNotes, setAdminNotes]   = useState("");
 
-  const [isSent, setIsSent] = useState(false);
+  const [isSent, setIsSent]           = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const [availableInterviewers, setAvailableInterviewers] = useState([]);
-  const [otherInterviewers, setOtherInterviewers] = useState([]);
-  const [loadingInterviewers, setLoadingInterviewers] = useState(false);
-  const [fetchError, setFetchError] = useState("");
+  const [otherInterviewers, setOtherInterviewers]         = useState([]);
+  const [loadingInterviewers, setLoadingInterviewers]     = useState(false);
+  const [fetchError, setFetchError]                       = useState("");
 
-  const [selectedInterviewers, setSelectedInterviewers] = useState([]);
-  const [requestedInterviewers, setRequestedInterviewers] = useState([]);
+  const [selectedInterviewers, setSelectedInterviewers]   = useState([]);
 
-  const [generatedInterviewId, setGeneratedInterviewId] = useState(null);
-  const [submitError, setSubmitError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [loadingExisting, setLoadingExisting] = useState(false);
+  const [generatedInterviewId, setGeneratedInterviewId]   = useState(null);
+  const [submitError, setSubmitError]                     = useState("");
+  const [submitting, setSubmitting]                       = useState(false);
+  const [loadingExisting, setLoadingExisting]             = useState(false);
 
-  // when open, check for existing active request
+  // When popup opens — reset form and check for existing active request to prefill
   useEffect(() => {
     if (!open || !candidate) return;
 
+    // Reset form to defaults every time the popup opens
     setPanelSize(2);
     setMode("Online");
     setDate("");
@@ -37,7 +37,6 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     setIsSent(false);
     setShowDropdown(false);
     setSelectedInterviewers([]);
-    setRequestedInterviewers([]);
     setGeneratedInterviewId(null);
     setSubmitError("");
     setFetchError("");
@@ -49,6 +48,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
 
       setLoadingExisting(true);
       try {
+        // Check backend for an existing interview request for this candidate + job
         const res = await api.get("/company/interview-requests/current", {
           params: {
             candidateId: candidate.candidateId,
@@ -62,6 +62,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
           return;
         }
 
+        // Existing request found → prefill the form
         const data = res.data;
         setPanelSize(data.panelSize || 2);
         setMode(data.mode || "Online");
@@ -70,20 +71,22 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
         setAdminNotes(data.adminNotes || "");
         setGeneratedInterviewId(data.interviewId);
 
+        // Pre-select the previously invited interviewers
         const invitedMapped = (data.invitedInterviewers || []).map((p) => ({
           id: p.userId,
           name: p.fullName,
           role: p.role,
           responseStatus: p.responseStatus,
         }));
-
         setSelectedInterviewers(invitedMapped);
-        setRequestedInterviewers(invitedMapped);
 
-        // If opened from "Cancel & Redo", skip the locked view so the admin
-        // can immediately edit all fields and send a fresh request.
-
-        setIsSent(startInEditMode ? false : true);
+        // If opened from "Cancel & Redo", keep form editable (isSent=false)
+        // so admin can change values and resend a fresh request.
+        if (startInEditMode) {
+          setIsSent(false);
+        } else {
+          setIsSent(true);
+        }
       } catch (err) {
         if (cancelled) return;
         console.error("[InterviewRequestPopup] load existing failed:", err);
@@ -96,7 +99,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     return () => { cancelled = true; };
   }, [open, candidate]);
 
-  //  fetch assignable interviewers on date change 
+  // Fetch assignable interviewers when date changes
   useEffect(() => {
     if (!open || !date || isSent) return;
 
@@ -171,7 +174,6 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       candidateId: candidate.candidateId,
       jobApplicationId: candidate.jobApplicationId,
       jobId: candidate.jobId || null,
-      
       // historyId is a plain number (bigint). Send null if missing.
       historyId: candidate.historyId != null ? Number(candidate.historyId) : null,
       panelSize,
@@ -188,7 +190,6 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       const data = res.data;
 
       setGeneratedInterviewId(data.interviewId);
-      setRequestedInterviewers([...selectedInterviewers]);
       setIsSent(true);
       setShowDropdown(false);
     } catch (err) {
@@ -202,11 +203,6 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleEdit = () => {
-    setIsSent(false);
-    setSubmitError("");
   };
 
   const canSend = selectedInterviewers.length >= panelSize && date && time;
@@ -404,29 +400,6 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
             </div>
           )}
 
-          {isSent && requestedInterviewers.length > 0 && (
-            <div className="ip-field">
-              <div className="ip-note-box">Requested For These Interviewers</div>
-              <div className="ip-person-list">
-                {requestedInterviewers.map((person) => (
-                  <div key={person.id} className="ip-person-card">
-                    <div>
-                      <p className="ip-person-name">{person.name}</p>
-                      <p className="ip-person-role">
-                        {person.role}
-                        {person.responseStatus && person.responseStatus !== "pending" && (
-                          <span style={{ marginLeft: 8, fontWeight: 600 }}>
-                            — {person.responseStatus}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {!canSend && !isSent && (
             <div className="ip-note-box">
               You must select at least <b>{panelSize}</b> interviewers and pick a date &amp; time.
@@ -436,25 +409,16 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
           {submitError && (
             <div className="ip-note-box" style={{ color: "crimson" }}>{submitError}</div>
           )}
-
-          {isSent && (
-            <div className="ip-note-box">
-              Interview request <b>{generatedInterviewId}</b> is active.
-              Click Edit to cancel this request and send a new one.
-            </div>
-          )}
         </div>
 
         <div className="ip-actions">
-          {!isSent ? (
-            <button
-              className="ip-primary-btn"
-              disabled={!canSend || submitting}
-              onClick={handleSendRequest}
-            >{submitting ? "Sending…" : "Send Request"}</button>
-          ) : (
-            <button className="ip-primary-btn" onClick={handleEdit}>Edit</button>
-          )}
+          <button
+            className="ip-primary-btn"
+            disabled={!canSend || submitting || isSent}
+            onClick={handleSendRequest}
+          >
+            {submitting ? "Sending…" : "Send Request"}
+          </button>
           <button className="ip-danger-btn" onClick={onClose}>Cancel</button>
         </div>
       </div>

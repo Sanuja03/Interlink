@@ -18,6 +18,7 @@ public class InterviewerAvailabilityController {
     private AvailabilityService availabilityService;
 
 
+    //get submitted or not for that week
     @GetMapping("/status")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.StatusResponse> getStatus(
@@ -29,7 +30,7 @@ public class InterviewerAvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-
+   //get saved avalability for this week key
     @GetMapping("/my-week")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.MyWeekResponse> getMyWeek(

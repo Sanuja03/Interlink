@@ -30,6 +30,7 @@ public interface InterviewRequestRepository
             @Param("candidateId") UUID candidateId,
             @Param("jobApplicationId") Long jobApplicationId);
 
+
     default Optional<InterviewRequest> findFirstActiveByCandidateAndApplication(
             UUID companyId, UUID candidateId, Long jobApplicationId) {
         List<InterviewRequest> list =
@@ -46,6 +47,7 @@ public interface InterviewRequestRepository
             @Param("companyId") UUID companyId,
             @Param("jobApplicationId") Long jobApplicationId,
             @Param("jobId") Long jobId);
+
 
     @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
             "WHERE ir.requestId IN (" +

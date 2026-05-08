@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
         // Map specific messages to appropriate HTTP statuses

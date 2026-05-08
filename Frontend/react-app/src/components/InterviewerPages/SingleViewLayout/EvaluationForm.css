@@ -3,13 +3,12 @@
   border: 1px solid #d6e4ea;
   border-radius: 16px;
   padding: 24px;
-  margin-top: 20px;
+ 
 }
 
 .evaluation-header-row {
   display: flex;
   align-items: center;
-  gap: 14px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -19,15 +18,6 @@
   font-weight: 700;
   color: #0c3e56;
   margin: 0;
-}
-
-.evaluation-template-badge {
-  background: #e0f2fe;
-  color: #0369a1;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 9999px;
 }
 
 .evaluation-submitted-banner {
@@ -40,23 +30,6 @@
   margin-bottom: 20px;
 }
 
-.evaluation-state-msg {
-  color: #6b7280;
-  font-size: 14px;
-  margin: 0;
-}
-
-.evaluation-state-error {
-  color: #dc2626;
-  font-size: 13px;
-  margin-top: 12px;
-}
-
-.evaluation-save-msg {
-  color: #15803d;
-  font-size: 13px;
-  margin-top: 12px;
-}
 
 .evaluation-grid {
   display: grid;
@@ -126,7 +99,7 @@
   padding: 12px 18px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  
 }
 
 .evaluation-draft {
@@ -153,18 +126,13 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 900px) {
-  .evaluation-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .evaluation-scorecard-name {
   font-size: 15px;
   font-weight: 500;
   color: #24698b;
 }
 
+/*the reactangle that contains the score details and the score bar*/
 .evaluation-score-result {
   margin-top: 20px;
   background: #f8fbfc;
@@ -173,6 +141,7 @@
   padding: 16px 18px;
 }
 
+/* Score bar line */
 .evaluation-score-bar-track {
   height: 8px;
   background: #e5e7eb;
@@ -194,11 +163,13 @@
   flex-wrap: wrap;
 }
 
+/*percentage*/
 .evaluation-score-pct {
   font-size: 22px;
   font-weight: 800;
 }
 
+/*eg- 7/40 pts part*/
 .evaluation-score-detail {
   font-size: 13px;
   color: #6b7280;
@@ -218,4 +189,10 @@
   font-size: 12px;
   color: #6b7280;
   font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .evaluation-grid {
+    grid-template-columns: 1fr;
+  }
 }

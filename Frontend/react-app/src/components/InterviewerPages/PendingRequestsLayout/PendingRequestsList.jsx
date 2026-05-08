@@ -7,9 +7,7 @@ const PendingRequestsList = ({
   onViewHistory,
   modeDotClass,
 }) => {
-  if (!rows || rows.length === 0) {
-    return <p className="empty-state">No pending requests.</p>;
-  }
+
 
   return (
     <div className="schedule-card">
@@ -74,7 +72,7 @@ const PendingRequestsList = ({
                 {/* Send */}
                 <td className="align-right">
                   <button
-                    className="view-btn"
+                    className="send-btn"
                     onClick={() => onSend(row)}
                   >
                     Send

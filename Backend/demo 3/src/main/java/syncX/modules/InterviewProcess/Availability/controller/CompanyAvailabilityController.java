@@ -19,7 +19,7 @@ public class CompanyAvailabilityController {
     @Autowired
     private AvailabilityService availabilityService;
 
-
+//company gets all avalable interviewers for this week sent
     @GetMapping("/week")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<AvailabilityDTO.InterviewerWeekSummary>> getWeekAvailability(
@@ -31,7 +31,7 @@ public class CompanyAvailabilityController {
         return ResponseEntity.ok(result);
     }
 
-
+//Get available interviewers for a specific date.
     @GetMapping("/date")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<AvailabilityDTO.InterviewerDateEntry>> getDateAvailability(

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay, AvailabilityDayId> {
 
-    // Old method — keep it or remove it depending on usage.
+    // from interview request service
     @Query("""
         SELECT ad FROM AvailabilityDay ad
         JOIN FETCH ad.weeklyAvailability wa

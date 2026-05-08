@@ -71,9 +71,6 @@ public class InterviewRequest {
     @Column(name = "updated_at", nullable = false, insertable = false)
     private OffsetDateTime updatedAt;
 
-    // ── Extra DB columns not used by app logic but must be mapped ──
-    // to prevent Hibernate column-index misalignment errors.
-
     @Column(name = "id", insertable = false, updatable = false)
     private long id;
 

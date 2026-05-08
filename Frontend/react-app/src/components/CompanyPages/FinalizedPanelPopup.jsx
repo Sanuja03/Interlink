@@ -6,6 +6,7 @@ import "./InterviewPopups.css";
 const FinalizedPanelPopup = ({
   open,
   onClose,
+  onBack,                      
   interviewDetails = {},
   acceptedInterviewers = [],
   scorecards = [],
@@ -75,6 +76,9 @@ const FinalizedPanelPopup = ({
 
   const selectedCard = finalizedCards.find((c) => c.id === selectedScorecardId) || null;
   const isLocked     = sent || viewOnly;
+
+  // Show Back button only in action mode (not view-only) AND not after a successful send
+  const showBackBtn = !viewOnly && !sent && typeof onBack === "function";
 
   const handleSend = async () => {
     setSendError("");
@@ -316,6 +320,12 @@ const FinalizedPanelPopup = ({
 
         {/* Actions */}
         <div className="ip-actions">
+          {showBackBtn && (
+            <button className="ip-small-btn" style={{ background: "#6b7280" }} onClick={onBack}>
+              ← Back to Status
+            </button>
+          )}
+
           {isLocked ? (
             <button
               className="ip-primary-btn"

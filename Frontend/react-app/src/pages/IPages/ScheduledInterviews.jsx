@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import ScheduledInterviewCard from "../../components/InterviewerPages/ScheduledInterviewCardLayout/ScheduledInterviewCard";
 import SearchBar from "../../components/InterviewerPages/Layout/SearchBar";
@@ -21,14 +22,14 @@ const ScheduledInterviews = () => {
       setLoading(true);
       setError(null);
 
-      // ── 1. Get logged-in auth user ──
+      // 1. Get logged-in auth user 
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         setError("Unable to get current user. Please log in again.");
         return;
       }
 
-      // ── 2. Get accepted request_ids for this interviewer ──
+      // 2. Get accepted request_ids for this interviewer 
       const { data: panelRows, error: panelError } = await supabase
         .from("interview_request_interviewers")
         .select("request_id")
@@ -49,7 +50,7 @@ const ScheduledInterviews = () => {
 
       const requestIds = panelRows.map((r) => r.request_id);
 
-      // ── 3. Fetch interview_scheduled rows ──
+      // 3. Fetch interview_scheduled rows 
       const { data: scheduledRows, error: scheduledError } = await supabase
         .from("interview_scheduled")
         .select(`
@@ -82,7 +83,7 @@ const ScheduledInterviews = () => {
         return;
       }
 
-      // ── 4. Fetch candidate names for all candidate_ids in this batch ──
+      // 4. Fetch candidateid,candidate names for all candidate_ids in this batch
       const candidateIds = [...new Set(
         scheduledRows.map((r) => r.candidate_id).filter(Boolean)
       )];
@@ -104,7 +105,7 @@ const ScheduledInterviews = () => {
         });
       }
 
-      // ── 5. Fetch job titles for all job_ids in this batch ──
+      //  5. Fetch jobids,job titles for all job_ids in this batch 
       const jobIds = [...new Set(
         scheduledRows.map((r) => r.job_id).filter(Boolean)
       )];
@@ -127,7 +128,7 @@ const ScheduledInterviews = () => {
         });
       }
 
-      // ── 6. Fetch all accepted panel members for these requests ──
+      //  6. Fetch all accepted panel members(requestids,userids,response status) for these requests 
       const { data: allPanelMembers, error: pmError } = await supabase
         .from("interview_request_interviewers")
         .select("request_id, interviewer_user_id, response_status")
@@ -138,7 +139,7 @@ const ScheduledInterviews = () => {
         console.warn("[ScheduledInterviews] panel member fetch warning:", pmError);
       }
 
-      // ── 7. Fetch interviewer profiles for those user_ids ──
+      // 7. Fetch interviewer profiles for those user_ids 
       const panelUserIds = [...new Set(
         (allPanelMembers || []).map((r) => r.interviewer_user_id)
       )];
@@ -159,7 +160,7 @@ const ScheduledInterviews = () => {
         });
       }
 
-      // ── 8. Group panel members by request_id ──
+      //  8. Group panel members by request_id 
       const panelByRequestId = {};
       (allPanelMembers || []).forEach((row) => {
         if (!panelByRequestId[row.request_id]) {
@@ -174,7 +175,7 @@ const ScheduledInterviews = () => {
         });
       });
 
-      // ── 9. Map to card format ──
+      // 9. Map to card format 
       const mapped = scheduledRows.map((item) =>
         mapInterviewData(item, panelByRequestId, candidateMap, jobMap)
       );

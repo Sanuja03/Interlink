@@ -38,8 +38,7 @@ public class AvailabilityService {
 
 
     // INTERVIEWER: Check status for a week
-
-
+    @Transactional(readOnly = true)
     public AvailabilityDTO.StatusResponse getStatus(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -61,9 +60,8 @@ public class AvailabilityService {
     }
 
 
-    // INTERVIEWER: Get my week (pre-fill popup)
-
-
+    // INTERVIEWER: Get this week saved availability(pre-fill popup)
+    @Transactional(readOnly = true)
     public AvailabilityDTO.MyWeekResponse getMyWeek(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -83,8 +81,9 @@ public class AvailabilityService {
     }
 
 
-    // INTERVIEWER: Submit availability
-
+    /**INTERVIEWER: Take the logged-in interviewer’s selected days for the current week, validate
+    them, remove any old saved days for that week, save the new selected days, mark the week as
+     submitted, and return the saved result to the frontend*/
 
     @Transactional
     public AvailabilityDTO.StatusResponse submitAvailability(Jwt jwt, AvailabilityDTO.SubmitRequest request) {
@@ -98,7 +97,7 @@ public class AvailabilityService {
         LocalDate weekStartDate = LocalDate.parse(request.getWeekStartDate());
         LocalDate weekEndDate = weekStartDate.plusDays(6);
 
-        // ── Server-side: enforce that the submission is for the CURRENT week only
+        // checks the submission is for the CURRENT week by calculating the monday and comparing it to frontend recieved monday
         LocalDate todayMonday = LocalDate.now()
                 .with(java.time.DayOfWeek.MONDAY);
         if (!weekStartDate.equals(todayMonday)) {
@@ -107,7 +106,7 @@ public class AvailabilityService {
                             "Expected week starting " + todayMonday + " but got " + weekStartDate);
         }
 
-        // ── Validate every submitted date falls within the declared week
+        //checks every selected data is inside the weekstartdate and weekenddate
         for (AvailabilityDTO.DayEntry entry : request.getDays()) {
             LocalDate d = LocalDate.parse(entry.getDate());
             if (d.isBefore(weekStartDate) || d.isAfter(weekEndDate)) {
@@ -117,6 +116,7 @@ public class AvailabilityService {
             }
         }
 
+        //if weeklyrecord doesnt exist create one
         WeeklyAvailability wa = weeklyRepo.findByUserIdAndWeekKey(userId, weekKey)
                 .orElseGet(() -> {
                     WeeklyAvailability newWa = new WeeklyAvailability();
@@ -127,8 +127,12 @@ public class AvailabilityService {
                     return newWa;
                 });
 
+        // clear old days and flush so deletes happen BEFORE inserts
+        // (prevents primary-key conflicts when re-submitting the same dates)
         wa.getDays().clear();
+        weeklyRepo.saveAndFlush(wa);
 
+        //for each selectedday it creates and avalibilityday object/row
         for (AvailabilityDTO.DayEntry entry : request.getDays()) {
             AvailabilityDay day = new AvailabilityDay();
             day.setWeeklyAvailability(wa);
@@ -150,9 +154,9 @@ public class AvailabilityService {
         return new AvailabilityDTO.StatusResponse(true, savedDays);
     }
 
+
     // COMPANY ADMIN: All interviewers for a week
-
-
+    @Transactional(readOnly = true)
     public List<AvailabilityDTO.InterviewerWeekSummary> getCompanyWeekAvailability(
             Jwt jwt, String weekKey) {
 
@@ -198,9 +202,11 @@ public class AvailabilityService {
     }
 
 
-    // COMPANY ADMIN: Interviewers available on a date
+    /** COMPANY ADMIN: Interviewers available on a date
+    calculates teh monday of the selected date and find all avalabilityday records where the data
+    matches the selected date, the company matches the admin’s company, and the week start date matches that week*/
 
-
+    @Transactional(readOnly = true)
     public List<AvailabilityDTO.InterviewerDateEntry> getAvailableOnDate(
             Jwt jwt, String dateStr) {
 
@@ -212,7 +218,7 @@ public class AvailabilityService {
 
         UUID companyId = company.getCompanyId();
 
-        // ── The Monday of the week this date belongs to
+        // The Monday of the week this date belongs to
         LocalDate weekStartForDate = date.with(java.time.DayOfWeek.MONDAY);
 
         List<AvailabilityDay> availDays =

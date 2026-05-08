@@ -1,30 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import ScheduledInterviewCard from "../../components/InterviewerPages/ScheduledInterviewCardLayout/ScheduledInterviewCard";
 import SearchBar from "../../components/InterviewerPages/Layout/SearchBar";
 import "./CompletedInterviews.css";
-
-// hardcoded candidates 
-const HARDCODED_CANDIDATES = [
-  {
-    candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
-    jobApplicationId: 8,
-    candidateName:    "Senithi Vihara",
-    jobTitle:         "Frontend Developer",
-  },
-  {
-    candidateId:      "050e8591-fe88-4a6a-a48e-6f7ead2a710e",
-    jobApplicationId: 7,
-    candidateName:    "Sanuja Alphonsus",
-    jobTitle:         "Frontend Developer",
-  },
-];
-
-const getCandidateByAppId = (jobApplicationId) =>
-  HARDCODED_CANDIDATES.find(
-    (c) => c.jobApplicationId === Number(jobApplicationId)
-  ) || null;
 
 const CompletedInterviews = () => {
   const [completedInterviews, setCompletedInterviews] = useState([]);
@@ -69,7 +49,9 @@ const CompletedInterviews = () => {
 
       const requestIds = panelRows.map((r) => r.request_id);
 
-      //  Fetch completed interview_scheduled rows 
+      // Fetch completed interview_scheduled rows - From the interview_scheduled table, give
+      // me these specific columns, but only for rows whose request_id is in my list AND whose 
+      // status is 'completed', sorted with the newest dates on top."
       const { data: scheduledRows, error: scheduledError } = await supabase
         .from("interview_scheduled")
         .select(`
@@ -90,21 +72,6 @@ const CompletedInterviews = () => {
         .eq("status", "completed")
         .order("interview_date", { ascending: false });
 
-
-        const jobIds = [...new Set(scheduledRows.map(r => r.job_id).filter(Boolean))];
-
-let jobMap = {};
-if (jobIds.length > 0) {
-  const { data: jobRows } = await supabase
-    .from("jobs") // or whatever your jobs table is named
-    .select("id, job_title")
-    .in("id", jobIds);
-
-  (jobRows || []).forEach(j => {
-    jobMap[j.id] = j.job_title;
-  });
-}
-
       if (scheduledError) {
         setError("Failed to load completed interviews.");
         console.error("[CompletedInterviews] scheduledError:", scheduledError);
@@ -115,6 +82,34 @@ if (jobIds.length > 0) {
         setCompletedInterviews([]);
         setFilteredInterviews([]);
         return;
+      }
+
+      // Fetch job titles
+      const jobIds = [...new Set(scheduledRows.map(r => r.job_id).filter(Boolean))];
+      let jobMap = {};
+      if (jobIds.length > 0) {
+        const { data: jobRows } = await supabase
+          .from("jobs") // or whatever your jobs table is named
+          .select("id, job_title")
+          .in("id", jobIds);
+
+        (jobRows || []).forEach(j => {
+          jobMap[j.id] = j.job_title;
+        });
+      }
+
+      // Fetch candidate names
+      const candidateIds = [...new Set(scheduledRows.map(r => r.candidate_id).filter(Boolean))];
+      let candidateMap = {};
+      if (candidateIds.length > 0) {
+        const { data: candidateRows } = await supabase
+          .from("candidates")
+          .select("candidate_id, first_name, last_name")
+          .in("candidate_id", candidateIds);
+
+        (candidateRows || []).forEach(c => {
+          candidateMap[c.candidate_id] = `${c.first_name || ""} ${c.last_name || ""}`.trim();
+        });
       }
 
       // Verify this interviewer actually submitted scores 
@@ -147,7 +142,7 @@ if (jobIds.length > 0) {
         .in("request_id", requestIds)
         .eq("response_status", "accepted");
 
-      // Fetch interviewer profiles
+      // Fetch interviewer profiles for the panel popup
       const panelUserIds = [...new Set(
         (allPanelMembers || []).map((r) => r.interviewer_user_id)
       )];
@@ -164,7 +159,7 @@ if (jobIds.length > 0) {
         });
       }
 
-      // Group panel members by request_id 
+      // creating list of panel members for each request id and push that interviewers details if exists
       const panelByRequestId = {};
       (allPanelMembers || []).forEach((row) => {
         if (!panelByRequestId[row.request_id]) {
@@ -179,7 +174,7 @@ if (jobIds.length > 0) {
         });
       });
 
-      // Map to card format
+      //format teh time and  Map each interviewer to card format
       const mapped = confirmedRows.map((item) => {
         const formatTime = (timeStr) => {
           if (!timeStr) return "";
@@ -191,15 +186,13 @@ if (jobIds.length > 0) {
           return `${String(hour).padStart(2, "0")}:${min} ${ampm}`;
         };
 
-        const hardcoded = getCandidateByAppId(item.job_application_id);
-
         return {
           interviewId:      item.interview_id,
           scheduledId:      item.scheduled_id,
           requestId:        item.request_id,
           date:             item.interview_date,
           time:             formatTime(item.interview_time),
-          jobTitle: jobMap[item.job_id] || hardcoded?.jobTitle || "—",
+          jobTitle:         jobMap[item.job_id] || "—",
           meetingStatus:    "COMPLETED",
           mode:             item.mode,
           meetingLink:      item.meeting_link || "",
@@ -207,7 +200,7 @@ if (jobIds.length > 0) {
           adminNote:        item.admin_notes || "",
           candidateId:      item.candidate_id,
           jobApplicationId: item.job_application_id,
-          candidateName:    hardcoded?.candidateName || null,
+          candidateName:    candidateMap[item.candidate_id] || null,
         };
       });
 
@@ -222,8 +215,13 @@ if (jobIds.length > 0) {
     }
   };
 
+  /**takes what the user typed, and if it's not empty, looks through every completed
+  interview and keeps only the ones where the typed text matches any of 
+  those 6 fields (case-insensitively). Then it updates the screen to 
+  show only those matches.*/
   const handleSearch = (value) => {
     setSearchValue(value);
+    
     if (!value.trim()) {
       setFilteredInterviews(completedInterviews);
       return;
@@ -235,7 +233,8 @@ if (jobIds.length > 0) {
         item.jobTitle?.toLowerCase().includes(lower) ||
         item.mode?.toLowerCase().includes(lower) ||
         item.date?.toLowerCase().includes(lower) ||
-        item.time?.toLowerCase().includes(lower)
+        item.time?.toLowerCase().includes(lower) ||
+        item.candidateName?.toLowerCase().includes(lower)
     );
     setFilteredInterviews(filtered);
   };

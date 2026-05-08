@@ -1,4 +1,4 @@
-// AvailabilityDayId.java
+// ID helper class used because your AvailabilityDay entity has two primary keys (separate class to represent that combined ID
 package syncX.modules.InterviewProcess.Availability.entity;
 
 import java.io.Serializable;
@@ -11,7 +11,7 @@ public class AvailabilityDayId implements Serializable {
     private UUID weeklyAvailability;
     private LocalDate availableDate;
 
-    public AvailabilityDayId() {}
+
 
     public AvailabilityDayId(UUID weeklyAvailability, LocalDate availableDate) {
         this.weeklyAvailability = weeklyAvailability;

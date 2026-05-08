@@ -20,7 +20,7 @@ public class InterviewSchedulingController {
     @Autowired
     private InterviewSchedulingService schedulingService;
 
-    // ── POST /finalize ────────────────────────────────────────────
+
     @PostMapping("/finalize")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> finalizePanel(
@@ -44,7 +44,7 @@ public class InterviewSchedulingController {
         }
     }
 
-    // ── GET /{requestId} ──────────────────────────────────────────
+
     @GetMapping("/{requestId}")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> getScheduled(
@@ -63,7 +63,7 @@ public class InterviewSchedulingController {
         }
     }
 
-    // ── PATCH /{requestId}/scorecard ──────────────────────────────
+    //for a scheduled interview saving a score card
     @PatchMapping("/{requestId}/scorecard")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<?> saveScorecard(

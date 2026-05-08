@@ -4,16 +4,16 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @Data
 @Entity
-@IdClass(AvailabilityDayId.class)
+@IdClass(AvailabilityDayId.class)//this has composite primary key
 @Table(name = "interviewer_availability_days")
 public class AvailabilityDay {
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)//JPA will not immediately load the full WeeklyAvailability object unless you actually need it.
     @JoinColumn(name = "intavailability_id", nullable = false)
     private WeeklyAvailability weeklyAvailability;
 

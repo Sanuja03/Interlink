@@ -1,86 +1,48 @@
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "../../../lib/supabase";
-import { calculateScore } from "../../CompanyPages/ScorecardUtils";
 import "./EvaluationForm.css";
 
+import { supabase } from "../../../lib/supabase";
+import { calculateScore } from "../../CompanyPages/ScorecardUtils";
 
-const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSuccess }) => {
-  const [fields, setFields]               = useState([]);
-  const [scores, setScores]               = useState({});
-  const [comments, setComments]           = useState("");
-  const [submissionId, setSubmissionId]   = useState(null);
-  const [isSubmitted, setIsSubmitted]     = useState(false);
-  const [loading, setLoading]             = useState(true);
-  const [saving, setSaving]               = useState(false);
-  const [error, setError]                 = useState(null);
-  const [saveMessage, setSaveMessage]     = useState("");
+const EvaluationForm = ({
+  scheduledId,
+  scorecardId,
+  scorecardName,
+  fields = [],
+  initialSubmission = null,
+  initialScores = {},
+  loading = false,
+  onSubmitSuccess,
+}) => {
+  // ── Form state (initialised from props, then user-controlled) ──
+  const [scores, setScores]             = useState({});
+  const [comments, setComments]         = useState("");
+  const [submissionId, setSubmissionId] = useState(null);
+  const [isSubmitted, setIsSubmitted]   = useState(false);
+
+  // ── UI state (saving/error/messages stay local) ──
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState(null);
+  const [saveMessage, setSaveMessage] = useState("");
+
+  // Sync props -> local state when parent finishes fetching
+  useEffect(() => {
+    setScores(initialScores || {});
+  }, [initialScores]);
 
   useEffect(() => {
-    if (scorecardId && scheduledId) {
-      loadFormData();
+    if (initialSubmission) {
+      setSubmissionId(initialSubmission.score_submission_id);
+      setComments(initialSubmission.overall_comments || "");
+      setIsSubmitted(initialSubmission.is_submitted || false);
     } else {
-      setLoading(false);
+      setSubmissionId(null);
+      setComments("");
+      setIsSubmitted(false);
     }
-  }, [scorecardId, scheduledId]);
+  }, [initialSubmission]);
 
-  const loadFormData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setError("Not authenticated."); return; }
-
-      // get scorecard fields
-      const { data: fieldRows, error: fieldError } = await supabase
-        .from("scorecard_template_fields")
-        .select("scorecard_field_id, field_label, max_score, display_order")
-        .eq("scorecard_template_id", scorecardId)
-        .order("display_order", { ascending: true });
-
-      if (fieldError) {
-        setError("Failed to load scorecard fields.");
-        console.error("[EvaluationForm] fields error:", fieldError);
-        return;
-      }
-      setFields(fieldRows || []);
-
-      // Check for existing draft 
-      const { data: existing, error: subError } = await supabase
-        .from("interviewer_score_submissions")
-        .select("score_submission_id, overall_comments, is_submitted")
-        .eq("scheduled_id", scheduledId)
-        .eq("interviewer_user_id", user.id)
-        .maybeSingle();
-
-      if (subError) console.warn("[EvaluationForm] submission check:", subError);
-
-      if (existing) {
-        setSubmissionId(existing.score_submission_id);
-        setComments(existing.overall_comments || "");
-        setIsSubmitted(existing.is_submitted || false);
-
-        // Load saved field scores
-        const { data: valueRows } = await supabase
-          .from("interviewer_score_field_values")
-          .select("scorecard_field_id, score_given")
-          .eq("score_submission_id", existing.score_submission_id);
-
-        const scoreMap = {};
-        (valueRows || []).forEach((v) => {
-          scoreMap[v.scorecard_field_id] = v.score_given;
-        });
-        setScores(scoreMap);
-      }
-    } catch (err) {
-      console.error("[EvaluationForm] loadFormData error:", err);
-      setError("Failed to load evaluation form.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Auto-calculate recommendation from current scores 
+  // Auto-calculate recommendation from current scores
   const scoreResult = useMemo(() => {
     const fieldScores = fields.map((f) => ({
       score:    Number(scores[f.scorecard_field_id] || 0),
@@ -102,7 +64,7 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
       const autoRecommendation = scoreResult.grade.label;
       let currentSubmissionId = submissionId;
 
-      // ── Upsert submission row ──
+      // insert or update submission row
       if (currentSubmissionId) {
         const { error: updateError } = await supabase
           .from("interviewer_score_submissions")
@@ -134,7 +96,7 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
         setSubmissionId(currentSubmissionId);
       }
 
-      // Save field values (delete + reinsert) 
+      // delete old field values, then insert fresh ones
       await supabase
         .from("interviewer_score_field_values")
         .delete()
@@ -167,7 +129,6 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
         setIsSubmitted(true);
         setSaveMessage("Evaluation submitted successfully.");
 
-        // Notify parent to redirect after short delay
         if (onSubmitSuccess) {
           setTimeout(() => onSubmitSuccess(), 1500);
         }
@@ -183,8 +144,8 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
     }
   };
 
-  //  No scorecard assigned 
-  if (!scorecardId) {
+  // ── Empty/loading states ──
+  if (!scorecardId && !loading) {
     return (
       <div className="evaluation-card">
         <h2 className="evaluation-title">Candidate Evaluation Form</h2>
@@ -209,13 +170,13 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
       <h2 className="evaluation-title">
         Candidate Evaluation Form
         {scorecardName && (
-          <span className="evaluation-scorecard-name"> — {scorecardName}</span>
+          <span className="evaluation-scorecard-name"> - {scorecardName}</span>
         )}
       </h2>
 
       {isSubmitted && (
         <div className="evaluation-submitted-banner">
-          ✓ Evaluation submitted — redirecting to Completed Interviews...
+          ✓ Evaluation submitted
         </div>
       )}
 
@@ -230,6 +191,7 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
               {field.field_label}
               <span className="evaluation-field-max"> (max {field.max_score})</span>
             </label>
+
             <input
               type="number"
               min="0"
@@ -258,7 +220,7 @@ const EvaluationForm = ({ scheduledId, scorecardId, scorecardName, onSubmitSucce
         />
       </div>
 
-      {/* Auto-calculated score result */}
+      {/* Auto-calculated score result banner */}
       {fields.length > 0 && (
         <div className="evaluation-score-result">
           <div className="evaluation-score-bar-track">
