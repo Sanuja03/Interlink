@@ -1,22 +1,34 @@
-// ID helper class used because your AvailabilityDay entity has two primary keys (separate class to represent that combined ID
+// AvailabilityDayId.java
 package syncX.modules.InterviewProcess.Availability.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
+@Embeddable
 public class AvailabilityDayId implements Serializable {
 
+    @Column(name = "intavailability_id")
     private UUID weeklyAvailability;
+
+    @Column(name = "available_date")
     private LocalDate availableDate;
 
-
+    public AvailabilityDayId() {}
 
     public AvailabilityDayId(UUID weeklyAvailability, LocalDate availableDate) {
         this.weeklyAvailability = weeklyAvailability;
         this.availableDate = availableDate;
     }
+
+    public UUID getWeeklyAvailability() { return weeklyAvailability; }
+    public void setWeeklyAvailability(UUID weeklyAvailability) { this.weeklyAvailability = weeklyAvailability; }
+
+    public LocalDate getAvailableDate() { return availableDate; }
+    public void setAvailableDate(LocalDate availableDate) { this.availableDate = availableDate; }
 
     @Override
     public boolean equals(Object o) {

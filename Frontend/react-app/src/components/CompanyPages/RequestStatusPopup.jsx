@@ -303,10 +303,12 @@ const RequestStatusPopup = ({
             ))}
             {addError && <p className="ip-person-role" style={{ color: "crimson" }}>{addError}</p>}
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+
               <button className="ip-primary-btn" style={{ flex: 1, minHeight: 44, fontSize: 15 }}
                 disabled={addSelected.length === 0 || submittingAdd} onClick={handleAddSubmit}>
                 {submittingAdd ? "Adding…" : `Add${addSelected.length > 0 ? ` (${addSelected.length})` : ""}`}
               </button>
+              
               <button className="ip-danger-btn" style={{ flex: 1, minHeight: 44, fontSize: 15 }}
                 onClick={() => { setShowAddPanel(false); setAddSelected([]); }}>
                 Cancel

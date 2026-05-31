@@ -14,11 +14,10 @@ import java.util.UUID;
 @Repository
 public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay, AvailabilityDayId> {
 
-    // from interview request service
     @Query("""
         SELECT ad FROM AvailabilityDay ad
         JOIN FETCH ad.weeklyAvailability wa
-        WHERE ad.availableDate = :date
+        WHERE ad.id.availableDate = :date
           AND ad.isAvailable = true
           AND wa.status = 'submitted'
           AND wa.companyId = :companyId
@@ -27,11 +26,10 @@ public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay
             @Param("date") LocalDate date,
             @Param("companyId") UUID companyId);
 
-    // New: only return rows whose parent week matches the week the date belongs to.
     @Query("""
         SELECT ad FROM AvailabilityDay ad
         JOIN FETCH ad.weeklyAvailability wa
-        WHERE ad.availableDate = :date
+        WHERE ad.id.availableDate = :date
           AND ad.isAvailable = true
           AND wa.status = 'submitted'
           AND wa.companyId = :companyId

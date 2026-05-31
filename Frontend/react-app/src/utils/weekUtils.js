@@ -59,9 +59,7 @@ export const getWeekKey = (refDate = new Date()) => {
   return `${year}-W${String(weekNum).padStart(2, "0")}`;
 };
 
-/**
- * Format Monday date as YYYY-MM-DD for API calls
- */
+/*Format Monday date as YYYY-MM-DD for API calls*/
 export const getWeekStartDate = (refDate = new Date()) => {
   const monday = getMonday(refDate);
   const yyyy = monday.getFullYear();
