@@ -8,7 +8,13 @@ import api from '../../lib/api';
 
 const JobPosts = () => {
     const [allJobs, setAllJobs] = useState([]);
+    const [savedJobIds, setSavedJobIds] = useState([]);
 
+    useEffect(() => {
+        api.get('/candidate/saved-jobs/ids')
+            .then(res => setSavedJobIds(res.data || []))
+            .catch(err => console.error("Error fetching saved job IDs:", err));
+    }, []);
 
     // Read initial values from URL query params (passed from Home page Searchbar)
     const urlParams = new URLSearchParams(window.location.search);
@@ -41,7 +47,7 @@ const JobPosts = () => {
         if (params.toString()) {
             url += '?' + params.toString();
         }
-        
+
         api.get(url)
             .then(res => {
                 const data = res.data;
@@ -59,185 +65,208 @@ const JobPosts = () => {
             });
     }, [filters.category, filters.experience, filters.mode]);
 
-const handleFilterChange = (field, value) => {
-    setVisibleCount(5);
-    setFilters((prev) => ({ ...prev, [field]: value }));
-};
+    const handleFilterChange = (field, value) => {
+        setVisibleCount(5);
+        setFilters((prev) => ({ ...prev, [field]: value }));
+    };
 
-const handleReset = () => {
-    setFilters({ category: '', experience: '', mode: '' });
-    setKeyword('');
-    setVisibleCount(5);
-};
+    const toggleSaveJob = (jobId) => {
+        if (savedJobIds.includes(jobId)) {
+            api.delete(`/candidate/saved-jobs/${jobId}`)
+                .then(() => setSavedJobIds(prev => prev.filter(id => id !== jobId)))
+                .catch(err => console.error("Error unsaving job:", err));
+        } else {
+            api.post(`/candidate/saved-jobs/${jobId}`)
+                .then(() => setSavedJobIds(prev => [...prev, jobId]))
+                .catch(err => console.error("Error saving job:", err));
+        }
+    };
 
-const hasFilters = Object.values(filters).some(Boolean);
+    const handleReset = () => {
+        setFilters({ category: '', experience: '', mode: '' });
+        setKeyword('');
+        setVisibleCount(5);
+    };
 
-const filtered = allJobs.filter((job) => {
-    const kw = keyword.toLowerCase().trim();
-    const matchesKeyword =
-        !kw ||
-        (job.title && job.title.toLowerCase().includes(kw)) ||
-        (job.company && job.company.toLowerCase().includes(kw)) ||
-        (job.location && job.location.toLowerCase().includes(kw));
+    const hasFilters = Object.values(filters).some(Boolean);
 
-    return matchesKeyword;
-});
+    const filtered = allJobs.filter((job) => {
+        const kw = keyword.toLowerCase().trim();
+        const matchesKeyword =
+            !kw ||
+            (job.title && job.title.toLowerCase().includes(kw)) ||
+            (job.company && job.company.toLowerCase().includes(kw)) ||
+            (job.location && job.location.toLowerCase().includes(kw));
 
-const formatEnum = (val) => {
-    if (!val) return '';
-    return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-};
+        return matchesKeyword;
+    });
 
-const formatMode = (mode) => {
-    if (!mode) return '';
-    return mode.charAt(0) + mode.slice(1).toLowerCase();
-};
+    const formatEnum = (val) => {
+        if (!val) return '';
+        return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    };
 
-const visible = filtered.slice(0, visibleCount);
+    const formatMode = (mode) => {
+        if (!mode) return '';
+        return mode.charAt(0) + mode.slice(1).toLowerCase();
+    };
 
-return (
-    <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
-        <Sidebar />
+    const visible = filtered.slice(0, visibleCount);
 
-        <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
+    return (
+        <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
+            <Sidebar />
 
-            {/* Shared Search Bar */}
-            <div className="-mx-4">
-                <Searchbar
-                    keyword={keyword}
-                    onKeywordChange={(val) => { setKeyword(val); setVisibleCount(5); }}
-                    onSearch={({ keyword: kw, category, experience }) => {
-                        setKeyword(kw);
-                        setFilters((prev) => ({
-                            ...prev,
-                            ...(category !== undefined && { category }),
-                            ...(experience !== undefined && { experience }),
-                        }));
-                        setVisibleCount(5);
-                    }}
-                />
-            </div>
+            <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
 
-            {/* Filter toggle icon row */}
-            <div className="flex items-center gap-2 mb-4">
-                <button
-                    onClick={() => setFilterExpanded((v) => !v)}
-                    title={filterExpanded ? 'Hide filters' : 'Show filters'}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold transition-all duration-200"
-                    style={{
-                        borderColor: filterExpanded ? '#1a3f5c' : '#cbd5e1',
-                        background: filterExpanded ? '#1a3f5c' : '#fff',
-                        color: filterExpanded ? '#fff' : '#475569',
-                    }}
-                >
-                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                    </svg>
-                    Filters
-                    {hasFilters && (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-xs font-bold" style={{ background: '#1a6a82', fontSize: '10px' }}>
-                            {Object.values(filters).filter(Boolean).length}
-                        </span>
-                    )}
-                </button>
-            </div>
+                {/* Shared Search Bar */}
+                <div className="-mx-4">
+                    <Searchbar
+                        keyword={keyword}
+                        onKeywordChange={(val) => { setKeyword(val); setVisibleCount(5); }}
+                        onSearch={({ keyword: kw, category, experience }) => {
+                            setKeyword(kw);
+                            setFilters((prev) => ({
+                                ...prev,
+                                ...(category !== undefined && { category }),
+                                ...(experience !== undefined && { experience }),
+                            }));
+                            setVisibleCount(5);
+                        }}
+                    />
+                </div>
 
-            {/* Content: Filter Panel + Job Cards */}
-            <div className="flex gap-5 items-start">
+                {/* Filter toggle icon row */}
+                <div className="flex items-center gap-2 mb-4">
+                    <button
+                        onClick={() => setFilterExpanded((v) => !v)}
+                        title={filterExpanded ? 'Hide filters' : 'Show filters'}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold transition-all duration-200"
+                        style={{
+                            borderColor: filterExpanded ? '#1a3f5c' : '#cbd5e1',
+                            background: filterExpanded ? '#1a3f5c' : '#fff',
+                            color: filterExpanded ? '#fff' : '#475569',
+                        }}
+                    >
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                        </svg>
+                        Filters
+                        {hasFilters && (
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-xs font-bold" style={{ background: '#1a6a82', fontSize: '10px' }}>
+                                {Object.values(filters).filter(Boolean).length}
+                            </span>
+                        )}
+                    </button>
+                </div>
 
-                {/* Filter Panel — controlled by icon button */}
-                <FilterPanel
-                    filters={filters}
-                    onChange={handleFilterChange}
-                    onReset={handleReset}
-                    expanded={filterExpanded}
-                    onToggle={() => setFilterExpanded((v) => !v)}
-                />
+                {/* Content: Filter Panel + Job Cards */}
+                <div className="flex gap-5 items-start">
 
-                {/* Job Cards column */}
-                <div className="flex-1 flex flex-col gap-4">
+                    {/* Filter Panel — controlled by icon button */}
+                    <FilterPanel
+                        filters={filters}
+                        onChange={handleFilterChange}
+                        onReset={handleReset}
+                        expanded={filterExpanded}
+                        onToggle={() => setFilterExpanded((v) => !v)}
+                    />
 
-                    {/* Results count */}
-                    <p className="text-xs text-gray-400 font-medium">
-                        {filtered.length} job{filtered.length !== 1 ? 's' : ''} found
-                    </p>
+                    {/* Job Cards column */}
+                    <div className="flex-1 flex flex-col gap-4">
 
-                    {visible.map((job) => (
-                        <div
-                            key={job.id}
-                            className="flex items-center gap-5 rounded-2xl px-6 py-5 shadow-md"
-                            style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
-                        >
-                            {/* Logo */}
-                            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
-                                <img src={job.logo} alt={job.company} className="w-12 h-12 object-contain" />
-                            </div>
+                        {/* Results count */}
+                        <p className="text-xs text-gray-400 font-medium">
+                            {filtered.length} job{filtered.length !== 1 ? 's' : ''} found
+                        </p>
 
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                                <h2 className="text-white font-bold text-lg leading-tight">{job.title}</h2>
-                                <p className="text-blue-100 text-sm font-medium">{job.company}</p>
-                                <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
-                                <div className="flex gap-2 mt-2 flex-wrap">
-                                    <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
-                                        {formatEnum(job.category)}
-                                    </span>
-                                    <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
-                                        {formatEnum(job.experienceLevel)}
-                                    </span>
+                        {visible.map((job) => (
+                            <div
+                                key={job.id}
+                                className="flex items-center gap-5 rounded-2xl px-6 py-5 shadow-md relative group"
+                                style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
+                            >
+                                {/* Logo */}
+                                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
+                                    <img src={job.logo} alt={job.company} className="w-12 h-12 object-contain" />
+                                </div>
+
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                    <h2 className="text-white font-bold text-lg leading-tight">{job.title}</h2>
+                                    <p className="text-blue-100 text-sm font-medium">{job.company}</p>
+                                    <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
+                                    <div className="flex gap-2 mt-2 flex-wrap">
+                                        <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
+                                            {formatEnum(job.category)}
+                                        </span>
+                                        <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
+                                            {formatEnum(job.experienceLevel)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => toggleSaveJob(job.id)}
+                                    className={`absolute top-2 right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none ${savedJobIds.includes(job.id) ? 'bg-blue-100 text-[#1a3f5c]' : 'bg-blue-100/20 text-white hover:bg-blue-100/40'}`}
+                                    title={savedJobIds.includes(job.id) ? "Unsave job" : "Save job"}
+                                    style={{ border: 'none', outline: 'none' }}
+                                >
+                                    <svg className="w-5 h-5" fill={savedJobIds.includes(job.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="box" strokeLinejoin="round" strokeWidth={1} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                </button>
+
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <button
+                                        onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
+                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
+                                        style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+                                    >
+                                        View Details
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
+                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
+                                        style={{ background: 'linear-gradient(135deg, #0C3E56, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+                                    >
+                                        Apply Now
+                                    </button>
                                 </div>
                             </div>
+                        ))}
 
-                            <div className="flex items-center gap-3 shrink-0">
+                        {/* Load More */}
+                        {visibleCount < filtered.length && (
+                            <div className="flex justify-center mt-4">
                                 <button
-                                    onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
-                                    className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-                                    style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+                                    onClick={() => setVisibleCount((v) => v + 5)}
+                                    className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md hover:opacity-90 transition-opacity"
+                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', outline: 'none', border: 'none' }}
                                 >
-                                    View Details
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
-                                    className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-                                    style={{ background: 'linear-gradient(135deg, #0C3E56, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
-                                >
-                                    Apply Now
+                                    Load more..
                                 </button>
                             </div>
-                        </div>
-                    ))}
+                        )}
 
-                    {/* Load More */}
-                    {visibleCount < filtered.length && (
-                        <div className="flex justify-center mt-4">
-                            <button
-                                onClick={() => setVisibleCount((v) => v + 5)}
-                                className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md hover:opacity-90 transition-opacity"
-                                style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', outline: 'none', border: 'none' }}
-                            >
-                                Load more..
-                            </button>
-                        </div>
-                    )}
-
-                    {filtered.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-gray-400 text-sm font-medium">No jobs found matching your filters.</p>
-                            <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">
-                                Clear all filters
-                            </button>
-                        </div>
-                    )}
+                        {filtered.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="text-gray-400 text-sm font-medium">No jobs found matching your filters.</p>
+                                <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">
+                                    Clear all filters
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </main>
-    </div>
-);
+            </main>
+        </div>
+    );
 };
 
 export default JobPosts;

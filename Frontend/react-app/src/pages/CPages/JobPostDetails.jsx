@@ -33,6 +33,20 @@ const JobPostDetails = () => {
     const navigate = useNavigate();
     const [job, setJob] = useState(null);
     const [allJobs, setAllJobs] = useState([]);
+    const [savedJobIds, setSavedJobIds] = useState([]);
+
+    const toggleSaveJob = () => {
+        if (!job) return;
+        if (savedJobIds.includes(job.id)) {
+            api.delete(`/candidate/saved-jobs/${job.id}`)
+                .then(() => setSavedJobIds(prev => prev.filter(id => id !== job.id)))
+                .catch(err => console.error("Error unsaving job:", err));
+        } else {
+            api.post(`/candidate/saved-jobs/${job.id}`)
+                .then(() => setSavedJobIds(prev => [...prev, job.id]))
+                .catch(err => console.error("Error saving job:", err));
+        }
+    };
 
     useEffect(() => {
         api.get(`/jobpostdetails/${id}`)
@@ -45,6 +59,10 @@ const JobPostDetails = () => {
         api.get('/jobs')
             .then(res => setAllJobs(res.data))
             .catch(err => console.error("Error fetching jobs:", err));
+
+        api.get('/candidate/saved-jobs/ids')
+            .then(res => setSavedJobIds(res.data || []))
+            .catch(err => console.error("Error fetching saved job IDs:", err));
 
         window.scrollTo(0, 0);
     }, [id]);
@@ -189,17 +207,19 @@ const JobPostDetails = () => {
                                         minWidth: '160px',
                                     }}
                                 >Generate Questions</button>
-                                <button style={{
-                                    background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
-                                    color: '#fff',
-                                    border: 'none',
+                                <button 
+                                    onClick={toggleSaveJob}
+                                    style={{
+                                    background: savedJobIds.includes(job.id) ? 'transparent' : 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
+                                    color: savedJobIds.includes(job.id) ? '#1a6a82' : '#fff',
+                                    border: savedJobIds.includes(job.id) ? '2px solid #1a6a82' : 'none',
                                     borderRadius: '30px',
                                     padding: '12px 40px',
                                     fontSize: '14px',
                                     fontWeight: '700',
                                     cursor: 'pointer',
                                     minWidth: '140px',
-                                }}>save</button>
+                                }}>{savedJobIds.includes(job.id) ? 'Saved' : 'Save'}</button>
                                 <button
                                     onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
                                     style={{

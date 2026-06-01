@@ -23,6 +23,7 @@ import CandidateDashboard from "./pages/CPages/Dashboard";
 import CandidateAIQuestions from "./pages/CPages/AIQuestions";
 import CandidateCalendar from "./pages/CPages/Calendar";
 import CandidateJobApply from "./pages/CPages/JobApply";
+import CandidateSavedJobs from "./pages/CPages/SavedJobs";
 
 // Interviewer pages
 import InterviewerDashboard from "./pages/IPages/Dashboard";
@@ -117,6 +118,7 @@ function App() {
         <Route path="/candidate/aiquestions" element={<Candidate><CandidateAIQuestions /></Candidate>} />
         <Route path="/candidate/calendar" element={<Candidate><CandidateCalendar /></Candidate>} />
         <Route path="/candidate/jobapply/:id" element={<Candidate><CandidateJobApply /></Candidate>} />
+        <Route path="/candidate/saved-jobs" element={<Candidate><CandidateSavedJobs /></Candidate>} />
 
         {/* Interviewer */}
         <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
