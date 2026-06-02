@@ -1,0 +1,43 @@
+.cab-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .cab-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  
+  .cab-btn--primary {
+    background: #ffffff;
+    color: #111827;
+    border-color: #d1d5db;
+  }
+  
+  .cab-btn--primary:hover {
+    background: #f3f4f6;
+  }
+  
+  .cab-btn--disabled {
+    background: #ffffff;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  .cab-btn--finalized {
+    background: #166534;
+    color: #ffffff;
+    border-color: #166534;
+  }
+  
+  .cab-btn--finalized:hover {
+    background: #15803d;
+  }

@@ -39,7 +39,7 @@ public class OtpController {
 
         String otp = otpService.generateOtp(email.trim());
 
-        // Send email in a separate thread so it doesn't block the response
+
         new Thread(() -> InterLinkMailSender.sendSignupOTP(email.trim(), otp)).start();
 
         return ResponseEntity.ok(Map.of("message", "OTP sent to your email"));

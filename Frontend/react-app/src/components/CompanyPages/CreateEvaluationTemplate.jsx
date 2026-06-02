@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { GRADE_BANDS } from "./ScorecardUtils";
+import { GRADE_BANDS } from "./ScorecardUtils"; //to only display the colored badges.
 import "./CreateEvaluationTemplate.css";
 
 
@@ -71,7 +71,7 @@ const CreateEvaluationTemplate = ({
       alert("All fields must have a label name.");
       return;
     }
-    onSaveTemplate({ name: templateName, fields });
+    onSaveTemplate({ name: templateName, fields }); //template data sent to scorecard manager
   };
 
   return (
@@ -166,6 +166,7 @@ const CreateEvaluationTemplate = ({
               <strong>Weighted Percentage</strong> — Each field's score is divided by its max,
               then combined into an overall percentage (0–100%).
             </p>
+
             <div className="cet-grade-bands">
               {GRADE_BANDS.map((band, index) => {
                 const upper = index === 0 ? 100 : GRADE_BANDS[index - 1].min - 1;
@@ -180,9 +181,11 @@ const CreateEvaluationTemplate = ({
                 );
               })}
             </div>
+
             <p className="cet-formula">
               Score = ( Σ field scores ) / ( Σ max scores ) × 100
             </p>
+
           </div>
         </div>
 

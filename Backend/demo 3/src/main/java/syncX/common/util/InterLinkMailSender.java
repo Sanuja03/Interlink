@@ -9,13 +9,12 @@ import java.util.Base64;
 public class InterLinkMailSender {
 
     // Replace with YOUR Gmail + App Password
-
     private static final String SMTP_SERVER = "smtp.gmail.com";
     private static final int PORT = 465;
     private static final String SENDER_EMAIL = "interlink074@gmail.com";
     private static final String SENDER_PASSWORD = "odluwzhfquizaefu";
 
-    // ── Send OTP for signup verification ──
+    // ── Send OTP html design will be created for signup verification ──
     public static void sendSignupOTP(String recipient, String otp) {
         String subject = "InterLink | Verify Your Email";
 
@@ -59,7 +58,7 @@ public class InterLinkMailSender {
         sendHtmlEmailInternal(recipient, subject, html);
     }
 
-    // ── Send OTP for forgot password ──
+    // ── Send OTP for forgot password html will be created ──
     public static void sendPasswordResetOTP(String recipient, String otp) {
         String subject = "InterLink | Password Reset Code";
 
@@ -99,7 +98,7 @@ public class InterLinkMailSender {
         sendHtmlEmailInternal(recipient, subject, html);
     }
 
-    // ── Internal SMTP sender (same logic as your RideMachan one) ──
+    // ── Internal SMTP sender ──
     private static void sendHtmlEmailInternal(String recipient, String subject, String htmlBody) {
         try {
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();

@@ -20,9 +20,9 @@ public class CorsConfig {
 
         //front end requests can be only  below methods and the request cant inlcude the authorization header including the jwt
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));// frontend can send any header it wants. The most important one for you is the Authorization
+        config.setAllowedHeaders(List.of("*"));// frontend can send any header it wants.
         config.setExposedHeaders(List.of("Authorization"));//let the frontend read the Authorization header from my responses
-        config.setAllowCredentials(true);//This allows cookies and auth headers to be included in cross-origin requests. Necessary because you're sending JWTs.
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);//applies all the above  rules to every URL on your backend

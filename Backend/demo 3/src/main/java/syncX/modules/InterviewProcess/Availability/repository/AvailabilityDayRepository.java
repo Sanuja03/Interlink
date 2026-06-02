@@ -26,17 +26,17 @@ public interface AvailabilityDayRepository extends JpaRepository<AvailabilityDay
             @Param("date") LocalDate date,
             @Param("companyId") UUID companyId);
 
-    @Query("""
-        SELECT ad FROM AvailabilityDay ad
-        JOIN FETCH ad.weeklyAvailability wa
-        WHERE ad.id.availableDate = :date
-          AND ad.isAvailable = true
-          AND wa.status = 'submitted'
-          AND wa.companyId = :companyId
-          AND wa.weekStartDate = :weekStartDate
-    """)
-    List<AvailabilityDay> findAvailableByDateAndCompanyAndWeek(
-            @Param("date") LocalDate date,
-            @Param("companyId") UUID companyId,
-            @Param("weekStartDate") LocalDate weekStartDate);
+//    @Query("""
+//        SELECT ad FROM AvailabilityDay ad
+//        JOIN FETCH ad.weeklyAvailability wa
+//        WHERE ad.id.availableDate = :date
+//          AND ad.isAvailable = true
+//          AND wa.status = 'submitted'
+//          AND wa.companyId = :companyId
+//          AND wa.weekStartDate = :weekStartDate
+//    """)
+//    List<AvailabilityDay> findAvailableByDateAndCompanyAndWeek(
+//            @Param("date") LocalDate date,
+//            @Param("companyId") UUID companyId,
+//            @Param("weekStartDate") LocalDate weekStartDate);
 }

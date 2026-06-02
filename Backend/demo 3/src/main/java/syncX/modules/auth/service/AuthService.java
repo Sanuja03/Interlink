@@ -157,13 +157,13 @@ public class AuthService {
             throw new RuntimeException("Email already exists in system");
         }
 
-        //create a user in the user table and return its id
+        //create the supabase auth.user
         String supabaseUserId = supabaseAdminService.createUser(
                 dto.getEmail(),
                 dto.getPassword()
         );
 
-        //convert that user_id into uuid
+
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
         User user = new User();

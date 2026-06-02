@@ -55,7 +55,7 @@ public class SecurityConfig {
                         // ── Super admin endpoints ──
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_super_admin")
 
-                        // ── Shared endpoints (any authenticated user)
+                        // ── Shared endpoints (any loged in user)
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/logout").authenticated()

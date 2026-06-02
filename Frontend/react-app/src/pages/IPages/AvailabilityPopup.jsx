@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import "./AvailabilityPopup.css";
+import api from "../../lib/api";
 
 import {
   getCurrentWeekDates,
   getWeekKey,
   submitAvailability,
 } from "../../utils/weekUtils";
-import api from "../../lib/api";
+
 
 const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
   const weekDates = getCurrentWeekDates();
@@ -22,7 +23,7 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
 
     const loadSavedAvailability = async () => {
       try {
-        // single call - my-week returns both status and days
+        // get saved availability for the week and teh status- if any if not it returns empty array
         const res = await api.get("/interviewer/availability/my-week", {
           params: { weekKey },
         });

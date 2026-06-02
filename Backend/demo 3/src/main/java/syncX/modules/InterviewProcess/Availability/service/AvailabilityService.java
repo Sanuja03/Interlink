@@ -37,7 +37,7 @@ public class AvailabilityService {
     private CompanyRepository companyRepository;
 
 
-    // INTERVIEWER: Check status for a week
+    // Check status for a week
     @Transactional(readOnly = true)
     public AvailabilityDTO.StatusResponse getStatus(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -60,7 +60,7 @@ public class AvailabilityService {
     }
 
 
-    // INTERVIEWER: Get this week saved availability(pre-fill popup)
+    // Get this week saved availability,status or empty array,status if not saved(pre-fill popup)
     @Transactional(readOnly = true)
     public AvailabilityDTO.MyWeekResponse getMyWeek(Jwt jwt, String weekKey) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -81,9 +81,11 @@ public class AvailabilityService {
     }
 
 
-    /**INTERVIEWER: Take the logged-in interviewer’s selected days for the current week, validate
-    them, remove any old saved days for that week, save the new selected days, mark the week as
-     submitted, and return the saved result to the frontend*/
+    /**
+     * INTERVIEWER: Take the logged-in interviewer’s selected days for the current week, validate
+     * them, remove any old saved days for that week, save the new selected days, mark the week as
+     * submitted, and return the saved result to the frontend
+     */
 
     @Transactional
     public AvailabilityDTO.StatusResponse submitAvailability(Jwt jwt, AvailabilityDTO.SubmitRequest request) {
@@ -153,96 +155,40 @@ public class AvailabilityService {
 
         return new AvailabilityDTO.StatusResponse(true, savedDays);
     }
-
-
-    // COMPANY ADMIN: All interviewers for a week
-    @Transactional(readOnly = true)
-    public List<AvailabilityDTO.InterviewerWeekSummary> getCompanyWeekAvailability(
-            Jwt jwt, String weekKey) {
-
-        UUID adminUserId = UUID.fromString(jwt.getSubject());
-
-        // Get admin's company
-        Company company = companyRepository.findByUserId(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        UUID companyId = company.getCompanyId();
-
-        // Get all submitted availability for this company + week
-        List<WeeklyAvailability> records =
-                weeklyRepo.findByCompanyIdAndWeekKeyAndStatus(companyId, weekKey, "submitted");
-
-        List<AvailabilityDTO.InterviewerWeekSummary> result = new ArrayList<>();
-
-        for (WeeklyAvailability wa : records) {
-            // Get interviewer details using your existing repository
-            Interviewer interviewer = interviewerRepository.findByUserId(wa.getUserId())
-                    .orElse(null);
-
-            if (interviewer == null) continue;
-
-            AvailabilityDTO.InterviewerWeekSummary summary = new AvailabilityDTO.InterviewerWeekSummary();
-            summary.setUserId(wa.getUserId().toString());
-            summary.setInterviewerId(interviewer.getInterviewerId());
-            summary.setFullName(interviewer.getFullName());
-            summary.setRole(interviewer.getInterviewerRole());
-            summary.setBranch(interviewer.getBranch());
-            summary.setStatus(wa.getStatus());
-
-            List<String> days = wa.getDays().stream()
-                    .filter(AvailabilityDay::isAvailable)
-                    .map(d -> d.getAvailableDate().toString())
-                    .collect(Collectors.toList());
-            summary.setAvailableDays(days);
-
-            result.add(summary);
-        }
-
-        return result;
-    }
-
-
-    /** COMPANY ADMIN: Interviewers available on a date
-    calculates teh monday of the selected date and find all avalabilityday records where the data
-    matches the selected date, the company matches the admin’s company, and the week start date matches that week*/
-
-    @Transactional(readOnly = true)
-    public List<AvailabilityDTO.InterviewerDateEntry> getAvailableOnDate(
-            Jwt jwt, String dateStr) {
-
-        UUID adminUserId = UUID.fromString(jwt.getSubject());
-        LocalDate date = LocalDate.parse(dateStr);
-
-        Company company = companyRepository.findByUserId(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        UUID companyId = company.getCompanyId();
-
-        // The Monday of the week this date belongs to
-        LocalDate weekStartForDate = date.with(java.time.DayOfWeek.MONDAY);
-
-        List<AvailabilityDay> availDays =
-                dayRepo.findAvailableByDateAndCompanyAndWeek(date, companyId, weekStartForDate);
-
-        List<AvailabilityDTO.InterviewerDateEntry> result = new ArrayList<>();
-
-        for (AvailabilityDay ad : availDays) {
-            UUID interviewerUserId = ad.getWeeklyAvailability().getUserId();
-
-            Interviewer interviewer = interviewerRepository.findByUserId(interviewerUserId)
-                    .orElse(null);
-
-            if (interviewer == null) continue;
-
-            result.add(new AvailabilityDTO.InterviewerDateEntry(
-                    interviewerUserId.toString(),
-                    interviewer.getInterviewerId(),
-                    interviewer.getFullName(),
-                    interviewer.getInterviewerRole(),
-                    interviewer.getBranch()
-            ));
-        }
-
-        return result;
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ScorecardManager from "../../components/CompanyPages/ScoreCardManager";
 
-//scorecardmanagaer passes these inputs or keep empty if not available
+//shortlisted passes these data and btn takes these data as props and passes to managescorecard
 const ManageScorecardsButton = ({
   jobTitle = "",
   jobPostId = "",

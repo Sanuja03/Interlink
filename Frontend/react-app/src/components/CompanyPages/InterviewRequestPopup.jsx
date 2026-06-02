@@ -24,7 +24,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
   const [submitting, setSubmitting]                       = useState(false);
   const [loadingExisting, setLoadingExisting]             = useState(false);
 
-  // When popup opens — reset form and check for existing active request to prefill
+  // runs when popup opens everytime — reset form and check for existing active request to prefill
   useEffect(() => {
     if (!open || !candidate) return;
 
@@ -62,7 +62,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
           return;
         }
 
-        // Existing request found → prefill the form
+        // Existing request found - prefill the form
         const data = res.data;
         setPanelSize(data.panelSize || 2);
         setMode(data.mode || "Online");
@@ -99,7 +99,8 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     return () => { cancelled = true; };
   }, [open, candidate]);
 
-  // Fetch assignable interviewers when date changes
+
+  // runs every time date changes - Fetch assignable interviewers when date changes
   useEffect(() => {
     if (!open || !date || isSent) return;
 
@@ -147,6 +148,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
 
   const isChecked = (pid) => selectedInterviewers.some((x) => x.id === pid);
 
+  // can tick or untick checkboxes of interviewer selection
   const handleToggle = (person) => {
     const exists = selectedInterviewers.some((x) => x.id === person.id);
     if (exists) {
@@ -156,8 +158,10 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     }
   };
 
+//can remove interviewer  by clicking the cross sign in request page
   const handleRemoveSelected = (pid) =>
     setSelectedInterviewers((prev) => prev.filter((x) => x.id !== pid));
+
 
   const handleSendRequest = async () => {
     setSubmitError("");
@@ -174,7 +178,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       candidateId: candidate.candidateId,
       jobApplicationId: candidate.jobApplicationId,
       jobId: candidate.jobId || null,
-      // historyId is a plain number (bigint). Send null if missing.
+
       historyId: candidate.historyId != null ? Number(candidate.historyId) : null,
       panelSize,
       interviewDate: date,

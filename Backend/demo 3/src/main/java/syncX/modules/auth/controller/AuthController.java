@@ -62,7 +62,7 @@ public class AuthController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody InterviewerSignupDTO dto) {
         InterviewerResponseDTO created = authService.completeInterviewerSignup(jwt, dto);
-        return ResponseEntity.ok(created);//created is a Java object (DTO) -interviewerResponseDTO
+        return ResponseEntity.ok(created);
     }
 
     // Only company admins can list interviewers

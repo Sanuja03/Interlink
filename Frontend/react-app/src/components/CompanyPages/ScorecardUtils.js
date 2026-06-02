@@ -7,11 +7,8 @@ export const GRADE_BANDS = [
     { min: 0,  label: "Reject",      color: "#dc2626", letter: "C/D/F" },
   ];
   
-  /**
-   * Calculate weighted percentage score.
-   * @param {Array<{score: number, maxScore: number}>} fieldScores
-   * @returns {{ percentage: number, grade: object, totalScore: number, totalMax: number }}
-   */
+
+
 
   export const calculateScore = (fieldScores = []) => {
     if (!fieldScores.length) {

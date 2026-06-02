@@ -40,15 +40,10 @@ const ShortlistedCandidates = () => {
   /** finalizedMap: { [jobApplicationId]: requestId } — for already-finalized panels */
   const [finalizedMap, setFinalizedMap] = useState({});
 
-  /**
-   * pendingFinalizeMap: { [jobApplicationId]: activeRequest }
-   * Tracks candidates whose admin has clicked "Finalize Panel" from Status but
-   * hasn't actually submitted the final details yet. Used so re-opening the
-   * candidate skips Status and goes back to FinalizedPanelPopup directly.
-   */
+
   const [pendingFinalizeMap, setPendingFinalizeMap] = useState({});
 
-  // Fetch jobs
+  //  Loads the jobs dropdown
   useEffect(() => {
     let cancelled = false;
     setLoadingJobs(true);
@@ -72,13 +67,13 @@ const ShortlistedCandidates = () => {
   }, []);
 
 
-  // Fetch candidates and scorecards in parallel when selected job changes
+  // When a job is selected, loads candidates and scorecards in parallel
   useEffect(() => {
     let cancelled = false;
     setLoadingCandidates(true);
     setCandidatesError("");
     setFinalizedMap({});
-    setPendingFinalizeMap({}); // clear any pending state when switching jobs
+    setPendingFinalizeMap({}); 
 
     const params = selectedJobId ? { jobId: selectedJobId } : {};
 
@@ -87,13 +82,16 @@ const ShortlistedCandidates = () => {
       ? api.get("/company/scorecards", { params: { jobId: selectedJobId } })
       : Promise.resolve({ data: [] });
 
-    Promise.all([candidatesPromise, scorecardsPromise])
+    Promise.all([candidatesPromise, scorecardsPromise]) // load both at same time
+
+    //onsuccess
       .then(([candidatesRes, scorecardsRes]) => {
         if (cancelled) return;
         const candidateList = Array.isArray(candidatesRes.data) ? candidatesRes.data : [];
         setCandidates(candidateList);
         setScorecards(scorecardsRes.data || []);
       })
+    //onfailure  
       .catch((err) => {
         if (cancelled) return;
         console.error("[ShortlistedCandidates] fetch failed:", err);
@@ -101,13 +99,15 @@ const ShortlistedCandidates = () => {
         setCandidates([]);
         setScorecards([]);
       })
+      
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
   }, [selectedJobId]);
 
 
-  // Build finalizedMap so the action buttons know which candidates have a finalized panel
+  // After candidates load, checks each one's finalized status
+  // and if finalized put to finalisezed map
   useEffect(() => {
     if (candidates.length === 0) { setFinalizedMap({}); return; }
     let cancelled = false;
@@ -148,7 +148,7 @@ const ShortlistedCandidates = () => {
     }
   };
 
-
+//runs when request/status is clicked - which popup to show in which situations 
   const handleOpenForCandidate = async (candidate) => {
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
@@ -165,7 +165,6 @@ const ShortlistedCandidates = () => {
     }
 
     // 2) Mid-finalize (admin clicked Finalize Panel earlier but hasn't submitted)
-    //    → skip Status, go straight back to Finalized in ACTION mode
     const pendingReq = pendingFinalizeMap[candidate.jobApplicationId];
     if (pendingReq) {
       setPendingFinalizeRequest(pendingReq);
@@ -205,6 +204,7 @@ const ShortlistedCandidates = () => {
     }
   };
 
+  //runs when green finalised button is clicked
   const handleOpenFinalizedDirect = (candidate) => {
     const rid = finalizedMap[candidate.jobApplicationId];
     if (!rid) return;
@@ -216,6 +216,7 @@ const ShortlistedCandidates = () => {
     setShowFinalizedPopup(true);
   };
 
+//runs when close button inside popups is clicked  
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
@@ -225,20 +226,16 @@ const ShortlistedCandidates = () => {
     setSelectedCandidate(null);
     candidateRef.current = null;
     setEditMode(false);
-    // NOTE: we don't clear pendingFinalizeMap here on purpose — that's the
-    // "remember" behavior. Next time admin opens this candidate, they go
-    // straight back to FinalizedPanelPopup instead of Status.
   };
 
+//runs when cancel and redo  is clicked from status popup
   const handleEditFromStatus = () => {
     setEditMode(true);
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
 
-  // When admin clicks "Finalize Panel" inside RequestStatusPopup:
-  //   Close Status popup, open FinalizedPanelPopup in ACTION mode,
-  //   AND remember this candidate is mid-finalize (so re-opens skip Status).
+//runs when finalise panel clicked from status page
   const handleRequestFinalize = (activeRequest) => {
     const candidate = candidateRef.current || selectedCandidate;
     if (candidate) {
@@ -252,8 +249,7 @@ const ShortlistedCandidates = () => {
     setShowFinalizedPopup(true);
   };
 
-  // Admin clicks "Back to Status" inside FinalizedPanelPopup (action mode).
-  // Forget the pending state and go back to Status popup so they can manage interviewers.
+  //runs when back to status is clicked from finalised page in action mode
   const handleBackToStatus = () => {
     const candidate = candidateRef.current || selectedCandidate;
     if (candidate) {
@@ -268,8 +264,7 @@ const ShortlistedCandidates = () => {
     setShowStatusPopup(true);
   };
 
-  // The actual finalize API call — called by FinalizedPanelPopup when admin clicks
-  // "Send Scheduled Interview Details".
+  // finalize API call — called by FinalizedPanelPopup when admin clicks "Send Scheduled Interview Details".
   const handleFinalizeSubmit = async ({ meetingLink, scorecard }) => {
     if (!pendingFinalizeRequest?.requestId) return;
     const requestId = pendingFinalizeRequest.requestId;
@@ -300,7 +295,6 @@ const ShortlistedCandidates = () => {
       }
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || "Failed to finalize";
-      // Re-throw so FinalizedPanelPopup can show sendError
       throw new Error(msg);
     }
   };
@@ -417,6 +411,7 @@ const ShortlistedCandidates = () => {
                     </td></tr>
                   )}
 
+                  {/*-----*/}
                   {!loadingCandidates && !candidatesError && candidates.map((candidate, idx) => (
                     <tr key={`${candidate.jobApplicationId}-${idx}`}>
                       <td className="sc-bold" title={candidate.candidateId}>
@@ -439,8 +434,8 @@ const ShortlistedCandidates = () => {
                       <td>
                         <CandidateActionButtons
                           isFinalized={!!finalizedMap[candidate.jobApplicationId]}
-                          onOpenRequest={() => handleOpenForCandidate(candidate)}
-                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}
+                          onOpenRequest={() => handleOpenForCandidate(candidate)} // function to call when request/status button is clicked
+                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}//function to call when finalised green button is clicked
                         />
                       </td>
                     </tr>
@@ -453,6 +448,7 @@ const ShortlistedCandidates = () => {
         </div>
       </div>
 
+{/* render the popup whne showRequestPopup = true */} 
       <InterviewRequestPopup
         open={showRequestPopup}
         onClose={closeAllPopups}
@@ -460,6 +456,7 @@ const ShortlistedCandidates = () => {
         startInEditMode={editMode}
       />
 
+{/* render the popup whne showStatusPopup = true */} 
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
@@ -468,13 +465,7 @@ const ShortlistedCandidates = () => {
         onRequestFinalize={handleRequestFinalize}
       />
 
-      {/*
-        FinalizedPanelPopup serves two modes:
-          1. ACTION mode  → opened after admin clicks "Finalize Panel" in RequestStatusPopup
-                            (uses pendingFinalizeRequest data + handleFinalizeSubmit)
-          2. VIEW mode    → opened directly for an already-finalized interview
-                            (uses finalizedRequestId + viewOnly=true)
-      */}
+ {/* Action Mode */}    
       {showFinalizedPopup && pendingFinalizeRequest && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}
@@ -501,6 +492,7 @@ const ShortlistedCandidates = () => {
         />
       )}
 
+ {/* View Mode */}   
       {showFinalizedPopup && !pendingFinalizeRequest && finalizedRequestId && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}

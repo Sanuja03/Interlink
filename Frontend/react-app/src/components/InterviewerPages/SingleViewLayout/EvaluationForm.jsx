@@ -25,7 +25,7 @@ const EvaluationForm = ({
   const [error, setError]             = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
 
-  // Sync props -> local state when parent finishes fetching
+ 
   useEffect(() => {
     setScores(initialScores || {});
   }, [initialScores]);

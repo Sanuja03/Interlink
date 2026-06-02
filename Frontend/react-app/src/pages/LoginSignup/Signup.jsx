@@ -30,7 +30,7 @@ const Signup = () => {
       setSubmitError("")
       const email = data.email.trim()
       await api.post("/otp/send-signup-otp", { email })
-      setFormData({ ...data }) // save form data
+      setFormData({ ...data }) // save form data so can use in handleverifyotp function
       setStep(2)
     } catch (err) {
       setSubmitError(err?.response?.data?.message || "Failed to send OTP")
@@ -49,7 +49,7 @@ const Signup = () => {
 
     sessionStorage.setItem("is_signing_up", "true")
 
-    //create a user is supabase auth system
+    //create a user in supabase auth system
     const { error: authError } = await supabase.auth.signUp({
       email,
       password: formData.password,
@@ -60,7 +60,7 @@ const Signup = () => {
       setVerifying(false)
       return
     }
-
+    //Supabase creates a session and saves the JWT to localStorage
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       sessionStorage.removeItem("is_signing_up")
@@ -69,7 +69,7 @@ const Signup = () => {
       return
     }
 
-    //sends user info and jwt token to backend
+    //sends user info and jwt token attached manually to backend to create in interlinks database
     await api.post("/auth/complete-candidate-signup", {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -159,6 +159,7 @@ const Signup = () => {
         </div>
 
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
+
           {submitError && <p className="error-text">{submitError}</p>}
           {submitSuccess && <p className="success-text">{submitSuccess}</p>}
 

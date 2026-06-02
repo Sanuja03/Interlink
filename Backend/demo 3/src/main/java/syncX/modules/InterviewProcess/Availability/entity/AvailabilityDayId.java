@@ -1,4 +1,4 @@
-// AvailabilityDayId.java
+// composite key
 package syncX.modules.InterviewProcess.Availability.entity;
 
 import jakarta.persistence.Column;

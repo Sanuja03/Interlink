@@ -19,14 +19,14 @@ const Login = () => {
   const [loginError, setLoginError] = useState("");
   const { login, isAuthenticated, role, loading, suspendedMessage, setSuspendedMessage } = useAuth();//useEffect runs only if these changes 
   
-  //form setup
+ 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched" });
 
-   //calls login funtion in Authcontext)
+   //calls login funtion in Authcontext
   const onSubmit = async (data) => {
     try {
       setLoginError("");
@@ -50,12 +50,12 @@ const Login = () => {
         interviewer: "/interviewer/dashboard",
         super_admin: "/admin/dashboard",
       };
-      const from = location.state?.from?.pathname || dashboardMap[role] || "/";//choose where to send a user [If there is no previous page and no matching role, go to home page.]
-      navigate(from, { replace: true });//navigate to the relevant dashboard or previous page or home page after login, replace history so user can't go back to login with back button
+      const from = location.state?.from?.pathname || dashboardMap[role] || "/";
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, role, loading, navigate, location]);//array which says run this useEffect if any of tehse changes 
+  }, [isAuthenticated, role, loading, navigate, location]);//array which says run this useEffect if any of thse changes 
 
-  // handle Google OAuth callback
+  // handle Google login
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {

@@ -22,10 +22,10 @@ async function waitForSession(maxAttempts = 20, delayMs = 50) {
   return null;
 }
 
-// attach fresh Supabase JWT to the request sent to backend
+// request interceptor - attach fresh Supabase JWT to the request sent to backend
 api.interceptors.request.use(
   async (config) => {
-    // dont ask subapase for a token when signing up - token is atatched manually in there
+    
     if (sessionStorage.getItem("is_signing_up") === "true") {
       return config;
     }
@@ -46,7 +46,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// the response will be checked by axios and if 401(unauthorized) the belwo tries to attach a new token and send the reqest agaian
+// rresponse interceptor - the response will be checked by axios and if 401(unauthorized) the belwo tries to attach a new token and send the reqest agaian
 api.interceptors.response.use(
   (response) => response, 
   async (error) => { const originalRequest = error.config;

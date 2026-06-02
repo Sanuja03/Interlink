@@ -10,7 +10,7 @@ import java.util.UUID;
 
 /**
  * Centralized JWT → user/company resolution.
- * Any controller or service needing the caller's company should use this.
+ * Any controller or service needing the caller's company,uuid, companyid should use this.
  */
 @Service
 public class AuthContextService {
@@ -23,14 +23,14 @@ public class AuthContextService {
         return UUID.fromString(jwt.getSubject());
     }
 
-    //call prev method and get user id and run sql query on company table to get companies with that user and returns the company object
+    //users company
     public Company getCompany(Jwt jwt) {
         UUID userId = getUserId(jwt);
         return companyRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Company not found for user: " + userId));
     }
 
-    //call prev method return company object and from that get teh company id only and returns it
+    //companies compnayid
     public UUID getCompanyId(Jwt jwt) {
         return getCompany(jwt).getCompanyId();
     }

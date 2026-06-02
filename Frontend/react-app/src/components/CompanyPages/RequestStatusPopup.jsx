@@ -8,7 +8,7 @@ const RequestStatusPopup = ({
   onClose,
   candidate,
   onEditRequest,
-  onRequestFinalize,  // parent handles opening FinalizedPanelPopup
+  onRequestFinalize,  
 }) => {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
@@ -87,13 +87,13 @@ const RequestStatusPopup = ({
     return "";
   };
 
+  //WAT IS DISPLAYED
   const invited      = activeRequest?.interviewers || [];
   const interviewers = invited.map((p) => ({
     id:            p.userId,
     name:          p.fullName,
     role:          p.role,
     requestStatus: normalizeStatus(p.responseStatus),
-    rawStatus:     p.responseStatus,
     adminRemoved:  removedIds.has(p.userId),
   }));
 
@@ -136,7 +136,7 @@ const RequestStatusPopup = ({
         `/company/interview-requests/status/${activeRequest.requestId}/interviewers/${interviewerUserId}/resend`
       );
 
-      //if this interviewer was removed earlier then unmark from the removed list
+      //if this interviewer was removed earlier after rejecting then unmark from the removed list
       setRemovedIds((prev) => {
         const next = new Set(prev);
         next.delete(interviewerUserId);
@@ -151,7 +151,7 @@ const RequestStatusPopup = ({
     }
   };
 
-  // Add interviewers
+  // open Add panel
   const openAddPanel = async () => {
     if (!activeRequest?.interviewDate) return;
     setShowAddPanel(true);
@@ -173,6 +173,7 @@ const RequestStatusPopup = ({
   const toggleAddSelect = (userId) =>
     setAddSelected((prev) => prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]);
 
+  //add interviewers
   const handleAddSubmit = async () => {
     if (addSelected.length === 0) return;
     setSubmittingAdd(true);
@@ -224,28 +225,31 @@ const RequestStatusPopup = ({
             <span className="ip-info-label">Interview ID</span>
             <span className="ip-info-value">{activeRequest.interviewId || "—"}</span>
           </div>
+
           <div className="ip-info-box">
             <span className="ip-info-label">Mode</span>
             <span className="ip-info-value" style={{ textTransform: "capitalize" }}>
               {activeRequest.mode || "—"}
             </span>
           </div>
+
           <div className="ip-info-box">
             <span className="ip-info-label">Candidate</span>
             <span className="ip-info-value">{candidate?.candidateName || "—"}</span>
           </div>
+
           <div className="ip-info-box">
             <span className="ip-info-label">Date &amp; Time</span>
             <span className="ip-info-value">{activeRequest.interviewDate} {activeRequest.interviewTime}</span>
           </div>
         </div>
 
-
         <div className="ip-panel-top">
           <div className="ip-panel-box">
             <span className="ip-info-label">Panel Size</span>
             <span className="ip-info-value">{panelSize}</span>
           </div>
+
           <div className="ip-panel-box">
             <span className="ip-info-label">Accepted</span>
             <span className="ip-info-value">{acceptedCount}/{panelSize}</span>

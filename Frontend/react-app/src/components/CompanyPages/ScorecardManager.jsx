@@ -14,8 +14,9 @@ const ScorecardManager = ({
   scorecards = [],
   onSave,
 }) => {
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);// stores which scorecard the user is currently editing - null means eduting a brand new one 
+
+  const [editorOpen, setEditorOpen] = useState(false); //createevaluationpopup
+  const [editingCard, setEditingCard] = useState(null); 
 
   if (!open) return null;
 
@@ -28,7 +29,7 @@ const ScorecardManager = ({
 
  //EDIT 
   const handleEdit = (card) => {
-    setEditingCard(card);//pre-fill the form with that card's data. The user sees their existing fields and can modify them
+    setEditingCard(card);
     setEditorOpen(true);
   };
 
@@ -50,7 +51,7 @@ const ScorecardManager = ({
           })),
         });
        
-        //go through every card in the list and if cards id equals one we edited replae with it 
+        
         onSave(scorecards.map((c) => (c.id === editingCard.id ? res.data : c)));
       } else {
 
@@ -78,7 +79,7 @@ const ScorecardManager = ({
   const handleFinalize = async (id) => {
     if (!window.confirm("Finalizing locks this template from editing. Continue?")) return;
     try {
-      const res = await api.patch(`/company/scorecards/${id}/finalize`);//HTTP verb for partial updates
+      const res = await api.patch(`/company/scorecards/${id}/finalize`);
       onSave(scorecards.map((c) => (c.id === id ? res.data : c)));
     } catch (err) {
       alert(err?.response?.data?.error || "Failed to finalize.");
@@ -88,9 +89,9 @@ const ScorecardManager = ({
  
  //DELETE TEMPLATE 
   const handleDelete = async (id) => {
-    const card = scorecards.find((c) => c.id === id);//find teh scorecard
-    if (card?.finalized) return;//if its finalized dont delete
-    if (!window.confirm("Are you sure you want to delete this scorecard template?")) return;//confirms whtehr to delete
+    const card = scorecards.find((c) => c.id === id);//find the scorecard
+    if (card?.finalized) return;
+    if (!window.confirm("Are you sure you want to delete this scorecard template?")) return;
     try {
       await api.delete(`/company/scorecards/${id}`);
       onSave(scorecards.filter((c) => c.id !== id));
@@ -129,7 +130,7 @@ const ScorecardManager = ({
               </div>
             )}
 
-            {/*Card*/}
+            {/*scoreCard*/}
             {scorecards.map((card) => (
               <div
                 key={card.id}
@@ -156,6 +157,7 @@ const ScorecardManager = ({
                   </div>
                 </div>
 
+              {/*Buttons*/}       
                 <div className="scm-card-actions">
                   {!card.finalized && (
                     <>
@@ -201,7 +203,7 @@ const ScorecardManager = ({
         </div>
       </div>
 
-      {/* Editor popup on top */}
+  
       {editorOpen && (
         <CreateEvaluationTemplate
           open={editorOpen}

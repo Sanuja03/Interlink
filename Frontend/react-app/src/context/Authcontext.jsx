@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
     const [appUser, setAppUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [suspendedMessage, setSuspendedMessage] = useState(""); 
-
     const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
 
     const fetchAppUser = useCallback(async () => {
@@ -57,7 +56,7 @@ export function AuthProvider({ children }) {
       }
     }, []);
 
-    //bootstrap + listener (runs once)
+    //run once when app first loads 
     useEffect(() => {
       let mounted = true;
 
@@ -65,8 +64,8 @@ export function AuthProvider({ children }) {
         try {
           console.log("[AuthContext] initAuth — flag:", loggedInRef.current);
 
+          //if logged in flag is false
           if (!loggedInRef.current) {
-            // Not supposed to be logged in — don't even look at Supabase
             if (mounted) {
               setUser(null);
               setAppUser(null);
@@ -74,6 +73,7 @@ export function AuthProvider({ children }) {
             return;
           }
 
+          //if logged in flag is true
           const { data: { session } } = await supabase.auth.getSession();
           if (!mounted) return;
 
@@ -98,7 +98,6 @@ export function AuthProvider({ children }) {
       initAuth();
 
       // The auth state listener — runs whenever Supabase's session changes
-
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
           if (!mounted) return;
@@ -132,7 +131,7 @@ export function AuthProvider({ children }) {
             sessionStorage.setItem(LOGIN_FLAG, "true");
           }
           
-          // Ignore logging in  during signup process to get teh jwt token 
+          // Ignore logging in  during signup process 
           if (event === "SIGNED_IN") {
             if (sessionStorage.getItem("is_signing_up") === "true") {
               console.log("[AuthContext] ignoring SIGNED_IN during signup flow");
@@ -167,10 +166,10 @@ export function AuthProvider({ children }) {
 
 
 
-  //  login 
+  //-------LOG IN
     const login = async (email, password) => {
 
-    // Set the ref and sessionStorage before calling Supabase
+
     loggedInRef.current = true;
     sessionStorage.setItem(LOGIN_FLAG, "true");
 
@@ -186,18 +185,18 @@ export function AuthProvider({ children }) {
   };
 
 
-  //  logout 
+  //------LOG OUT 
   const logout = async () => {
     console.log("[AuthContext] logout called");
 
-    // Hit backend first while we still have a valid token
+    
     try {
         await api.post("/auth/logout");
     } catch (err) {
         console.error("[AuthContext] backend logout failed (non-fatal):", err);
     }
 
-    // Then proceed with existing cleanup
+    
     loggedInRef.current = false;
     sessionStorage.removeItem(LOGIN_FLAG);
     setUser(null);
