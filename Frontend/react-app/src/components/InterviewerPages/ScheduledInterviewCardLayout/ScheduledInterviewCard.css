@@ -3,12 +3,6 @@
   background: #EAF2F6;
   border-radius: 16px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  position: relative;
-}
-
-.si-card-clickable {
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .si-card-clickable:hover {
@@ -37,10 +31,6 @@
   font-weight: 700;
 }
 
-.status-ongoing {
-  background: #dcfce7;
-  color: #15803d;
-}
 
 .status-scheduled {
   background: #fef9c3;
@@ -78,16 +68,11 @@
 
 .si-label {
   color: #6b7280;
-  flex-shrink: 0;
 }
 
 .si-value {
   font-weight: 600;
   color: #111827;
-}
-
-.si-job {
-  text-align: right;
 }
 
 .si-mode-pill {
@@ -117,7 +102,7 @@
   font-size: 14px;
   cursor: pointer;
   margin-bottom: 14px;
-  transition: background 0.15s ease;
+
 }
 
 .si-join:hover {
@@ -140,18 +125,10 @@
   border-radius: 12px;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.15s ease;
 }
 
 .si-panel-btn:hover {
   background: #92c3d9;
-}
-
-.si-hint {
-  margin: 10px 0 14px;
-  font-size: 12px;
-  color: #6b7280;
-  text-align: center;
 }
 
 .si-view-link {
@@ -165,13 +142,13 @@
   padding: 10px 0;
   border-radius: 12px;
   font-size: 14px;
-  transition: background 0.15s ease;
 }
 
 .si-view-link:hover {
   background: #3f434b;
 }
 
+/*Panel popup*/
 .si-overlay {
   position: fixed;
   inset: 0;

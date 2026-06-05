@@ -14,7 +14,6 @@ import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequestIn
 import syncX.modules.InterviewProcess.InterviewRequest.repository.AssignableInterviewerRepository;
 import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewRequestRepository;
 
-
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.entity.Interviewer;
 import syncX.modules.auth.repository.CandidateRepository;
@@ -36,9 +35,9 @@ public class InterviewRequestService {
     @Autowired private AvailabilityDayRepository availabilityDayRepo;
     @Autowired private CompanyRepository companyRepository;
     @Autowired private CandidateRepository candidateRepository;
-    @Autowired private JobRepository jobRepository;   // ← used to resolve real job titles
+    @Autowired private JobRepository jobRepository;
 
-    // ════════════════════════════════════════════════════════════════
+
     public InterviewRequestDTO.AssignableInterviewersResponse getAssignable(
             Jwt jwt, String dateStr) {
 
@@ -73,7 +72,8 @@ public class InterviewRequestService {
         return new InterviewRequestDTO.AssignableInterviewersResponse(available, other);
     }
 
-    // ════════════════════════════════════════════════════════════════
+
+    @Transactional(readOnly = true)
     public InterviewRequestDTO.ExistingRequestResponse getExistingRequest(
             Jwt jwt, UUID candidateId, Long jobApplicationId) {
 
@@ -107,11 +107,11 @@ public class InterviewRequestService {
 
         return new InterviewRequestDTO.ExistingRequestResponse(
                 ir.getRequestId().toString(),
-                ir.getInterviewId(),
+                ir.getInterviewId() != null ? ir.getInterviewId() : "",
                 ir.getStatus(),
                 ir.getPanelSize(),
-                ir.getInterviewDate().toString(),
-                ir.getInterviewTime().toString().substring(0, 5),
+                ir.getInterviewDate() != null ? ir.getInterviewDate().toString() : "",
+                safeTime(ir.getInterviewTime()),
                 ir.getMode(),
                 ir.getAdminNotes(),
                 ir.getHistoryId(),
@@ -126,12 +126,11 @@ public class InterviewRequestService {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         UUID companyId = resolveCompanyId(jwt);
 
-        // ─── Validation ───
+        //Validate the panel
         if (req.getPanelSize() < 1 || req.getPanelSize() > 50)
             throw new IllegalArgumentException("Panel size must be between 1 and 50");
 
-        if (req.getInterviewerUserIds() == null
-                || req.getInterviewerUserIds().size() < req.getPanelSize())
+        if (req.getInterviewerUserIds() == null || req.getInterviewerUserIds().size() < req.getPanelSize())
             throw new IllegalArgumentException(
                     "You must select at least " + req.getPanelSize() + " interviewers");
 
@@ -139,6 +138,7 @@ public class InterviewRequestService {
         if (selectedSet.size() != req.getInterviewerUserIds().size())
             throw new IllegalArgumentException("Duplicate interviewer in selection");
 
+        //validate the dat and time
         LocalDate interviewDate;
         LocalTime interviewTime;
         try {
@@ -154,6 +154,8 @@ public class InterviewRequestService {
         if (!"Online".equals(req.getMode()) && !"Physical".equals(req.getMode()))
             throw new IllegalArgumentException("Mode must be 'Online' or 'Physical'");
 
+        //Fetches the list of interviewers who are assignable to the company, then verifies
+        // every selected interviewer is in that allowed list.
         Set<UUID> allowedIds = interviewerRepo.findAssignableByCompany(companyId)
                 .stream().map(Interviewer::getUserId).collect(Collectors.toSet());
 
@@ -163,7 +165,7 @@ public class InterviewRequestService {
                         "Interviewer " + id + " is not assignable to this company");
         }
 
-        // ─── Cancel-and-replace if active exists ───
+        //cancels if thee are any existing interview requests and also make the old assigend interviewers to rejected
         Optional<InterviewRequest> existing = requestRepo
                 .findFirstActiveByCandidateAndApplication(
                         companyId, req.getCandidateId(), req.getJobApplicationId());
@@ -180,12 +182,13 @@ public class InterviewRequestService {
             requestRepo.flush();
         }
 
+        //whos available on the selceted day
         Set<UUID> availableOnDate = availabilityDayRepo
                 .findAvailableByDateAndCompany(interviewDate, companyId)
                 .stream().map(d -> d.getWeeklyAvailability().getUserId())
                 .collect(Collectors.toSet());
 
-        // ─── Build new request ───
+        //create a new interview request
         InterviewRequest ir = new InterviewRequest();
         ir.setCompanyId(companyId);
         ir.setCandidateId(req.getCandidateId());
@@ -200,6 +203,7 @@ public class InterviewRequestService {
         ir.setStatus("pending");
         ir.setCreatedBy(adminUserId);
 
+        //each selected interviewer will be linked to the above created request
         for (UUID userId : selectedSet) {
             InterviewRequestInterviewer iri = new InterviewRequestInterviewer();
             iri.setInterviewRequest(ir);
@@ -209,6 +213,7 @@ public class InterviewRequestService {
             ir.getInterviewers().add(iri);
         }
 
+        //save to database
         InterviewRequest saved = requestRepo.save(ir);
 
         List<String> invited = saved.getInterviewers().stream()
@@ -222,19 +227,14 @@ public class InterviewRequestService {
                 invited);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    // Interviewer: get my pending requests
-    //
-    // Job title is now resolved from the jobs table via ir.getJobId().
-    // Falls back to "N/A" only if the request has no job_id at all,
-    // or if the job row exists but has no job_title set.
-    // ════════════════════════════════════════════════════════════════
+//pending request list shown in interviewers side
+    @Transactional(readOnly = true)
     public List<InterviewRequestDTO.PendingRequestForInterviewer> getPendingForInterviewer(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
+        //get all pending requests for this interviewer
         List<InterviewRequest> requests = requestRepo.findPendingForInterviewer(userId);
 
-        // Pre-fetch all candidate names + job titles in batches so we don't
-        // hammer the DB with one query per row.
+        //get candidate ids and job ids of the requests
         Set<UUID> candidateIds = requests.stream()
                 .map(InterviewRequest::getCandidateId)
                 .collect(Collectors.toSet());
@@ -243,21 +243,31 @@ public class InterviewRequestService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        // build a method where you can get candidate name using candidate id
         Map<UUID, String> candidateNames = new HashMap<>();
         for (UUID cid : candidateIds) {
-            candidateRepository.findById(cid).ifPresent(c ->
-                    candidateNames.put(cid, c.getFirstName() + " " + c.getLastName()));
+            try {
+                candidateRepository.findById(cid).ifPresent(c ->
+                        candidateNames.put(cid, c.getFirstName() + " " + c.getLastName()));
+            } catch (Exception e) {
+                candidateNames.put(cid, "Unknown");
+            }
         }
-
+        // build a method where you can get job title using job id id
         Map<Long, String> jobTitles = new HashMap<>();
         for (Long jid : jobIds) {
-            jobRepository.findById(jid).ifPresent(j -> {
-                String t = j.getJobTitle();
-                if (t == null || t.isBlank()) t = "N/A";
-                jobTitles.put(jid, t);
-            });
+            try {
+                jobRepository.findById(jid).ifPresent(j -> {
+                    String t = j.getJobTitle();
+                    if (t == null || t.isBlank()) t = "N/A";
+                    jobTitles.put(jid, t);
+                });
+            } catch (Exception e) {
+                jobTitles.put(jid, "N/A");
+            }
         }
 
+        //Loops over every pending request and turns it into a clean DTO for the frontend.
         return requests.stream().map(ir -> {
             String candidateName = candidateNames.getOrDefault(ir.getCandidateId(), "Unknown");
             String jobTitle = ir.getJobId() != null
@@ -265,12 +275,12 @@ public class InterviewRequestService {
                     : "N/A";
 
             return new InterviewRequestDTO.PendingRequestForInterviewer(
-                    ir.getInterviewId(),
+                    ir.getInterviewId() != null ? ir.getInterviewId() : "",
                     ir.getRequestId().toString(),
                     candidateName,
                     jobTitle,
-                    ir.getInterviewDate().toString(),
-                    ir.getInterviewTime().toString().substring(0, 5),
+                    ir.getInterviewDate() != null ? ir.getInterviewDate().toString() : "",
+                    safeTime(ir.getInterviewTime()),
                     ir.getMode(),
                     ir.getAdminNotes(),
                     ir.getHistoryId()
@@ -278,7 +288,7 @@ public class InterviewRequestService {
         }).collect(Collectors.toList());
     }
 
-    // ════════════════════════════════════════════════════════════════
+
     @Transactional
     public void respondToRequest(UUID requestId, UUID userId, String response) {
         if (!"accepted".equals(response) && !"rejected".equals(response)) {
@@ -288,6 +298,7 @@ public class InterviewRequestService {
         InterviewRequest ir = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Interview request not found"));
 
+        //get the interviewer list for this request and find the user id of the interviewer exists
         InterviewRequestInterviewer match = ir.getInterviewers().stream()
                 .filter(iri -> iri.getInterviewerUserId().equals(userId))
                 .findFirst()
@@ -299,14 +310,7 @@ public class InterviewRequestService {
     }
 
 
-    // ════════════════════════════════════════════════════════════════
-    private UUID resolveCompanyId(Jwt jwt) {
-        UUID adminUserId = UUID.fromString(jwt.getSubject());
-        Company company = companyRepository.findByUserId(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-        return company.getCompanyId();
-    }
-
+    @Transactional(readOnly = true)
     public List<InterviewRequestDTO.ExistingRequestResponse> listForCompany(
             Jwt jwt, Long jobApplicationId, Long jobId) {
 
@@ -317,6 +321,7 @@ public class InterviewRequestService {
         return rows.stream().map(this::toExistingResponse).collect(Collectors.toList());
     }
 
+    //convert it from a database entity into a DTO.
     private InterviewRequestDTO.ExistingRequestResponse toExistingResponse(InterviewRequest ir) {
         List<UUID> userIds = ir.getInterviewers().stream()
                 .map(InterviewRequestInterviewer::getInterviewerUserId)
@@ -340,14 +345,29 @@ public class InterviewRequestService {
 
         return new InterviewRequestDTO.ExistingRequestResponse(
                 ir.getRequestId().toString(),
-                ir.getInterviewId(),
+                ir.getInterviewId() != null ? ir.getInterviewId() : "",
                 ir.getStatus(),
                 ir.getPanelSize(),
-                ir.getInterviewDate().toString(),
-                ir.getInterviewTime().toString().substring(0, 5),
+                ir.getInterviewDate() != null ? ir.getInterviewDate().toString() : "",
+                safeTime(ir.getInterviewTime()),
                 ir.getMode(),
                 ir.getAdminNotes(),
                 ir.getHistoryId(),
                 invited);
+    }
+
+
+    private String safeTime(LocalTime t) {
+        if (t == null) return "";
+        String s = t.toString();
+        //Trim it to just the first 5 characters
+        return s.length() >= 5 ? s.substring(0, 5) : s;
+    }
+
+    private UUID resolveCompanyId(Jwt jwt) {
+        UUID adminUserId = UUID.fromString(jwt.getSubject());
+        Company company = companyRepository.findByUserId(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+        return company.getCompanyId();
     }
 }

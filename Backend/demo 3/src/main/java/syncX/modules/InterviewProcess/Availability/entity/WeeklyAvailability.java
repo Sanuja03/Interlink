@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "interviewer_weekly_availability",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "week_key"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "week_key"}))//One interviewer can have only one availability record for one week.
 public class WeeklyAvailability {
 
     @Id

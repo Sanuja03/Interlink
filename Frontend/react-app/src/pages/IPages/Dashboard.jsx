@@ -21,6 +21,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  /*array is empty, there's nothing to watch for changes. 
+  So this useEffect runs only once — when the component first 
+  appears on screen*/
   useEffect(() => {
     let cancelled = false;
 

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { calculateScore } from "./scorecardUtils";
+import { useState, useEffect } from "react";
+import { GRADE_BANDS } from "./ScorecardUtils"; //to only display the colored badges.
 import "./CreateEvaluationTemplate.css";
 
 
@@ -18,36 +18,22 @@ const CreateEvaluationTemplate = ({
   ]);
 
 
-  const [previewScores, setPreviewScores] = useState({});
-
-
   useEffect(() => {
     if (initialData) {
       setTemplateName(initialData.name || "");
       setFields(initialData.fields || []);
-      setPreviewScores({});
     } else {
       setTemplateName("Default Evaluation Form");
       setFields([
         { id: 1, label: "Technical Skills", maxScore: 10 },
         { id: 2, label: "Communication", maxScore: 10 },
       ]);
-      setPreviewScores({});
     }
   }, [initialData]);
 
- 
-  const previewResult = useMemo(() => {
-    const fieldScores = fields.map((f) => ({
-      score: previewScores[f.id] || 0,
-      maxScore: f.maxScore,
-    }));
-    return calculateScore(fieldScores);
-  }, [fields, previewScores]);
-
   if (!open) return null;
 
- 
+
   const addField = () => {
     if (readOnly) return;
     setFields([
@@ -68,23 +54,10 @@ const CreateEvaluationTemplate = ({
   const deleteField = (id) => {
     if (readOnly) return;
     setFields((prev) => prev.filter((field) => field.id !== id));
-    setPreviewScores((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
-    });
-  };
-
-  const handlePreviewScore = (fieldId, value) => {
-    const field = fields.find((f) => f.id === fieldId);
-    const max = field ? Number(field.maxScore) || 0 : 0;
-    let num = Number(value) || 0;
-    if (num < 0) num = 0;
-    if (num > max) num = max;
-    setPreviewScores((prev) => ({ ...prev, [fieldId]: num }));
   };
 
   const handleSave = () => {
+    //validations
     if (!templateName.trim()) {
       alert("Please enter a template name.");
       return;
@@ -98,7 +71,7 @@ const CreateEvaluationTemplate = ({
       alert("All fields must have a label name.");
       return;
     }
-    onSaveTemplate({ name: templateName, fields });
+    onSaveTemplate({ name: templateName, fields }); //template data sent to scorecard manager
   };
 
   return (
@@ -138,6 +111,7 @@ const CreateEvaluationTemplate = ({
 
           {fields.map((field, index) => (
             <div className="cet-field-row" key={field.id}>
+
               <span className="cet-field-num">{index + 1}</span>
 
               <input
@@ -151,6 +125,7 @@ const CreateEvaluationTemplate = ({
 
               <div className="cet-max-score-wrap">
                 <label className="cet-max-label">Max</label>
+
                 <input
                   type="number"
                   min="1"
@@ -159,6 +134,7 @@ const CreateEvaluationTemplate = ({
                   onChange={(e) => updateField(field.id, "maxScore", e.target.value)}
                   disabled={readOnly}
                 />
+
               </div>
 
               {!readOnly && (
@@ -179,7 +155,6 @@ const CreateEvaluationTemplate = ({
           <h3 className="cet-subtitle">Always Included</h3>
           <div className="cet-fixed-fields">
             <span className="cet-fixed-chip">Comments</span>
-            <span className="cet-fixed-chip">Recommendation</span>
           </div>
         </div>
 
@@ -191,82 +166,26 @@ const CreateEvaluationTemplate = ({
               <strong>Weighted Percentage</strong> — Each field's score is divided by its max,
               then combined into an overall percentage (0–100%).
             </p>
+
             <div className="cet-grade-bands">
-              <span className="cet-band cet-band-strong">90–100% Strong Hire</span>
-              <span className="cet-band cet-band-hire">75–89% Hire</span>
-              <span className="cet-band cet-band-hold">60–74% Hold</span>
-              <span className="cet-band cet-band-reject">0–59% Reject</span>
+              {GRADE_BANDS.map((band, index) => {
+                const upper = index === 0 ? 100 : GRADE_BANDS[index - 1].min - 1;
+                return (
+                  <span
+                    key={band.label}
+                    className="cet-band"
+                    style={{ background: band.color }}
+                  >
+                    {band.min}–{upper}% {band.label}
+                  </span>
+                );
+              })}
             </div>
+
             <p className="cet-formula">
               Score = ( Σ field scores ) / ( Σ max scores ) × 100
             </p>
-          </div>
-        </div>
 
-        {/* Live preview */}
-        <div className="cet-section">
-          <h3 className="cet-subtitle">Live Preview</h3>
-          <div className="cet-preview-box">
-            {fields.map((field) => (
-              <div key={field.id} className="cet-preview-field">
-                <label className="cet-preview-label">
-                  {field.label || "Untitled Field"}
-                  <span className="cet-preview-max"> / {field.maxScore || 0}</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max={field.maxScore || 0}
-                  className="cet-input cet-preview-input"
-                  placeholder="0"
-                  value={previewScores[field.id] || ""}
-                  onChange={(e) => handlePreviewScore(field.id, e.target.value)}
-                />
-              </div>
-            ))}
-
-            <textarea
-              disabled
-              className="cet-textarea"
-              placeholder="Comments"
-            />
-
-            <select disabled className="cet-input cet-preview-select">
-              <option>Recommendation</option>
-              <option>Strong Hire</option>
-              <option>Hire</option>
-              <option>Hold</option>
-              <option>Reject</option>
-            </select>
-
-            {/* Score result */}
-            {fields.length > 0 && (
-              <div className="cet-preview-result">
-                <div className="cet-result-bar-track">
-                  <div
-                    className="cet-result-bar-fill"
-                    style={{
-                      width: `${previewResult.percentage}%`,
-                      backgroundColor: previewResult.grade.color,
-                    }}
-                  />
-                </div>
-                <div className="cet-result-row">
-                  <span className="cet-result-pct" style={{ color: previewResult.grade.color }}>
-                    {previewResult.percentage}%
-                  </span>
-                  <span className="cet-result-detail">
-                    {previewResult.totalScore} / {previewResult.totalMax} pts
-                  </span>
-                  <span
-                    className="cet-result-grade"
-                    style={{ backgroundColor: previewResult.grade.color }}
-                  >
-                    {previewResult.grade.label}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

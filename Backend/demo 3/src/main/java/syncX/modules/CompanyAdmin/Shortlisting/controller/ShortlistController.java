@@ -226,4 +226,34 @@ public class ShortlistController {
                 .orElseThrow(() -> new RuntimeException("Company not found"));
         return company.getCompanyId();
     }
+
+    @GetMapping("/api/company/shortlisted-candidates/jobs-debug")
+    @PreAuthorize("hasRole('company_admin')")
+    public ResponseEntity<?> jobsDebug(@AuthenticationPrincipal Jwt jwt) {
+        try {
+            UUID companyId = resolveCompanyId(jwt);
+            String sql =
+                    "SELECT DISTINCT j.id AS job_id, j.job_title AS job_title " +
+                            "FROM public.shortlisted_candidates sc " +
+                            "JOIN public.job_applications ja ON ja.id = sc.job_application_id " +
+                            "JOIN public.jobs j              ON j.id  = ja.job_id " +
+                            "WHERE sc.company_id = ? " +
+                            "  AND UPPER(COALESCE(sc.status, 'SHORTLISTED')) = 'SHORTLISTED' " +
+                            "ORDER BY j.id DESC";
+
+            List<Map<String, Object>> rows = jdbc.queryForList(sql, companyId);
+            return ResponseEntity.ok(Map.of("success", true, "count", rows.size(), "rows", rows));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "errorClass", e.getClass().getSimpleName(),
+                    "errorMessage", e.getMessage(),
+                    "rootCause", e.getCause() != null ? e.getCause().getMessage() : "none"
+            ));
+        }
+    }
+
+
 }
+

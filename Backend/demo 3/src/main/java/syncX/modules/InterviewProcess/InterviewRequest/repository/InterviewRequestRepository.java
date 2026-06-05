@@ -18,33 +18,18 @@ public interface InterviewRequestRepository
 
     List<InterviewRequest> findByCandidateIdOrderByCreatedAtDesc(UUID candidateId);
 
-    // Used to detect duplicate pending requests before attempting insert.
     boolean existsByCandidateIdAndJobApplicationIdAndStatus(
             UUID candidateId, Long jobApplicationId, String status);
 
-    /**
-     * Find the current "active" request for a (candidate, application) pair —
-     * i.e. any request that isn't cancelled. Should be at most one row because
-     * the DB has a partial unique index on pending requests + our cancel-before-
-     * create flow guarantees no two non-cancelled rows exist at once.
-     * <p>
-     * Used by:
-     * GET /current → frontend pre-fill when opening popup
-     * POST         → find-and-cancel before inserting a replacement
-     */
-    @Query("""
-        SELECT ir FROM InterviewRequest ir
-        LEFT JOIN FETCH ir.interviewers
-        WHERE ir.companyId = :companyId
-          AND ir.candidateId = :candidateId
-          AND ir.jobApplicationId = :jobApplicationId
-          AND ir.status <> 'cancelled'
-        ORDER BY ir.createdAt DESC
-    """)
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.companyId = :companyId AND ir.candidateId = :candidateId " +
+            "AND ir.jobApplicationId = :jobApplicationId AND ir.status <> 'cancelled' " +
+            "ORDER BY ir.createdAt DESC")
     List<InterviewRequest> findActiveByCandidateAndApplication(
             @Param("companyId") UUID companyId,
             @Param("candidateId") UUID candidateId,
             @Param("jobApplicationId") Long jobApplicationId);
+
 
     default Optional<InterviewRequest> findFirstActiveByCandidateAndApplication(
             UUID companyId, UUID candidateId, Long jobApplicationId) {
@@ -53,41 +38,33 @@ public interface InterviewRequestRepository
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 
-    @Query("""
-    SELECT ir FROM InterviewRequest ir
-    LEFT JOIN FETCH ir.interviewers
-    WHERE ir.companyId = :companyId
-      AND (:jobApplicationId IS NULL OR ir.jobApplicationId = :jobApplicationId)
-      AND (:jobId IS NULL OR ir.jobId = :jobId)
-    ORDER BY ir.createdAt DESC
-""")
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.companyId = :companyId " +
+            "AND (:jobApplicationId IS NULL OR ir.jobApplicationId = :jobApplicationId) " +
+            "AND (:jobId IS NULL OR ir.jobId = :jobId) " +
+            "ORDER BY ir.createdAt DESC")
     List<InterviewRequest> findForCompany(
             @Param("companyId") UUID companyId,
             @Param("jobApplicationId") Long jobApplicationId,
             @Param("jobId") Long jobId);
 
 
-    @Query("""
-    SELECT ir FROM InterviewRequest ir
-    LEFT JOIN FETCH ir.interviewers
-    WHERE ir.requestId IN (
-        SELECT DISTINCT iri.interviewRequest.requestId
-        FROM InterviewRequestInterviewer iri
-        WHERE iri.interviewerUserId = :userId
-          AND iri.responseStatus = 'pending'
-          AND iri.interviewRequest.status = 'pending'
-    )
-    ORDER BY ir.interviewDate ASC, ir.interviewTime ASC
-""")
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.requestId IN (" +
+            "  SELECT DISTINCT iri.interviewRequest.requestId FROM InterviewRequestInterviewer iri " +
+            "  WHERE iri.interviewerUserId = :userId " +
+            "  AND iri.responseStatus = 'pending' " +
+            "  AND iri.interviewRequest.status = 'pending'" +
+            ") ORDER BY ir.interviewDate ASC, ir.interviewTime ASC")
     List<InterviewRequest> findPendingForInterviewer(@Param("userId") UUID userId);
 
-
-    @Query("""
-    SELECT COUNT(iri)
-    FROM InterviewRequestInterviewer iri
-    WHERE iri.interviewerUserId = :interviewerUserId
-      AND LOWER(iri.responseStatus) = 'pending'
-      AND LOWER(iri.interviewRequest.status) = 'pending'
-""")
+    @Query("SELECT COUNT(iri) FROM InterviewRequestInterviewer iri " +
+            "WHERE iri.interviewerUserId = :interviewerUserId " +
+            "AND LOWER(iri.responseStatus) = 'pending' " +
+            "AND LOWER(iri.interviewRequest.status) = 'pending'")
     long countPendingForInterviewer(@Param("interviewerUserId") UUID interviewerUserId);
+
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.requestId = :requestId")
+    Optional<InterviewRequest> findByIdWithInterviewers(@Param("requestId") UUID requestId);
 }

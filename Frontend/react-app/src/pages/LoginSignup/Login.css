@@ -3,104 +3,93 @@
   display: flex;
   justify-content: center; /* horizontaly */
   align-items: center;     /* verticaly */
-  
   }
-
 
 .container {
   width: 400px;
   max-width: 100%; /*for smaller screens than 400px screen size of it becomes width*/
   background-color: #ffffff;
   border-radius: 16px;
-  padding: 32px 28px;
+  padding: 32px 28px; /*topbottom , leftright */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center; 
 }
 
-
 .interlinklogo {
-    width: 80px;
-    height: auto; /*avoids streching*/
-    display: block; 
-    margin: 0 auto 12px;
-  }
+  width: 80px;
+  height: auto; /*avoids streching*/
+  display: block; 
+  margin: 0 auto 12px;/*trbt*/
+}
 
 .text h1 {
-  margin-bottom: 0px;  
-  font-family:'Outfit', sans-serif;
-  font-weight: 1000;
-
+  margin-bottom: 0px;   
 }
 
 .text p {
-  margin-top: -5px;    /* remove space above p */
-  font-family:'Outfit', sans-serif;    
+  margin-top: -5px;    /* remove space above p */    
 }
 
 .input-group { /*consist of input,error msg, label */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 90%;            
-    margin: 0 auto 10px;  
+  display: flex;
+  flex-direction: column;
+  width: 90%;            
+  margin: 0 auto 10px;  
 }
   
 .input-group label {
-    font-size: 15px;
-    color: #213547;
-    align-self: flex-start; /*label starts from left */
+  font-size: 15px;
+  color: #213547;
+  align-self: flex-start; /*label starts from left */
 }
   
-  .input-field {
-    width: 100%;           
-    padding: 6px 6px;
-    font-size: 13px;
-    border-radius: 10px;
+.input-field {/*boxes*/
+  width: 100%;           
+  padding: 6px 6px;
+  font-size: 13px; 
+  border-radius: 10px;
+}
 
-  }
-
-
-  .forgot-password{
-    font-size: 12px;
-    margin-top:-8px;
-    text-align: right;
-  }
+.forgot-password{
+  font-size: 12px;
+  margin-top:-8px;
+  text-align: right;
+}
   
-
-  .login-button{
-    width: 90%;               
-    display: block;
-    margin: 20px auto 10px;  
-    padding: 10px 0;
+.login-button{
+  width: 90%;               
+  display: block;
+  margin: 20px auto 10px;  
+  padding: 10px 0;
   
-    background-color: #2a3d67;  
-    color: #ffffff;
+  background-color: #2a3d67;  
+  color: #ffffff;
   
-    border: none;
-    border-radius: 12px;
+  border: none;
+  border-radius: 12px;
   
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  
-    cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+ 
+  cursor: pointer;
    
-  }
+}
 
-  .or-container {
-    display: flex; 
-    width: 100%;
-    margin: 18px 0;
-    color: #999;
-    font-size: 10px;
-  }
+.or-container {
+  display: flex; /*items (lines+text arranged as rows) */
+  width: 100%;
+  margin: 18px 0;
+  color: #999;
+  font-size: 10px;
+}
   
-  .or-container::before,
-  .or-container::after {
+.or-container::before,
+.or-container::after {
     content: "";
     flex: 1;
     height: 1px;
     background-color: #ddd;
-  }
+}
   
   .or-container span { /*space between or and line*/
     padding: 0 12px;
@@ -122,8 +111,9 @@
     font-size: 12px;
     margin: 0 0 6px 0;
   }
+
   .input-error{
-    border: 1px solid #d32f2f !important;
+    border: 1px solid #d32f2f ;
   }
 
   .home-button {

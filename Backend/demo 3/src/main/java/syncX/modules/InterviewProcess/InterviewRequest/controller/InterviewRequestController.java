@@ -21,10 +21,8 @@ public class InterviewRequestController {
     private InterviewRequestService service;
 
     /**
-     * Get assignable interviewers for a given date,
-     * split into "available" and "other".
-     *
-     * GET /api/company/interview-requests/assignable?date=2026-04-30
+     * Get assignable interviewers for a given date whejn filling the request form
+     * and recives as split "available" and "other" for that date
      */
     @GetMapping("/assignable")
     @PreAuthorize("hasRole('company_admin')")
@@ -36,9 +34,8 @@ public class InterviewRequestController {
     }
 
     /**
-     * Get the current (non-cancelled) interview request for a candidate+application.
+     * check whether the candidate with the job applicationid already has a request form
      * Returns 204 No Content if nothing exists yet — frontend treats that as "fresh form".
-     *
      * GET /api/company/interview-requests/current?candidateId=UUID&jobApplicationId=123
      */
     @GetMapping("/current")
@@ -60,7 +57,6 @@ public class InterviewRequestController {
     /**
      * Create a new interview request. If a non-cancelled one exists for this
      * (candidate, application), it is auto-cancelled first (Edit → resend flow).
-     *
      * POST /api/company/interview-requests
      */
     @PostMapping
@@ -72,6 +68,8 @@ public class InterviewRequestController {
         return ResponseEntity.ok(service.createRequest(jwt, request));
     }
 
+    /**get all interview requests belonging to the admin's company with two optional query parameters that act as filters:
+    *all interviewers,filtered by job post*/
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<InterviewRequestDTO.ExistingRequestResponse>> listMine(

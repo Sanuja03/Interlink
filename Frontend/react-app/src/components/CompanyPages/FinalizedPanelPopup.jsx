@@ -6,6 +6,7 @@ import "./InterviewPopups.css";
 const FinalizedPanelPopup = ({
   open,
   onClose,
+  onBack,                      
   interviewDetails = {},
   acceptedInterviewers = [],
   scorecards = [],
@@ -24,6 +25,7 @@ const FinalizedPanelPopup = ({
   const [loadError, setLoadError]   = useState("");
   const [loading, setLoading]       = useState(false);
 
+  //only runs in view only mode
   useEffect(() => {
     if (!open || !viewOnly || !requestId) return;
     setLoading(true);
@@ -39,6 +41,7 @@ const FinalizedPanelPopup = ({
       .finally(() => setLoading(false));
   }, [open, viewOnly, requestId]);
 
+  //if popup closes refresh
   useEffect(() => {
     if (!open) {
       setMeetingLink("");
@@ -75,6 +78,9 @@ const FinalizedPanelPopup = ({
 
   const selectedCard = finalizedCards.find((c) => c.id === selectedScorecardId) || null;
   const isLocked     = sent || viewOnly;
+
+  // Show Back button only in action mode 
+  const showBackBtn = !viewOnly && !sent && typeof onBack === "function";
 
   const handleSend = async () => {
     setSendError("");
@@ -143,7 +149,7 @@ const FinalizedPanelPopup = ({
             </div>
           )}
 
-          {/*  View-only banner  */}
+          {/*  success banner (permanant) */}
           {viewOnly && !sent && (
             <div className="ip-note-box" style={{
               background: "#f0fdf4", border: "1px solid #86efac", color: "#166534",
@@ -221,7 +227,7 @@ const FinalizedPanelPopup = ({
                   href={details.meetingLink || meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#2563eb", wordBreak: "break-all", fontSize: 15 }}
+                  style={{ color: "#2563eb",wordBreak: "break-all", fontSize: 15 }}
                 >
                   {details.meetingLink || meetingLink}
                 </a>
@@ -267,10 +273,6 @@ const FinalizedPanelPopup = ({
                     </div>
                   </div>
                 </div>
-              ) : selectedScorecardId ? (
-                <div className="ip-note-box" style={{ background: "#f0fdf4", border: "1px solid #86efac", color: "#166534" }}>
-                  Scorecard saved (ID: {selectedScorecardId})
-                </div>
               ) : (
                 <div className="ip-note-box">No scorecard attached yet.</div>
               )
@@ -290,6 +292,7 @@ const FinalizedPanelPopup = ({
                       </option>
                     ))}
                   </select>
+                  
                   {selectedCard && (
                     <div className="ip-scorecard-preview">
                       <p className="ip-scorecard-preview-title">Fields in this scorecard:</p>
@@ -316,6 +319,12 @@ const FinalizedPanelPopup = ({
 
         {/* Actions */}
         <div className="ip-actions">
+          {showBackBtn && (
+            <button className="ip-small-btn" style={{ background: "#6b7280" }} onClick={onBack}>
+              ← Back to Status
+            </button>
+          )}
+
           {isLocked ? (
             <button
               className="ip-primary-btn"

@@ -18,6 +18,7 @@ public class InterviewerAvailabilityController {
     private AvailabilityService availabilityService;
 
 
+    //get the status for this week as submitted or not - (called from floatingbtn - weekutil)
     @GetMapping("/status")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.StatusResponse> getStatus(
@@ -29,7 +30,7 @@ public class InterviewerAvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-
+   //get saved avalability for this week key or empty array if not saved - popup
     @GetMapping("/my-week")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.MyWeekResponse> getMyWeek(
@@ -41,7 +42,7 @@ public class InterviewerAvailabilityController {
         return ResponseEntity.ok(response);
     }
 
-
+    //called from weekutil
     @PostMapping("/submit")
     @PreAuthorize("hasRole('interviewer')")
     public ResponseEntity<AvailabilityDTO.StatusResponse> submitAvailability(

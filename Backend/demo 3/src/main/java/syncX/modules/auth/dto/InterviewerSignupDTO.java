@@ -1,7 +1,7 @@
 package syncX.modules.auth.dto;
 import lombok.Data;
 
-import java.util.UUID;
+
 //these are wat coming from front end
 @Data
 public class InterviewerSignupDTO {

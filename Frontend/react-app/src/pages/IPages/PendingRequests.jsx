@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import api from "../../lib/api"; 
+
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
-import "../../components/InterviewerPages/Layout/TodaySchedule.css";
-import "./PendingRequests.css";
 import PendingRequestsList from "../../components/InterviewerPages/PendingRequestsLayout/PendingRequestsList";
 import SearchBar from "../../components/InterviewerPages/Layout/SearchBar";
-import api from "../../lib/api"; 
+import "./PendingRequests.css";
+
 
 const PendingRequests = () => {
   const [rows, setRows] = useState([]);
@@ -22,7 +23,7 @@ const PendingRequests = () => {
       try {
         console.log("Calling pending endpoint...");
         const res = await api.get("/interviewer/interview-requests/pending");
-        console.log("Pending response:", res.data);
+        
 
         if (cancelled) return;
 
@@ -151,46 +152,11 @@ const PendingRequests = () => {
         {openHistory && selectedRow && (
           <div className="modal-overlay" onClick={closeModal}>
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+
               <div className="modal-head">
                 <h2 className="modal-title">Application History</h2>
                 <button className="modal-close" onClick={closeModal}>
                   ✕
-                </button>
-              </div>
-
-              <div className="modal-sub">
-                <p>
-                  <span className="modal-label">Candidate:</span>{" "}
-                  {selectedRow.candidate}
-                </p>
-                <p>
-                  <span className="modal-label">Interview Round:</span>{" "}
-                  {selectedRow.round}
-                </p>
-                <p>
-                  <span className="modal-label">Interview ID:</span>{" "}
-                  {selectedRow.interviewId}
-                </p>
-              </div>
-
-              <div className="modal-body">
-                {selectedRow.history?.length ? (
-                  <ul className="history-list">
-                    {selectedRow.history.map((h, i) => (
-                      <li key={i} className="history-item">
-                        <span className="history-date">{h.date}</span>
-                        <span className="history-event">{h.event}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="history-empty">No history available.</p>
-                )}
-              </div>
-
-              <div className="modal-actions">
-                <button className="view-btn" onClick={closeModal}>
-                  Close
                 </button>
               </div>
             </div>

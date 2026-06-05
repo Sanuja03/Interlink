@@ -89,27 +89,8 @@ const NextInterviewCard = ({ interview }) => {
                   Candidate ID: {interview.candidate.id}
                 </p>
 
-                {/* only show CV / profile row if at least one exists */}
-                {(interview.candidate.cvName || interview.candidate.profileLink) && (
-                  <div className="candidate-links">
-                    {interview.candidate.cvName && (
-                      <span className="cv-name">{interview.candidate.cvName}</span>
-                    )}
-                    {interview.candidate.profileLink && (
-                      <a
-                        href={interview.candidate.profileLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="profile-link"
-                      >
-                        Profile
-                      </a>
-                    )}
-                  </div>
-                )}
-
                 {interview.candidate.note && (
-                  <p className="candidate-note">{interview.candidate.note}</p>
+                  <p className="admin-note">{interview.candidate.note}</p>
                 )}
               </div>
             </div>

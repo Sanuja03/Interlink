@@ -25,9 +25,6 @@ public class InterviewerDashboardService {
     @Autowired private InterviewScheduledRepository scheduledRepo;
     @Autowired private InterviewRequestRepository   requestRepo;
     @Autowired private CandidateRepository          candidateRepo;
-
-    // Job title repo is optional — wire in your actual one if you have it.
-    // If absent, jobTitle falls back to "—".
     @Autowired(required = false) private syncX.modules.job.repository.JobRepository jobRepo;
 
     private static final DateTimeFormatter TABLE_TIME_FMT = DateTimeFormatter.ofPattern("h.mm a");
@@ -35,7 +32,6 @@ public class InterviewerDashboardService {
     private static final DateTimeFormatter ISO_DATE_FMT   = DateTimeFormatter.ISO_LOCAL_DATE;
 
 
-    // PUBLIC: build the full dashboard payload
 
     public InterviewerDashboardDTO.DashboardResponse getDashboard(Jwt jwt) {
 
@@ -71,7 +67,7 @@ public class InterviewerDashboardService {
         List<InterviewScheduled> upcoming =
                 scheduledRepo.findUpcomingForInterviewer(interviewerUserId, today, now);
 
-        InterviewerDashboardDTO.NextInterview next = null;
+        InterviewerDashboardDTO.NextInterview next = null;//default value for next interview card
         if (!upcoming.isEmpty()) {
             next = buildNextInterview(upcoming.get(0));
         }

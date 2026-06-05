@@ -9,19 +9,13 @@ import syncX.modules.auth.entity.Interviewer;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Extra queries we need on top of the existing InterviewerRepository.
- * If your existing InterviewerRepository already has these queries,
- * move them there instead of keeping a separate repo.
- */
+
 @Repository
 public interface AssignableInterviewerRepository
         extends JpaRepository<Interviewer, UUID> {
 
     /**
      * All interviewers belonging to a company whose auth account is NOT suspended.
-     * (active + inactive are both assignable — only 'suspended' means banned.)
-     *
      * Adjust the User entity path/field name if yours differ.
      */
     @Query("""

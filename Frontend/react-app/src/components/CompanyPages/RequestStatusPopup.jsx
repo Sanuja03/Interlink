@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "../../lib/api";
-import FinalizedPanelPopup from "./FinalizedPanelPopup";
 import "./InterviewPopups.css";
 
 
@@ -8,9 +7,8 @@ const RequestStatusPopup = ({
   open,
   onClose,
   candidate,
-  scorecards = [],
-  onFinalizePanel,
   onEditRequest,
+  onRequestFinalize,  
 }) => {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
@@ -18,10 +16,6 @@ const RequestStatusPopup = ({
   const [removingId, setRemovingId]   = useState(null);
   const [resendingId, setResendingId] = useState(null);
   const [removeError, setRemoveError] = useState("");
-
-  const [showFinalizePopup, setShowFinalizePopup] = useState(false);
-  const [finalizeError, setFinalizeError]         = useState("");
-  const [finalizing, setFinalizing]               = useState(false);
 
   const [showAddPanel, setShowAddPanel]   = useState(false);
   const [addCandidates, setAddCandidates] = useState([]);
@@ -93,13 +87,13 @@ const RequestStatusPopup = ({
     return "";
   };
 
+  //WAT IS DISPLAYED
   const invited      = activeRequest?.interviewers || [];
   const interviewers = invited.map((p) => ({
     id:            p.userId,
     name:          p.fullName,
     role:          p.role,
     requestStatus: normalizeStatus(p.responseStatus),
-    rawStatus:     p.responseStatus,
     adminRemoved:  removedIds.has(p.userId),
   }));
 
@@ -108,7 +102,7 @@ const RequestStatusPopup = ({
   const canFinalize   = panelSize > 0 && acceptedCount >= panelSize;
   const isFinalised   = activeRequest?.overallStatus === "finalized";
 
-  // Remove interviewer 
+  // Remove interviewer
   const handleRemove = async (interviewerUserId) => {
     if (!activeRequest?.requestId) return;
     setRemovingId(interviewerUserId);
@@ -117,6 +111,8 @@ const RequestStatusPopup = ({
       await api.delete(
         `/company/interview-requests/status/${activeRequest.requestId}/interviewers/${interviewerUserId}`
       );
+
+      //remember that this interviewer was removed to show the removed badge - store in local storage since backend doesnt hv it now
       setRemovedIds((prev) => {
         const next = new Set(prev).add(interviewerUserId);
         try { localStorage.setItem(`removed_interviewers:${activeRequest.requestId}`, JSON.stringify([...next])); } catch {}
@@ -130,7 +126,7 @@ const RequestStatusPopup = ({
     }
   };
 
-  //  Resend to interviewer 
+  // Resend to interviewer
   const handleResend = async (interviewerUserId) => {
     if (!activeRequest?.requestId) return;
     setResendingId(interviewerUserId);
@@ -139,6 +135,8 @@ const RequestStatusPopup = ({
       await api.put(
         `/company/interview-requests/status/${activeRequest.requestId}/interviewers/${interviewerUserId}/resend`
       );
+
+      //if this interviewer was removed earlier after rejecting then unmark from the removed list
       setRemovedIds((prev) => {
         const next = new Set(prev);
         next.delete(interviewerUserId);
@@ -153,7 +151,7 @@ const RequestStatusPopup = ({
     }
   };
 
-  // Add interviewers
+  // open Add panel
   const openAddPanel = async () => {
     if (!activeRequest?.interviewDate) return;
     setShowAddPanel(true);
@@ -175,6 +173,7 @@ const RequestStatusPopup = ({
   const toggleAddSelect = (userId) =>
     setAddSelected((prev) => prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]);
 
+  //add interviewers
   const handleAddSubmit = async () => {
     if (addSelected.length === 0) return;
     setSubmittingAdd(true);
@@ -194,52 +193,12 @@ const RequestStatusPopup = ({
     }
   };
 
-  // Open FinalizedPanelPopup 
-  const handleFinalize = () => {
-    setFinalizeError("");
-    setShowFinalizePopup(true);
-  };
-
-  
-  const handleFinalizeSubmit = async ({ meetingLink, scorecard }) => {
-    if (!activeRequest?.requestId) return;
-    setFinalizing(true);
-    setFinalizeError("");
-    try {
-      // create interview_scheduled row
-      await api.post("/company/interview-scheduling/finalize", {
-        requestId:   activeRequest.requestId,
-        meetingLink: meetingLink || null,
-      });
-
-      // save scorecard onto the row
-      if (scorecard?.id) {
-        await api.patch(
-          `/company/interview-scheduling/${activeRequest.requestId}/scorecard`,
-          { scorecardId: scorecard.id }
-        );
-      }
-
-      // Refresh so overallStatus updates to "finalized"
-      await fetchActiveRequest();
-
-      // Notify parent so it can mark the row in the table
-      if (typeof onFinalizePanel === "function") {
-        onFinalizePanel(activeRequest.requestId);
-      }
-
-      // we dont close showFinalizePopup here - finalizedPanelPopup calls onSent() which triggers setSent(true) inside it,
-      // locking the button. The admin closes it manually.
-
-    } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Failed to finalize";
-      setFinalizeError(msg);
-
-      // Re-throw so FinalizedPanelPopup can catch and show sendError
-
-      throw new Error(msg);
-    } finally {
-      setFinalizing(false);
+  // When user clicks "Finalize Panel" — hand off to parent so this popup
+  // can close and FinalizedPanelPopup opens fresh in its place.
+  const handleFinalizeClick = () => {
+    if (!activeRequest) return;
+    if (typeof onRequestFinalize === "function") {
+      onRequestFinalize(activeRequest);
     }
   };
 
@@ -260,46 +219,47 @@ const RequestStatusPopup = ({
 
     return (
       <div className="ip-card">
-        
+
         <div className="ip-info-grid ip-info-grid-2">
           <div className="ip-info-box">
             <span className="ip-info-label">Interview ID</span>
             <span className="ip-info-value">{activeRequest.interviewId || "—"}</span>
           </div>
+
           <div className="ip-info-box">
-            <span className="ip-info-label">Panel Status</span>
-            <span className="ip-info-value" style={{
-              color: isFinalised ? "#166534" : activeRequest.overallStatus === "cancelled" ? "#b91c1c" : "#92400e",
-              textTransform: "capitalize",
-            }}>
-              {isFinalised ? "✓ Finalized" : activeRequest.overallStatus === "cancelled" ? "Cancelled" : "Awaiting Finalization"}
+            <span className="ip-info-label">Mode</span>
+            <span className="ip-info-value" style={{ textTransform: "capitalize" }}>
+              {activeRequest.mode || "—"}
             </span>
           </div>
+
           <div className="ip-info-box">
             <span className="ip-info-label">Candidate</span>
             <span className="ip-info-value">{candidate?.candidateName || "—"}</span>
           </div>
+
           <div className="ip-info-box">
             <span className="ip-info-label">Date &amp; Time</span>
             <span className="ip-info-value">{activeRequest.interviewDate} {activeRequest.interviewTime}</span>
           </div>
         </div>
 
-        
         <div className="ip-panel-top">
           <div className="ip-panel-box">
             <span className="ip-info-label">Panel Size</span>
             <span className="ip-info-value">{panelSize}</span>
           </div>
+
           <div className="ip-panel-box">
             <span className="ip-info-label">Accepted</span>
             <span className="ip-info-value">{acceptedCount}/{panelSize}</span>
           </div>
         </div>
 
-       
+
         <div className="ip-status-list">
           {interviewers.length === 0 && <p className="ip-person-role">No interviewers invited.</p>}
+
           {interviewers.map((person) => (
             <div key={person.id} className="ip-status-card">
               <div>
@@ -310,13 +270,16 @@ const RequestStatusPopup = ({
                 {person.adminRemoved ? (
                   <span className="ip-badge ip-status-removed">Removed</span>
                 ) : (
+                  // status badge for not admin removed ones
                   <span className={`ip-badge ${getStatusClass(person.requestStatus)}`}>{person.requestStatus}</span>
                 )}
+                {/* resend button for rejected ones*/}
                 {!person.adminRemoved && person.requestStatus === "Rejected" && !isFinalised && (
                   <button className="ip-small-btn" disabled={resendingId === person.id} onClick={() => handleResend(person.id)}>
                     {resendingId === person.id ? "Resending…" : "Resend"}
                   </button>
                 )}
+                {/* remove button for not adminremoved ones*/}
                 {!person.adminRemoved && !isFinalised && (
                   <button className="ip-remove-btn" disabled={removingId === person.id} onClick={() => handleRemove(person.id)}>
                     {removingId === person.id ? "Removing…" : "Remove"}
@@ -327,7 +290,7 @@ const RequestStatusPopup = ({
           ))}
         </div>
 
-       
+        {/* Add Interviewers   */}
         {showAddPanel && (
           <div className="ip-add-panel">
             <p className="ip-group-title">Select interviewers to add</p>
@@ -344,10 +307,12 @@ const RequestStatusPopup = ({
             ))}
             {addError && <p className="ip-person-role" style={{ color: "crimson" }}>{addError}</p>}
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+
               <button className="ip-primary-btn" style={{ flex: 1, minHeight: 44, fontSize: 15 }}
                 disabled={addSelected.length === 0 || submittingAdd} onClick={handleAddSubmit}>
                 {submittingAdd ? "Adding…" : `Add${addSelected.length > 0 ? ` (${addSelected.length})` : ""}`}
               </button>
+              
               <button className="ip-danger-btn" style={{ flex: 1, minHeight: 44, fontSize: 15 }}
                 onClick={() => { setShowAddPanel(false); setAddSelected([]); }}>
                 Cancel
@@ -368,82 +333,48 @@ const RequestStatusPopup = ({
   };
 
   return (
-    <>
-      <div className="ip-overlay" onClick={onClose}>
-        <div className="ip-modal" onClick={(e) => e.stopPropagation()}>
-          <h2 className="ip-title">Request Status</h2>
+    <div className="ip-overlay" onClick={onClose}>
+      <div className="ip-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="ip-title">Request Status</h2>
 
-          {renderBody()}
+        {renderBody()}
 
-          <div className="ip-actions" style={{ flexWrap: "wrap", gap: 14 }}>
-           
-            {activeRequest && !isFinalised && (
-              <button className="ip-small-btn"
-                onClick={() => showAddPanel ? setShowAddPanel(false) : openAddPanel()}>
-                {showAddPanel ? "Hide Add" : "Add Interviewers"}
-              </button>
-            )}
+        <div className="ip-actions" style={{ flexWrap: "wrap", gap: 14 }}>
 
-           
-            {activeRequest && !isFinalised && typeof onEditRequest === "function" && (
-              <button className="ip-small-btn" style={{ background: "#6b7280" }}
-                onClick={() => {
-                  if (activeRequest?.requestId) {
-                    try { localStorage.removeItem(`removed_interviewers:${activeRequest.requestId}`); } catch {}
-                  }
-                  setRemovedIds(new Set());
-                  setShowAddPanel(false);
-                  onEditRequest();
-                }}>
-                Cancel &amp; Redo
-              </button>
-            )}
+          {activeRequest && !isFinalised && (
+            <button className="ip-small-btn"
+              onClick={() => showAddPanel ? setShowAddPanel(false) : openAddPanel()}>
+              {showAddPanel ? "Hide Add" : "Add Interviewers"}
+            </button>
+          )}
 
-            
-            {activeRequest && !isFinalised && (
-              <button className="ip-primary-btn" onClick={handleFinalize}
-                disabled={!canFinalize || finalizing}>
-                {finalizing ? "Finalizing…" : "Finalize Panel"}
-              </button>
-            )}
 
-            {finalizeError && (
-              <p style={{ color: "crimson", fontSize: 13, width: "100%", textAlign: "center", margin: 0 }}>
-                {finalizeError}
-              </p>
-            )}
+          {activeRequest && !isFinalised && typeof onEditRequest === "function" && (
+            <button className="ip-small-btn" style={{ background: "#6b7280" }}
+              onClick={() => {
+                if (activeRequest?.requestId) {
+                  try { localStorage.removeItem(`removed_interviewers:${activeRequest.requestId}`); } catch {}
+                }
+                setRemovedIds(new Set());
+                setShowAddPanel(false);
+                onEditRequest();
+              }}>
+              Cancel &amp; Redo
+            </button>
+          )}
 
-            <button className="ip-danger-btn" onClick={onClose}>Close</button>
-          </div>
+
+          {activeRequest && !isFinalised && (
+            <button className="ip-primary-btn" onClick={handleFinalizeClick}
+              disabled={!canFinalize}>
+              Finalize Panel
+            </button>
+          )}
+
+          <button className="ip-danger-btn" onClick={onClose}>Close</button>
         </div>
       </div>
-
-     
-      {showFinalizePopup && activeRequest && (
-        <FinalizedPanelPopup
-          open={showFinalizePopup}
-          onClose={() => setShowFinalizePopup(false)}
-          interviewDetails={{
-            interviewId: activeRequest.interviewId,
-            jobTitle:    candidate?.jobTitle || "—",
-            mode:        activeRequest.mode,
-            date:        activeRequest.interviewDate,
-            time:        activeRequest.interviewTime,
-            adminNotes:  activeRequest.adminNotes,
-          }}
-          acceptedInterviewers={
-            (activeRequest.interviewers || [])
-              .filter((p) => p.responseStatus === "accepted")
-              .map((p) => ({ id: p.userId, name: p.fullName, role: p.role }))
-          }
-          scorecards={scorecards}
-          viewOnly={isFinalised}
-          requestId={activeRequest.requestId}
-          onSendDetails={isFinalised ? undefined : handleFinalizeSubmit}
-          onSent={() => {}}
-        />
-      )}
-    </>
+    </div>
   );
 };
 

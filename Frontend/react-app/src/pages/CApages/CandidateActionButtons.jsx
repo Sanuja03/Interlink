@@ -1,38 +1,26 @@
+import "./CandidateActionButtons.css";
 
-const CandidateActionButtons = ({ onOpenRequest, onOpenFinalized, isFinalized = false }) => {
+const CandidateActionButtons = ({
+  onOpenRequest,
+  onOpenFinalized,
+  isFinalized = false,
+}) => {
   if (isFinalized) {
     return (
-      <div className="sc-action-group">
-        {/* Greyed disabled Request/Status */}
-        <button
-          className="sc-request-btn"
-          disabled
-          style={{ opacity: 0.35, cursor: "not-allowed", pointerEvents: "none" }}
-        >
+      <div className="cab-group">
+        <button className="cab-btn cab-btn--disabled" disabled>
           Request / Status
         </button>
-
-        {/* Green Finalized button */}
-        <button
-          className="sc-request-btn"
-          onClick={onOpenFinalized}
-          style={{
-            marginLeft: 8,
-            background: "#166534",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          ✓ Finalized
+        <button className="cab-btn cab-btn--finalized" onClick={onOpenFinalized}>
+          Finalized
         </button>
       </div>
     );
   }
 
   return (
-    <div className="sc-action-group">
-      <button className="sc-request-btn" onClick={onOpenRequest}>
+    <div className="cab-group">
+      <button className="cab-btn cab-btn--primary" onClick={onOpenRequest}>
         Request / Status
       </button>
     </div>

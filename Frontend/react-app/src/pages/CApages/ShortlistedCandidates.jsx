@@ -11,21 +11,18 @@ import FinalizedPanelPopup from "../../components/CompanyPages/FinalizedPanelPop
 
 const ShortlistedCandidates = () => {
 
-  // ── Auth / company ──
-  const [loggedInCompanyId, setLoggedInCompanyId] = useState(null);
+  // ── Jobs ──
+  const [jobs, setJobs]                     = useState([]);
+  const [selectedJobId, setSelectedJobId]   = useState(null);
+  const [loadingJobs, setLoadingJobs]       = useState(true);
+  const [jobsError, setJobsError]           = useState("");
 
-  // ── Jobs that this company has shortlisted candidates for ──
-  const [jobs, setJobs]               = useState([]);
-  const [selectedJobId, setSelectedJobId] = useState(null); // null = "All Jobs"
-  const [loadingJobs, setLoadingJobs] = useState(false);
-  const [jobsError, setJobsError]     = useState("");
-
-  // ── Shortlisted candidates for the selected job ──
+  // ── Candidates ──
   const [candidates, setCandidates]               = useState([]);
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [candidatesError, setCandidatesError]     = useState("");
 
-  // ── Scorecards (per job) ──
+  // ── Scorecards ──
   const [scorecards, setScorecards] = useState([]);
 
   // ── Popup state ──
@@ -37,27 +34,17 @@ const ShortlistedCandidates = () => {
   const candidateRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
 
-  /** finalizedMap: { [jobApplicationId]: requestId } */
+  // Holds the active request data when we go from Status -> Finalized (action mode)
+  const [pendingFinalizeRequest, setPendingFinalizeRequest] = useState(null);
+
+  /** finalizedMap: { [jobApplicationId]: requestId } — for already-finalized panels */
   const [finalizedMap, setFinalizedMap] = useState({});
 
-  // ════════════════════════════════════════════════════════════════
-  // 1) Fetch logged-in company id
-  // ════════════════════════════════════════════════════════════════
-  useEffect(() => {
-    let cancelled = false;
-    api.get("/company/me")
-      .then((res) => {
-        if (!cancelled && res.data?.companyId) setLoggedInCompanyId(res.data.companyId);
-      })
-      .catch((err) => console.error("[ShortlistedCandidates] fetch company failed:", err));
-    return () => { cancelled = true; };
-  }, []);
 
-  // ════════════════════════════════════════════════════════════════
-  // 2) Fetch jobs that have shortlisted candidates
-  // ════════════════════════════════════════════════════════════════
+  const [pendingFinalizeMap, setPendingFinalizeMap] = useState({});
+
+  //  Loads the jobs dropdown
   useEffect(() => {
-    if (!loggedInCompanyId) return;
     let cancelled = false;
     setLoadingJobs(true);
     setJobsError("");
@@ -67,7 +54,6 @@ const ShortlistedCandidates = () => {
         if (cancelled) return;
         const list = Array.isArray(res.data) ? res.data : [];
         setJobs(list);
-        // Auto-select the first job (most recent) so the table shows something on load.
         if (list.length > 0) setSelectedJobId(list[0].jobId);
       })
       .catch((err) => {
@@ -78,51 +64,50 @@ const ShortlistedCandidates = () => {
       .finally(() => { if (!cancelled) setLoadingJobs(false); });
 
     return () => { cancelled = true; };
-  }, [loggedInCompanyId]);
+  }, []);
 
-  // ════════════════════════════════════════════════════════════════
-  // 3) Fetch shortlisted candidates whenever the selected job changes
-  //     - If selectedJobId === null → fetch ALL shortlisted (no jobId param)
-  //     - If selectedJobId is set    → fetch only that job's shortlisted
-  // ════════════════════════════════════════════════════════════════
+
+  // When a job is selected, loads candidates and scorecards in parallel
   useEffect(() => {
-    if (!loggedInCompanyId) return;
-
     let cancelled = false;
     setLoadingCandidates(true);
     setCandidatesError("");
+    setFinalizedMap({});
+    setPendingFinalizeMap({}); 
 
     const params = selectedJobId ? { jobId: selectedJobId } : {};
 
-    api.get("/company/shortlisted-candidates", { params })
-      .then((res) => {
+    const candidatesPromise = api.get("/company/shortlisted-candidates", { params });
+    const scorecardsPromise = selectedJobId
+      ? api.get("/company/scorecards", { params: { jobId: selectedJobId } })
+      : Promise.resolve({ data: [] });
+
+    Promise.all([candidatesPromise, scorecardsPromise]) // load both at same time
+
+    //onsuccess
+      .then(([candidatesRes, scorecardsRes]) => {
         if (cancelled) return;
-        setCandidates(Array.isArray(res.data) ? res.data : []);
+        const candidateList = Array.isArray(candidatesRes.data) ? candidatesRes.data : [];
+        setCandidates(candidateList);
+        setScorecards(scorecardsRes.data || []);
       })
+    //onfailure  
       .catch((err) => {
         if (cancelled) return;
-        console.error("[ShortlistedCandidates] fetch shortlisted failed:", err);
+        console.error("[ShortlistedCandidates] fetch failed:", err);
         setCandidatesError(err?.response?.data?.error || err?.message || "Failed to load candidates.");
         setCandidates([]);
+        setScorecards([]);
       })
+      
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
-  }, [selectedJobId, loggedInCompanyId]);
-
-  // ════════════════════════════════════════════════════════════════
-  // 4) Load scorecards for the selected job
-  // ════════════════════════════════════════════════════════════════
-  useEffect(() => {
-    if (!selectedJobId) { setScorecards([]); return; }
-    api.get("/company/scorecards", { params: { jobId: selectedJobId } })
-      .then((res) => setScorecards(res.data || []))
-      .catch((err) => console.error("[ShortlistedCandidates] load scorecards failed:", err));
   }, [selectedJobId]);
 
-  // ════════════════════════════════════════════════════════════════
-  // 5) Pre-check finalized state for each candidate in the list
-  // ════════════════════════════════════════════════════════════════
+
+  // After candidates load, checks each one's finalized status
+  // and if finalized put to finalisezed map
   useEffect(() => {
     if (candidates.length === 0) { setFinalizedMap({}); return; }
     let cancelled = false;
@@ -149,9 +134,7 @@ const ShortlistedCandidates = () => {
     return () => { cancelled = true; };
   }, [candidates]);
 
-  // ════════════════════════════════════════════════════════════════
-  // Job picker helpers
-  // ════════════════════════════════════════════════════════════════
+
   const selectedJob = jobs.find((j) => j.jobId === selectedJobId) || {};
   const jobTitle    = selectedJobId ? (selectedJob.jobTitle  || "—") : "All Jobs";
   const jobPostId   = selectedJobId ? (selectedJob.jobPostId || "—") : "—";
@@ -165,14 +148,13 @@ const ShortlistedCandidates = () => {
     }
   };
 
-  // ════════════════════════════════════════════════════════════════
-  // Popup orchestration (unchanged logic)
-  // ════════════════════════════════════════════════════════════════
+//runs when request/status is clicked - which popup to show in which situations 
   const handleOpenForCandidate = async (candidate) => {
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
     setEditMode(false);
 
+    // 1) Already finalized (sent details) → open Finalized in VIEW mode
     const knownRid = finalizedMap[candidate.jobApplicationId];
     if (knownRid) {
       setFinalizedRequestId(knownRid);
@@ -182,6 +164,17 @@ const ShortlistedCandidates = () => {
       return;
     }
 
+    // 2) Mid-finalize (admin clicked Finalize Panel earlier but hasn't submitted)
+    const pendingReq = pendingFinalizeMap[candidate.jobApplicationId];
+    if (pendingReq) {
+      setPendingFinalizeRequest(pendingReq);
+      setShowRequestPopup(false);
+      setShowStatusPopup(false);
+      setShowFinalizedPopup(true);
+      return;
+    }
+
+    // 3) Otherwise check backend for active request
     try {
       const res = await api.get("/company/interview-requests/status/current", {
         params: { candidateId: candidate.candidateId, jobApplicationId: candidate.jobApplicationId },
@@ -211,6 +204,7 @@ const ShortlistedCandidates = () => {
     }
   };
 
+  //runs when green finalised button is clicked
   const handleOpenFinalizedDirect = (candidate) => {
     const rid = finalizedMap[candidate.jobApplicationId];
     if (!rid) return;
@@ -222,33 +216,90 @@ const ShortlistedCandidates = () => {
     setShowFinalizedPopup(true);
   };
 
+//runs when close button inside popups is clicked  
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
     setShowFinalizedPopup(false);
     setFinalizedRequestId(null);
+    setPendingFinalizeRequest(null);
     setSelectedCandidate(null);
     candidateRef.current = null;
     setEditMode(false);
   };
 
+//runs when cancel and redo  is clicked from status popup
   const handleEditFromStatus = () => {
     setEditMode(true);
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
 
-  const handleFinalize = (requestId) => {
+//runs when finalise panel clicked from status page
+  const handleRequestFinalize = (activeRequest) => {
     const candidate = candidateRef.current || selectedCandidate;
-    if (candidate && requestId) {
-      setFinalizedMap((prev) => ({ ...prev, [candidate.jobApplicationId]: requestId }));
-      setFinalizedRequestId(requestId);
+    if (candidate) {
+      setPendingFinalizeMap((prev) => ({
+        ...prev,
+        [candidate.jobApplicationId]: activeRequest,
+      }));
+    }
+    setPendingFinalizeRequest(activeRequest);
+    setShowStatusPopup(false);
+    setShowFinalizedPopup(true);
+  };
+
+  //runs when back to status is clicked from finalised page in action mode
+  const handleBackToStatus = () => {
+    const candidate = candidateRef.current || selectedCandidate;
+    if (candidate) {
+      setPendingFinalizeMap((prev) => {
+        const next = { ...prev };
+        delete next[candidate.jobApplicationId];
+        return next;
+      });
+    }
+    setPendingFinalizeRequest(null);
+    setShowFinalizedPopup(false);
+    setShowStatusPopup(true);
+  };
+
+  // finalize API call — called by FinalizedPanelPopup when admin clicks "Send Scheduled Interview Details".
+  const handleFinalizeSubmit = async ({ meetingLink, scorecard }) => {
+    if (!pendingFinalizeRequest?.requestId) return;
+    const requestId = pendingFinalizeRequest.requestId;
+
+    try {
+      await api.post("/company/interview-scheduling/finalize", {
+        requestId,
+        meetingLink: meetingLink || null,
+      });
+
+      if (scorecard?.id) {
+        await api.patch(
+          `/company/interview-scheduling/${requestId}/scorecard`,
+          { scorecardId: scorecard.id }
+        );
+      }
+
+      // Move candidate from "pending finalize" to "finalized"
+      const candidate = candidateRef.current || selectedCandidate;
+      if (candidate) {
+        setFinalizedMap((prev) => ({ ...prev, [candidate.jobApplicationId]: requestId }));
+        setPendingFinalizeMap((prev) => {
+          const next = { ...prev };
+          delete next[candidate.jobApplicationId];
+          return next;
+        });
+        setFinalizedRequestId(requestId);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Failed to finalize";
+      throw new Error(msg);
     }
   };
 
-  // ════════════════════════════════════════════════════════════════
-  // Render
-  // ════════════════════════════════════════════════════════════════
+
   return (
     <DashboardLayout>
       <div className="sc-page">
@@ -256,9 +307,6 @@ const ShortlistedCandidates = () => {
 
           <h2 className="sc-title">Shortlisted Candidates</h2>
 
-          {/* ══════════════════════════════════════════════════════
-              JOB PICKER — always visible (even with 0 or 1 job)
-              ══════════════════════════════════════════════════════ */}
           <div className="sc-job-picker">
             <label className="sc-job-picker-label" htmlFor="sc-job-picker-select">
               Job Picker:
@@ -288,7 +336,6 @@ const ShortlistedCandidates = () => {
             )}
           </div>
 
-          {/* ── Job Card ── */}
           <div className="sc-job-card">
             <div>
               <p className="sc-job-label">Selected Job Post</p>
@@ -307,6 +354,7 @@ const ShortlistedCandidates = () => {
                 <span className="sc-job-meta-label">Shortlisted Count</span>
                 <span className="sc-job-meta-value">{candidates.length}</span>
               </div>
+
               {selectedJobId && (
                 <ManageScorecardsButton
                   jobTitle={jobTitle}
@@ -319,7 +367,6 @@ const ShortlistedCandidates = () => {
             </div>
           </div>
 
-          {/* ── Candidates Table ── */}
           <div className="sc-table-card">
             <div className="sc-table-wrap">
               <table className="sc-table">
@@ -327,7 +374,6 @@ const ShortlistedCandidates = () => {
                   <tr>
                     <th>Candidate ID</th>
                     <th>Candidate Name</th>
-                    {/* Show Job Title column when "All Jobs" is selected so users know which job each row belongs to */}
                     {!selectedJobId && <th>Job Title</th>}
                     <th>History ID</th>
                     <th>Actions</th>
@@ -335,42 +381,37 @@ const ShortlistedCandidates = () => {
                 </thead>
                 <tbody>
 
-                  {/* Top-level loading: still figuring out which job to show */}
                   {(loadingJobs && jobs.length === 0) && (
                     <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
                       Loading…
                     </td></tr>
                   )}
 
-                  {/* No jobs at all */}
                   {!loadingJobs && !jobsError && jobs.length === 0 && (
                     <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       No shortlisted candidates yet. Once candidates are shortlisted for a job, they'll show up here.
                     </td></tr>
                   )}
 
-                  {/* Candidate fetch in progress */}
                   {jobs.length > 0 && loadingCandidates && (
                     <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
                       Loading candidates…
                     </td></tr>
                   )}
 
-                  {/* Candidate fetch error */}
                   {jobs.length > 0 && !loadingCandidates && candidatesError && (
                     <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
                       {candidatesError}
                     </td></tr>
                   )}
 
-                  {/* No candidates for the selected job */}
                   {jobs.length > 0 && !loadingCandidates && !candidatesError && candidates.length === 0 && (
                     <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       {selectedJobId ? "No shortlisted candidates for this job." : "No shortlisted candidates."}
                     </td></tr>
                   )}
 
-                  {/* Real rows */}
+                  {/*-----*/}
                   {!loadingCandidates && !candidatesError && candidates.map((candidate, idx) => (
                     <tr key={`${candidate.jobApplicationId}-${idx}`}>
                       <td className="sc-bold" title={candidate.candidateId}>
@@ -393,8 +434,8 @@ const ShortlistedCandidates = () => {
                       <td>
                         <CandidateActionButtons
                           isFinalized={!!finalizedMap[candidate.jobApplicationId]}
-                          onOpenRequest={() => handleOpenForCandidate(candidate)}
-                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}
+                          onOpenRequest={() => handleOpenForCandidate(candidate)} // function to call when request/status button is clicked
+                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}//function to call when finalised green button is clicked
                         />
                       </td>
                     </tr>
@@ -407,7 +448,7 @@ const ShortlistedCandidates = () => {
         </div>
       </div>
 
-      {/* ── Interview Request Popup ── */}
+{/* render the popup whne showRequestPopup = true */} 
       <InterviewRequestPopup
         open={showRequestPopup}
         onClose={closeAllPopups}
@@ -415,18 +456,44 @@ const ShortlistedCandidates = () => {
         startInEditMode={editMode}
       />
 
-      {/* ── Request Status Popup ── */}
+{/* render the popup whne showStatusPopup = true */} 
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
         candidate={candidateRef.current || selectedCandidate}
-        scorecards={scorecards}
         onEditRequest={handleEditFromStatus}
-        onFinalizePanel={handleFinalize}
+        onRequestFinalize={handleRequestFinalize}
       />
 
-      {/* ── Finalized Panel Popup (view-only, direct) ── */}
-      {showFinalizedPopup && finalizedRequestId && (
+ {/* Action Mode */}    
+      {showFinalizedPopup && pendingFinalizeRequest && (
+        <FinalizedPanelPopup
+          open={showFinalizedPopup}
+          onClose={closeAllPopups}
+          onBack={handleBackToStatus}
+          interviewDetails={{
+            interviewId: pendingFinalizeRequest.interviewId,
+            jobTitle:    (candidateRef.current || selectedCandidate)?.jobTitle || "—",
+            mode:        pendingFinalizeRequest.mode,
+            date:        pendingFinalizeRequest.interviewDate,
+            time:        pendingFinalizeRequest.interviewTime,
+            adminNotes:  pendingFinalizeRequest.adminNotes,
+          }}
+          acceptedInterviewers={
+            (pendingFinalizeRequest.interviewers || [])
+              .filter((p) => p.responseStatus === "accepted")
+              .map((p) => ({ id: p.userId, name: p.fullName, role: p.role }))
+          }
+          scorecards={scorecards}
+          viewOnly={false}
+          requestId={pendingFinalizeRequest.requestId}
+          onSendDetails={handleFinalizeSubmit}
+          onSent={() => {}}
+        />
+      )}
+
+ {/* View Mode */}   
+      {showFinalizedPopup && !pendingFinalizeRequest && finalizedRequestId && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}
           onClose={closeAllPopups}

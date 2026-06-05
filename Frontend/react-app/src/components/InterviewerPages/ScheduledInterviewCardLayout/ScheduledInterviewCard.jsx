@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";//chnages page without reloading
 import "./ScheduledInterviewCard.css";
 
 const ScheduledInterviewCard = ({ interview }) => {
@@ -45,14 +45,12 @@ const ScheduledInterviewCard = ({ interview }) => {
     e.preventDefault();
     e.stopPropagation();
     if (meetingLink) {
-      window.open(meetingLink, "_blank", "noopener,noreferrer");
+      window.open(meetingLink, "_blank", "noopener,noreferrer");//open in new tab ,prevents the new tab accessing this page,hides the url for that tab
     }
   };
 
   const statusClass =
-    meetingStatus?.toLowerCase() === "ongoing"
-      ? "status-ongoing"
-      : meetingStatus?.toLowerCase() === "completed"
+    meetingStatus?.toLowerCase() === "completed"
       ? "status-completed"
       : "status-scheduled";
 
@@ -64,12 +62,14 @@ const ScheduledInterviewCard = ({ interview }) => {
   return (
     <>
       <div className="si-card si-card-clickable">
+
         <div className="si-header">
           <h3 className="si-title">{interviewId}</h3>
           <span className={`si-badge ${statusClass}`}>{meetingStatus}</span>
         </div>
 
         <div className="si-body">
+
           <div className="si-details">
             <div className="si-row">
               <span className="si-label">Date</span>
@@ -122,6 +122,7 @@ const ScheduledInterviewCard = ({ interview }) => {
       {showPanelInfo && (
         <div className="si-overlay" onClick={handleOverlayClick}>
           <div className="si-modal" onClick={handleModalClick}>
+
             <div className="si-modal-header">
               <h3 className="si-modal-title">Panel Information</h3>
               <button className="si-close" onClick={handleClosePanelInfo}>

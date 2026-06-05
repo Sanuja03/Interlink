@@ -59,9 +59,6 @@
     margin-bottom: 12px;
   }
   
-  .detail-row:last-child {
-    margin-bottom: 0;
-  }
   
   .label {
     color: #6b7280; /* gray-500 */
@@ -129,28 +126,8 @@
     margin-bottom: 8px;
   }
   
-  .candidate-links {
-    display: flex;
-    gap: 12px;
-    font-size: 12px;
-  }
-  
-  .cv-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .profile-link {
-    color: #2563eb;
-    text-decoration: none;
-  }
-  
-  .profile-link:hover {
-    text-decoration: underline;
-  }
-  
-  .candidate-note {
+
+  .admin-note {
     font-size: 12px;
     color: #4b5563;
     margin-top: 8px;
@@ -159,14 +136,12 @@
     overflow: hidden;
   }
 
-  /* empty statae */
+  /* empty state */
   .next-empty {
     padding: 32px 8px;
     text-align: center;
     color: #6b7280;
   }
-  
-
   
   .next-empty-title {
     font-size: 14px;

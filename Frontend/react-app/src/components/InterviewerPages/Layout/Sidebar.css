@@ -1,6 +1,5 @@
 /* Sidebar container */
 .sidebar {
-    width: 240px;
     min-height: 100vh;
     background-color: #ffffff;
     display: flex;
@@ -43,7 +42,7 @@
     font-size: 14px;
     color: #4b5563; /* gray-600 */
     cursor: pointer;
-    transition: background-color 0.2s ease;
+   
   }
   
   .sidebar-item:hover {
@@ -121,10 +120,7 @@
     flex-shrink: 0;
   }
   
-  .sidebar-profile-text {
-    min-width: 0;
-  }
-  
+ 
   .sidebar-profile-text p {
     margin: 0;
     white-space: nowrap;

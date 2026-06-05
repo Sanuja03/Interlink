@@ -1,4 +1,5 @@
-
+//takes the user ID from the token, looks up that user in your database, finds their role,
+// and hands Spring back something like ROLE_candidate.
 package syncX.security;
 
 import org.springframework.core.convert.converter.Converter;
@@ -36,7 +37,7 @@ public class SupabaseJwtRoleConverter implements Converter<Jwt, Collection<Grant
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
 
-                // Suspended users get no authorities → 403 on all protected endpoints
+                // Suspended users get no authorities - 403 on all protected endpoints
                 if ("suspended".equals(user.getAccountStatus())) {
                     return authorities;
                 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../lib/api";
+
 import CreateEvaluationTemplate from "./CreateEvaluationTemplate";
 import "./ScorecardManager.css";
 
@@ -13,38 +14,33 @@ const ScorecardManager = ({
   scorecards = [],
   onSave,
 }) => {
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
+
+  const [editorOpen, setEditorOpen] = useState(false); //createevaluationpopup
+  const [editingCard, setEditingCard] = useState(null); 
 
   if (!open) return null;
 
-  
-  const reload = async () => {
-    try {
-      const res = await api.get("/company/scorecards", { params: { jobId } });
-      onSave(res.data); 
-    } catch (err) {
-      console.error("[ScorecardManager] reload failed:", err);
-    }
-  };
 
- 
+ //CREATE NEW
   const handleCreateNew = () => {
-    setEditingCard(null);
+    setEditingCard(null);//clear out any previously edited card. We're starting fresh
     setEditorOpen(true);
   };
 
-  
+ //EDIT 
   const handleEdit = (card) => {
     setEditingCard(card);
     setEditorOpen(true);
   };
 
- 
+ //SAVE TEMPLATE
   const handleSaveTemplate = async (templateData) => {
     try {
+
+      //UPDATE EXISTING TEMPLATE
       if (editingCard) {
        
+        //replcae the scorecard of this id with teh below data sent 
         const res = await api.put(`/company/scorecards/${editingCard.id}`, {
           templateName: templateData.name,
           jobId,
@@ -55,9 +51,11 @@ const ScorecardManager = ({
           })),
         });
        
+        
         onSave(scorecards.map((c) => (c.id === editingCard.id ? res.data : c)));
       } else {
-       
+
+       //CREATE NEW TEMPLATE
         const res = await api.post("/company/scorecards", {
           templateName: templateData.name,
           jobId,
@@ -71,12 +69,13 @@ const ScorecardManager = ({
       }
       setEditorOpen(false);
       setEditingCard(null);
+
     } catch (err) {
       alert(err?.response?.data?.error || "Failed to save scorecard.");
     }
   };
 
-  
+//FINALIZE TEMPLATE  
   const handleFinalize = async (id) => {
     if (!window.confirm("Finalizing locks this template from editing. Continue?")) return;
     try {
@@ -88,8 +87,9 @@ const ScorecardManager = ({
   };
 
  
+ //DELETE TEMPLATE 
   const handleDelete = async (id) => {
-    const card = scorecards.find((c) => c.id === id);
+    const card = scorecards.find((c) => c.id === id);//find the scorecard
     if (card?.finalized) return;
     if (!window.confirm("Are you sure you want to delete this scorecard template?")) return;
     try {
@@ -107,15 +107,18 @@ const ScorecardManager = ({
 
           {/* Header */}
           <div className="scm-header">
+
             <div>
               <h2 className="scm-title">Scorecard Templates</h2>
               <p className="scm-subtitle">
                 {jobTitle} &nbsp;·&nbsp; {jobPostId}
               </p>
             </div>
+
             <button className="scm-create-btn" onClick={handleCreateNew}>
               + New Template
             </button>
+
           </div>
 
           {/* List */}
@@ -127,6 +130,7 @@ const ScorecardManager = ({
               </div>
             )}
 
+            {/*scoreCard*/}
             {scorecards.map((card) => (
               <div
                 key={card.id}
@@ -153,35 +157,35 @@ const ScorecardManager = ({
                   </div>
                 </div>
 
+              {/*Buttons*/}       
                 <div className="scm-card-actions">
                   {!card.finalized && (
                     <>
                       <button
                         className="scm-action-btn scm-edit-btn"
-                        onClick={() => handleEdit(card)}
-                      >
+                        onClick={() => handleEdit(card)}>
                         Edit
                       </button>
+
                       <button
                         className="scm-action-btn scm-finalize-btn"
-                        onClick={() => handleFinalize(card.id)}
-                      >
+                        onClick={() => handleFinalize(card.id)}>
                         Finalize
                       </button>
+
                       <button
                         className="scm-action-btn scm-delete-btn"
-                        onClick={() => handleDelete(card.id)}
-                      >
+                        onClick={() => handleDelete(card.id)}>
                         Delete
                       </button>
                     </>
+
                   )}
                   {card.finalized && (
                     <button
                       className="scm-action-btn scm-view-btn"
                       onClick={() => handleEdit({ ...card })}
-                      title="View only — finalized templates cannot be edited"
-                    >
+                      title="View only — finalized templates cannot be edited">
                       View
                     </button>
                   )}
@@ -199,7 +203,7 @@ const ScorecardManager = ({
         </div>
       </div>
 
-      {/* Editor popup on top */}
+  
       {editorOpen && (
         <CreateEvaluationTemplate
           open={editorOpen}

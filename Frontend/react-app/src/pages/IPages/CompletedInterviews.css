@@ -16,40 +16,6 @@
 /* Reuse scheduled-container, scheduled-grid, scheduled-empty
    from ScheduledInterviews.css — these class names are shared
    via the ScheduledInterviewCard component */
-.scheduled-container {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 24px;
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-.scheduled-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: flex-start;
-  padding-left: 30px;
-}
-
-.scheduled-empty {
-  padding: 32px 8px;
-  text-align: center;
-  color: #6b7280;
-}
-
-.scheduled-empty-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 6px;
-}
-
-.scheduled-empty-sub {
-  font-size: 12px;
-  margin: 0;
-}
 
 @media (max-width: 520px) {
   .completed-page {

@@ -28,22 +28,26 @@ public class SupabaseAdminService {
         System.out.println("SERVICE KEY LOADED: " + (serviceKey != null && !serviceKey.isEmpty() ? "YES (length=" + serviceKey.length() + ")" : "NO - EMPTY!"));
     }
 
+    //user for interviewer account creation
     public String createUser(String email, String password) {
 
-        String url = supabaseUrl + "/auth/v1/admin/users";
+        String url = supabaseUrl + "/auth/v1/admin/users";//Supabase API endpoint to create a user
 
+        //request headers - confirm teh security/authenticity of the person whos making the account
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(serviceKey);
         headers.set("apikey", serviceKey);
 
+        //preapre the data of teh interviewer to be sent to supabase to create the user
         Map<String, Object> body = new HashMap<>();
         body.put("email", email);
         body.put("password", password);
-        body.put("email_confirm", true); //cuz of this no need to confirm email
+        body.put("email_confirm", true); //cuz of this no need to confirm email it skips email verification
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
+        //Send HTTP POST request to Supabase
         ResponseEntity<Map> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
@@ -51,11 +55,12 @@ public class SupabaseAdminService {
                 Map.class
         );
 
+        //Get the data Supabase sent back
         Map responseBody = response.getBody();
+        //Take the user ID from response and return it
         return (String) responseBody.get("id");
     }
 
-    // Add this method to SupabaseAdminService.java
 
     public void updateUserPassword(String email, String newPassword) {
         // First, find user by email
@@ -66,7 +71,7 @@ public class SupabaseAdminService {
         headers.setBearerAuth(serviceKey);
         headers.set("apikey", serviceKey);
 
-        // Get all users and find by email (Supabase admin API)
+        // Send HTTP GET request to Supabase to get all users existing
         ResponseEntity<Map> listResponse = restTemplate.exchange(
                 supabaseUrl + "/auth/v1/admin/users",
                 HttpMethod.GET,
@@ -74,9 +79,11 @@ public class SupabaseAdminService {
                 Map.class
         );
 
+        //put the recived users in to a list
         List<Map<String, Object>> users = (List<Map<String, Object>>) listResponse.getBody().get("users");
         String userId = null;
 
+        //loop through each and find teh email and get their userid
         for (Map<String, Object> user : users) {
             if (email.equalsIgnoreCase((String) user.get("email"))) {
                 userId = (String) user.get("id");
@@ -88,12 +95,13 @@ public class SupabaseAdminService {
             throw new RuntimeException("User not found in Supabase");
         }
 
-        // Update password
+        // Update the specific users password
         String updateUrl = supabaseUrl + "/auth/v1/admin/users/" + userId;
 
         Map<String, Object> body = new HashMap<>();
         body.put("password", newPassword);
 
+        //send the updated users password  to supabase
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         restTemplate.exchange(updateUrl, HttpMethod.PUT, request, Map.class);

@@ -37,7 +37,8 @@ public class InterviewSchedulingService {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         UUID companyId   = resolveCompanyId(jwt);
 
-        InterviewRequest ir = requestRepo.findById(req.getRequestId())
+        // Fetch with interviewers eagerly to avoid LazyInitializationException
+        InterviewRequest ir = requestRepo.findByIdWithInterviewers(req.getRequestId())
                 .orElseThrow(() -> new RuntimeException("Interview request not found"));
 
         // Ownership check
@@ -83,13 +84,13 @@ public class InterviewSchedulingService {
         scheduled.setAdminNotes(ir.getAdminNotes());
         scheduled.setMeetingLink(
                 "Online".equalsIgnoreCase(ir.getMode()) ? req.getMeetingLink() : null);
-        scheduled.setScorecardId(null);   // set later when admin sends details
+        scheduled.setScorecardId(null);
         scheduled.setStatus("scheduled");
         scheduled.setFinalizedBy(adminUserId);
 
         InterviewScheduled saved = scheduledRepo.save(scheduled);
 
-        // ── Reject all still-pending interviewers ──
+        // Reject all still-pending interviewers
         for (InterviewRequestInterviewer iri : ir.getInterviewers()) {
             if ("pending".equalsIgnoreCase(iri.getResponseStatus())) {
                 iri.setResponseStatus("rejected");
@@ -97,7 +98,7 @@ public class InterviewSchedulingService {
             }
         }
 
-        // ── Mark the request as finalised ──
+        // Mark the request as finalised
         ir.setStatus("finalized");
         requestRepo.save(ir);
 
@@ -106,7 +107,7 @@ public class InterviewSchedulingService {
 
 
     // GET: fetch the scheduled record for a given requestId
-
+    @Transactional(readOnly = true)
     public InterviewSchedulingDTO.ScheduledResponse getByRequestId(Jwt jwt, UUID requestId) {
 
         UUID companyId = resolveCompanyId(jwt);
@@ -117,15 +118,14 @@ public class InterviewSchedulingService {
         if (!scheduled.getCompanyId().equals(companyId))
             throw new SecurityException("You do not own this scheduled interview");
 
-        InterviewRequest ir = requestRepo.findById(requestId)
+        // Fetch with interviewers eagerly to avoid LazyInitializationException
+        InterviewRequest ir = requestRepo.findByIdWithInterviewers(requestId)
                 .orElseThrow(() -> new RuntimeException("Interview request not found"));
 
         return buildResponse(scheduled, ir);
     }
 
 
-    // PATCH: save scorecardId when admin clicks
-    //        "Send Scheduled Interview Details"
 
     @Transactional
     public InterviewSchedulingDTO.ScheduledResponse saveScorecard(
@@ -139,14 +139,14 @@ public class InterviewSchedulingService {
         if (!scheduled.getCompanyId().equals(companyId))
             throw new SecurityException("You do not own this scheduled interview");
 
-        // ── UUID can't be blank — only null check needed ──
         if (req.getScorecardId() == null)
             throw new IllegalArgumentException("Scorecard ID cannot be null");
 
         scheduled.setScorecardId(req.getScorecardId());
         scheduledRepo.save(scheduled);
 
-        InterviewRequest ir = requestRepo.findById(requestId)
+        // Fetch with interviewers eagerly to avoid LazyInitializationException
+        InterviewRequest ir = requestRepo.findByIdWithInterviewers(requestId)
                 .orElseThrow(() -> new RuntimeException("Interview request not found"));
 
         return buildResponse(scheduled, ir);
@@ -154,12 +154,9 @@ public class InterviewSchedulingService {
 
 
     // PRIVATE helpers
-
-
     private InterviewSchedulingDTO.ScheduledResponse buildResponse(
             InterviewScheduled s, InterviewRequest ir) {
 
-        // Collect accepted interviewer profiles
         List<InterviewSchedulingDTO.AcceptedInterviewer> accepted = ir.getInterviewers()
                 .stream()
                 .filter(iri -> "accepted".equalsIgnoreCase(iri.getResponseStatus()))
@@ -179,14 +176,20 @@ public class InterviewSchedulingService {
                 s.getInterviewId(),
                 s.getStatus(),
                 s.getPanelSize(),
-                s.getInterviewDate().toString(),
-                s.getInterviewTime().toString().substring(0, 5),
+                s.getInterviewDate() != null ? s.getInterviewDate().toString() : "",
+                safeTime(s.getInterviewTime()),
                 s.getMode(),
                 s.getAdminNotes(),
                 s.getMeetingLink(),
-                s.getScorecardId(),     // UUID — passed directly, no .toString()
+                s.getScorecardId(),
                 s.getFinalizedAt() != null ? s.getFinalizedAt().toString() : null,
                 accepted);
+    }
+
+    private String safeTime(java.time.LocalTime t) {
+        if (t == null) return "";
+        String s = t.toString();
+        return s.length() >= 5 ? s.substring(0, 5) : s;
     }
 
     private UUID resolveCompanyId(Jwt jwt) {

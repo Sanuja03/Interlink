@@ -12,7 +12,7 @@ const SIDEBAR_WIDTH = 240;
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout} = useAuth();
 
   // ✅ NEW: load correct companyId
   useEffect(() => {
@@ -114,7 +114,8 @@ const DashboardLayout = ({ children }) => {
       </div>
 
       {/* availability button */}
-      <FloatingAvailabilityBtn />
+     {/* only show for interviewers */}
+    <FloatingAvailabilityBtn />
 
     </div>
   );

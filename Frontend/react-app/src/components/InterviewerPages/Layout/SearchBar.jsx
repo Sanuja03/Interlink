@@ -1,5 +1,7 @@
+//when user types onchange  called and when button clicked on search will be called from the parent
 const SearchBar = ({ onChange, onSearch }) => {
     return (
+
       <div className="flex items-center gap-4 mb-4">
         <input
           type="text"

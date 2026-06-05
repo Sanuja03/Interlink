@@ -18,13 +18,14 @@ public class CorsConfig {
                 "http://localhost:5175"
         ));
 
+        //front end requests can be only  below methods and the request cant inlcude the authorization header including the jwt
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowedHeaders(List.of("*"));// frontend can send any header it wants.
+        config.setExposedHeaders(List.of("Authorization"));//let the frontend read the Authorization header from my responses
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config);//applies all the above  rules to every URL on your backend
         return source;
     }
 }

@@ -7,11 +7,9 @@ export const GRADE_BANDS = [
     { min: 0,  label: "Reject",      color: "#dc2626", letter: "C/D/F" },
   ];
   
-  /**
-   * Calculate weighted percentage score.
-   * @param {Array<{score: number, maxScore: number}>} fieldScores
-   * @returns {{ percentage: number, grade: object, totalScore: number, totalMax: number }}
-   */
+
+
+
   export const calculateScore = (fieldScores = []) => {
     if (!fieldScores.length) {
       return { percentage: 0, grade: GRADE_BANDS[3], totalScore: 0, totalMax: 0 };
@@ -30,7 +28,4 @@ export const GRADE_BANDS = [
     return { percentage, grade, totalScore, totalMax };
   };
   
-  /**
-   * generate a unique ID.
-   */
-  export const generateId = () => `sc_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  

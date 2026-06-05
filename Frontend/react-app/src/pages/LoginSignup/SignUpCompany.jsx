@@ -15,6 +15,7 @@ const SignUpCompany = () => {
   const [step, setStep] = useState(1)
   const [otp, setOtp] = useState("")
   const [formData, setFormData] = useState(null)
+  const [verifying, setVerifying] = useState(false)
 
   const {
     register, handleSubmit,
@@ -25,9 +26,7 @@ const SignUpCompany = () => {
     try {
       setSubmitError("")
       const email = data.companyEmail.trim()
-
       await api.post("/otp/send-signup-otp", { email })
-
       setFormData({ ...data })
       setStep(2)
     } catch (err) {
@@ -35,19 +34,14 @@ const SignUpCompany = () => {
     }
   }
 
-  const [verifying, setVerifying] = useState(false)
-
   const handleVerifyOtp = async () => {
     if (verifying) return
     setVerifying(true)
     try {
       setSubmitError("")
       const email = formData.companyEmail.trim()
-
       await api.post("/otp/verify-signup-otp", { email, otp: otp.trim() })
-
       sessionStorage.setItem("is_signing_up", "true")
-
       const { error: authError } = await supabase.auth.signUp({
         email,
         password: formData.password,
@@ -68,6 +62,7 @@ const SignUpCompany = () => {
         return
       }
 
+      //create company in backend
       await api.post("/auth/complete-company-signup", {
         companyName: formData.companyName.trim(),
         companySize: formData.companySize,
@@ -82,6 +77,7 @@ const SignUpCompany = () => {
 
       setSubmitSuccess("Signup successful!")
       navigate("/Login")
+
     } catch (err) {
       sessionStorage.removeItem("is_signing_up")
       setSubmitError(err?.response?.data?.message || err.message || "Verification failed")
@@ -93,6 +89,7 @@ const SignUpCompany = () => {
     return (
       <div className='page'>
         <div className='container'>
+
           <div className='header'>
             <div className='text'>
               <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
@@ -100,21 +97,26 @@ const SignUpCompany = () => {
               <p><i>We sent a 6-digit code to {formData?.companyEmail}</i></p>
             </div>
           </div>
+
           <div className='form'>
             {submitError && <p className="error-text">{submitError}</p>}
+
             <div className='input-group'>
               <label>Enter OTP</label>
               <input type="text" placeholder="Enter 6-digit code" className="input-field"
                 maxLength={6} value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} />
             </div>
+
             <button className='signup-button' onClick={handleVerifyOtp} disabled={otp.length !== 6 || verifying}>
               {verifying ? "Creating account..." : "Verify & Create Account"}
             </button>
+
             <p>
               <a href="#" onClick={(e) => { e.preventDefault(); setStep(1); setOtp(""); }}>← Go back</a>
             </p>
           </div>
+
         </div>
       </div>
     )
@@ -122,10 +124,13 @@ const SignUpCompany = () => {
 
   return (
     <div className='page'>
+
       <div className="home-button">
         <a href="/"><img src={homeicon} alt="Home" /></a>
       </div>
+
       <div className='container'>
+
         <div className='header'>
           <div className='text'>
             <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
@@ -133,6 +138,7 @@ const SignUpCompany = () => {
             <p><i>Find the right people for your vision</i></p>
           </div>
         </div>
+
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
           {submitError && <p className="error-text">{submitError}</p>}
 
@@ -162,7 +168,8 @@ const SignUpCompany = () => {
               {...register("industry", { required: "Please select an industry" })}>
               <option value="">Select industry</option>
               <option value="it">IT</option>
-              <option value="fishing">Fishing</option>
+              <option value="fishing">Manufacturing</option>
+              <option value="fishing">Finance</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -173,8 +180,9 @@ const SignUpCompany = () => {
             <select className={`input-field ${errors.companySize ? "input-error" : ""}`}
               {...register("companySize", { required: "Please select company size" })}>
               <option value="">Select range</option>
-              <option value="10-15">10 - 15</option>
-              <option value="40-50">40 - 50</option>
+              <option value="10-15">5 - 20</option>
+              <option value="40-50">20 - 50</option>
+              <option value="40-50">50 - 100</option>
               <option value="above-100">Above 100</option>
             </select>
           </div>
@@ -193,6 +201,7 @@ const SignUpCompany = () => {
           <button className='signup-button' type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Sending OTP..." : "Sign Up"}
           </button>
+          
           <p>Already have an account? <Link to="/Login">Login</Link></p>
         </form>
       </div>

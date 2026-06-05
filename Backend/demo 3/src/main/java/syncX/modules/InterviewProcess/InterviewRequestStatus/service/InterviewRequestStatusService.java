@@ -27,11 +27,10 @@ public class InterviewRequestStatusService {
     @Autowired private InterviewerRepository       interviewerRepo;
     @Autowired private CompanyRepository           companyRepository;
 
-    // ════════════════════════════════════════════════════════════════
-    // GET: full status of the active (non-cancelled) request for
-    //      a (candidateId, jobApplicationId) pair — scoped to the
-    //      calling admin's company.
-    // ════════════════════════════════════════════════════════════════
+
+    // For the logged-in company, check whether this specific candidate
+    //for this specific job application already has an active interview request.
+    //If yes, return the status details. If no, return null.
     public InterviewRequestStatusDTO.StatusResponse getStatus(
             Jwt jwt, UUID candidateId, Long jobApplicationId) {
 
@@ -40,24 +39,18 @@ public class InterviewRequestStatusService {
         Optional<InterviewRequest> opt = requestRepo
                 .findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
 
-        if (opt.isEmpty()) return null;   // caller should return 204
+        if (opt.isEmpty()) return null;
 
         return buildStatusResponse(opt.get());
     }
 
-    // ════════════════════════════════════════════════════════════════
-    // DELETE: remove one interviewer from an active request.
-    //
-    //  Rules
-    //  ─────
-    //  • Only the company that owns the request may remove interviewers.
-    //  • The request must not be finalised or cancelled.
-    //  • The interviewer's responseStatus is set to "rejected" so it
-    //    disappears from their pending-requests page automatically
-    //    (the existing query filters for responseStatus = 'pending').
-    //  • We do NOT physically delete the row — we just flip the status
-    //    so audit history is preserved.
-    // ════════════════════════════════════════════════════════════════
+
+    //  Only the company that owns the request may remove interviewers.
+    //  The request must not be finalised or cancelled.
+    //  The interviewer's responseStatus is set to "rejected" so it
+    //  disappears from their pending-requests page automatically
+    //  do NOT physically delete the row — we just flip the status
+    //  so audit history is preserved.
     @Transactional
     public InterviewRequestStatusDTO.RemoveInterviewerResponse removeInterviewer(
             Jwt jwt, UUID requestId, UUID interviewerUserId) {
@@ -67,19 +60,19 @@ public class InterviewRequestStatusService {
         InterviewRequest ir = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Interview request not found"));
 
-        // Security: make sure this request belongs to the caller's company
+        // make sure this request belongs to the caller's company
         if (!ir.getCompanyId().equals(companyId)) {
             throw new SecurityException("You do not own this interview request");
         }
 
-        // Guard: cannot mutate a finalised or cancelled request
+        // cannot mutate a finalised or cancelled request
         if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
                 "cancelled".equalsIgnoreCase(ir.getStatus())) {
             throw new IllegalStateException(
                     "Cannot remove an interviewer from a " + ir.getStatus() + " request");
         }
 
-        // Find the interviewer row
+        // Find the interviewer row for the relevant request  id
         InterviewRequestInterviewer target = ir.getInterviewers().stream()
                 .filter(iri -> iri.getInterviewerUserId().equals(interviewerUserId))
                 .findFirst()
@@ -87,14 +80,13 @@ public class InterviewRequestStatusService {
                         "Interviewer " + interviewerUserId + " is not part of this request"));
 
         // Flip to rejected — this removes them from the interviewer's pending list
-        // (the existing query filters WHERE responseStatus = 'pending')
         target.setResponseStatus("rejected");
         target.setRespondedAt(OffsetDateTime.now());
 
         requestRepo.save(ir);
 
-        // Re-compute counts from the persisted state
-        // (exclude the just-rejected row when counting "remaining active")
+
+        // (exclude the rejected row when counting "remaining active")
         List<InterviewRequestInterviewer> stillActive = ir.getInterviewers().stream()
                 .filter(iri -> !"rejected".equalsIgnoreCase(iri.getResponseStatus()))
                 .collect(Collectors.toList());
@@ -110,10 +102,8 @@ public class InterviewRequestStatusService {
                 (int) acceptedCount);
     }
 
-    // ════════════════════════════════════════════════════════════════
+
     // PUT: resend to a rejected interviewer — resets their status to "pending"
-    //      so the request reappears in their pending-requests page.
-    // ════════════════════════════════════════════════════════════════
     @Transactional
     public void resendToInterviewer(Jwt jwt, UUID requestId, UUID interviewerUserId) {
 
@@ -150,12 +140,12 @@ public class InterviewRequestStatusService {
         requestRepo.save(ir);
     }
 
-    // ════════════════════════════════════════════════════════════════
+
     // POST: add more interviewers to an existing pending request.
-    //  • Skips any userId already in the request (no duplicates).
-    //  • Only adds — never touches accepted/pending existing rows.
-    //  • Validates that every added userId belongs to this company.
-    // ════════════════════════════════════════════════════════════════
+    //  Skips any userId already in the request (no duplicates).
+    //  Only adds — never touches accepted/pending existing rows.
+    //  Validates that every added userId belongs to this company.
+
     @Transactional
     public InterviewRequestStatusDTO.StatusResponse addInterviewers(
             Jwt jwt, UUID requestId, List<UUID> newUserIds) {
@@ -182,13 +172,13 @@ public class InterviewRequestStatusService {
                         "Interviewer " + uid + " is not assignable to this company");
         }
 
-        // IDs already in the request — skip to avoid duplicates
+        // new IDs already in the request then skip to avoid duplicates
         Set<UUID> existing = ir.getInterviewers().stream()
                 .map(InterviewRequestInterviewer::getInterviewerUserId)
                 .collect(Collectors.toSet());
 
         for (UUID uid : newUserIds) {
-            if (existing.contains(uid)) continue; // already invited, skip
+            if (existing.contains(uid)) continue; // already invited then skip
             InterviewRequestInterviewer iri = new InterviewRequestInterviewer();
             iri.setInterviewRequest(ir);
             iri.setInterviewerUserId(uid);
@@ -201,9 +191,8 @@ public class InterviewRequestStatusService {
         return buildStatusResponse(ir);
     }
 
-    // ════════════════════════════════════════════════════════════════
+
     // PRIVATE helpers
-    // ════════════════════════════════════════════════════════════════
 
     private InterviewRequestStatusDTO.StatusResponse buildStatusResponse(InterviewRequest ir) {
 
