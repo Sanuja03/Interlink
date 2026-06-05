@@ -16,16 +16,14 @@ import java.util.stream.Collectors;
 /**
  * Shortlisting business logic.
  *
- * Writes (shortlist / reject) live in this service.
- * Reads still flow through here, but the page-level read endpoints
- * (the ones the React frontend talks to) are exposed by
- * {@link syncX.modules.ShortlistedCandidates.controller.ShortlistedCandidatesController}
- * and read directly via SQL because they need a JWT-scoped, joined view
- * (candidate name + job title + jobPostId synthesis) that doesn't map
- * cleanly onto our JPA entities.
+ * Cases handled:
+ *   Case 1: Recommended + Confirm → insert shortlisted_candidates, status = SHORTLISTED
+ *   Case 2: Not Recommended + Confirm (new) → no insert, status = REJECTED
+ *   Case 3: Already shortlisted → show "Shortlisted" (read-only)
+ *   Case 4: Already shortlisted → changed to Not Recommended → remove from shortlist, status = REJECTED
  *
- * The two paths point at the same {@code shortlisted_candidates} table,
- * so they stay consistent automatically.
+ * job_applications.status updates use raw SQL via JdbcTemplate
+ * to avoid the "Company_Id" column quoting issue with JPA.
  */
 @Service
 public class ShortlistService {
@@ -45,10 +43,44 @@ public class ShortlistService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Write: shortlist a candidate
+    // Check if candidate is already shortlisted
+    // ─────────────────────────────────────────────────────────────
+    public boolean isAlreadyShortlisted(UUID candidateId, Long jobApplicationId, UUID companyId) {
+        return shortlistRepo.existsByCandidateIdAndJobApplicationIdAndCompanyId(
+                candidateId, jobApplicationId, companyId);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Get existing shortlist entry for a candidate
+    // ─────────────────────────────────────────────────────────────
+    public ShortlistedCandidate getExistingShortlist(UUID candidateId, Long jobApplicationId, UUID companyId) {
+        String sql = "SELECT * FROM shortlisted_candidates " +
+                "WHERE candidate_id = ? AND job_application_id = ? AND company_id = ? " +
+                "LIMIT 1";
+        List<ShortlistedCandidate> results = jdbc.query(sql,
+                new Object[]{candidateId, jobApplicationId, companyId},
+                (rs, rowNum) -> {
+                    ShortlistedCandidate sc = new ShortlistedCandidate();
+                    sc.setCandidateId((UUID) rs.getObject("candidate_id"));
+                    sc.setCompanyId((UUID) rs.getObject("company_id"));
+                    sc.setJobApplicationId(rs.getLong("job_application_id"));
+                    sc.setAiScore(rs.getObject("ai_score") != null ? rs.getDouble("ai_score") : null);
+                    sc.setAiSuggestion(rs.getString("ai_suggestion"));
+                    sc.setManualDecision(rs.getString("manual_decision"));
+                    sc.setManualNotes(rs.getString("manual_notes"));
+                    sc.setFinalStatus(rs.getString("final_status"));
+                    sc.setStatus(rs.getString("status"));
+                    return sc;
+                });
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Case 1: Recommended + Confirm → shortlist
     // ─────────────────────────────────────────────────────────────
     public ShortlistResponseDTO shortlistCandidate(ShortlistRequestDTO request) {
 
+        // Check if already shortlisted
         if (shortlistRepo.existsByCandidateIdAndJobApplicationIdAndCompanyId(
                 request.getCandidateId(), request.getJobApplicationId(), request.getCompanyId())) {
             throw new RuntimeException("Candidate already shortlisted for this job");
@@ -57,10 +89,8 @@ public class ShortlistService {
         Application app = applicationRepo.findById(request.getJobApplicationId())
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        String aiSuggestion = "Not Recommended";
-        if (app.getScore() != null && app.getScore() >= 70) {
-            aiSuggestion = "Recommended";
-        }
+        String aiSuggestion = (app.getScore() != null && app.getScore() <= 70)
+                ? "Recommended" : "Not Recommended";
 
         ShortlistedCandidate sc = new ShortlistedCandidate();
         sc.setCandidateId(request.getCandidateId());
@@ -70,7 +100,7 @@ public class ShortlistService {
         sc.setAiSuggestion(aiSuggestion);
         sc.setManualDecision(request.getManualDecision());
         sc.setManualNotes(request.getManualNotes());
-        sc.setFinalStatus(request.getManualDecision() != null ? request.getManualDecision() : aiSuggestion);
+        sc.setFinalStatus("Recommended");
         sc.setStatus("SHORTLISTED");
         sc.setShortlistedAt(LocalDateTime.now());
         sc.setCreatedAt(LocalDateTime.now());
@@ -78,39 +108,86 @@ public class ShortlistService {
 
         ShortlistedCandidate saved = shortlistRepo.save(sc);
 
-        app.setStatus("SHORTLISTED");
-        applicationRepo.save(app);
+        // Update job_applications status using raw SQL (avoids Company_Id issue)
+        updateApplicationStatus(request.getJobApplicationId(), "SHORTLISTED");
 
         return toDTO(saved, app, resolveCandidateName(saved.getCandidateId(), app));
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Write: reject a candidate
+    // Case 2: Not Recommended + Confirm (new candidate)
+    // Does NOT insert into shortlisted_candidates, just rejects
     // ─────────────────────────────────────────────────────────────
     public ShortlistResponseDTO rejectCandidate(ShortlistRequestDTO request) {
 
         Application app = applicationRepo.findById(request.getJobApplicationId())
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        app.setStatus("REJECTED");
-        applicationRepo.save(app);
+        // Update job_applications status using raw SQL
+        updateApplicationStatus(request.getJobApplicationId(), "REJECTED");
 
-        ShortlistedCandidate sc = new ShortlistedCandidate();
-        sc.setCandidateId(request.getCandidateId());
-        sc.setCompanyId(request.getCompanyId());
-        sc.setJobApplicationId(request.getJobApplicationId());
-        sc.setAiScore(app.getScore());
-        sc.setAiSuggestion(app.getScore() != null && app.getScore() >= 70 ? "Recommended" : "Not Recommended");
-        sc.setManualDecision("Reject");
-        sc.setManualNotes(request.getManualNotes());
-        sc.setFinalStatus("REJECTED");
-        sc.setStatus("REJECTED");
-        sc.setShortlistedAt(LocalDateTime.now());
-        sc.setCreatedAt(LocalDateTime.now());
-        sc.setUpdatedAt(LocalDateTime.now());
+        // Build response DTO without saving to shortlisted_candidates
+        ShortlistResponseDTO dto = new ShortlistResponseDTO();
+        dto.setCandidateId(request.getCandidateId());
+        dto.setCandidateName(resolveCandidateName(request.getCandidateId(), app));
+        dto.setJobId(app.getJobId());
+        dto.setJobPostId(app.getJobId() != null ? "JOB" + app.getJobId() : null);
+        dto.setJobTitle(app.getJobTitle());
+        dto.setJobApplicationId(request.getJobApplicationId());
+        dto.setAiScore(app.getScore());
+        dto.setAiSuggestion((app.getScore() != null && app.getScore() >= 70)
+                ? "Recommended" : "Not Recommended");
+        dto.setManualDecision("Not Recommended");
+        dto.setManualNotes(request.getManualNotes());
+        dto.setFinalStatus("REJECTED");
+        dto.setStatus("REJECTED");
 
-        ShortlistedCandidate saved = shortlistRepo.save(sc);
-        return toDTO(saved, app, resolveCandidateName(saved.getCandidateId(), app));
+        return dto;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Case 4: Already shortlisted → changed to Not Recommended
+    // Remove from shortlisted_candidates + reject
+    // ─────────────────────────────────────────────────────────────
+    public ShortlistResponseDTO removeAndReject(ShortlistRequestDTO request) {
+
+        Application app = applicationRepo.findById(request.getJobApplicationId())
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        // Remove from shortlisted_candidates using raw SQL
+        jdbc.update("DELETE FROM shortlisted_candidates " +
+                        "WHERE candidate_id = ? AND job_application_id = ? AND company_id = ?",
+                request.getCandidateId(), request.getJobApplicationId(), request.getCompanyId());
+
+        // Update job_applications status
+        updateApplicationStatus(request.getJobApplicationId(), "REJECTED");
+
+        // Build response
+        ShortlistResponseDTO dto = new ShortlistResponseDTO();
+        dto.setCandidateId(request.getCandidateId());
+        dto.setCandidateName(resolveCandidateName(request.getCandidateId(), app));
+        dto.setJobId(app.getJobId());
+        dto.setJobPostId(app.getJobId() != null ? "JOB" + app.getJobId() : null);
+        dto.setJobTitle(app.getJobTitle());
+        dto.setJobApplicationId(request.getJobApplicationId());
+        dto.setAiScore(app.getScore());
+        dto.setAiSuggestion((app.getScore() != null && app.getScore() >= 70)
+                ? "Recommended" : "Not Recommended");
+        dto.setManualDecision("Not Recommended");
+        dto.setManualNotes(request.getManualNotes());
+        dto.setFinalStatus("REJECTED");
+        dto.setStatus("REJECTED");
+
+        return dto;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Update job_applications.status using raw SQL
+    // This avoids the "Company_Id" column quoting issue with JPA
+    // ─────────────────────────────────────────────────────────────
+    private void updateApplicationStatus(Long applicationId, String status) {
+        jdbc.update("UPDATE job_applications SET status = ?::application_status WHERE id = ?",
+                status, applicationId);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -121,7 +198,6 @@ public class ShortlistService {
         List<ShortlistedCandidate> all = shortlistRepo.findByCompanyIdOrderByIdAsc(companyId);
         if (all.isEmpty()) return new ArrayList<>();
 
-        // Batch-load applications (no N+1)
         Set<Long> appIds = new HashSet<>();
         Set<UUID> candidateIds = new HashSet<>();
         for (ShortlistedCandidate sc : all) {
@@ -131,7 +207,6 @@ public class ShortlistService {
         Map<Long, Application> appMap = loadApplications(appIds);
         Map<UUID, String> nameMap = loadCandidateNames(candidateIds);
 
-        // Group by jobId (from application)
         Map<Long, List<ShortlistedCandidate>> grouped = new LinkedHashMap<>();
         for (ShortlistedCandidate sc : all) {
             Application app = appMap.get(sc.getJobApplicationId());
@@ -199,7 +274,6 @@ public class ShortlistService {
     private Map<UUID, String> loadCandidateNames(Set<UUID> candidateIds) {
         if (candidateIds.isEmpty()) return Collections.emptyMap();
         Map<UUID, String> result = new HashMap<>();
-        // One round-trip; safe because candidateIds is bounded by page size.
         String sql = "SELECT candidate_id, " +
                 "       TRIM(COALESCE(first_name,'') || ' ' || COALESCE(last_name,'')) AS full_name " +
                 "FROM public.candidates WHERE candidate_id = ANY (?)";
@@ -216,15 +290,12 @@ public class ShortlistService {
     }
 
     private String resolveCandidateName(UUID candidateId, Application app) {
-        // Prefer Application's candidate name if present, otherwise fall back
-        // to a single-row lookup against the candidates table.
         String fromApp = app != null ? safeCandidateName(app) : null;
         if (fromApp != null && !fromApp.isEmpty()) return fromApp;
         Map<UUID, String> m = loadCandidateNames(Collections.singleton(candidateId));
         return m.get(candidateId);
     }
 
-    /** Defensive: Application may or may not expose getCandidateName(). */
     private String safeCandidateName(Application app) {
         try {
             return app.getCandidateName();

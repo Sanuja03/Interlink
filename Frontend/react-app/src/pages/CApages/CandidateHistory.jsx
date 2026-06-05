@@ -22,11 +22,9 @@ export default function CandidateHistory() {
     try {
       setLoading(true);
 
-      // Get history stages
       const historyRes = await api.get(`/company/history/application/${applicationId}`);
       setHistoryData(historyRes.data);
 
-      // Get candidate profile for the profile card
       if (historyRes.data.candidateId) {
         const profileRes = await api.get(
           `/company/candidate-profile/${historyRes.data.candidateId}?applicationId=${applicationId}`
@@ -120,7 +118,6 @@ export default function CandidateHistory() {
                   <th>Stage</th>
                   <th>Status</th>
                   <th>Date</th>
-                  <th>AI Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -138,11 +135,6 @@ export default function CandidateHistory() {
                       </div>
                     </td>
                     <td>{row.date || "—"}</td>
-                    <td>
-                      <div className="ch-notePill">
-                        {row.aiScore != null ? `${row.aiScore}%` : "—"}
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -153,6 +145,9 @@ export default function CandidateHistory() {
           <div className="ch-jobInfo">
             <p><strong>Job Title:</strong> {historyData.jobTitle || "—"}</p>
             <p><strong>Application ID:</strong> #{applicationId}</p>
+            {historyData.currentStatus && (
+              <p><strong>Current Status:</strong> {historyData.currentStatus}</p>
+            )}
           </div>
         </section>
 

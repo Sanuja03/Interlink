@@ -24,6 +24,7 @@ export default function JobManagement() {
       }
 
       const res = await api.get(`/jobs/company/${companyId}`);
+      console.log("API DATA:", res.data);
 
       const formatted = res.data.map((job) => ({
         id: job.id,
@@ -159,7 +160,7 @@ export default function JobManagement() {
           <div className="jm-createWrap">
             <button
               className="jm-create"
-              onClick={() => navigate("/create-job")}
+              onClick={() => navigate("/company/create-job")}
             >
               Create New Job Post
             </button>

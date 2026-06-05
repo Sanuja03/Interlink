@@ -46,7 +46,7 @@ public class JobController {
     }
 
     @GetMapping("/{jobId}")
-    public ResponseEntity<?> getJobById(@PathVariable Long jobId) { // ✅ FIXED
+    public ResponseEntity<?> getJobById(@PathVariable Long jobId) { // FIXED
         try {
             return ResponseEntity.ok(jobService.getJobById(String.valueOf(jobId)));
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class JobController {
         }
     }
 
-    // ================= UPDATE (🔥 NEW FIX) =================
+    // ================= UPDATE (NEW FIX) =================
 
     @PutMapping("/{jobId}")
     public ResponseEntity<?> updateJob(
@@ -71,7 +71,7 @@ public class JobController {
     // ================= TOGGLE =================
 
     @PutMapping("/{jobId}/toggle")
-    public ResponseEntity<?> toggleJobStatus(@PathVariable Long jobId) { // ✅ FIXED
+    public ResponseEntity<?> toggleJobStatus(@PathVariable Long jobId) { //  FIXED
         try {
             return ResponseEntity.ok(jobService.toggleJobStatus(String.valueOf(jobId)));
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class JobController {
     // ================= DELETE =================
 
     @DeleteMapping("/{jobId}")
-    public ResponseEntity<?> deleteJob(@PathVariable Long jobId) { // ✅ FIXED
+    public ResponseEntity<?> deleteJob(@PathVariable Long jobId) { //  FIXED
         try {
             jobService.deleteJob(String.valueOf(jobId));
             return ResponseEntity.ok("Job deleted successfully");

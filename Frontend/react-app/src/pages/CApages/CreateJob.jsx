@@ -3,9 +3,9 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import "./CreateJob.css";
 import api from "../../lib/api";
 import { supabase } from "../../lib/supabase";
-
+// Main component for creating a new job
 export default function CreateJob() {
-
+// Store logged-in user's company ID
   const [companyId, setCompanyId] = useState(null);
   const [sessionError, setSessionError] = useState(null);
 
@@ -25,11 +25,12 @@ export default function CreateJob() {
     };
     loadCompanyId();
   }, []);
-
+ // Update interview stage value
   const [form, setForm] = useState({
     title: "", department: "", type: "", category: "",
     location: "", experience: "", vacancies: "", interview_rounds: "",
   });
+// Dynamic interview stages (based on rounds)
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
@@ -49,7 +50,7 @@ export default function CreateJob() {
   };
   const addRequirement = () => setReqs([...reqs, ""]);
   const removeRequirement = (index) => { if (reqs.length === 1) return; setReqs(reqs.filter((_, i) => i !== index)); };
-
+//validation
   const validate = () => {
     const newErrors = {};
     if (!form.title.trim()) newErrors.title = "Required";
@@ -67,7 +68,7 @@ export default function CreateJob() {
 
     setLoading(true);
     setErrors({});
-
+    // Prepare job data for backend
     const jobData = {
       title:           form.title.trim(),
       department:      form.department,
@@ -81,7 +82,7 @@ export default function CreateJob() {
       requirementText: reqs.filter((r) => r.trim()).join(", "),
       companyId:       companyId,
     };
-
+    // Send POST request to backend
     try {
       const res = await api.post("/jobs", jobData);
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
@@ -93,21 +94,21 @@ export default function CreateJob() {
       setLoading(false);
     }
   };
-
+// UI Rendering
   return (
     <DashboardLayout>
       <div className="cj-page">
         <div className="cj-container">
           <h2 className="cj-title">Create new job</h2>
-
+              {/* Show session error if exists */}
           {sessionError && (
             <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
             </div>
           )}
-
+            {/* Job form */}
           <div className="cj-card">
-
+            {/* Job title input */}
             <div className="cj-field">
               <label className="cj-label">Job Title</label>
               <input name="title" value={form.title} className="cj-input" onChange={handleChange} placeholder="e.g. Frontend Developer" />
@@ -126,7 +127,7 @@ export default function CreateJob() {
               {errors.department && <p className="cj-error">{errors.department}</p>}
             </div>
 
-            {/* ✅ EmploymentType enum values */}
+            {/* EmploymentType enum values */}
             <div className="cj-field">
               <label className="cj-label">Employment Type</label>
               <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
@@ -138,7 +139,7 @@ export default function CreateJob() {
               {errors.type && <p className="cj-error">{errors.type}</p>}
             </div>
 
-            {/* ✅ Category enum values */}
+            {/*  Category enum values */}
             <div className="cj-field">
               <label className="cj-label">Category</label>
               <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
@@ -148,6 +149,7 @@ export default function CreateJob() {
                 <option value="Marketing">Marketing</option>
                 <option value="Finance">Finance</option>
                 <option value="Healthcare">Healthcare</option>
+                <option value="IT">IT</option>
               </select>
             </div>
 
@@ -175,7 +177,7 @@ export default function CreateJob() {
               <input name="location" value={form.location} className="cj-input" onChange={handleChange} placeholder="e.g. Colombo, Remote" />
             </div>
 
-            {/* ✅ ExperienceLevel enum values */}
+            {/* ExperienceLevel enum values */}
             <div className="cj-field">
               <label className="cj-label">Experience Level</label>
               <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>

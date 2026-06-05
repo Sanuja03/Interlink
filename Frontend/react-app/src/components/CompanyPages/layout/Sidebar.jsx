@@ -4,6 +4,7 @@ import "./Sidebar.css";
 
 import { useAuth } from "../../../context/Authcontext";
 import api from "../../../lib/api";
+import { supabase } from "../../../lib/supabase";
 
 import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
@@ -21,18 +22,44 @@ export default function Sidebar() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
-    if (!companyId) return;
+    const loadCompanyInfo = async () => {
+      let companyId = localStorage.getItem("companyId");
 
-    api
-      .get(`/company/${companyId}/details`)
-      .then((res) => {
-        const data = res.data;
-        setCompanyName(data.companyName || "Company");
-        setCompanyLogo(data.logoUrl || null);
-        setCompanyWebsite(data.website || "");
-      })
-      .catch((err) => console.error("Failed to load company info:", err));
+      // If companyId is missing, fetch it from Supabase
+      if (!companyId) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.id) {
+            const { data } = await supabase
+              .from("companies")
+              .select("company_id")
+              .eq("user_id", session.user.id)
+              .single();
+            if (data?.company_id) {
+              companyId = data.company_id;
+              localStorage.setItem("companyId", companyId);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch companyId:", err);
+          return;
+        }
+      }
+
+      if (!companyId) return;
+
+      api
+        .get(`/company/${companyId}/details`)
+        .then((res) => {
+          const data = res.data;
+          setCompanyName(data.companyName || "Company");
+          setCompanyLogo(data.logoUrl || null);
+          setCompanyWebsite(data.website || "");
+        })
+        .catch((err) => console.error("Failed to load company info:", err));
+    };
+
+    loadCompanyInfo();
   }, []);
 
   const handleManageClick = () => {
@@ -45,8 +72,9 @@ export default function Sidebar() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem("companyId");
     await logout();
-    navigate("/");
+    navigate("/Login");
   };
 
   return (
@@ -93,8 +121,8 @@ export default function Sidebar() {
               Create Job
             </NavLink>
             <NavLink to="/company/shortlisted" className="sb-sublink">
-                         Shortlisted
-                       </NavLink>
+              Shortlisted
+            </NavLink>
           </div>
         )}
       </nav>

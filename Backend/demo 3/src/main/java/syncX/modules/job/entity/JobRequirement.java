@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "job_requirement")   // ✅ matches actual Supabase table name
+@Table(name = "job_requirement")   //matches actual Supabase table name
 public class JobRequirement {
 
     @Id

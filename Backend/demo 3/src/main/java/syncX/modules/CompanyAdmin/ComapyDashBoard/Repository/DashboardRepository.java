@@ -13,7 +13,7 @@ public class DashboardRepository {
     public DashboardRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
+    // Returns job post application shortlist interview
     public long countJobsByCompany(UUID companyId) {
         String sql = "SELECT COUNT(*) FROM jobs WHERE company_id = ?";
         Long count = jdbcTemplate.queryForObject(sql, Long.class, companyId);

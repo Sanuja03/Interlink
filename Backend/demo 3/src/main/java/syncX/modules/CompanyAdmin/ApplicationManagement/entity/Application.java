@@ -11,7 +11,7 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "\"Company_Id\"")
+    @Column(name = "`Company_Id`")
     private UUID companyId;
 
     @Column(name = "candidate_id")
@@ -28,6 +28,9 @@ public class Application {
 
     @Column(name = "score")
     private Double score;
+
+    @Column(name = "score_details", columnDefinition = "jsonb")
+    private String scoreDetails;
 
     @Column(name = "status")
     private String status;
@@ -52,6 +55,9 @@ public class Application {
 
     public Double getScore() { return score; }
     public void setScore(Double score) { this.score = score; }
+
+    public String getScoreDetails() { return scoreDetails; }
+    public void setScoreDetails(String scoreDetails) { this.scoreDetails = scoreDetails; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

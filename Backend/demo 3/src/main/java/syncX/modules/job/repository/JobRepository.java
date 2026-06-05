@@ -11,7 +11,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     // Get all jobs by company (latest first)
     List<Job> findByCompanyIdOrderByCreatedAtDesc(UUID companyId);
 
-    // Optional: filter by status
+    // filter by status
     List<Job> findByCompanyIdAndStatus(UUID companyId, String status);
 
     // Required

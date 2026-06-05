@@ -2,57 +2,68 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import api from "../../lib/api";
+import { getCompanyId } from "../../lib/getCompanyId";
 import "./CompanyDashboard.css";
+
+// ICONS
+import jobIcon from "../../assets/job.png";
+import manIcon from "../../assets/Man.png";
+import shortlistIcon from "../../assets/Shortlist.png";
+import interviewIcon from "../../assets/Interview.png";
 
 export default function CompanyDashboard() {
   const navigate = useNavigate();
+
   const [stats, setStats] = useState({
     totalJobPosts: 0,
     totalApplications: 0,
     shortlistedCandidates: 0,
     upcomingInterviews: 0,
   });
+
   const [loading, setLoading] = useState(true);
 
+  // LOAD DATA
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
-    if (!companyId) return;
+    const loadStats = async () => {
+      try {
+        const companyId = await getCompanyId();
+        if (!companyId) return;
 
-    api
-      .get(`/company/dashboard/stats/${companyId}`)
-      .then((res) => setStats(res.data))
-      .catch((err) => console.error("Failed to load dashboard stats:", err))
-      .finally(() => setLoading(false));
+        const res = await api.get(`/company/dashboard/stats/${companyId}`);
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to load dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
   }, []);
 
-  const statCards = [
+  // CARD CONFIG (clean reusable)
+  const cards = [
     {
       title: "Total Job Posts",
       value: stats.totalJobPosts,
-      icon: "💼",
+      icon: jobIcon,
     },
     {
       title: "Total Applications",
       value: stats.totalApplications,
-      icon: "👤",
+      icon: manIcon,
     },
     {
       title: "Shortlisted Candidates",
       value: stats.shortlistedCandidates,
-      icon: "🤝",
+      icon: shortlistIcon,
     },
     {
       title: "Upcoming Interviews",
       value: stats.upcomingInterviews,
-      icon: "📋",
+      icon: interviewIcon,
     },
-  ];
-
-  const quickLinks = [
-    { label: "Job Management", path: "/job-management" },
-    { label: "Application Management", path: "/application-management" },
-    { label: "Company Admin Profile", path: "/company/settings" },
-    { label: "Create Job", path: "/create-job" },
   ];
 
   return (
@@ -60,11 +71,14 @@ export default function CompanyDashboard() {
       <div className="cd-page">
         <div className="cd-container">
 
-          {/* Stats Grid */}
+          {/* ===== STATS ===== */}
           <div className="cd-stats-grid">
-            {statCards.map((card, idx) => (
-              <div key={idx} className="cd-stat-card">
-                <div className="cd-stat-icon">{card.icon}</div>
+            {cards.map((card, index) => (
+              <div key={index} className="cd-stat-card">
+                <div className="cd-stat-icon">
+                  <img src={card.icon} alt={card.title} />
+                </div>
+
                 <div className="cd-stat-info">
                   <div className="cd-stat-title">{card.title}</div>
                   <div className="cd-stat-value">
@@ -75,18 +89,39 @@ export default function CompanyDashboard() {
             ))}
           </div>
 
-          {/* Quick Links */}
+          {/* ===== ACTION BUTTONS ===== */}
           <div className="cd-links-grid">
-            {quickLinks.map((link, idx) => (
-              <button
-                key={idx}
-                className="cd-link-btn"
-                onClick={() => navigate(link.path)}
-              >
-                {link.label}
-              </button>
-            ))}
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/job-management")}
+            >
+              Job Management
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/application-management")}
+            >
+              Application Management
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/settings")}
+            >
+              Company Admin Profile
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/create-job")}
+            >
+              Create Job
+            </button>
+
           </div>
+
         </div>
       </div>
     </DashboardLayout>

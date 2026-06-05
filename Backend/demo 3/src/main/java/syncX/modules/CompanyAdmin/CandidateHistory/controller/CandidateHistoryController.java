@@ -15,7 +15,6 @@ public class CandidateHistoryController {
         this.historyService = historyService;
     }
 
-    // GET history by job application ID
     @GetMapping("/application/{applicationId}")
     public ResponseEntity<CandidateHistoryResponseDTO> getHistory(
             @PathVariable Long applicationId) {

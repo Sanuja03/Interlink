@@ -1,5 +1,6 @@
 package syncX.modules.CompanyAdmin.ApplicationManagement.service;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import syncX.modules.CompanyAdmin.ApplicationManagement.entity.Application;
 import syncX.modules.CompanyAdmin.ApplicationManagement.repository.ApplicationRepository;
@@ -13,13 +14,14 @@ import java.util.stream.Collectors;
 public class ApplicationService {
 
     private final ApplicationRepository repository;
+    private final JdbcTemplate jdbc;
 
-    public ApplicationService(ApplicationRepository repository) {
+    public ApplicationService(ApplicationRepository repository, JdbcTemplate jdbc) {
         this.repository = repository;
+        this.jdbc = jdbc;
     }
 
     public List<ApplicationResponseDTO> getApplications(UUID companyId) {
-
         List<Application> applications = repository.findByCompanyId(companyId);
 
         return applications.stream().map(app -> {
@@ -30,6 +32,7 @@ public class ApplicationService {
             dto.setJobId(app.getJobId());
             dto.setJobTitle(app.getJobTitle());
             dto.setAiScore(app.getScore());
+            dto.setScoreDetails(app.getScoreDetails());
             dto.setStatus(app.getStatus());
             return dto;
         }).collect(Collectors.toList());
@@ -46,7 +49,25 @@ public class ApplicationService {
         dto.setJobId(app.getJobId());
         dto.setJobTitle(app.getJobTitle());
         dto.setAiScore(app.getScore());
+        dto.setScoreDetails(app.getScoreDetails());
         dto.setStatus(app.getStatus());
         return dto;
+    }
+
+    /**
+     * Reject an application using raw SQL to avoid the Company_Id column issue.
+     * Validates that the application belongs to the given company.
+     */
+    public void rejectApplication(Long applicationId, UUID companyId) {
+        // Verify the application belongs to this company
+        int count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM job_applications WHERE id = ? AND \"Company_Id\" = ?",
+                Integer.class, applicationId, companyId);
+
+        if (count == 0) {
+            throw new RuntimeException("Application not found or does not belong to this company");
+        }
+
+        jdbc.update("UPDATE job_applications SET status = 'REJECTED' WHERE id = ?", applicationId);
     }
 }

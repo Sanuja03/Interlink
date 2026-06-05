@@ -9,10 +9,10 @@ public class CandidateHistoryResponseDTO {
     private String candidateName;
     private String jobTitle;
     private Long jobApplicationId;
-    private Double aiScore;
+    private Double aiScore;          // Single overall AI score shown at top
+    private String currentStatus;    // Current status from job_applications
     private List<HistoryStageDTO> stages;
 
-    // Getters & Setters
     public UUID getCandidateId() { return candidateId; }
     public void setCandidateId(UUID candidateId) { this.candidateId = candidateId; }
 
@@ -27,6 +27,9 @@ public class CandidateHistoryResponseDTO {
 
     public Double getAiScore() { return aiScore; }
     public void setAiScore(Double aiScore) { this.aiScore = aiScore; }
+
+    public String getCurrentStatus() { return currentStatus; }
+    public void setCurrentStatus(String currentStatus) { this.currentStatus = currentStatus; }
 
     public List<HistoryStageDTO> getStages() { return stages; }
     public void setStages(List<HistoryStageDTO> stages) { this.stages = stages; }

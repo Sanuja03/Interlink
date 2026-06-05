@@ -61,12 +61,12 @@ public class Job {
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobRequirement> requirements;
 
-    // ✅ Auto set created time
+    //  Auto set created time
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
 
-        // ✅ ensure default status (fix inconsistency)
+        //  ensure default status (fix inconsistency)
         if (this.status == null) {
             this.status = "Open";
         }

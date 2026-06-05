@@ -163,6 +163,67 @@
 .am-statusDot.red {
   background-color: red;
 }
+/* ============================================================
+   CHANGE STATUS BUTTON (UPDATED STYLE)
+   - Green color theme
+   - Fully rounded (pill shape / 100% curve)
+   ============================================================ */
+
+.am-btn.am-change-status {
+  /* Background color (Green theme) */
+  background: #28a745;
+
+  /* Text styling */
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+
+  /* Remove default border */
+  border: none;
+
+  /* Padding for better button size */
+  padding: 6px 18px;
+
+  /* 100% curve (pill shape) */
+  border-radius: 999px;
+
+  /* Pointer cursor on hover */
+  cursor: pointer;
+
+  /* Smooth hover + click animation */
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  /* Optional: subtle shadow */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ============================================================
+   HOVER EFFECT
+   - Slightly darker green + lift effect
+   ============================================================ */
+.am-btn.am-change-status:hover {
+  background: #218838;   /* darker green */
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   ACTIVE (CLICK) EFFECT
+   - Button goes back to normal position
+   ============================================================ */
+.am-btn.am-change-status:active {
+  transform: translateY(0);
+}
+
+
+/* ============================================================
+   OPTIONAL: FOCUS STATE (Accessibility)
+   ============================================================ */
+.am-btn.am-change-status:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+}
 
 .am-view { background: var(--heading); color: white; }
 .am-shortlist { background: #19d319; color: white; }

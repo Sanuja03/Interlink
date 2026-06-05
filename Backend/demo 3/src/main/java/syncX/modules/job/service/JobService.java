@@ -89,7 +89,7 @@ public class JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
-    // ================= UPDATE (🔥 NEW) =================
+    // ================= UPDATE ( NEW) =================
     public Job updateJob(Long jobId, JobRequestDto dto) throws Exception {
 
         Job job = jobRepo.findById(jobId)

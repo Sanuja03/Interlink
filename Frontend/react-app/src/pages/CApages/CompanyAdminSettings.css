@@ -190,7 +190,7 @@
 }
 
 /* 🔥 FIX LOGO SIZE + MAKE IT CIRCLE */
-.cas-header-logo {
+.cas-company-logo {
   width: 100px;        /* adjust size (try 80px–120px) */
   height: 100px;
   object-fit: cover;   /* keeps image nicely fitted */

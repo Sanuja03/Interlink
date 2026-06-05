@@ -11,10 +11,11 @@ export default function ShortlistPage() {
   const [candidate, setCandidate] = useState(null);
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [manualDecision, setManualDecision] = useState("Shortlist");
+  const [manualDecision, setManualDecision] = useState("Recommended");
   const [manualNotes, setManualNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [isAlreadyShortlisted, setIsAlreadyShortlisted] = useState(false);
 
   useEffect(() => {
     if (!applicationId) return;
@@ -25,17 +26,34 @@ export default function ShortlistPage() {
     try {
       setLoading(true);
 
-      // Get application details (includes candidateId, score, jobId, etc.)
       const appRes = await api.get(`/company/applications/detail/${applicationId}`);
       const appData = appRes.data;
       setApplication(appData);
 
-      // Get candidate profile
       if (appData.candidateId) {
         const profileRes = await api.get(
           `/company/candidate-profile/${appData.candidateId}?applicationId=${applicationId}`
         );
         setCandidate(profileRes.data);
+
+        // Check if already shortlisted (Case 3)
+        try {
+          const statusRes = await api.get("/company/shortlist/status", {
+            params: {
+              candidateId: appData.candidateId,
+              jobApplicationId: applicationId,
+            },
+          });
+          if (statusRes.data.isShortlisted) {
+            setIsAlreadyShortlisted(true);
+            setManualDecision("Recommended");
+            if (statusRes.data.manualNotes) {
+              setManualNotes(statusRes.data.manualNotes);
+            }
+          }
+        } catch (statusErr) {
+          console.error("Failed to check shortlist status:", statusErr);
+        }
       }
     } catch (err) {
       console.error("Failed to load shortlist data:", err);
@@ -45,7 +63,6 @@ export default function ShortlistPage() {
     }
   };
 
-  // Parse score_details JSON for skill breakdown
   const getSkillBreakdown = () => {
     if (!application?.scoreDetails) return [];
     try {
@@ -58,7 +75,6 @@ export default function ShortlistPage() {
       if (details.skills) return details.skills;
       if (details.breakdown) return details.breakdown;
 
-      // If it's key-value pairs like { "React.js": true, "Node.js": false }
       return Object.entries(details).map(([skill, matched]) => ({
         skill,
         matched: matched === true || matched === "true" || matched >= 70,
@@ -73,58 +89,69 @@ export default function ShortlistPage() {
   const skillBreakdown = getSkillBreakdown();
 
   const getFinalStatus = () => {
-    if (manualDecision === "Shortlist") return "Recommended";
-    if (manualDecision === "Reject") return "Not Recommended";
-    return aiSuggestion;
+    if (isAlreadyShortlisted && manualDecision === "Recommended") return "Shortlisted";
+    if (manualDecision === "Recommended") return "Shortlisted";
+    return "Rejected";
   };
 
-  // Handle Confirm (Shortlist)
+  // Handle Confirm
   const handleConfirm = async () => {
     try {
       setSubmitting(true);
       const companyId = localStorage.getItem("companyId");
 
-      await api.post("/company/shortlist", {
-        candidateId: application.candidateId,
-        companyId: companyId,
-        jobId: application.jobId,
-        jobApplicationId: Number(applicationId),
-        manualDecision: manualDecision,
-        manualNotes: manualNotes,
-      });
+      if (manualDecision === "Recommended") {
+        if (isAlreadyShortlisted) {
+          // Case 3: Already shortlisted, no change needed
+          alert("Candidate is already shortlisted.");
+          return;
+        }
 
-      alert("Candidate shortlisted successfully!");
+        // Case 1: Recommended + Confirm → shortlist
+        await api.post("/company/shortlist", {
+          candidateId: application.candidateId,
+          companyId,
+          jobId: application.jobId,
+          jobApplicationId: Number(applicationId),
+          manualDecision: "Recommended",
+          manualNotes,
+        });
+
+        alert("Candidate shortlisted successfully!");
+      } else {
+        // manualDecision === "Not Recommended"
+        if (isAlreadyShortlisted) {
+          // Case 4: Already shortlisted → changed to Not Recommended → remove & reject
+          await api.post("/company/shortlist/remove-and-reject", {
+            candidateId: application.candidateId,
+            companyId,
+            jobId: application.jobId,
+            jobApplicationId: Number(applicationId),
+            manualDecision: "Not Recommended",
+            manualNotes,
+          });
+
+          alert("Candidate removed from shortlist and rejected.");
+        } else {
+          // Case 2: Not Recommended + Confirm (new) → reject only
+          await api.post("/company/shortlist/reject", {
+            candidateId: application.candidateId,
+            companyId,
+            jobId: application.jobId,
+            jobApplicationId: Number(applicationId),
+            manualDecision: "Not Recommended",
+            manualNotes,
+          });
+
+          alert("Candidate rejected.");
+        }
+      }
+
       navigate(-1);
     } catch (err) {
-      console.error("Shortlist failed:", err);
-      const msg =
-        err?.response?.data?.message || "Failed to shortlist candidate";
+      console.error("Action failed:", err);
+      const msg = err?.response?.data?.message || err?.response?.data || "Operation failed";
       alert(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Handle Reject
-  const handleReject = async () => {
-    try {
-      setSubmitting(true);
-      const companyId = localStorage.getItem("companyId");
-
-      await api.post("/company/shortlist/reject", {
-        candidateId: application.candidateId,
-        companyId: companyId,
-        jobId: application.jobId,
-        jobApplicationId: Number(applicationId),
-        manualDecision: "Reject",
-        manualNotes: manualNotes,
-      });
-
-      alert("Candidate rejected.");
-      navigate(-1);
-    } catch (err) {
-      console.error("Reject failed:", err);
-      alert("Failed to reject candidate");
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +211,9 @@ export default function ShortlistPage() {
               <p className="sl-company-name">
                 {candidate?.currentCompany || "—"}
               </p>
-              <p className="sl-role">{candidate?.currentRole || candidate?.headline || "—"}</p>
+              <p className="sl-role">
+                {candidate?.currentRole || candidate?.headline || "—"}
+              </p>
             </div>
           </div>
 
@@ -217,7 +246,6 @@ export default function ShortlistPage() {
               />
             </div>
 
-            {/* Skill Breakdown */}
             <div className="sl-skills-list">
               {skillBreakdown.length > 0 ? (
                 skillBreakdown.map((item, idx) => (
@@ -264,6 +292,12 @@ export default function ShortlistPage() {
               Manual Shortlisting Box
             </h3>
 
+            {isAlreadyShortlisted && (
+              <div className="sl-already-badge">
+                ✅ Currently Shortlisted
+              </div>
+            )}
+
             <div className="sl-field">
               <label className="sl-label">Select Decision</label>
               <select
@@ -271,9 +305,8 @@ export default function ShortlistPage() {
                 value={manualDecision}
                 onChange={(e) => setManualDecision(e.target.value)}
               >
-                <option value="Shortlist">Shortlist</option>
-                <option value="Reject">Reject</option>
-                <option value="Hold">Hold</option>
+                <option value="Recommended">Recommended</option>
+                <option value="Not Recommended">Not Recommended</option>
               </select>
             </div>
 
@@ -287,10 +320,6 @@ export default function ShortlistPage() {
                 onChange={(e) => setManualNotes(e.target.value)}
               />
             </div>
-
-            <button className="sl-save-btn" onClick={() => {}}>
-              Save
-            </button>
           </section>
         </div>
 
@@ -313,18 +342,12 @@ export default function ShortlistPage() {
             <span className="sl-summary-heading">Manual Suggestion</span>
             <span
               className={`sl-summary-badge ${
-                manualDecision === "Shortlist"
+                manualDecision === "Recommended"
                   ? "sl-badge-green"
-                  : manualDecision === "Reject"
-                  ? "sl-badge-red"
-                  : "sl-badge-yellow"
+                  : "sl-badge-red"
               }`}
             >
-              {manualDecision === "Shortlist"
-                ? "Recommended"
-                : manualDecision === "Reject"
-                ? "Not Recommended"
-                : "On Hold"}
+              {manualDecision}
             </span>
           </div>
 
@@ -332,7 +355,7 @@ export default function ShortlistPage() {
             <span className="sl-summary-heading">Final Status</span>
             <span
               className={`sl-summary-badge ${
-                getFinalStatus() === "Recommended"
+                getFinalStatus() === "Shortlisted"
                   ? "sl-badge-green"
                   : "sl-badge-red"
               }`}
@@ -342,7 +365,7 @@ export default function ShortlistPage() {
           </div>
         </section>
 
-        {/* ═══ Action Buttons ═══ */}
+        {/* ═══ Action Button ═══ */}
         <div className="sl-actions">
           <button
             className="sl-confirm-btn"
@@ -353,10 +376,10 @@ export default function ShortlistPage() {
           </button>
           <button
             className="sl-reject-btn"
-            onClick={handleReject}
+            onClick={() => navigate(-1)}
             disabled={submitting}
           >
-            Reject
+            Cancel
           </button>
         </div>
       </div>

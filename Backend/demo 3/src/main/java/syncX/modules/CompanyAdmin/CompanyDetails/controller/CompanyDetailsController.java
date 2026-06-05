@@ -16,11 +16,17 @@ public class CompanyDetailsController {
 
     private final CompanyDetailsService companyDetailsService;
 
+    // ================================
+    //  GET — keeps old URL: /api/company/{companyId}/details
+    // ================================
     @GetMapping("/{companyId}/details")
     public ResponseEntity<CompanyDetails> getDetails(@PathVariable UUID companyId) {
         return ResponseEntity.ok(companyDetailsService.getCompanyDetails(companyId));
     }
 
+    // ================================
+    //  PUT — keeps old URL: /api/company/{companyId}/details
+    // ================================
     @PutMapping("/{companyId}/details")
     public ResponseEntity<CompanyDetails> updateDetails(
             @PathVariable UUID companyId,
@@ -30,6 +36,9 @@ public class CompanyDetailsController {
         return ResponseEntity.ok(updated);
     }
 
+    // ================================
+    //  POST — logo upload: /api/company/{companyId}/logo
+    // ================================
     @PostMapping("/{companyId}/logo")
     public ResponseEntity<CompanyDetails> uploadLogo(
             @PathVariable UUID companyId,

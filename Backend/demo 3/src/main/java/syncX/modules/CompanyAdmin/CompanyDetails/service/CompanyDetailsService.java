@@ -3,32 +3,74 @@ package syncX.modules.CompanyAdmin.CompanyDetails.service;
 import syncX.modules.CompanyAdmin.CompanyDetails.dto.CompanyDetailsUpdateRequest;
 import syncX.modules.CompanyAdmin.CompanyDetails.entity.CompanyDetails;
 import syncX.modules.CompanyAdmin.CompanyDetails.repository.CompanyDetailsRepository;
+import syncX.modules.CompanyAdmin.CompanyDetails.repository.CompanyRepository;
+import syncX.modules.auth.entity.Company;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class CompanyDetailsService {
 
     private final CompanyDetailsRepository companyDetailsRepository;
+    private final CompanyRepository companyRepository;
+
+    public CompanyDetailsService(
+            CompanyDetailsRepository companyDetailsRepository,
+            @Qualifier("companyDetailsModuleCompanyRepository") CompanyRepository companyRepository) {
+        this.companyDetailsRepository = companyDetailsRepository;
+        this.companyRepository = companyRepository;
+    }
 
     // ================================
-    // 🔹 GET COMPANY DETAILS
+    // GET COMPANY ID FROM USER ID
+    // ================================
+    public UUID getCompanyIdByUserId(UUID userId) {
+        Company company = companyRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("No company found for user: " + userId));
+        return company.getCompanyId();
+    }
+
+    // ================================
+    // GET COMPANY DETAILS
+    // If company_details row doesn't exist yet,
+    // auto-create it from the companies table.
     // ================================
     public CompanyDetails getCompanyDetails(UUID companyId) {
         return companyDetailsRepository
                 .findByCompanyId(companyId)
-                .orElseThrow(() -> new RuntimeException("Company details not found"));
+                .orElseGet(() -> initFromCompany(companyId));
     }
 
     // ================================
-    // 🔹 UPDATE COMPANY DETAILS
+    // AUTO-INIT company_details FROM companies
+    // Only copies fields that exist in auth.entity.Company:
+    // companyName, companyEmail, industry, companySize
+    // ================================
+    private CompanyDetails initFromCompany(UUID companyId) {
+        Company company = companyRepository.findByCompanyId(companyId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Company not found in companies table for companyId: " + companyId));
+
+        CompanyDetails details = new CompanyDetails();
+        details.setCompanyId(companyId);
+        details.setCompanyName(company.getCompanyName());
+        details.setCompanyEmail(company.getCompanyEmail());
+        details.setIndustry(company.getIndustry());
+        details.setCompanySize(company.getCompanySize());
+        details.setUpdatedAt(LocalDateTime.now());
+
+        return companyDetailsRepository.save(details);
+    }
+
+    // ================================
+    // UPDATE COMPANY DETAILS
+    // Updates company_details AND syncs back to companies.
     // ================================
     public CompanyDetails updateCompanyDetails(UUID companyId,
                                                CompanyDetailsUpdateRequest request,
@@ -36,7 +78,7 @@ public class CompanyDetailsService {
 
         CompanyDetails details = companyDetailsRepository
                 .findByCompanyId(companyId)
-                .orElseThrow(() -> new RuntimeException("Company details not found"));
+                .orElseGet(() -> initFromCompany(companyId));
 
         if (request.getCompanyName() != null)
             details.setCompanyName(request.getCompanyName());
@@ -59,25 +101,67 @@ public class CompanyDetailsService {
         if (request.getAbout() != null)
             details.setAbout(request.getAbout());
 
-        // 🔥 Handle logo inside update
+        // Handle logo upload
         if (logoFile != null && !logoFile.isEmpty()) {
             String logoUrl = uploadLogo(logoFile);
             details.setLogoUrl(logoUrl);
         }
 
         details.setUpdatedAt(LocalDateTime.now());
+        CompanyDetails savedDetails = companyDetailsRepository.save(details);
 
-        return companyDetailsRepository.save(details);
+        // Sync shared fields back to companies table
+        syncToCompaniesTable(companyId, request);
+
+        return savedDetails;
     }
 
     // ================================
-    // 🔥 ADD THIS METHOD (FIX ERROR)
+    // SYNC BACK TO companies TABLE
+    // Only syncs fields that exist in auth.entity.Company:
+    // companyName, companyEmail, industry, companySize
+    // ================================
+    private void syncToCompaniesTable(UUID companyId, CompanyDetailsUpdateRequest request) {
+        Company company = companyRepository.findByCompanyId(companyId)
+                .orElse(null);
+
+        if (company == null) {
+            return;
+        }
+
+        boolean changed = false;
+
+        if (request.getCompanyName() != null) {
+            company.setCompanyName(request.getCompanyName());
+            changed = true;
+        }
+        if (request.getIndustry() != null) {
+            company.setIndustry(request.getIndustry());
+            changed = true;
+        }
+        if (request.getCompanySize() != null) {
+            company.setCompanySize(request.getCompanySize());
+            changed = true;
+        }
+        if (request.getCompanyEmail() != null) {
+            company.setCompanyEmail(request.getCompanyEmail());
+            changed = true;
+        }
+
+        if (changed) {
+            company.setUpdatedAt(OffsetDateTime.now());
+            companyRepository.save(company);
+        }
+    }
+
+    // ================================
+    //  UPDATE LOGO ONLY
     // ================================
     public CompanyDetails updateLogo(UUID companyId, MultipartFile logoFile) {
 
         CompanyDetails details = companyDetailsRepository
                 .findByCompanyId(companyId)
-                .orElseThrow(() -> new RuntimeException("Company details not found"));
+                .orElseGet(() -> initFromCompany(companyId));
 
         if (logoFile != null && !logoFile.isEmpty()) {
             String logoUrl = uploadLogo(logoFile);
@@ -90,7 +174,7 @@ public class CompanyDetailsService {
     }
 
     // ================================
-    // 🔹 LOGO UPLOAD (TEMP MOCK)
+    //  LOGO UPLOAD (TEMP MOCK)
     // ================================
     private String uploadLogo(MultipartFile file) {
         // TODO: Replace with Supabase / S3 / Cloudinary

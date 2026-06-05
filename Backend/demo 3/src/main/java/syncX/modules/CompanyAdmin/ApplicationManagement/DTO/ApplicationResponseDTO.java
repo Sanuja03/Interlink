@@ -5,76 +5,35 @@ import java.util.UUID;
 public class ApplicationResponseDTO {
 
     private Long id;
-
     private UUID candidateId;
     private String candidateName;
-
-    // 🔥 FIX: must match Entity (Long)
     private Long jobId;
-
     private String jobTitle;
-
     private Double aiScore;
-
+    private String scoreDetails;
     private String status;
 
-    // =========================
-    // GETTERS & SETTERS
-    // =========================
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public UUID getCandidateId() { return candidateId; }
+    public void setCandidateId(UUID candidateId) { this.candidateId = candidateId; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCandidateName() { return candidateName; }
+    public void setCandidateName(String candidateName) { this.candidateName = candidateName; }
 
-    public UUID getCandidateId() {
-        return candidateId;
-    }
+    public Long getJobId() { return jobId; }
+    public void setJobId(Long jobId) { this.jobId = jobId; }
 
-    public void setCandidateId(UUID candidateId) {
-        this.candidateId = candidateId;
-    }
+    public String getJobTitle() { return jobTitle; }
+    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
 
-    public String getCandidateName() {
-        return candidateName;
-    }
+    public Double getAiScore() { return aiScore; }
+    public void setAiScore(Double aiScore) { this.aiScore = aiScore; }
 
-    public void setCandidateName(String candidateName) {
-        this.candidateName = candidateName;
-    }
+    public String getScoreDetails() { return scoreDetails; }
+    public void setScoreDetails(String scoreDetails) { this.scoreDetails = scoreDetails; }
 
-    public Long getJobId() { // ✅ FIXED
-        return jobId;
-    }
-
-    public void setJobId(Long jobId) { // ✅ FIXED
-        this.jobId = jobId;
-    }
-
-    public String getJobTitle() {
-        return jobTitle;
-    }
-
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
-    }
-
-    public Double getAiScore() {
-        return aiScore;
-    }
-
-    public void setAiScore(Double aiScore) {
-        this.aiScore = aiScore;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

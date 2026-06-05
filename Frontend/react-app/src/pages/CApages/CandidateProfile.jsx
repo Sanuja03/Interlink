@@ -76,13 +76,13 @@ export default function CandidateProfile() {
               </div>
 
               <div className="cp-contactGrid">
-                <div className="cp-contactItem">✉ {profile.email}</div>
-                <div className="cp-contactItem">☏ {profile.phone || "—"}</div>
-                <div className="cp-contactItem">⌖ {profile.location || "—"}</div>
+                <div className="cp-contactItem"> Email: {profile.email}</div>
+                <div className="cp-contactItem">Phone: {profile.phone || "—"}</div>
+                <div className="cp-contactItem">Home: {profile.location || "—"}</div>
               </div>
 
               {profile.joinedDate && (
-                <div className="cp-contactItem">📅 Joined: {profile.joinedDate}</div>
+                <div className="cp-contactItem"> Joined: {profile.joinedDate}</div>
               )}
             </div>
           </div>
