@@ -1,0 +1,230 @@
+:root {
+  --heading: #24698B;
+  --footer: #0C3E56;
+  --dot1: rgba(36,105,139,0.18);
+  --dot2: rgba(36,105,139,0.22);
+  --dot3: rgba(217,217,217,0.34);
+}
+
+.am-page {
+  font-family: "Outfit", system-ui;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  background-image:
+    radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
+    radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
+    radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
+  background-size: 56px 56px, 80px 80px, 110px 110px;
+}
+
+.am-container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 28px 24px 60px;
+}
+
+/* Top row */
+.am-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.am-back {
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: none;
+  background: var(--heading);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(36,105,139,0.25);
+}
+
+.am-company {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+/* Stats cards */
+.am-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin: 30px 0;
+}
+
+.am-statCard {
+  background: white;
+  border-radius: 18px;
+  padding: 30px;
+  border: 2px solid var(--heading);
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.am-statTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.am-statValue {
+  font-size: 48px;
+  font-weight: 800;
+  margin-top: 10px;
+}
+
+/* Table Card */
+.am-card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.10);
+}
+
+.am-cardTitle {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 16px;
+}
+
+.am-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.am-th {
+  text-align: left;
+  color: var(--heading);
+  font-size: 18px;
+  padding-bottom: 10px;
+}
+
+.am-td {
+  padding: 10px 0;
+  font-size: 16px;
+}
+
+.am-statusDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.green { background: #19d319; }
+.red { background: #ff0000; }
+.yellow { background: orange; }
+.blue { background: #1d72d8; }
+
+.am-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 6px;
+}
+/* SEE MORE BUTTON */
+.am-see-more {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.am-see-more button {
+  background: none;
+  border: none;
+  color: #24698B;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.am-see-more button:hover {
+  text-decoration: underline;
+}
+.am-statusDot.orange {
+  background-color: orange;
+}
+
+.am-statusDot.green {
+  background-color: green;
+}
+
+.am-statusDot.blue {
+  background-color: blue;
+}
+
+.am-statusDot.red {
+  background-color: red;
+}
+/* ============================================================
+   CHANGE STATUS BUTTON (UPDATED STYLE)
+   - Green color theme
+   - Fully rounded (pill shape / 100% curve)
+   ============================================================ */
+
+.am-btn.am-change-status {
+  /* Background color (Green theme) */
+  background: #28a745;
+
+  /* Text styling */
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+
+  /* Remove default border */
+  border: none;
+
+  /* Padding for better button size */
+  padding: 6px 18px;
+
+  /* 100% curve (pill shape) */
+  border-radius: 999px;
+
+  /* Pointer cursor on hover */
+  cursor: pointer;
+
+  /* Smooth hover + click animation */
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  /* Optional: subtle shadow */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ============================================================
+   HOVER EFFECT
+   - Slightly darker green + lift effect
+   ============================================================ */
+.am-btn.am-change-status:hover {
+  background: #218838;   /* darker green */
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   ACTIVE (CLICK) EFFECT
+   - Button goes back to normal position
+   ============================================================ */
+.am-btn.am-change-status:active {
+  transform: translateY(0);
+}
+
+
+/* ============================================================
+   OPTIONAL: FOCUS STATE (Accessibility)
+   ============================================================ */
+.am-btn.am-change-status:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+}
+
+.am-view { background: var(--heading); color: white; }
+.am-shortlist { background: #19d319; color: white; }
+.am-reject { background: red; color: white; }

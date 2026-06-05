@@ -1,0 +1,129 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import api from "../../lib/api";
+import { getCompanyId } from "../../lib/getCompanyId";
+import "./CompanyDashboard.css";
+
+// ICONS
+import jobIcon from "../../assets/job.png";
+import manIcon from "../../assets/Man.png";
+import shortlistIcon from "../../assets/Shortlist.png";
+import interviewIcon from "../../assets/Interview.png";
+
+export default function CompanyDashboard() {
+  const navigate = useNavigate();
+
+  const [stats, setStats] = useState({
+    totalJobPosts: 0,
+    totalApplications: 0,
+    shortlistedCandidates: 0,
+    upcomingInterviews: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  // LOAD DATA
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const companyId = await getCompanyId();
+        if (!companyId) return;
+
+        const res = await api.get(`/company/dashboard/stats/${companyId}`);
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to load dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, []);
+
+  // CARD CONFIG (clean reusable)
+  const cards = [
+    {
+      title: "Total Job Posts",
+      value: stats.totalJobPosts,
+      icon: jobIcon,
+    },
+    {
+      title: "Total Applications",
+      value: stats.totalApplications,
+      icon: manIcon,
+    },
+    {
+      title: "Shortlisted Candidates",
+      value: stats.shortlistedCandidates,
+      icon: shortlistIcon,
+    },
+    {
+      title: "Upcoming Interviews",
+      value: stats.upcomingInterviews,
+      icon: interviewIcon,
+    },
+  ];
+
+  return (
+    <DashboardLayout>
+      <div className="cd-page">
+        <div className="cd-container">
+
+          {/* ===== STATS ===== */}
+          <div className="cd-stats-grid">
+            {cards.map((card, index) => (
+              <div key={index} className="cd-stat-card">
+                <div className="cd-stat-icon">
+                  <img src={card.icon} alt={card.title} />
+                </div>
+
+                <div className="cd-stat-info">
+                  <div className="cd-stat-title">{card.title}</div>
+                  <div className="cd-stat-value">
+                    {loading ? "..." : card.value}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ===== ACTION BUTTONS ===== */}
+          <div className="cd-links-grid">
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/job-management")}
+            >
+              Job Management
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/application-management")}
+            >
+              Application Management
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/settings")}
+            >
+              Company Admin Profile
+            </button>
+
+            <button
+              className="cd-link-btn"
+              onClick={() => navigate("/company/create-job")}
+            >
+              Create Job
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}

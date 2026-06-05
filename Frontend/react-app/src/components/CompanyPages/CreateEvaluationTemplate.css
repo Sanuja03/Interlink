@@ -1,0 +1,365 @@
+
+
+.cet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.cet-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 28px 30px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+}
+
+.cet-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px;
+}
+
+/* Groups / Sections */
+.cet-group {
+  margin-bottom: 18px;
+}
+
+.cet-section {
+  margin-bottom: 22px;
+}
+
+.cet-section-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cet-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.cet-subtitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Inputs */
+.cet-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.cet-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+.cet-input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: default;
+}
+
+.cet-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f9fafb;
+  min-height: 60px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Add button */
+.cet-add-btn {
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cet-add-btn:hover {
+  background: #4338ca;
+}
+
+/* Field row */
+.cet-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cet-field-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cet-field-name-input {
+  flex: 1;
+}
+
+.cet-max-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cet-max-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.cet-score-input {
+  width: 70px !important;
+  text-align: center;
+}
+
+.cet-delete-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.cet-delete-btn:hover {
+  background: #fecaca;
+}
+
+.cet-empty-note {
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* Fixed fields */
+.cet-fixed-fields {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.cet-fixed-chip {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Scoring info */
+.cet-scoring-info {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 8px;
+}
+
+.cet-scoring-info p {
+  font-size: 13px;
+  color: #374151;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.cet-grade-bands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cet-band {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+.cet-band-strong { background: #16a34a; }
+.cet-band-hire   { background: #2563eb; }
+.cet-band-hold   { background: #d97706; }
+.cet-band-reject { background: #dc2626; }
+
+.cet-formula {
+  font-family: "Courier New", monospace;
+  font-size: 13px !important;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  color: #475569 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Preview */
+.cet-preview-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.cet-preview-field {
+  margin-bottom: 10px;
+}
+
+.cet-preview-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.cet-preview-max {
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+.cet-preview-input {
+  width: 100px !important;
+}
+
+.cet-preview-select {
+  margin-top: 6px;
+}
+
+/* Score result bar */
+.cet-preview-result {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cet-result-bar-track {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.cet-result-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.cet-result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cet-result-pct {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.cet-result-detail {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.cet-result-grade {
+  margin-left: auto;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+/* Actions */
+.cet-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.cet-save-btn {
+  flex: 1;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cet-save-btn:hover {
+  background: #4338ca;
+}
+
+.cet-cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cet-cancel-btn:hover {
+  background: #e5e7eb;
+}

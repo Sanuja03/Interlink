@@ -1,0 +1,240 @@
+/* ===== MAIN WRAPPER ===== */
+.cw-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  font-family: "Outfit", sans-serif;
+}
+
+/* ===== HEADER ===== */
+.cw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== VIEW BUTTON ===== */
+.cw-view-btn {
+  background: #f0f3f5;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cw-view-btn:hover {
+  background: #e6edf2;
+}
+
+/* ===== NAVIGATION ===== */
+.cw-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cw-nav-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cw-nav-btn:hover {
+  background: #f3f7fa;
+}
+
+.cw-period-label {
+  font-weight: 700;
+  color: #24698B;
+}
+
+/* ===== CARD ===== */
+.cw-card {
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== MONTH GRID ===== */
+.cw-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+/* DAY HEADER */
+.cw-day-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 0;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* CELLS */
+.cw-cell {
+  min-height: 95px;
+  padding: 10px;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cw-cell:hover {
+  background: #f0f7fa;
+}
+
+/* remove last column border */
+.cw-cell:nth-child(7n) {
+  border-right: none;
+}
+
+/* NUMBER */
+.cw-cell span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* TODAY */
+.cw-cell--today {
+  background: #e8f4fd;
+  border: 2px solid #24698B;
+}
+
+/* SELECTED */
+.cw-cell--selected {
+  background: #d6eef8;
+}
+
+/* DOT */
+.cw-dot,
+.cw-cell__dot {
+  width: 6px;
+  height: 6px;
+  background: #24698B;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ===== WEEK VIEW ===== */
+.cw-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cw-week-col {
+  border-right: 1px solid #e5e7eb;
+  min-height: 240px;
+}
+
+.cw-week-col:last-child {
+  border-right: none;
+}
+
+.cw-week-col-header {
+  text-align: center;
+  padding: 10px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cw-week-day {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.cw-week-date {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.today-circle {
+  background: #24698B;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* INTERVIEW CARD */
+.cw-iv-card {
+  background: linear-gradient(135deg, #24698B, #0C3E56);
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.cw-iv-card:hover {
+  opacity: 0.9;
+}
+
+/* ===== DAY VIEW ===== */
+.cw-day-hdr {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cw-day-hdr__title {
+  font-weight: 700;
+}
+
+.cw-day-body {
+  padding: 16px;
+}
+
+/* ===== DETAIL PANEL ===== */
+.cw-detail {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.cw-detail__date {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.cw-detail__row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* BUTTONS */
+.cw-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.cw-btn:hover {
+  border-color: #24698B;
+  color: #24698B;
+}

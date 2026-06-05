@@ -1,0 +1,138 @@
+:root {
+  --sidebar-width: 240px;
+}
+
+/* Style guide footer color: #0C3E56 */
+/* Footer text size: 15px, line-height 20px, font Outfit */
+.il-footer {
+  background: #0c3e56; /* Footer Color from guide */
+  color: rgba(255, 255, 255, 0.85);
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  padding: 34px 0 18px;
+
+  /* FIX: push footer after sidebar */
+  width: calc(100% - var(--sidebar-width));
+  margin-left: var(--sidebar-width);
+  position: relative;
+}
+
+.il-footer__container {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.il-footer__title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.il-footer__text {
+  font-size: 15px; /* guide */
+  line-height: 20px; /* guide */
+  margin: 0;
+}
+
+.il-footer__links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.il-footer__links li {
+  margin: 6px 0;
+}
+
+.il-footer__links a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.il-footer__links a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.il-footer__right {
+  position: relative;
+}
+
+.il-footer__brand {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  text-align: right;
+}
+
+.il-footer__brandLogo {
+  width: 80px;
+  height: auto;
+  opacity: 0.9;
+}
+
+.il-footer__copyright {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Social icons row centered */
+.il-footer__socialRow {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.il-footer__social {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.il-footer__social img {
+  width: 22px;
+  height: 22px;
+}
+
+.il-footer__social:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 900px) {
+  .il-footer {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .il-footer__container {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .il-footer__brand {
+    position: static;
+    margin-top: 16px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .il-footer__container {
+    grid-template-columns: 1fr;
+  }
+}
