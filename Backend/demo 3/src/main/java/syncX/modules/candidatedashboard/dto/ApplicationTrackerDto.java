@@ -14,5 +14,7 @@ public class ApplicationTrackerDto {
     private String jobTitle;
     private String company;
     private LocalDate appliedDate;
+    private LocalDate shortlistedDate;
+    private LocalDate interviewDate;
     private String status;
 }
