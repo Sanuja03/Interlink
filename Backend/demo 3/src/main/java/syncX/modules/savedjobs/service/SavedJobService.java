@@ -12,7 +12,6 @@ import syncX.modules.savedjobs.entity.SavedJob;
 import syncX.modules.savedjobs.repository.SavedJobRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

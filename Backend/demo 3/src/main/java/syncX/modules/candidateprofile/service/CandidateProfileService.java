@@ -17,8 +17,6 @@ import syncX.modules.candidateprofile.repository.CandidateProfileRepository;
 import syncX.modules.candidateprofile.repository.CandidateResumeRepository;
 import syncX.modules.candidateprofile.repository.CandidateSkillRepository;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
