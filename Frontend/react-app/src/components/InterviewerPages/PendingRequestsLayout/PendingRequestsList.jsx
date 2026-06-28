@@ -41,6 +41,9 @@ const PendingRequestsList = ({
                     <span className={`mode-dot ${modeDotClass(row.mode)}`} />
                     {row.mode}
                   </div>
+                  {row.mode === "Physical" && row.interviewLocation && (
+                    <div className="mode-location">📍 {row.interviewLocation}</div>
+                  )}
                 </td>
                 <td className="notes-cell">{row.notes}</td>
 

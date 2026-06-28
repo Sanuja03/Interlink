@@ -16,39 +16,40 @@ public class InterviewRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CreateRequest {
-        private UUID candidateId;
-        private Long jobApplicationId;
-        private Long jobId;
-        private Long historyId;   // bigint, from candidate_history.history_id
-        private short panelSize;
+        private UUID   candidateId;
+        private Long   jobApplicationId;
+        private Long   jobId;
+        private Long   historyId;
+        private short  panelSize;
         private String interviewDate;
         private String interviewTime;
+        private short  durationMinutes;
         private String mode;
         private String adminNotes;
+        private String interviewLocation;   // ← Physical venue; null for Online
         private List<UUID> interviewerUserIds;
     }
-
 
     // RESPONSE: interviewer option for the picker
     @Getter
     @AllArgsConstructor
     public static class InterviewerOption {
-        private String userId;
-        private String interviewerId;
-        private String fullName;
-        private String role;
-        private String branch;
+        private String  userId;
+        private String  interviewerId;
+        private String  fullName;
+        private String  role;
+        private String  branch;
         private boolean available;
+        private String  conflictInfo;       // null if no conflict, "HH:MM – HH:MM" if busy
     }
-
 
     @Getter
     @AllArgsConstructor
     public static class AssignableInterviewersResponse {
         private List<InterviewerOption> available;
         private List<InterviewerOption> other;
+        private List<InterviewerOption> unavailable;  // schedule conflict group
     }
-
 
     // RESPONSE: after creating a request
     @Getter
@@ -60,7 +61,6 @@ public class InterviewRequestDTO {
         private List<String> invitedInterviewerUserIds;
     }
 
-
     // RESPONSE: existing request (for popup pre-fill)
     @Getter
     @AllArgsConstructor
@@ -71,22 +71,22 @@ public class InterviewRequestDTO {
         private String responseStatus;
     }
 
-
     @Getter
     @AllArgsConstructor
     public static class ExistingRequestResponse {
         private String requestId;
         private String interviewId;
         private String status;
-        private short panelSize;
+        private short  panelSize;
         private String interviewDate;
         private String interviewTime;
+        private short  durationMinutes;
         private String mode;
         private String adminNotes;
-        private Long historyId;   // bigint, plain number in the JSON
+        private String interviewLocation;   // ← Physical venue; null for Online
+        private Long   historyId;
         private List<InvitedInterviewer> invitedInterviewers;
     }
-
 
     // RESPONSE: pending request as seen by an interviewer
     @Getter
@@ -98,17 +98,18 @@ public class InterviewRequestDTO {
         private String jobTitle;
         private String interviewDate;
         private String interviewTime;
+        private short  durationMinutes;
         private String mode;
         private String adminNotes;
-        private Long historyId;
+        private String interviewLocation;   // ← Physical venue; null for Online
+        private Long   historyId;
     }
-
 
     // REQUEST: interviewer responds (accept/decline)
     @Getter
     @Setter
     @NoArgsConstructor
     public static class RespondRequest {
-        private String response; // "accepted" or "declined"
+        private String response;
     }
 }

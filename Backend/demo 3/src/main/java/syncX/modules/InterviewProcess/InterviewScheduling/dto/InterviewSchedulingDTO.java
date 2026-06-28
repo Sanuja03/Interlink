@@ -10,7 +10,6 @@ import java.util.UUID;
 
 public class InterviewSchedulingDTO {
 
-
     // REQUEST: company admin finalizes the panel
     @Getter
     @Setter
@@ -18,18 +17,16 @@ public class InterviewSchedulingDTO {
     public static class FinalizeRequest {
         private UUID   requestId;
         private String meetingLink;
+        private String interviewLocation;   // ← Physical venue; null for Online
     }
 
-
-    // REQUEST: save scorecard ID when admin clicks
-    //          "Send Scheduled Interview Details"
+    // REQUEST: save scorecard ID
     @Getter
     @Setter
     @NoArgsConstructor
     public static class SaveScorecardRequest {
-        private UUID scorecardId;   // ← changed from String to UUID
+        private UUID scorecardId;
     }
-
 
     // RESPONSE: returned after finalize or GET
     @Getter
@@ -45,11 +42,11 @@ public class InterviewSchedulingDTO {
         private String mode;
         private String adminNotes;
         private String meetingLink;
+        private String interviewLocation;   // ← Physical venue; null for Online
         private UUID   scorecardId;
         private String finalizedAt;
         private List<AcceptedInterviewer> acceptedInterviewers;
     }
-
 
     // Each accepted interviewer in the response
     @Getter

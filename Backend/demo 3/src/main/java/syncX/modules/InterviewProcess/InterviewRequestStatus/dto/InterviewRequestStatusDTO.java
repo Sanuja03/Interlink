@@ -23,6 +23,7 @@ public class InterviewRequestStatusDTO {
         private String interviewTime;
         private String mode;
         private String adminNotes;
+        private String interviewLocation;   // ← Physical venue; null for Online
         private Long   historyId;
         private List<InterviewerStatus> interviewers;
     }

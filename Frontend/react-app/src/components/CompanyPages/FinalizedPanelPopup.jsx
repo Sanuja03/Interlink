@@ -16,6 +16,7 @@ const FinalizedPanelPopup = ({
   requestId = null,
 }) => {
   const [meetingLink, setMeetingLink]                 = useState("");
+  const [interviewLocation, setInterviewLocation]     = useState("");
   const [selectedScorecardId, setSelectedScorecardId] = useState("");
   const [sending, setSending]                         = useState(false);
   const [sendError, setSendError]                     = useState("");
@@ -36,15 +37,32 @@ const FinalizedPanelPopup = ({
         setLoadedData(res.data);
         if (res.data?.scorecardId) setSelectedScorecardId(res.data.scorecardId);
         if (res.data?.meetingLink) setMeetingLink(res.data.meetingLink);
+        if (res.data?.interviewLocation) setInterviewLocation(res.data.interviewLocation);
       })
       .catch((err) => setLoadError(err?.response?.data?.error || err?.message || "Failed to load"))
       .finally(() => setLoading(false));
+  }, [open, viewOnly, requestId]);
+
+  // Action mode: pull the venue straight from the interview request (it's already
+  // stored there) so the read-only Interview Location box shows it. The view-only
+  // loader above covers the post-finalize case.
+  useEffect(() => {
+    if (!open || viewOnly || !requestId) return;
+    let cancelled = false;
+    api.get(`/company/interview-requests/${requestId}`)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.data?.interviewLocation) setInterviewLocation(res.data.interviewLocation);
+      })
+      .catch(() => { /* non-fatal: box falls back to a dash */ });
+    return () => { cancelled = true; };
   }, [open, viewOnly, requestId]);
 
   //if popup closes refresh
   useEffect(() => {
     if (!open) {
       setMeetingLink("");
+      setInterviewLocation("");
       setSelectedScorecardId("");
       setSendError("");
       setSent(false);
@@ -65,8 +83,9 @@ const FinalizedPanelPopup = ({
         date:        loadedData.interviewDate || interviewDetails.date,
         time:        loadedData.interviewTime || interviewDetails.time,
         adminNotes:  loadedData.adminNotes    || interviewDetails.adminNotes,
-        meetingLink: loadedData.meetingLink,
-        status:      loadedData.status,
+        meetingLink:       loadedData.meetingLink,
+        interviewLocation: loadedData.interviewLocation,
+        status:            loadedData.status,
       }
     : interviewDetails;
 
@@ -87,9 +106,10 @@ const FinalizedPanelPopup = ({
     if (!selectedScorecardId) { setSendError("Please select a scorecard template."); return; }
     if (isOnline && !meetingLink.trim()) { setSendError("Please enter a meeting link."); return; }
     setSending(true);
+    
     try {
       if (typeof onSendDetails === "function") {
-        await onSendDetails({ meetingLink: meetingLink || null, scorecard: selectedCard });
+        await onSendDetails({ meetingLink: meetingLink || null, interviewLocation: interviewLocation || null, scorecard: selectedCard });
       }
       setSent(true);
       if (typeof onSent === "function") onSent();
@@ -249,9 +269,15 @@ const FinalizedPanelPopup = ({
             </div>
           )}
 
+          {/* Physical location — view-only, inherited from the interview request */}
           {!isOnline && (
-            <div className="ip-note-box" style={{ marginTop: 0 }}>
-              This is a <b>Physical</b> interview — no meeting link required.
+            <div className="ip-field">
+              <label className="ip-label">Interview Location</label>
+              <div className="ip-info-box">
+                <span className="ip-info-value">
+                  {details.interviewLocation || interviewLocation || "—"}
+                </span>
+              </div>
             </div>
           )}
 
@@ -292,7 +318,7 @@ const FinalizedPanelPopup = ({
                       </option>
                     ))}
                   </select>
-                  
+
                   {selectedCard && (
                     <div className="ip-scorecard-preview">
                       <p className="ip-scorecard-preview-title">Fields in this scorecard:</p>

@@ -69,7 +69,7 @@ const Signup = () => {
       return
     }
 
-    //sends user info and jwt token attached manually to backend to create in interlinks database
+    //sends user info and jwt token attached manually to backend to create user in interlinks database
     await api.post("/auth/complete-candidate-signup", {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),

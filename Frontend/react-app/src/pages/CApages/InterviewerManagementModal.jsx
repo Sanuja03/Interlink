@@ -379,7 +379,7 @@ export default function InterviewerManagementModal({ open, onClose }) {
 
     return (
         <div className="interviewer-modal-overlay" onClick={onClose}>
-            {/* stoppropagation is used to prevent the click insinde the form getting as click outside  */}
+            {/* stoppropagation is used to prevent the click inside the form getting as click outside  */}
             <div className="interviewer-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="interviewer-modal-header">
                     <div>

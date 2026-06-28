@@ -21,52 +21,103 @@ public interface InterviewScheduledRepository
     Optional<InterviewScheduled> findByRequestId(UUID requestId);
 
 
-
-    /** Count of scheduled rows for this interviewer with a given status. */
-    @Query("""
-        SELECT COUNT(DISTINCT s)
-        FROM InterviewScheduled s
-        JOIN InterviewRequestInterviewer iri
-             ON iri.interviewRequest.requestId = s.requestId
-        WHERE iri.interviewerUserId = :interviewerUserId
-          AND LOWER(iri.responseStatus) = 'accepted'
-          AND LOWER(s.status) = LOWER(:status)
-    """)
-    long countByInterviewerAndStatus(@Param("interviewerUserId") UUID interviewerUserId,
-                                     @Param("status") String status);
-
-    /** Today's scheduled interviews for this interviewer (status = scheduled). */
-    @Query("""
-        SELECT DISTINCT s
-        FROM InterviewScheduled s
-        JOIN InterviewRequestInterviewer iri
-             ON iri.interviewRequest.requestId = s.requestId
-        WHERE iri.interviewerUserId = :interviewerUserId
-          AND LOWER(iri.responseStatus) = 'accepted'
+    /**
+     * Count interviews this specific interviewer still needs to evaluate.
+     * Uses a native query because interviewer_score_submissions has no JPA entity.
+     * Excludes any interview where this interviewer has already submitted their scores.
+     * Used for the "Scheduled" dashboard stat card.
+     */
+    @Query(value = """
+        SELECT COUNT(DISTINCT s.scheduled_id)
+        FROM interview_scheduled s
+        JOIN interview_request_interviewers iri
+             ON iri.request_id = s.request_id
+        WHERE iri.interviewer_user_id = :interviewerUserId
+          AND LOWER(iri.response_status) = 'accepted'
           AND LOWER(s.status) = 'scheduled'
-          AND s.interviewDate = :today
-        ORDER BY s.interviewTime ASC
-    """)
+          AND NOT EXISTS (
+              SELECT 1 FROM interviewer_score_submissions sub
+              WHERE sub.scheduled_id = s.scheduled_id
+                AND sub.interviewer_user_id = :interviewerUserId
+                AND sub.is_submitted = true
+          )
+    """, nativeQuery = true)
+    long countPersonallyScheduledByInterviewer(
+            @Param("interviewerUserId") UUID interviewerUserId);
+
+    /**
+     * Count interviews this specific interviewer has personally submitted scores for.
+     * Uses a native query because interviewer_score_submissions has no JPA entity.
+     * Used for the "Completed" dashboard stat card — reflects the individual's own
+     * submissions rather than interview_scheduled.status (which only flips when ALL
+     * panelists have submitted).
+     */
+    @Query(value = """
+        SELECT COUNT(DISTINCT sub.scheduled_id)
+        FROM interviewer_score_submissions sub
+        JOIN interview_scheduled s ON s.scheduled_id = sub.scheduled_id
+        JOIN interview_request_interviewers iri
+             ON iri.request_id = s.request_id
+        WHERE iri.interviewer_user_id = :interviewerUserId
+          AND LOWER(iri.response_status) = 'accepted'
+          AND sub.interviewer_user_id = :interviewerUserId
+          AND sub.is_submitted = true
+    """, nativeQuery = true)
+    long countPersonallyCompletedByInterviewer(
+            @Param("interviewerUserId") UUID interviewerUserId);
+
+    /**
+     * Today's scheduled interviews for this interviewer,
+     * excluding ones they have already personally submitted scores for.
+     * Uses a native query because interviewer_score_submissions has no JPA entity.
+     * Ensures the Today Schedule table clears immediately after this interviewer
+     * submits, even if other panelists haven't submitted yet.
+     */
+    @Query(value = """
+        SELECT DISTINCT s.*
+        FROM interview_scheduled s
+        JOIN interview_request_interviewers iri
+             ON iri.request_id = s.request_id
+        WHERE iri.interviewer_user_id = :interviewerUserId
+          AND LOWER(iri.response_status) = 'accepted'
+          AND LOWER(s.status) = 'scheduled'
+          AND s.interview_date = :today
+          AND NOT EXISTS (
+              SELECT 1 FROM interviewer_score_submissions sub
+              WHERE sub.scheduled_id = s.scheduled_id
+                AND sub.interviewer_user_id = :interviewerUserId
+                AND sub.is_submitted = true
+          )
+        ORDER BY s.interview_time ASC
+    """, nativeQuery = true)
     List<InterviewScheduled> findTodayForInterviewer(
             @Param("interviewerUserId") UUID interviewerUserId,
             @Param("today") LocalDate today);
 
     /**
-     * Next upcoming interview for this interviewer (any future date or
-     * later today), regardless of how far out it is.
+     * Next upcoming interview for this interviewer (any future date or later today),
+     * excluding ones they have already personally submitted scores for.
+     * Uses a native query because interviewer_score_submissions has no JPA entity.
+     * Ensures the Next Interview card clears immediately after this interviewer submits.
      */
-    @Query("""
-        SELECT s
-        FROM InterviewScheduled s
-        JOIN InterviewRequestInterviewer iri
-             ON iri.interviewRequest.requestId = s.requestId
-        WHERE iri.interviewerUserId = :interviewerUserId
-          AND LOWER(iri.responseStatus) = 'accepted'
+    @Query(value = """
+        SELECT s.*
+        FROM interview_scheduled s
+        JOIN interview_request_interviewers iri
+             ON iri.request_id = s.request_id
+        WHERE iri.interviewer_user_id = :interviewerUserId
+          AND LOWER(iri.response_status) = 'accepted'
           AND LOWER(s.status) = 'scheduled'
-          AND (s.interviewDate > :today
-               OR (s.interviewDate = :today AND s.interviewTime >= :nowTime))
-        ORDER BY s.interviewDate ASC, s.interviewTime ASC
-    """)
+          AND (s.interview_date > :today
+               OR (s.interview_date = :today AND s.interview_time >= :nowTime))
+          AND NOT EXISTS (
+              SELECT 1 FROM interviewer_score_submissions sub
+              WHERE sub.scheduled_id = s.scheduled_id
+                AND sub.interviewer_user_id = :interviewerUserId
+                AND sub.is_submitted = true
+          )
+        ORDER BY s.interview_date ASC, s.interview_time ASC
+    """, nativeQuery = true)
     List<InterviewScheduled> findUpcomingForInterviewer(
             @Param("interviewerUserId") UUID interviewerUserId,
             @Param("today") LocalDate today,

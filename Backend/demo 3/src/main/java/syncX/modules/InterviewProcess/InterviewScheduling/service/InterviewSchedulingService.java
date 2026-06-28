@@ -59,10 +59,20 @@ public class InterviewSchedulingService {
                     "Need at least " + ir.getPanelSize() + " accepted interviewers, " +
                             "currently have " + acceptedCount);
 
-        // Online requires meeting link
+        // Resolve the physical-interview location: prefer an edited value sent from the
+        // finalize popup, otherwise inherit the one already stored on the interview request.
+        String effectiveLocation =
+                (req.getInterviewLocation() != null && !req.getInterviewLocation().isBlank())
+                        ? req.getInterviewLocation()
+                        : ir.getInterviewLocation();
+
+        // Online requires meeting link; Physical requires location
         if ("Online".equalsIgnoreCase(ir.getMode()) &&
                 (req.getMeetingLink() == null || req.getMeetingLink().isBlank()))
             throw new IllegalArgumentException("Meeting link is required for Online interviews");
+        if ("Physical".equalsIgnoreCase(ir.getMode()) &&
+                (effectiveLocation == null || effectiveLocation.isBlank()))
+            throw new IllegalArgumentException("Location is required for Physical interviews");
 
         // Idempotency — don't create duplicate
         if (scheduledRepo.existsByRequestId(ir.getRequestId()))
@@ -84,6 +94,8 @@ public class InterviewSchedulingService {
         scheduled.setAdminNotes(ir.getAdminNotes());
         scheduled.setMeetingLink(
                 "Online".equalsIgnoreCase(ir.getMode()) ? req.getMeetingLink() : null);
+        scheduled.setInterviewLocation(
+                "Physical".equalsIgnoreCase(ir.getMode()) ? effectiveLocation : null);
         scheduled.setScorecardId(null);
         scheduled.setStatus("scheduled");
         scheduled.setFinalizedBy(adminUserId);
@@ -181,6 +193,7 @@ public class InterviewSchedulingService {
                 s.getMode(),
                 s.getAdminNotes(),
                 s.getMeetingLink(),
+                s.getInterviewLocation(),
                 s.getScorecardId(),
                 s.getFinalizedAt() != null ? s.getFinalizedAt().toString() : null,
                 accepted);

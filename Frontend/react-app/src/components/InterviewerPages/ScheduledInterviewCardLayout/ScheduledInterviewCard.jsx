@@ -18,6 +18,7 @@ const ScheduledInterviewCard = ({ interview }) => {
     adminNote,
     candidateId,
     jobApplicationId,
+    interviewLocation,
   } = interview;
 
   const handleOpenPanelInfo = (e) => {
@@ -94,11 +95,16 @@ const ScheduledInterviewCard = ({ interview }) => {
             </div>
           </div>
 
-          {isOnline && meetingLink && (
+          {isOnline && meetingLink ? (
             <button className="si-join" onClick={handleJoinMeeting}>
               Join Meeting
             </button>
-          )}
+          ) : !isOnline && interviewLocation ? (
+            <div className="si-location-box">
+              <span className="si-location-label">📍 Location</span>
+              <span className="si-location-value">{interviewLocation}</span>
+            </div>
+          ) : null}
 
           <div className="si-divider"></div>
 

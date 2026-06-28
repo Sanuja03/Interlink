@@ -1,4 +1,3 @@
-
 .schedule-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -61,6 +60,14 @@
 
 .mode-online   { background: #3d5ccb; }
 .mode-physical { background: #d81d1d; }
+
+.mode-location {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #24698b;
+  max-width: 180px;
+  word-break: break-word;
+}
 
 /* ── Notes cell ── */
 .notes-cell {

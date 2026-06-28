@@ -18,7 +18,6 @@ public class InterviewScheduled {
     @Column(name = "scheduled_id")
     private UUID scheduledId;
 
-    // FK to interview_requests
     @Column(name = "request_id", nullable = false)
     private UUID requestId;
 
@@ -55,11 +54,14 @@ public class InterviewScheduled {
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
-    // NULL for Physical interviews
+    /** NULL for Physical interviews */
     @Column(name = "meeting_link", columnDefinition = "TEXT")
     private String meetingLink;
 
-    // Set later when admin clicks "Send Scheduled Interview Details"
+    /** Physical interview venue. NULL for Online interviews. */
+    @Column(name = "interview_location", columnDefinition = "TEXT")
+    private String interviewLocation;
+
     @Column(name = "scorecard_id")
     private UUID scorecardId;
 

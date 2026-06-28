@@ -29,7 +29,7 @@ const CompletedInterviews = () => {
         return;
       }
 
-      // Get request_ids where this interviewer accepted 
+      // Get request_ids where this interviewer accepted
       const { data: panelRows, error: panelError } = await supabase
         .from("interview_request_interviewers")
         .select("request_id")
@@ -49,9 +49,32 @@ const CompletedInterviews = () => {
 
       const requestIds = panelRows.map((r) => r.request_id);
 
-      // Fetch completed interview_scheduled rows - From the interview_scheduled table, give
-      // me these specific columns, but only for rows whose request_id is in my list AND whose 
-      // status is 'completed', sorted with the newest dates on top."
+      // Drive off this interviewer's own submissions — NOT interview_scheduled.status.
+      // This way interviews appear here as soon as THIS person submits, even if other
+      // panelists haven't submitted yet (which keeps status = "scheduled" for them).
+      const { data: mySubmissions, error: subFetchError } = await supabase
+        .from("interviewer_score_submissions")
+        .select("scheduled_id")
+        .eq("interviewer_user_id", user.id)
+        .eq("is_submitted", true);
+
+      if (subFetchError) {
+        setError("Failed to load your submitted evaluations.");
+        console.error("[CompletedInterviews] subFetchError:", subFetchError);
+        return;
+      }
+
+      if (!mySubmissions || mySubmissions.length === 0) {
+        setCompletedInterviews([]);
+        setFilteredInterviews([]);
+        return;
+      }
+
+      const mySubmittedScheduledIds = mySubmissions.map((s) => s.scheduled_id);
+
+      // Fetch the interview_scheduled rows for every interview this user submitted.
+      // No status filter — the row may still be "scheduled" if other panelists
+      // haven't submitted yet, but this interviewer is personally done with it.
       const { data: scheduledRows, error: scheduledError } = await supabase
         .from("interview_scheduled")
         .select(`
@@ -63,14 +86,13 @@ const CompletedInterviews = () => {
           mode,
           admin_notes,
           meeting_link,
+          interview_location,
           status,
           candidate_id,
           job_application_id,
           job_id
         `)
-        .in("request_id", requestIds)
-        .eq("status", "completed")
-        .order("interview_date", { ascending: false });
+        .in("scheduled_id", mySubmittedScheduledIds);
 
       if (scheduledError) {
         setError("Failed to load completed interviews.");
@@ -84,12 +106,23 @@ const CompletedInterviews = () => {
         return;
       }
 
+      // Sort: most recent date first; within the same date, latest time first.
+      // e.g. 2026-06-28 8 PM comes before 2026-06-28 9 AM, which comes before 2026-06-27.
+      scheduledRows.sort((a, b) => {
+        const dateCmp = b.interview_date.localeCompare(a.interview_date);
+        if (dateCmp !== 0) return dateCmp;
+        return b.interview_time.localeCompare(a.interview_time);
+      });
+
+      // All rows confirmed — this user personally submitted for each of them.
+      const confirmedRows = scheduledRows;
+
       // Fetch job titles
-      const jobIds = [...new Set(scheduledRows.map(r => r.job_id).filter(Boolean))];
+      const jobIds = [...new Set(confirmedRows.map(r => r.job_id).filter(Boolean))];
       let jobMap = {};
       if (jobIds.length > 0) {
         const { data: jobRows } = await supabase
-          .from("jobs") // or whatever your jobs table is named
+          .from("jobs")
           .select("id, job_title")
           .in("id", jobIds);
 
@@ -99,7 +132,7 @@ const CompletedInterviews = () => {
       }
 
       // Fetch candidate names
-      const candidateIds = [...new Set(scheduledRows.map(r => r.candidate_id).filter(Boolean))];
+      const candidateIds = [...new Set(confirmedRows.map(r => r.candidate_id).filter(Boolean))];
       let candidateMap = {};
       if (candidateIds.length > 0) {
         const { data: candidateRows } = await supabase
@@ -112,30 +145,7 @@ const CompletedInterviews = () => {
         });
       }
 
-      // Verify this interviewer actually submitted scores 
-      const scheduledIds = scheduledRows.map((r) => r.scheduled_id);
-      const { data: submissionRows } = await supabase
-        .from("interviewer_score_submissions")
-        .select("scheduled_id")
-        .in("scheduled_id", scheduledIds)
-        .eq("interviewer_user_id", user.id)
-        .eq("is_submitted", true);
-
-      const submittedScheduledIds = new Set(
-        (submissionRows || []).map((s) => s.scheduled_id)
-      );
-
-      const confirmedRows = scheduledRows.filter((r) =>
-        submittedScheduledIds.has(r.scheduled_id)
-      );
-
-      if (confirmedRows.length === 0) {
-        setCompletedInterviews([]);
-        setFilteredInterviews([]);
-        return;
-      }
-
-      // Fetch accepted panel members
+      // Fetch accepted panel members for the panel popup
       const { data: allPanelMembers } = await supabase
         .from("interview_request_interviewers")
         .select("request_id, interviewer_user_id, response_status")
@@ -159,7 +169,7 @@ const CompletedInterviews = () => {
         });
       }
 
-      // creating list of panel members for each request id and push that interviewers details if exists
+      // creating list of panel members for each request id
       const panelByRequestId = {};
       (allPanelMembers || []).forEach((row) => {
         if (!panelByRequestId[row.request_id]) {
@@ -174,7 +184,7 @@ const CompletedInterviews = () => {
         });
       });
 
-      //format teh time and  Map each interviewer to card format
+      // Map each row to card format
       const mapped = confirmedRows.map((item) => {
         const formatTime = (timeStr) => {
           if (!timeStr) return "";
@@ -196,6 +206,7 @@ const CompletedInterviews = () => {
           meetingStatus:    "COMPLETED",
           mode:             item.mode,
           meetingLink:      item.meeting_link || "",
+          interviewLocation: item.interview_location || "",
           panelMembers:     panelByRequestId[item.request_id] || [],
           adminNote:        item.admin_notes || "",
           candidateId:      item.candidate_id,
@@ -216,12 +227,12 @@ const CompletedInterviews = () => {
   };
 
   /**takes what the user typed, and if it's not empty, looks through every completed
-  interview and keeps only the ones where the typed text matches any of 
-  those 6 fields (case-insensitively). Then it updates the screen to 
+  interview and keeps only the ones where the typed text matches any of
+  those 6 fields (case-insensitively). Then it updates the screen to
   show only those matches.*/
   const handleSearch = (value) => {
     setSearchValue(value);
-    
+
     if (!value.trim()) {
       setFilteredInterviews(completedInterviews);
       return;

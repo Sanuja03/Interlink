@@ -36,6 +36,7 @@ const PendingRequests = () => {
           time: r.interviewTime,
           mode: r.mode,
           notes: r.adminNotes || "—",
+          interviewLocation: r.interviewLocation || "",
           historyId: r.historyId,
           round: r.round,
           history: r.history || [],

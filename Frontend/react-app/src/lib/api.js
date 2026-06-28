@@ -29,7 +29,7 @@ api.interceptors.request.use(
     if (sessionStorage.getItem("is_signing_up") === "true") {
       return config;
     }
-    // dont ask subapase for a token if logged out 
+   
     if (sessionStorage.getItem(LOGIN_FLAG) !== "true") {
       return config;
     }
@@ -46,7 +46,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// rresponse interceptor - the response will be checked by axios and if 401(unauthorized) the belwo tries to attach a new token and send the reqest agaian
+// rresponse interceptor - the response will be checked by axios and if 401(unauthorized)
+//  the belwo tries to attach a new token and send the reqest agaian
 api.interceptors.response.use(
   (response) => response, 
   async (error) => { const originalRequest = error.config;

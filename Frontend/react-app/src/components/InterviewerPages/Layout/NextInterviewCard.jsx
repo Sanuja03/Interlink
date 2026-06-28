@@ -32,7 +32,7 @@ const NextInterviewCard = ({ interview }) => {
           <div className="next-empty">
             <p className="next-empty-title">No upcoming interviews</p>
             <p className="next-empty-sub">
-              New interviews will appear here once scheduled.
+              Your next interview will be shown here if there is.
             </p>
           </div>
         ) : (

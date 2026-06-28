@@ -115,15 +115,58 @@ const EvaluationForm = ({
         if (valError) throw valError;
       }
 
-      // On final submit: mark interview_scheduled as completed
+      // On final submit: only mark interview_scheduled as completed
+      // when ALL accepted panel members have submitted their evaluation.
       if (submit) {
-        const { error: statusError } = await supabase
+        // 1. Get the request_id for this scheduled interview
+        const { data: schedRow, error: schedFetchError } = await supabase
           .from("interview_scheduled")
-          .update({ status: "completed", updated_at: new Date().toISOString() })
-          .eq("scheduled_id", scheduledId);
+          .select("request_id")
+          .eq("scheduled_id", scheduledId)
+          .single();
 
-        if (statusError) {
-          console.warn("[EvaluationForm] status update warning:", statusError);
+        if (schedFetchError) {
+          console.warn("[EvaluationForm] request_id fetch warning:", schedFetchError);
+        }
+
+        if (schedRow?.request_id) {
+          // 2. Count how many interviewers accepted this request
+          const { count: acceptedCount, error: acceptedError } = await supabase
+            .from("interview_request_interviewers")
+            .select("*", { count: "exact", head: true })
+            .eq("request_id", schedRow.request_id)
+            .eq("response_status", "accepted");
+
+          if (acceptedError) {
+            console.warn("[EvaluationForm] accepted count warning:", acceptedError);
+          }
+
+          // 3. Count how many of them have now submitted (including this one just saved above)
+          const { count: submittedCount, error: submittedError } = await supabase
+            .from("interviewer_score_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("scheduled_id", scheduledId)
+            .eq("is_submitted", true);
+
+          if (submittedError) {
+            console.warn("[EvaluationForm] submitted count warning:", submittedError);
+          }
+
+          // 4. Only flip to completed when every accepted panelist has submitted
+          if (
+            acceptedCount != null &&
+            submittedCount != null &&
+            submittedCount >= acceptedCount
+          ) {
+            const { error: statusError } = await supabase
+              .from("interview_scheduled")
+              .update({ status: "completed", updated_at: new Date().toISOString() })
+              .eq("scheduled_id", scheduledId);
+
+            if (statusError) {
+              console.warn("[EvaluationForm] status update warning:", statusError);
+            }
+          }
         }
 
         setIsSubmitted(true);

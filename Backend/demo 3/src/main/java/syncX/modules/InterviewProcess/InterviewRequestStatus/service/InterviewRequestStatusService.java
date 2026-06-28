@@ -235,6 +235,7 @@ public class InterviewRequestStatusService {
                 ir.getInterviewTime().toString().substring(0, 5),
                 ir.getMode(),
                 ir.getAdminNotes(),
+                ir.getInterviewLocation(),
                 ir.getHistoryId(),
                 statusList);
     }

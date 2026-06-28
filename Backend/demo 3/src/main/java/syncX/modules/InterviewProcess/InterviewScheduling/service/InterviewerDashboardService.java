@@ -40,14 +40,18 @@ public class InterviewerDashboardService {
         LocalTime now   = LocalTime.now();
 
         // ── Stats ──
-        long scheduled = scheduledRepo.countByInterviewerAndStatus(interviewerUserId, "scheduled");
-        long completed = scheduledRepo.countByInterviewerAndStatus(interviewerUserId, "completed");
+        // Use per-interviewer submission counts so the dashboard reflects this
+        // individual's own state — not the table-level status which only flips
+        // when ALL panelists have submitted.
+        long scheduled = scheduledRepo.countPersonallyScheduledByInterviewer(interviewerUserId);
+        long completed = scheduledRepo.countPersonallyCompletedByInterviewer(interviewerUserId);
         long pending   = requestRepo.countPendingForInterviewer(interviewerUserId);
 
         InterviewerDashboardDTO.Stats stats =
                 new InterviewerDashboardDTO.Stats(scheduled, pending, completed);
 
         // ── Today's schedule rows ──
+        // findTodayForInterviewer already excludes interviews this interviewer submitted
         List<InterviewScheduled> todayRows =
                 scheduledRepo.findTodayForInterviewer(interviewerUserId, today);
 
@@ -64,10 +68,11 @@ public class InterviewerDashboardService {
         }
 
         // ── Next upcoming interview (any future date) ──
+        // findUpcomingForInterviewer already excludes interviews this interviewer submitted
         List<InterviewScheduled> upcoming =
                 scheduledRepo.findUpcomingForInterviewer(interviewerUserId, today, now);
 
-        InterviewerDashboardDTO.NextInterview next = null;//default value for next interview card
+        InterviewerDashboardDTO.NextInterview next = null; // default value for next interview card
         if (!upcoming.isEmpty()) {
             next = buildNextInterview(upcoming.get(0));
         }

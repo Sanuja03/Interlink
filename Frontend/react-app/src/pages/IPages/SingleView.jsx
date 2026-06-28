@@ -251,6 +251,13 @@ const SingleView = () => {
                   </a>
                 )}
 
+                {interview.mode?.toLowerCase() === "physical" && interview.interviewLocation && (
+                  <div className="singleview-info-box">
+                    <span className="singleview-box-label">📍 Interview Location</span>
+                    <span className="singleview-box-value">{interview.interviewLocation}</span>
+                  </div>
+                )}
+
                 <div className="singleview-info-box">
                   <span className="singleview-box-label">Meeting Status</span>
                   <span

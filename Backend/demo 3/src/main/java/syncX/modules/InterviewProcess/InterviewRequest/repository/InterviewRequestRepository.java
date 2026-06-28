@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,7 +31,6 @@ public interface InterviewRequestRepository
             @Param("candidateId") UUID candidateId,
             @Param("jobApplicationId") Long jobApplicationId);
 
-
     default Optional<InterviewRequest> findFirstActiveByCandidateAndApplication(
             UUID companyId, UUID candidateId, Long jobApplicationId) {
         List<InterviewRequest> list =
@@ -47,7 +47,6 @@ public interface InterviewRequestRepository
             @Param("companyId") UUID companyId,
             @Param("jobApplicationId") Long jobApplicationId,
             @Param("jobId") Long jobId);
-
 
     @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
             "WHERE ir.requestId IN (" +
@@ -67,4 +66,17 @@ public interface InterviewRequestRepository
     @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
             "WHERE ir.requestId = :requestId")
     Optional<InterviewRequest> findByIdWithInterviewers(@Param("requestId") UUID requestId);
+
+    /**
+     * Find all active (non-cancelled) interview requests for this company on a specific date,
+     * eagerly loading their interviewers so we can do conflict checks in Java.
+     * Used by getAssignable() and createRequest() to detect scheduling conflicts.
+     */
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.companyId = :companyId " +
+            "AND ir.interviewDate = :date " +
+            "AND ir.status <> 'cancelled'")
+    List<InterviewRequest> findActiveRequestsOnDate(
+            @Param("companyId") UUID companyId,
+            @Param("date") LocalDate date);
 }
