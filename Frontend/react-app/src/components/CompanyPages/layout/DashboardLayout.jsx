@@ -2,34 +2,29 @@ import "./DashboardLayout.css";
 import Sidebar from "./Sidebar";
 
 import notificationicon from "../../../assets/icons/notificationicon.png";
-import defaultAvatar from "../../../assets/images/default-avatar.png";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/Authcontext";
 import NotificationPopup from "./NotificationPopup";
-import api from "../../../lib/api";
 
 const SIDEBAR_WIDTH = 260;
 
 export default function DashboardLayout({ children }) {
   const [showPopup, setShowPopup] = useState(false);
-  const [companyName, setCompanyName] = useState("Company");
-  const [companyLogo, setCompanyLogo] = useState(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
-    if (!companyId) return;
-
-    api
-      .get(`/company/${companyId}/details`)
-      .then((res) => {
-        const data = res.data;
-        setCompanyName(data.companyName || "Company");
-        setCompanyLogo(data.logoUrl || null);
-      })
-      .catch((err) => console.error("Failed to load company info:", err));
-  }, []);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.removeItem("companyId");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/");
+    }
+  };
 
   return (
     <div className="dl-root">
@@ -47,22 +42,30 @@ export default function DashboardLayout({ children }) {
             style={{ cursor: "pointer" }}
           />
 
-          <div
-            className="dl-company"
-            onClick={() => navigate("/company/settings")}
-            style={{ cursor: "pointer" }}
-            title="Go to Company Settings"
-          >
-            <img
-              className="dl-avatar"
-              src={companyLogo || defaultAvatar}
-              alt="Company"
-            />
-            <span className="dl-companyName">{companyName}</span>
-          </div>
+          <button className="dl-logout" onClick={handleLogout}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="dl-logout-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7"
+              />
+            </svg>
+            Logout
+          </button>
         </div>
 
-        <div className="dl-content">{children}</div>
+        <div className="dl-content">
+          <div className="dl-page">
+            {children}
+          </div>
+        </div>
 
         <NotificationPopup
           isOpen={showPopup}

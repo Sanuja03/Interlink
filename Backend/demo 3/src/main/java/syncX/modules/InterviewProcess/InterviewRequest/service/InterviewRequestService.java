@@ -75,12 +75,15 @@ public class InterviewRequestService {
 
     @Transactional(readOnly = true)
     public InterviewRequestDTO.ExistingRequestResponse getExistingRequest(
-            Jwt jwt, UUID candidateId, Long jobApplicationId) {
+            Jwt jwt, UUID candidateId, Long jobApplicationId, Long historyId) {
 
         UUID companyId = resolveCompanyId(jwt);
 
-        Optional<InterviewRequest> opt = requestRepo
-                .findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
+        // Scope to the specific round via historyId so Round 2 doesn't find Round 1's request
+        Optional<InterviewRequest> opt = (historyId != null)
+                ? requestRepo.findFirstActiveForRound(companyId, candidateId, jobApplicationId, historyId)
+                : requestRepo.findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
+
         if (opt.isEmpty()) return null;
 
         InterviewRequest ir = opt.get();
@@ -227,7 +230,7 @@ public class InterviewRequestService {
                 invited);
     }
 
-//pending request list shown in interviewers side
+    //pending request list shown in interviewers side
     @Transactional(readOnly = true)
     public List<InterviewRequestDTO.PendingRequestForInterviewer> getPendingForInterviewer(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());

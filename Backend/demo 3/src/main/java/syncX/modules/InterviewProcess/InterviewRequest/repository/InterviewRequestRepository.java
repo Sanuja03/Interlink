@@ -30,11 +30,32 @@ public interface InterviewRequestRepository
             @Param("candidateId") UUID candidateId,
             @Param("jobApplicationId") Long jobApplicationId);
 
+    // Round-aware version: only returns requests whose history_id matches the
+    // current round. This prevents Round 1's finalized request from blocking Round 2.
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.companyId = :companyId AND ir.candidateId = :candidateId " +
+            "AND ir.jobApplicationId = :jobApplicationId AND ir.status <> 'cancelled' " +
+            "AND (:historyId IS NULL OR ir.historyId = :historyId) " +
+            "ORDER BY ir.createdAt DESC")
+    List<InterviewRequest> findActiveByCandidateAndApplicationAndHistory(
+            @Param("companyId") UUID companyId,
+            @Param("candidateId") UUID candidateId,
+            @Param("jobApplicationId") Long jobApplicationId,
+            @Param("historyId") Long historyId);
+
 
     default Optional<InterviewRequest> findFirstActiveByCandidateAndApplication(
             UUID companyId, UUID candidateId, Long jobApplicationId) {
         List<InterviewRequest> list =
                 findActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
+
+    // Use this version when a historyId is known — scopes to the current round only
+    default Optional<InterviewRequest> findFirstActiveForRound(
+            UUID companyId, UUID candidateId, Long jobApplicationId, Long historyId) {
+        List<InterviewRequest> list =
+                findActiveByCandidateAndApplicationAndHistory(companyId, candidateId, jobApplicationId, historyId);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 

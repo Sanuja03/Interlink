@@ -27,13 +27,14 @@ public class InterviewRequestStatusController {
     public ResponseEntity<?> getCurrentStatus(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam UUID candidateId,
-            @RequestParam Long jobApplicationId) {
+            @RequestParam Long jobApplicationId,
+            @RequestParam(required = false) Long historyId) {  // optional — scopes to the round
 
         InterviewRequestStatusDTO.StatusResponse response =
-                statusService.getStatus(jwt, candidateId, jobApplicationId);
+                statusService.getStatus(jwt, candidateId, jobApplicationId, historyId);
 
         if (response == null) {
-            return ResponseEntity.noContent().build();   // 204
+            return ResponseEntity.noContent().build();   // 204 → frontend opens fresh request form
         }
 
         return ResponseEntity.ok(response);

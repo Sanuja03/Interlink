@@ -32,12 +32,15 @@ public class InterviewRequestStatusService {
     //for this specific job application already has an active interview request.
     //If yes, return the status details. If no, return null.
     public InterviewRequestStatusDTO.StatusResponse getStatus(
-            Jwt jwt, UUID candidateId, Long jobApplicationId) {
+            Jwt jwt, UUID candidateId, Long jobApplicationId, Long historyId) {
 
         UUID companyId = resolveCompanyId(jwt);
 
-        Optional<InterviewRequest> opt = requestRepo
-                .findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
+        // If historyId is provided, scope the lookup to that round only.
+        // This prevents a completed Round 1 request from appearing as "active" for Round 2.
+        Optional<InterviewRequest> opt = (historyId != null)
+                ? requestRepo.findFirstActiveForRound(companyId, candidateId, jobApplicationId, historyId)
+                : requestRepo.findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId);
 
         if (opt.isEmpty()) return null;
 

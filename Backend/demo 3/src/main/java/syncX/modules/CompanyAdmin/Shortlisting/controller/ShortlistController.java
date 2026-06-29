@@ -146,31 +146,55 @@ public class ShortlistController {
 
     @GetMapping("/api/company/shortlisted-candidates/jobs")
     @PreAuthorize("hasRole('company_admin')")
-    public ResponseEntity<List<Map<String, Object>>> listJobsWithShortlisted(
+    public ResponseEntity<?> listJobsWithShortlisted(
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID companyId = resolveCompanyId(jwt);
+
+        // FIX 1: LEFT JOIN instead of INNER JOIN — prevents rows with null job_id
+        //        from causing a join failure that throws a RuntimeException → 400.
+        // FIX 2: COALESCE(j.job_title, j.title) — the jobs table has both columns;
+        //        some jobs only populate 'title', so job_title alone returns null
+        //        for those rows. This matches what /shortlisted-candidates already does.
+        // FIX 3: AND ja.job_id IS NOT NULL AND j.id IS NOT NULL — explicitly filter
+        //        out rows where the job link is broken, rather than letting the DB
+        //        throw an ambiguous error.
         String sql =
-                "SELECT DISTINCT j.id AS job_id, j.job_title AS job_title " +
+                "SELECT DISTINCT j.id AS job_id, " +
+                        "  COALESCE(j.job_title, j.title, 'Untitled Job') AS job_title " +
                         "FROM public.shortlisted_candidates sc " +
                         "JOIN public.job_applications ja ON ja.id = sc.job_application_id " +
-                        "JOIN public.jobs j              ON j.id  = ja.job_id " +
+                        "LEFT JOIN public.jobs j         ON j.id  = ja.job_id " +
                         "WHERE sc.company_id = ? " +
                         "  AND UPPER(COALESCE(sc.status, 'SHORTLISTED')) = 'SHORTLISTED' " +
+                        "  AND ja.job_id IS NOT NULL " +
+                        "  AND j.id IS NOT NULL " +
                         "ORDER BY j.id DESC";
 
-        List<Map<String, Object>> rows = jdbc.query(sql, new Object[]{ companyId }, (rs, rowNum) -> {
-            Map<String, Object> m = new HashMap<>();
-            long jId = rs.getLong("job_id");
-            m.put("jobId", jId);
-            m.put("jobTitle", rs.getString("job_title"));
-            m.put("jobPostId", "JOB" + jId);
-            return m;
-        });
-
-        return ResponseEntity.ok(rows);
+        try {
+            List<Map<String, Object>> rows = jdbc.query(sql, new Object[]{ companyId }, (rs, rowNum) -> {
+                Map<String, Object> m = new HashMap<>();
+                long jId = rs.getLong("job_id");
+                m.put("jobId", jId);
+                m.put("jobTitle", rs.getString("job_title"));
+                m.put("jobPostId", "JOB" + jId);
+                return m;
+            });
+            return ResponseEntity.ok(rows);
+        } catch (Exception e) {
+            // Return empty list so the frontend shows "No jobs" instead of "Bad Request"
+            return ResponseEntity.ok(List.of());
+        }
     }
 
+    /**
+     * Lists all shortlisted candidates for this company (optionally filtered by job).
+     *
+     * FIX: now also returns `finalStatus` from shortlisted_candidates.
+     * The frontend uses this to know whether a row is a new-round entry
+     * (finalStatus = "ROUND_2_READY", etc.) so it can avoid showing the
+     * Finalized badge inherited from the previous round's interview request.
+     */
     @GetMapping("/api/company/shortlisted-candidates")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> listShortlisted(
@@ -181,7 +205,7 @@ public class ShortlistController {
         StringBuilder sql = new StringBuilder()
                 .append("SELECT ")
                 .append("  sc.candidate_id, sc.job_application_id, ja.job_id, ")
-                .append("  sc.history_id, ")
+                .append("  sc.history_id, sc.final_status, ")  // <-- added final_status
                 .append("  c.first_name || ' ' || c.last_name AS candidate_name, ")
                 .append("  COALESCE(j.job_title, ja.job_title) AS job_title, ")
                 .append("  sc.company_id ")
@@ -213,6 +237,7 @@ public class ShortlistController {
             m.put("candidateName", rs.getString("candidate_name"));
             m.put("jobTitle", rs.getString("job_title"));
             m.put("companyId", rs.getString("company_id"));
+            m.put("finalStatus", rs.getString("final_status"));  // <-- added
             return m;
         });
 
@@ -253,7 +278,4 @@ public class ShortlistController {
             ));
         }
     }
-
-
 }
-

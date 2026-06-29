@@ -36,17 +36,20 @@ public class InterviewRequestController {
     /**
      * check whether the candidate with the job applicationid already has a request form
      * Returns 204 No Content if nothing exists yet — frontend treats that as "fresh form".
-     * GET /api/company/interview-requests/current?candidateId=UUID&jobApplicationId=123
+     * historyId (optional) scopes the lookup to a specific round so Round 2 is not
+     * blocked by a completed Round 1 request.
+     * GET /api/company/interview-requests/current?candidateId=UUID&jobApplicationId=123&historyId=456
      */
     @GetMapping("/current")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<InterviewRequestDTO.ExistingRequestResponse> getCurrent(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam UUID candidateId,
-            @RequestParam Long jobApplicationId) {
+            @RequestParam Long jobApplicationId,
+            @RequestParam(required = false) Long historyId) {  // optional — round scope
 
         InterviewRequestDTO.ExistingRequestResponse existing =
-                service.getExistingRequest(jwt, candidateId, jobApplicationId);
+                service.getExistingRequest(jwt, candidateId, jobApplicationId, historyId);
 
         if (existing == null) {
             return ResponseEntity.noContent().build();
@@ -69,7 +72,7 @@ public class InterviewRequestController {
     }
 
     /**get all interview requests belonging to the admin's company with two optional query parameters that act as filters:
-    *all interviewers,filtered by job post*/
+     *all interviewers,filtered by job post*/
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<InterviewRequestDTO.ExistingRequestResponse>> listMine(

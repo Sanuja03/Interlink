@@ -11,6 +11,7 @@ public class ShortlistResponseDTO {
     private String jobTitle;
     private Long jobApplicationId;
     private Long historyId;
+    private Integer round;          // which interview round this shortlist entry is for
     private Double aiScore;
     private String aiSuggestion;
     private String manualDecision;
@@ -42,6 +43,9 @@ public class ShortlistResponseDTO {
 
     public Long getHistoryId() { return historyId; }
     public void setHistoryId(Long historyId) { this.historyId = historyId; }
+
+    public Integer getRound() { return round; }
+    public void setRound(Integer round) { this.round = round; }
 
     public Double getAiScore() { return aiScore; }
     public void setAiScore(Double aiScore) { this.aiScore = aiScore; }

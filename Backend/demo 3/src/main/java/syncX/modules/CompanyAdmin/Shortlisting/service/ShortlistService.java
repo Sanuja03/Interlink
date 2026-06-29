@@ -315,6 +315,14 @@ public class ShortlistService {
         dto.setJobTitle(app != null ? app.getJobTitle() : null);
         dto.setJobApplicationId(sc.getJobApplicationId());
         dto.setHistoryId(sc.getHistoryId());
+
+        // Derive the current round from candidate_history_stages:
+        // count how many INTERVIEW-stage rows exist for this candidate+application.
+        // Round 1 = 1 completed interview stage, Round 2 = 2, etc.
+        // A newly promoted candidate (no stages yet) defaults to round 1.
+        Integer round = resolveRound(sc.getCandidateId(), sc.getJobApplicationId());
+        dto.setRound(round);
+
         dto.setAiScore(sc.getAiScore());
         dto.setAiSuggestion(sc.getAiSuggestion());
         dto.setManualDecision(sc.getManualDecision());
@@ -325,5 +333,23 @@ public class ShortlistService {
             dto.setShortlistedAt(sc.getShortlistedAt().format(DATE_FORMAT));
         }
         return dto;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Derive the current round for a shortlisted candidate.
+    // Count completed INTERVIEW stages → that tells us which round
+    // the candidate is currently being shortlisted for.
+    // 0 completed → Round 1, 1 completed → Round 2, etc.
+    // ─────────────────────────────────────────────────────────────
+    private Integer resolveRound(UUID candidateId, Long jobApplicationId) {
+        try {
+            String sql = "SELECT COUNT(*) FROM candidate_history_stages " +
+                    "WHERE candidate_id = ? AND job_application_id = ? " +
+                    "AND stage = 'INTERVIEW' AND status = 'COMPLETED'";
+            Long completed = jdbc.queryForObject(sql, Long.class, candidateId, jobApplicationId);
+            return (completed != null ? completed.intValue() : 0) + 1;
+        } catch (Exception e) {
+            return 1;
+        }
     }
 }

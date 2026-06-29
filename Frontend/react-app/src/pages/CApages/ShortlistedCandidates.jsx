@@ -40,7 +40,6 @@ const ShortlistedCandidates = () => {
   /** finalizedMap: { [jobApplicationId]: requestId } — for already-finalized panels */
   const [finalizedMap, setFinalizedMap] = useState({});
 
-
   const [pendingFinalizeMap, setPendingFinalizeMap] = useState({});
 
   //  Loads the jobs dropdown
@@ -73,7 +72,7 @@ const ShortlistedCandidates = () => {
     setLoadingCandidates(true);
     setCandidatesError("");
     setFinalizedMap({});
-    setPendingFinalizeMap({}); 
+    setPendingFinalizeMap({});
 
     const params = selectedJobId ? { jobId: selectedJobId } : {};
 
@@ -84,14 +83,14 @@ const ShortlistedCandidates = () => {
 
     Promise.all([candidatesPromise, scorecardsPromise]) // load both at same time
 
-    //onsuccess
+      //onsuccess
       .then(([candidatesRes, scorecardsRes]) => {
         if (cancelled) return;
         const candidateList = Array.isArray(candidatesRes.data) ? candidatesRes.data : [];
         setCandidates(candidateList);
         setScorecards(scorecardsRes.data || []);
       })
-    //onfailure  
+      //onfailure
       .catch((err) => {
         if (cancelled) return;
         console.error("[ShortlistedCandidates] fetch failed:", err);
@@ -99,36 +98,36 @@ const ShortlistedCandidates = () => {
         setCandidates([]);
         setScorecards([]);
       })
-      
+
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
   }, [selectedJobId]);
 
 
-  // After candidates load, checks each one's finalized status
-  // and if finalized put to finalisezed map
+  // After candidates load, checks each one's finalized status.
+  // FIX: changed from Promise.all (blocks table render until ALL requests finish)
+  // to individual forEach calls so the table shows immediately and badges
+  // appear progressively as each request comes back.
   useEffect(() => {
     if (candidates.length === 0) { setFinalizedMap({}); return; }
     let cancelled = false;
 
-    Promise.all(
-      candidates.map(async (c) => {
-        try {
-          const res = await api.get("/company/interview-requests/status/current", {
-            params: { candidateId: c.candidateId, jobApplicationId: c.jobApplicationId },
-          });
-          if (!cancelled && res.data?.overallStatus === "finalized" && res.data?.requestId) {
-            return { jobApplicationId: c.jobApplicationId, requestId: res.data.requestId };
-          }
-        } catch { /* ignore */ }
-        return null;
-      })
-    ).then((results) => {
-      if (cancelled) return;
-      const next = {};
-      results.forEach((r) => { if (r) next[r.jobApplicationId] = r.requestId; });
-      setFinalizedMap(next);
+    setFinalizedMap({}); // clear stale badges from previous job selection
+
+    candidates.forEach(async (c) => {
+      try {
+        const res = await api.get("/company/interview-requests/status/current", {
+          params: { candidateId: c.candidateId, jobApplicationId: c.jobApplicationId },
+        });
+        if (cancelled) return;
+        if (res.data?.overallStatus === "finalized" && res.data?.requestId) {
+          setFinalizedMap(prev => ({
+            ...prev,
+            [c.jobApplicationId]: res.data.requestId,
+          }));
+        }
+      } catch { /* ignore */ }
     });
 
     return () => { cancelled = true; };
@@ -148,7 +147,7 @@ const ShortlistedCandidates = () => {
     }
   };
 
-//runs when request/status is clicked - which popup to show in which situations 
+  //runs when request/status is clicked - which popup to show in which situations
   const handleOpenForCandidate = async (candidate) => {
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
@@ -216,7 +215,7 @@ const ShortlistedCandidates = () => {
     setShowFinalizedPopup(true);
   };
 
-//runs when close button inside popups is clicked  
+  //runs when close button inside popups is clicked
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
@@ -228,14 +227,14 @@ const ShortlistedCandidates = () => {
     setEditMode(false);
   };
 
-//runs when cancel and redo  is clicked from status popup
+  //runs when cancel and redo is clicked from status popup
   const handleEditFromStatus = () => {
     setEditMode(true);
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
 
-//runs when finalise panel clicked from status page
+  //runs when finalise panel clicked from status page
   const handleRequestFinalize = (activeRequest) => {
     const candidate = candidateRef.current || selectedCandidate;
     if (candidate) {
@@ -347,10 +346,6 @@ const ShortlistedCandidates = () => {
                 <span className="sc-job-meta-value">{jobPostId}</span>
               </div>
               <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Round</span>
-                <span className="sc-job-meta-value">Round 1</span>
-              </div>
-              <div className="sc-job-meta-box">
                 <span className="sc-job-meta-label">Shortlisted Count</span>
                 <span className="sc-job-meta-value">{candidates.length}</span>
               </div>
@@ -376,37 +371,38 @@ const ShortlistedCandidates = () => {
                     <th>Candidate Name</th>
                     {!selectedJobId && <th>Job Title</th>}
                     <th>History ID</th>
+                    <th>Round</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
 
                   {(loadingJobs && jobs.length === 0) && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24 }}>
                       Loading…
                     </td></tr>
                   )}
 
                   {!loadingJobs && !jobsError && jobs.length === 0 && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       No shortlisted candidates yet. Once candidates are shortlisted for a job, they'll show up here.
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && loadingCandidates && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24 }}>
                       Loading candidates…
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && !loadingCandidates && candidatesError && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
                       {candidatesError}
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && !loadingCandidates && !candidatesError && candidates.length === 0 && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       {selectedJobId ? "No shortlisted candidates for this job." : "No shortlisted candidates."}
                     </td></tr>
                   )}
@@ -431,11 +427,14 @@ const ShortlistedCandidates = () => {
                       <td className="sc-bold">
                         {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
                       </td>
+                      <td className="sc-bold">
+                        {candidate.round != null ? `Round ${candidate.round}` : "—"}
+                      </td>
                       <td>
                         <CandidateActionButtons
                           isFinalized={!!finalizedMap[candidate.jobApplicationId]}
                           onOpenRequest={() => handleOpenForCandidate(candidate)} // function to call when request/status button is clicked
-                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}//function to call when finalised green button is clicked
+                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)} // function to call when finalised green button is clicked
                         />
                       </td>
                     </tr>
@@ -448,7 +447,7 @@ const ShortlistedCandidates = () => {
         </div>
       </div>
 
-{/* render the popup whne showRequestPopup = true */} 
+{/* render the popup when showRequestPopup = true */}
       <InterviewRequestPopup
         open={showRequestPopup}
         onClose={closeAllPopups}
@@ -456,7 +455,7 @@ const ShortlistedCandidates = () => {
         startInEditMode={editMode}
       />
 
-{/* render the popup whne showStatusPopup = true */} 
+{/* render the popup when showStatusPopup = true */}
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
@@ -465,7 +464,7 @@ const ShortlistedCandidates = () => {
         onRequestFinalize={handleRequestFinalize}
       />
 
- {/* Action Mode */}    
+ {/* Action Mode */}
       {showFinalizedPopup && pendingFinalizeRequest && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}
@@ -492,7 +491,7 @@ const ShortlistedCandidates = () => {
         />
       )}
 
- {/* View Mode */}   
+ {/* View Mode */}
       {showFinalizedPopup && !pendingFinalizeRequest && finalizedRequestId && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}

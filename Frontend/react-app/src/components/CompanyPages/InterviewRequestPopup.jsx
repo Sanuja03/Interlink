@@ -48,11 +48,14 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
 
       setLoadingExisting(true);
       try {
-        // Check backend for an existing interview request for this candidate + job
+        // Check backend for an existing interview request for this candidate + job + round
         const res = await api.get("/company/interview-requests/current", {
           params: {
             candidateId: candidate.candidateId,
             jobApplicationId: candidate.jobApplicationId,
+            // Pass round so we only prefill for the CURRENT round, not a completed one
+            round: candidate.round ?? null,
+            historyId: candidate.historyId != null ? candidate.historyId : null,
           },
         });
 
@@ -180,6 +183,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       jobId: candidate.jobId || null,
 
       historyId: candidate.historyId != null ? Number(candidate.historyId) : null,
+      round: candidate.round ?? null,   // ← pass current round to backend
       panelSize,
       interviewDate: date,
       interviewTime: time,
