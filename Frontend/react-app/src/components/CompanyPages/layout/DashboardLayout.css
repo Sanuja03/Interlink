@@ -1,79 +1,213 @@
+/* ==========================================
+   ROOT
+========================================== */
+
 .dl-root {
   display: flex;
   min-height: 100vh;
   background: #f5f6f8;
+  font-family: "Outfit", sans-serif;
 }
 
-/* Sidebar */
+/* ==========================================
+   SIDEBAR
+========================================== */
+
 .dl-sidebar {
   position: fixed;
   top: 0;
   left: 0;
+
   width: 260px;
   height: 100vh;
+
   background: #ffffff;
   border-right: 1px solid #e5e7eb;
-  z-index: 50;
+
+  z-index: 100;
 }
 
-/* Main area */
+/* ==========================================
+   MAIN AREA
+========================================== */
+
 .dl-main {
   margin-left: 260px;
+  width: calc(100% - 260px);
+
   min-height: 100vh;
+
   display: flex;
   flex-direction: column;
 
-  width: calc(100% - 260px); /* ✅ IMPORTANT FIX */
+  background: #f5f6f8;
 }
 
-/* Top bar */
+/* ==========================================
+   TOP BAR
+========================================== */
+
 .dl-top {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 14px;
+
+  gap: 16px;
+
   padding: 18px 24px;
 
   background: #f5f6f8;
+
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-/* Notification icon */
+/* ==========================================
+   NOTIFICATION ICON
+========================================== */
+
 .dl-noti {
-  width: 34px;
-  height: 34px;
+  width: 20px;
+  height: 20px;
+
   object-fit: contain;
+
   cursor: pointer;
+
   opacity: 0.9;
+
+  transition: 0.2s;
 }
 
-/* Company profile */
-.dl-company {
+.dl-noti:hover {
+  transform: scale(1.08);
+}
+
+/* ==========================================
+   LOGOUT BUTTON
+========================================== */
+
+.dl-logout {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+
+  padding: 6px 10px;
+
+  background: #fff1f2;
+  color: #dc2626;
+
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Outfit", sans-serif;
+
+  border: none;
+  border-radius: 6px;
+  outline: none;
+
+  cursor: pointer;
+
+  transition: background 0.2s;
 }
 
-.dl-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid #d1d5db;
+.dl-logout:hover {
+  background: #fee2e2;
 }
 
-.dl-companyName {
-  font-weight: 700;
-  color: #0c3e56;
+.dl-logout:focus,
+.dl-logout:active {
+  outline: none;
+  box-shadow: none;
 }
 
-/* Content */
+.dl-logout-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ==========================================
+   CONTENT
+========================================== */
+
 .dl-content {
-  padding: 30px 24px 40px;
   flex: 1;
 
-  width: 100%;        /* ✅ FIX */
-  box-sizing: border-box; /* ✅ FIX */
+  padding: 0 24px 30px;
+
+  width: 100%;
+
+  box-sizing: border-box;
+}
+
+/* ==========================================
+   WHITE PAGE CONTAINER
+========================================== */
+
+.dl-page {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 28px;
+  min-height: auto;        /* was calc(100vh - 220px) — remove fixed height */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.dl-main footer {
+  margin-top: 30px;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 900px) {
+
+  .dl-sidebar {
+    width: 220px;
+  }
+
+  .dl-main {
+    margin-left: 220px;
+    width: calc(100% - 220px);
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .dl-root {
+    flex-direction: column;
+  }
+
+  .dl-sidebar {
+    position: relative;
+
+    width: 100%;
+    height: auto;
+  }
+
+  .dl-main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .dl-top {
+    padding: 16px;
+  }
+
+  .dl-content {
+    padding: 18px;
+  }
+
+  .dl-page {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
 }

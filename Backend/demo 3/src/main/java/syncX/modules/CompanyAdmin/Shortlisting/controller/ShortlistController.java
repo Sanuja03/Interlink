@@ -141,9 +141,14 @@ public class ShortlistController {
     }
 
     // ═════════════════════════════════════════════════════════════
-    // Page-level reads
+    // Page-level reads — FAST single-query endpoints
     // ═════════════════════════════════════════════════════════════
 
+    /**
+     * Returns the list of jobs that have shortlisted candidates.
+     * Only jobs/rounds where no finalized interview exists yet are shown
+     * as "actionable" — but we return all for the dropdown.
+     */
     @GetMapping("/api/company/shortlisted-candidates/jobs")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> listJobsWithShortlisted(
@@ -171,6 +176,19 @@ public class ShortlistController {
         return ResponseEntity.ok(rows);
     }
 
+    /**
+     * Returns shortlisted candidates for the page table.
+     *
+     * KEY FIXES vs old version:
+     * 1. Uses a single SQL query with subqueries — no N+1 per-candidate status checks.
+     * 2. Deduplicates: if a candidate has multiple shortlisted_candidates rows for the
+     *    same job_application_id (e.g. round 1 + round 2), only the LATEST one is shown.
+     * 3. Computes the correct round number from candidate_history_stages.
+     * 4. Returns isFinalized flag directly from interview_scheduled table so the
+     *    frontend doesn't need to make N extra API calls.
+     * 5. Returns the history_id from candidate_history_stages (the stage that corresponds
+     *    to the current round), not just the bare shortlisted_candidates.history_id.
+     */
     @GetMapping("/api/company/shortlisted-candidates")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> listShortlisted(
@@ -178,30 +196,80 @@ public class ShortlistController {
             @RequestParam(required = false) Long jobId) {
 
         UUID companyId = resolveCompanyId(jwt);
-        StringBuilder sql = new StringBuilder()
-                .append("SELECT ")
-                .append("  sc.candidate_id, sc.job_application_id, ja.job_id, ")
-                .append("  sc.history_id, ")
-                .append("  c.first_name || ' ' || c.last_name AS candidate_name, ")
-                .append("  COALESCE(j.job_title, ja.job_title) AS job_title, ")
-                .append("  sc.company_id ")
-                .append("FROM public.shortlisted_candidates sc ")
-                .append("JOIN public.candidates c ON c.candidate_id = sc.candidate_id ")
-                .append("JOIN public.job_applications ja ON ja.id = sc.job_application_id ")
-                .append("LEFT JOIN public.jobs j ON j.id = ja.job_id ")
-                .append("WHERE sc.company_id = ? ")
-                .append("  AND UPPER(COALESCE(sc.status, 'SHORTLISTED')) = 'SHORTLISTED' ");
+
+        // ── Single efficient query ──────────────────────────────────────────
+        // CTE latest_sc: picks only the most-recent shortlisted_candidates row
+        //   per (candidate_id, job_application_id, company_id) so duplicates from
+        //   round-progression inserts don't appear twice.
+        //
+        // CTE round_info: gets the current round number and history stage id
+        //   from candidate_history_stages.
+        //
+        // Main: joins everything together and checks for a finalized interview
+        //   in interview_scheduled in a single LEFT JOIN subquery.
+        // ───────────────────────────────────────────────────────────────────
+
+        String sql =
+                "WITH latest_sc AS ( " +
+                        "  SELECT DISTINCT ON (sc.candidate_id, sc.job_application_id) " +
+                        "         sc.id, sc.candidate_id, sc.company_id, sc.job_application_id, " +
+                        "         sc.history_id, sc.status, sc.shortlisted_at " +
+                        "  FROM   public.shortlisted_candidates sc " +
+                        "  WHERE  sc.company_id = ? " +
+                        "    AND  UPPER(COALESCE(sc.status,'SHORTLISTED')) = 'SHORTLISTED' " +
+                        "  ORDER BY sc.candidate_id, sc.job_application_id, sc.id DESC " +
+                        "), " +
+                        "round_info AS ( " +
+                        "  SELECT  chs.job_application_id, " +
+                        "          chs.id      AS history_stage_id, " +
+                        "          COALESCE( " +
+                        "            CAST( NULLIF(REGEXP_REPLACE(chs.stage,'[^0-9]','','g'), '') AS INTEGER ), " +
+                        "            1 " +
+                        "          ) AS round_number " +
+                        "  FROM   public.candidate_history_stages chs " +
+                        "  INNER JOIN ( " +
+                        "    SELECT job_application_id, MAX(id) AS max_id " +
+                        "    FROM   public.candidate_history_stages " +
+                        "    WHERE  stage ILIKE 'ROUND%' OR stage ILIKE 'SHORTLISTED' " +
+                        "    GROUP BY job_application_id " +
+                        "  ) latest ON chs.id = latest.max_id " +
+                        ") " +
+                        "SELECT " +
+                        "  lsc.candidate_id, " +
+                        "  lsc.job_application_id, " +
+                        "  ja.job_id, " +
+                        "  COALESCE(ri.history_stage_id, lsc.history_id) AS history_id, " +
+                        "  COALESCE(ri.round_number, 1)                  AS round_number, " +
+                        "  c.first_name || ' ' || c.last_name             AS candidate_name, " +
+                        "  COALESCE(j.job_title, ja.job_title)            AS job_title, " +
+                        "  lsc.company_id, " +
+                        "  CASE WHEN fin.scheduled_id IS NOT NULL THEN fin.request_id::text " +
+                        "       ELSE NULL END                             AS finalized_request_id, " +
+                        "  fin.scheduled_id::text                         AS finalized_scheduled_id " +
+                        "FROM latest_sc lsc " +
+                        "JOIN public.candidates        c   ON c.candidate_id = lsc.candidate_id " +
+                        "JOIN public.job_applications  ja  ON ja.id          = lsc.job_application_id " +
+                        "LEFT JOIN public.jobs         j   ON j.id           = ja.job_id " +
+                        "LEFT JOIN round_info          ri  ON ri.job_application_id = lsc.job_application_id " +
+                        "LEFT JOIN ( " +
+                        "  SELECT DISTINCT ON (ir.job_application_id) " +
+                        "         isc.scheduled_id, ir.request_id, ir.job_application_id " +
+                        "  FROM   public.interview_scheduled isc " +
+                        "  JOIN   public.interview_requests  ir ON ir.request_id = isc.request_id " +
+                        "  WHERE  isc.status NOT IN ('cancelled') " +
+                        "  ORDER BY ir.job_application_id, isc.finalized_at DESC " +
+                        ") fin ON fin.job_application_id = lsc.job_application_id ";
 
         Object[] args;
         if (jobId != null) {
-            sql.append("AND ja.job_id = ? ");
+            sql += "WHERE ja.job_id = ? ";
             args = new Object[]{ companyId, jobId };
         } else {
             args = new Object[]{ companyId };
         }
-        sql.append("ORDER BY sc.shortlisted_at DESC");
+        sql += "ORDER BY lsc.shortlisted_at DESC";
 
-        List<Map<String, Object>> rows = jdbc.query(sql.toString(), args, (rs, rowNum) -> {
+        List<Map<String, Object>> rows = jdbc.query(sql, args, (rs, rowNum) -> {
             Map<String, Object> m = new HashMap<>();
             m.put("candidateId", rs.getString("candidate_id"));
             m.put("jobApplicationId", rs.getLong("job_application_id"));
@@ -210,9 +278,14 @@ public class ShortlistController {
             m.put("jobPostId", rs.wasNull() ? null : "JOB" + jId);
             long hId = rs.getLong("history_id");
             m.put("historyId", rs.wasNull() ? null : hId);
+            m.put("round", rs.getInt("round_number"));
             m.put("candidateName", rs.getString("candidate_name"));
             m.put("jobTitle", rs.getString("job_title"));
             m.put("companyId", rs.getString("company_id"));
+            // Finalized flag — frontend can read this directly instead of making extra API calls
+            String finalizedRequestId = rs.getString("finalized_request_id");
+            m.put("finalizedRequestId", finalizedRequestId);
+            m.put("isFinalized", finalizedRequestId != null);
             return m;
         });
 
@@ -253,7 +326,4 @@ public class ShortlistController {
             ));
         }
     }
-
-
 }
-

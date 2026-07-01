@@ -6,6 +6,70 @@ import "./CandidateHistory.css";
 
 import companyLogo from "../../assets/images/default-avatar.png";
 
+/**
+ * Converts the raw DB status + stage list into a friendly human-readable label.
+ *
+ * Priority order:
+ *  1. If any stage contains "Round N" and is completed → "Interview Round N In Progress"
+ *     (or "Interview In Progress" for single-round jobs)
+ *  2. REJECTED  → "Rejected"
+ *  3. PENDING   → "Pending Review"
+ *  4. SHORTLISTED but no interview stages completed yet → "Shortlisted"
+ *  5. All stages completed including Feedback → "Completed"
+ *  6. Fallback  → title-case of the raw value
+ */
+function resolveDisplayStatus(rawStatus, stages = []) {
+  const upper = (rawStatus || "").toUpperCase();
+
+  // Check Feedback Received
+  const feedback = stages.find((s) => s.stage === "Feedback Received");
+  if (feedback?.status === "Completed") return "Completed";
+
+  // Find the furthest completed interview stage
+  const completedInterviews = stages.filter(
+    (s) => s.stage.startsWith("Interview") &&
+           !s.stage.includes("Scheduled") &&
+           s.status === "Completed"
+  );
+  if (completedInterviews.length > 0) {
+    const last = completedInterviews[completedInterviews.length - 1];
+    // e.g. "Interview Round 2" → "Interview Round 2 In Progress"
+    // e.g. "Interview"         → "Interview In Progress"
+    return `${last.stage} In Progress`;
+  }
+
+  // Check if at least one "Scheduled" stage is completed (interview requested but not done)
+  const scheduledDone = stages.some(
+    (s) => s.stage.includes("Scheduled") && s.status === "Completed"
+  );
+  if (scheduledDone) return "Interview Scheduled";
+
+  if (upper === "REJECTED")    return "Rejected";
+  if (upper === "PENDING")     return "Pending Review";
+  if (upper === "SHORTLISTED") return "Shortlisted";
+  if (upper === "INTERVIEW")   return "Interview In Progress";
+
+  // Title-case fallback for anything unexpected
+  return rawStatus
+    ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()
+    : "—";
+}
+
+/** Returns the CSS class for the status badge */
+function statusBadgeClass(rawStatus, stages = []) {
+  const upper = (rawStatus || "").toUpperCase();
+  const feedback = stages.find((s) => s.stage === "Feedback Received");
+  if (feedback?.status === "Completed") return "ch-badge ch-badge--completed";
+  if (stages.some((s) => s.stage.includes("Interview") && s.status === "Completed"))
+    return "ch-badge ch-badge--interview";
+  if (stages.some((s) => s.stage.includes("Scheduled") && s.status === "Completed"))
+    return "ch-badge ch-badge--interview";
+  if (upper === "REJECTED")    return "ch-badge ch-badge--rejected";
+  if (upper === "PENDING")     return "ch-badge ch-badge--pending";
+  if (upper === "SHORTLISTED") return "ch-badge ch-badge--shortlisted";
+  return "ch-badge ch-badge--default";
+}
+
 export default function CandidateHistory() {
   const { applicationId } = useParams();
   const navigate = useNavigate();
@@ -53,11 +117,14 @@ export default function CandidateHistory() {
       <DashboardLayout>
         <div className="ch-page">
           <p>No history found</p>
-          <button onClick={() => navigate(-1)}>Go Back</button>
+          <button className="ch-backBtn" onClick={() => navigate(-1)}>← Back</button>
         </div>
       </DashboardLayout>
     );
   }
+
+  const displayStatus  = resolveDisplayStatus(historyData.currentStatus, historyData.stages || []);
+  const badgeClass     = statusBadgeClass(historyData.currentStatus, historyData.stages || []);
 
   return (
     <DashboardLayout>
@@ -105,9 +172,7 @@ export default function CandidateHistory() {
 
         {/* History Table */}
         <section className="ch-historyBox">
-          <div className="ch-companyBox">
-            <img src={companyLogo} alt="Company logo" className="ch-companyLogo" />
-          </div>
+
 
           <h2 className="ch-historyTitle">Candidate History Tracker Screen</h2>
 
@@ -146,7 +211,10 @@ export default function CandidateHistory() {
             <p><strong>Job Title:</strong> {historyData.jobTitle || "—"}</p>
             <p><strong>Application ID:</strong> #{applicationId}</p>
             {historyData.currentStatus && (
-              <p><strong>Current Status:</strong> {historyData.currentStatus}</p>
+              <p>
+                <strong>Current Status:</strong>{" "}
+                <span className={badgeClass}>{displayStatus}</span>
+              </p>
             )}
           </div>
         </section>

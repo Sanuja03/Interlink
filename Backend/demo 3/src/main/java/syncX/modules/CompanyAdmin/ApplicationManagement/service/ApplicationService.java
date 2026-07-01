@@ -6,7 +6,10 @@ import syncX.modules.CompanyAdmin.ApplicationManagement.entity.Application;
 import syncX.modules.CompanyAdmin.ApplicationManagement.repository.ApplicationRepository;
 import syncX.modules.CompanyAdmin.ApplicationManagement.DTO.ApplicationResponseDTO;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -21,8 +24,55 @@ public class ApplicationService {
         this.jdbc = jdbc;
     }
 
+    /**
+     * Returns the set of job_application_id values that have at least one
+     * interview request (pending, finalized, or cancelled) so the status
+     * can be shown as "INTERVIEW" instead of staying as "SHORTLISTED".
+     *
+     * Uses a single batch IN-query — no N+1.
+     */
+    private Set<Long> fetchInterviewedAppIds(List<Long> appIds) {
+        if (appIds == null || appIds.isEmpty()) return Collections.emptySet();
+
+        // Build  WHERE job_application_id IN (?, ?, ...)
+        String placeholders = appIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = "SELECT DISTINCT job_application_id " +
+                "FROM interview_requests " +
+                "WHERE job_application_id IN (" + placeholders + ") " +
+                "AND status IN ('pending', 'finalized')";
+
+        List<Long> rows = jdbc.queryForList(sql, Long.class, appIds.toArray());
+        return new HashSet<>(rows);
+    }
+
+    /**
+     * Resolves the display status for one application.
+     *
+     * Rules (in priority order):
+     *   1. REJECTED  — stays REJECTED regardless of any interview records.
+     *   2. SHORTLISTED + has an interview request → INTERVIEW
+     *   3. Everything else → use the raw status from job_applications.
+     */
+    private String resolveStatus(String rawStatus, boolean hasInterview) {
+        if ("REJECTED".equals(rawStatus)) return "REJECTED";
+        if (hasInterview) return "INTERVIEW";
+        return rawStatus;
+    }
+
     public List<ApplicationResponseDTO> getApplications(UUID companyId) {
         List<Application> applications = repository.findByCompanyId(companyId);
+
+        // Collect all application IDs for the single batch lookup.
+        List<Long> appIds = applications.stream()
+                .map(Application::getId)
+                .collect(Collectors.toList());
+
+        // One query — find which of these applications already have an
+        // interview request so we can upgrade their displayed status.
+        Set<Long> interviewedIds = fetchInterviewedAppIds(appIds);
 
         return applications.stream().map(app -> {
             ApplicationResponseDTO dto = new ApplicationResponseDTO();
@@ -33,7 +83,7 @@ public class ApplicationService {
             dto.setJobTitle(app.getJobTitle());
             dto.setAiScore(app.getScore());
             dto.setScoreDetails(app.getScoreDetails());
-            dto.setStatus(app.getStatus());
+            dto.setStatus(resolveStatus(app.getStatus(), interviewedIds.contains(app.getId())));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -41,6 +91,9 @@ public class ApplicationService {
     public ApplicationResponseDTO getApplicationDetail(Long applicationId) {
         Application app = repository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        // Single-row interview check for the detail view.
+        Set<Long> interviewedIds = fetchInterviewedAppIds(List.of(applicationId));
 
         ApplicationResponseDTO dto = new ApplicationResponseDTO();
         dto.setId(app.getId());
@@ -50,7 +103,7 @@ public class ApplicationService {
         dto.setJobTitle(app.getJobTitle());
         dto.setAiScore(app.getScore());
         dto.setScoreDetails(app.getScoreDetails());
-        dto.setStatus(app.getStatus());
+        dto.setStatus(resolveStatus(app.getStatus(), interviewedIds.contains(applicationId)));
         return dto;
     }
 
@@ -59,7 +112,6 @@ public class ApplicationService {
      * Validates that the application belongs to the given company.
      */
     public void rejectApplication(Long applicationId, UUID companyId) {
-        // Verify the application belongs to this company
         int count = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM job_applications WHERE id = ? AND \"Company_Id\" = ?",
                 Integer.class, applicationId, companyId);

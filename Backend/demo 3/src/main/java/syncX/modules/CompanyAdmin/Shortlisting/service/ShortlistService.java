@@ -1,13 +1,18 @@
 package syncX.modules.CompanyAdmin.Shortlisting.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import syncX.modules.CompanyAdmin.Shortlisting.dto.*;
 import syncX.modules.CompanyAdmin.Shortlisting.entity.ShortlistedCandidate;
 import syncX.modules.CompanyAdmin.Shortlisting.repository.ShortlistedCandidateRepository;
 import syncX.modules.CompanyAdmin.ApplicationManagement.entity.Application;
 import syncX.modules.CompanyAdmin.ApplicationManagement.repository.ApplicationRepository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -16,14 +21,12 @@ import java.util.stream.Collectors;
 /**
  * Shortlisting business logic.
  *
- * Cases handled:
- *   Case 1: Recommended + Confirm → insert shortlisted_candidates, status = SHORTLISTED
- *   Case 2: Not Recommended + Confirm (new) → no insert, status = REJECTED
- *   Case 3: Already shortlisted → show "Shortlisted" (read-only)
- *   Case 4: Already shortlisted → changed to Not Recommended → remove from shortlist, status = REJECTED
- *
- * job_applications.status updates use raw SQL via JdbcTemplate
- * to avoid the "Company_Id" column quoting issue with JPA.
+ * KEY CHANGES:
+ *  - shortlistCandidate() now also writes a ROUND_1 row into candidate_history_stages
+ *    and sets history_id on the shortlisted_candidates row so the Shortlisted page
+ *    can display it.
+ *  - rejectCandidate() writes a REJECTED row into candidate_history_stages.
+ *  - All writes are @Transactional.
  */
 @Service
 public class ShortlistService {
@@ -77,10 +80,11 @@ public class ShortlistService {
 
     // ─────────────────────────────────────────────────────────────
     // Case 1: Recommended + Confirm → shortlist
+    // Also writes ROUND_1 history stage and links history_id
     // ─────────────────────────────────────────────────────────────
+    @Transactional
     public ShortlistResponseDTO shortlistCandidate(ShortlistRequestDTO request) {
 
-        // Check if already shortlisted
         if (shortlistRepo.existsByCandidateIdAndJobApplicationIdAndCompanyId(
                 request.getCandidateId(), request.getJobApplicationId(), request.getCompanyId())) {
             throw new RuntimeException("Candidate already shortlisted for this job");
@@ -89,13 +93,24 @@ public class ShortlistService {
         Application app = applicationRepo.findById(request.getJobApplicationId())
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        String aiSuggestion = (app.getScore() != null && app.getScore() <= 70)
+        String aiSuggestion = (app.getScore() != null && app.getScore() >= 70)
                 ? "Recommended" : "Not Recommended";
 
+        // 1. Insert APPLIED history stage if not already there
+        insertHistoryStageIfAbsent(request.getCandidateId(), request.getCompanyId(),
+                request.getJobApplicationId(), app.getJobId(), "APPLIED");
+
+        // 2. Insert SHORTLISTED / ROUND_1 history stage and get its generated id
+        Long historyStageId = insertHistoryStageReturningId(
+                request.getCandidateId(), request.getCompanyId(),
+                request.getJobApplicationId(), app.getJobId(), "ROUND_1");
+
+        // 3. Save the shortlisted_candidates row
         ShortlistedCandidate sc = new ShortlistedCandidate();
         sc.setCandidateId(request.getCandidateId());
         sc.setCompanyId(request.getCompanyId());
         sc.setJobApplicationId(request.getJobApplicationId());
+        sc.setHistoryId(historyStageId);
         sc.setAiScore(app.getScore());
         sc.setAiSuggestion(aiSuggestion);
         sc.setManualDecision(request.getManualDecision());
@@ -108,25 +123,29 @@ public class ShortlistService {
 
         ShortlistedCandidate saved = shortlistRepo.save(sc);
 
-        // Update job_applications status using raw SQL (avoids Company_Id issue)
+        // 4. Update job_applications status
         updateApplicationStatus(request.getJobApplicationId(), "SHORTLISTED");
 
         return toDTO(saved, app, resolveCandidateName(saved.getCandidateId(), app));
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Case 2: Not Recommended + Confirm (new candidate)
-    // Does NOT insert into shortlisted_candidates, just rejects
+    // Case 2: Not Recommended + Confirm (new candidate) → reject
     // ─────────────────────────────────────────────────────────────
+    @Transactional
     public ShortlistResponseDTO rejectCandidate(ShortlistRequestDTO request) {
 
         Application app = applicationRepo.findById(request.getJobApplicationId())
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        // Update job_applications status using raw SQL
+        // Save APPLIED + REJECTED history stages
+        insertHistoryStageIfAbsent(request.getCandidateId(), request.getCompanyId(),
+                request.getJobApplicationId(), app.getJobId(), "APPLIED");
+        insertHistoryStageIfAbsent(request.getCandidateId(), request.getCompanyId(),
+                request.getJobApplicationId(), app.getJobId(), "REJECTED");
+
         updateApplicationStatus(request.getJobApplicationId(), "REJECTED");
 
-        // Build response DTO without saving to shortlisted_candidates
         ShortlistResponseDTO dto = new ShortlistResponseDTO();
         dto.setCandidateId(request.getCandidateId());
         dto.setCandidateName(resolveCandidateName(request.getCandidateId(), app));
@@ -149,20 +168,22 @@ public class ShortlistService {
     // Case 4: Already shortlisted → changed to Not Recommended
     // Remove from shortlisted_candidates + reject
     // ─────────────────────────────────────────────────────────────
+    @Transactional
     public ShortlistResponseDTO removeAndReject(ShortlistRequestDTO request) {
 
         Application app = applicationRepo.findById(request.getJobApplicationId())
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        // Remove from shortlisted_candidates using raw SQL
         jdbc.update("DELETE FROM shortlisted_candidates " +
                         "WHERE candidate_id = ? AND job_application_id = ? AND company_id = ?",
                 request.getCandidateId(), request.getJobApplicationId(), request.getCompanyId());
 
-        // Update job_applications status
+        // Add REJECTED history stage
+        insertHistoryStageIfAbsent(request.getCandidateId(), request.getCompanyId(),
+                request.getJobApplicationId(), app.getJobId(), "REJECTED");
+
         updateApplicationStatus(request.getJobApplicationId(), "REJECTED");
 
-        // Build response
         ShortlistResponseDTO dto = new ShortlistResponseDTO();
         dto.setCandidateId(request.getCandidateId());
         dto.setCandidateName(resolveCandidateName(request.getCandidateId(), app));
@@ -183,11 +204,64 @@ public class ShortlistService {
 
     // ─────────────────────────────────────────────────────────────
     // Update job_applications.status using raw SQL
-    // This avoids the "Company_Id" column quoting issue with JPA
     // ─────────────────────────────────────────────────────────────
     private void updateApplicationStatus(Long applicationId, String status) {
         jdbc.update("UPDATE job_applications SET status = ?::application_status WHERE id = ?",
                 status, applicationId);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Insert a history stage only if one with that stage name
+    // doesn't already exist for the application
+    // ─────────────────────────────────────────────────────────────
+    private void insertHistoryStageIfAbsent(UUID candidateId, UUID companyId,
+                                            Long jobApplicationId, Long jobId, String stage) {
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM candidate_history_stages " +
+                        "WHERE job_application_id = ? AND stage = ?",
+                Integer.class, jobApplicationId, stage);
+        if (count == null || count == 0) {
+            jdbc.update(
+                    "INSERT INTO candidate_history_stages " +
+                            "(candidate_id, company_id, job_application_id, job_id, stage, status, stage_date, created_at) " +
+                            "VALUES (?, ?, ?, ?, ?, 'COMPLETED', NOW(), NOW())",
+                    candidateId, companyId, jobApplicationId, jobId, stage);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Insert a history stage and return the generated id
+    // ─────────────────────────────────────────────────────────────
+    private Long insertHistoryStageReturningId(UUID candidateId, UUID companyId,
+                                               Long jobApplicationId, Long jobId, String stage) {
+        // If a row already exists for this stage, return its id
+        List<Long> existing = jdbc.queryForList(
+                "SELECT id FROM candidate_history_stages " +
+                        "WHERE job_application_id = ? AND stage = ? LIMIT 1",
+                Long.class, jobApplicationId, stage);
+        if (!existing.isEmpty()) return existing.get(0);
+
+        KeyHolder holder = new GeneratedKeyHolder();
+        jdbc.update(conn -> {
+            PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO candidate_history_stages " +
+                            "(candidate_id, company_id, job_application_id, job_id, stage, status, stage_date, created_at) " +
+                            "VALUES (?, ?, ?, ?, ?, 'NOT_COMPLETED', NOW(), NOW())",
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.setObject(1, candidateId);
+            ps.setObject(2, companyId);
+            ps.setLong(3, jobApplicationId);
+            if (jobId != null) ps.setLong(4, jobId); else ps.setNull(4, java.sql.Types.BIGINT);
+            ps.setString(5, stage);
+            return ps;
+        }, holder);
+
+        Map<String, Object> keys = holder.getKeys();
+        if (keys != null && keys.containsKey("id")) {
+            Object idVal = keys.get("id");
+            if (idVal instanceof Number n) return n.longValue();
+        }
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────

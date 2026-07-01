@@ -15,7 +15,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "http://localhost:5173"
+                "http://localhost:5175"
         ));
 
         //front end requests can be only  below methods and the request cant inlcude the authorization header including the jwt

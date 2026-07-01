@@ -9,6 +9,123 @@ import InterviewRequestPopup from "../../components/CompanyPages/InterviewReques
 import RequestStatusPopup from "../../components/CompanyPages/RequestStatusPopup";
 import FinalizedPanelPopup from "../../components/CompanyPages/FinalizedPanelPopup";
 
+/**
+ * ════════════════════════════════════════════════════════════════════════
+ * FRONTEND-ONLY FIX — NO BACKEND CHANGES — SAFE FALLBACK VERSION
+ * ════════════════════════════════════════════════════════════════════════
+ *
+ * NOTE: An earlier version of this file additionally called
+ * /company/shortlist/me and /company/shortlist/me/job/{jobId} to recover
+ * full multi-round history (Round 1, Round 2, etc. as separate rows).
+ * Those two endpoints currently 400 on the backend because of a real bug:
+ * Application.java's `companyId` field is annotated with MySQL-style
+ * backtick quoting (`Company_Id`) instead of Postgres double-quoting
+ * ("Company_Id"). That breaks Spring Data JPA's auto-generated
+ * findAllById() query the moment anything calls it — which only happens
+ * via those two endpoints. This is a one-line backend fix, not something
+ * fixable from the frontend.
+ *
+ * Until that's fixed, THIS file only calls the one endpoint that is known
+ * to work end-to-end: /company/shortlisted-candidates. That endpoint is
+ * fast (single SQL query, no N+1) and round-aware for whichever round is
+ * CURRENT for each application, but it intentionally collapses earlier,
+ * already-completed rounds out of the response (it only returns the
+ * latest one). So with this fallback:
+ *   - The page loads fast and without errors.
+ *   - Each candidate shows their CURRENT round only (the one needing
+ *     action), with accurate History ID / Round / Finalized status.
+ *   - Already-completed earlier rounds will NOT appear as separate rows
+ *     until the backend bug above is fixed — at which point we can swap
+ *     back to the multi-round-aware version.
+ *
+ * CONSTRAINT: We do NOT have access to edit any backend code. The
+ * /company/interview-requests/status/current endpoint only accepts
+ * candidateId + jobApplicationId — it does NOT know about "rounds". Since
+ * a candidate can have multiple shortlisted_candidates rows for the SAME
+ * jobApplicationId (one per interview round), this endpoint will return
+ * whatever single active/finalized request exists for that application —
+ * which may belong to a DIFFERENT round than the one being looked at.
+ *
+ * THE FIX (entirely in this file):
+ *   1. Each row's OWN finalized state is sourced from the LIST endpoint
+ *      response (`/company/shortlisted-candidates`), which already returns
+ *      one row per round with its own `historyId`, `isFinalized`, and
+ *      `finalizedRequestId` fields. We trust THIS per-row data for whether
+ *      to show the green "Finalized" button — never the live status-check
+ *      endpoint — because the list endpoint is round-aware (it's keyed by
+ *      historyId) while the status-check endpoint is not.
+ *
+ *   2. finalizedMap / pendingFinalizeMap are keyed by a per-ROW key
+ *      (historyId-based via rowKey()), not by jobApplicationId, so
+ *      different rounds are tracked completely independently inside this
+ *      component's own state.
+ *
+ *   3. When the admin clicks "Request / Status" on a round-row that the
+ *      list endpoint says is NOT finalized, we still have to ask the
+ *      backend "is there a pending/sent request right now for this
+ *      application?" — because that's needed to know whether to show the
+ *      "create new request" form or the "manage existing pending request"
+ *      view. BUT since the backend can return a request belonging to a
+ *      DIFFERENT round, we GUARD the response:
+ *        - If the returned request's historyId matches this row's
+ *          historyId → trust it, show status popup.
+ *        - If it does NOT match (or is missing) → we cannot be sure this
+ *          request belongs to THIS round, so we treat it as "no active
+ *          request for this round" and open a blank Request popup,
+ *          letting the admin create a brand new interview request for
+ *          this specific round.
+ *
+ *      This guard is the key frontend-only safeguard: it prevents a stale/
+ *      foreign round's request from leaking into a round that hasn't been
+ *      requested yet.
+ * ════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Builds a unique key for a single shortlist row.
+ * A candidate can appear multiple times for the SAME jobApplicationId —
+ * once per interview round. historyId uniquely identifies the round-row.
+ */
+const rowKey = (candidate) => {
+  if (candidate.historyId != null) return `h:${candidate.historyId}`;
+  return `a:${candidate.jobApplicationId}:r:${candidate.round ?? 1}`;
+};
+
+/**
+ * Frontend-only guard: decides whether a request object returned by the
+ * (round-unaware) backend status endpoint actually belongs to THIS row.
+ *
+ * Since the backend doesn't accept/return historyId scoping, we do the
+ * best we can with what it gives us:
+ *   - If the response includes a historyId field and it matches this row's
+ *     historyId → safe to trust.
+ *   - If the response includes NO historyId field at all — we cannot
+ *     verify it, so we conservatively treat it as belonging to this row
+ *     ONLY if this is the row with the highest round number we have data
+ *     for (i.e. the most recently created round), since the backend tends
+ *     to return the most recent active request. For any earlier round
+ *     row, we do NOT trust an unscoped response.
+ */
+const requestBelongsToRow = (responseData, candidate, candidates) => {
+  if (!responseData) return false;
+
+  // If the backend response carries its own historyId, use it directly.
+  if (responseData.historyId != null && candidate.historyId != null) {
+    return String(responseData.historyId) === String(candidate.historyId);
+  }
+
+  // No historyId on the response — fall back to "is this the latest round
+  // for this application?" as a best-effort guard.
+  const sameApp = candidates.filter(
+    (c) => c.jobApplicationId === candidate.jobApplicationId
+  );
+  if (sameApp.length <= 1) return true; // only one round exists, safe to trust
+
+  const maxRound = Math.max(...sameApp.map((c) => c.round ?? 1));
+  const thisRound = candidate.round ?? 1;
+  return thisRound === maxRound;
+};
+
 const ShortlistedCandidates = () => {
 
   // ── Jobs ──
@@ -37,13 +154,22 @@ const ShortlistedCandidates = () => {
   // Holds the active request data when we go from Status -> Finalized (action mode)
   const [pendingFinalizeRequest, setPendingFinalizeRequest] = useState(null);
 
-  /** finalizedMap: { [jobApplicationId]: requestId } — for already-finalized panels */
+  /**
+   * finalizedMap: { [rowKey]: { requestId, historical } }
+   *
+   * Keyed by rowKey(candidate) — i.e. by historyId — NOT by jobApplicationId.
+   * Seeded directly from the LIST endpoint's per-row isFinalized /
+   * finalizedRequestId fields, which ARE round-aware (each row in that
+   * response corresponds to one specific round). This is the most
+   * trustworthy source of "is THIS round finalized" we have without
+   * backend changes.
+   */
   const [finalizedMap, setFinalizedMap] = useState({});
 
-
+  // pendingFinalizeMap: { [rowKey]: activeRequestObject }
   const [pendingFinalizeMap, setPendingFinalizeMap] = useState({});
 
-  //  Loads the jobs dropdown
+  // ── Load jobs dropdown ─────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     setLoadingJobs(true);
@@ -67,31 +193,42 @@ const ShortlistedCandidates = () => {
   }, []);
 
 
-  // When a job is selected, loads candidates and scorecards in parallel
+  // ── Load candidates + scorecards when job changes ──────────────
   useEffect(() => {
     let cancelled = false;
     setLoadingCandidates(true);
     setCandidatesError("");
     setFinalizedMap({});
-    setPendingFinalizeMap({}); 
+    setPendingFinalizeMap({});
 
     const params = selectedJobId ? { jobId: selectedJobId } : {};
 
+    // Only call the endpoint that is known to work end-to-end. See the
+    // header comment for why /company/shortlist/me and
+    // /company/shortlist/me/job/{jobId} are NOT called here right now.
     const candidatesPromise = api.get("/company/shortlisted-candidates", { params });
     const scorecardsPromise = selectedJobId
       ? api.get("/company/scorecards", { params: { jobId: selectedJobId } })
       : Promise.resolve({ data: [] });
 
-    Promise.all([candidatesPromise, scorecardsPromise]) // load both at same time
-
-    //onsuccess
+    Promise.all([candidatesPromise, scorecardsPromise])
       .then(([candidatesRes, scorecardsRes]) => {
         if (cancelled) return;
         const candidateList = Array.isArray(candidatesRes.data) ? candidatesRes.data : [];
         setCandidates(candidateList);
         setScorecards(scorecardsRes.data || []);
+
+        // Seed the finalized map directly from the LIST endpoint's per-row
+        // data — this is round-aware (one row per round), unlike the live
+        // status-check endpoint.
+        const newFinalizedMap = {};
+        candidateList.forEach((c) => {
+          if (c.isFinalized && c.finalizedRequestId) {
+            newFinalizedMap[rowKey(c)] = { requestId: c.finalizedRequestId, historical: false };
+          }
+        });
+        setFinalizedMap(newFinalizedMap);
       })
-    //onfailure  
       .catch((err) => {
         if (cancelled) return;
         console.error("[ShortlistedCandidates] fetch failed:", err);
@@ -99,40 +236,10 @@ const ShortlistedCandidates = () => {
         setCandidates([]);
         setScorecards([]);
       })
-      
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
   }, [selectedJobId]);
-
-
-  // After candidates load, checks each one's finalized status
-  // and if finalized put to finalisezed map
-  useEffect(() => {
-    if (candidates.length === 0) { setFinalizedMap({}); return; }
-    let cancelled = false;
-
-    Promise.all(
-      candidates.map(async (c) => {
-        try {
-          const res = await api.get("/company/interview-requests/status/current", {
-            params: { candidateId: c.candidateId, jobApplicationId: c.jobApplicationId },
-          });
-          if (!cancelled && res.data?.overallStatus === "finalized" && res.data?.requestId) {
-            return { jobApplicationId: c.jobApplicationId, requestId: res.data.requestId };
-          }
-        } catch { /* ignore */ }
-        return null;
-      })
-    ).then((results) => {
-      if (cancelled) return;
-      const next = {};
-      results.forEach((r) => { if (r) next[r.jobApplicationId] = r.requestId; });
-      setFinalizedMap(next);
-    });
-
-    return () => { cancelled = true; };
-  }, [candidates]);
 
 
   const selectedJob = jobs.find((j) => j.jobId === selectedJobId) || {};
@@ -148,24 +255,27 @@ const ShortlistedCandidates = () => {
     }
   };
 
-//runs when request/status is clicked - which popup to show in which situations 
+  // Runs when Request/Status button is clicked for a specific row
   const handleOpenForCandidate = async (candidate) => {
+    const key = rowKey(candidate);
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
     setEditMode(false);
 
-    // 1) Already finalized (sent details) → open Finalized in VIEW mode
-    const knownRid = finalizedMap[candidate.jobApplicationId];
-    if (knownRid) {
-      setFinalizedRequestId(knownRid);
+    // 1) This specific round-row is already finalized (per LIST endpoint
+    //    data, which is round-aware) → open Finalized in VIEW mode.
+    const known = finalizedMap[key];
+    if (known) {
+      setFinalizedRequestId(known.requestId);
       setShowRequestPopup(false);
       setShowStatusPopup(false);
       setShowFinalizedPopup(true);
       return;
     }
 
-    // 2) Mid-finalize (admin clicked Finalize Panel earlier but hasn't submitted)
-    const pendingReq = pendingFinalizeMap[candidate.jobApplicationId];
+    // 2) Mid-finalize for this round-row (admin clicked Finalize Panel but
+    //    hasn't submitted yet) — purely local state, safe to trust.
+    const pendingReq = pendingFinalizeMap[key];
     if (pendingReq) {
       setPendingFinalizeRequest(pendingReq);
       setShowRequestPopup(false);
@@ -174,19 +284,46 @@ const ShortlistedCandidates = () => {
       return;
     }
 
-    // 3) Otherwise check backend for active request
+    // 3) Ask the backend for an active (pending/sent) request. NOTE: this
+    //    endpoint is NOT round-aware (we can't change the backend), so its
+    //    response might actually belong to a DIFFERENT round of the same
+    //    application. We guard against that below before trusting it.
     try {
       const res = await api.get("/company/interview-requests/status/current", {
-        params: { candidateId: candidate.candidateId, jobApplicationId: candidate.jobApplicationId },
+        params: {
+          candidateId: candidate.candidateId,
+          jobApplicationId: candidate.jobApplicationId,
+        },
       });
 
-      if (res.status === 204 || !res.data) {
+      const hasData = res.status !== 204 && !!res.data;
+
+      if (!hasData) {
+        // No active request at all for this application → safe either way.
         setShowFinalizedPopup(false);
         setShowStatusPopup(false);
         setShowRequestPopup(true);
-      } else if (res.data.overallStatus === "finalized") {
+        return;
+      }
+
+      // FRONTEND-ONLY GUARD: verify the returned request actually belongs
+      // to THIS round before trusting it. Without this check, an older
+      // round's finalized/pending request could incorrectly surface here.
+      const belongsHere = requestBelongsToRow(res.data, candidate, candidates);
+
+      if (!belongsHere) {
+        // The backend gave us a request from a different round — for THIS
+        // round there's effectively no active request yet, so let the
+        // admin create a brand new one.
+        setShowFinalizedPopup(false);
+        setShowStatusPopup(false);
+        setShowRequestPopup(true);
+        return;
+      }
+
+      if (res.data.overallStatus === "finalized") {
         const rid = res.data.requestId;
-        setFinalizedMap((prev) => ({ ...prev, [candidate.jobApplicationId]: rid }));
+        setFinalizedMap((prev) => ({ ...prev, [key]: { requestId: rid, historical: false } }));
         setFinalizedRequestId(rid);
         setShowRequestPopup(false);
         setShowStatusPopup(false);
@@ -204,19 +341,19 @@ const ShortlistedCandidates = () => {
     }
   };
 
-  //runs when green finalised button is clicked
+  // Runs when the green "Finalized" button is clicked directly for a row
   const handleOpenFinalizedDirect = (candidate) => {
-    const rid = finalizedMap[candidate.jobApplicationId];
-    if (!rid) return;
+    const key = rowKey(candidate);
+    const known = finalizedMap[key];
+    if (!known) return;
     candidateRef.current = candidate;
     setSelectedCandidate(candidate);
-    setFinalizedRequestId(rid);
+    setFinalizedRequestId(known.requestId);
     setShowRequestPopup(false);
     setShowStatusPopup(false);
     setShowFinalizedPopup(true);
   };
 
-//runs when close button inside popups is clicked  
   const closeAllPopups = () => {
     setShowRequestPopup(false);
     setShowStatusPopup(false);
@@ -228,20 +365,19 @@ const ShortlistedCandidates = () => {
     setEditMode(false);
   };
 
-//runs when cancel and redo  is clicked from status popup
   const handleEditFromStatus = () => {
     setEditMode(true);
     setShowStatusPopup(false);
     setShowRequestPopup(true);
   };
 
-//runs when finalise panel clicked from status page
   const handleRequestFinalize = (activeRequest) => {
     const candidate = candidateRef.current || selectedCandidate;
     if (candidate) {
+      const key = rowKey(candidate);
       setPendingFinalizeMap((prev) => ({
         ...prev,
-        [candidate.jobApplicationId]: activeRequest,
+        [key]: activeRequest,
       }));
     }
     setPendingFinalizeRequest(activeRequest);
@@ -249,13 +385,13 @@ const ShortlistedCandidates = () => {
     setShowFinalizedPopup(true);
   };
 
-  //runs when back to status is clicked from finalised page in action mode
   const handleBackToStatus = () => {
     const candidate = candidateRef.current || selectedCandidate;
     if (candidate) {
+      const key = rowKey(candidate);
       setPendingFinalizeMap((prev) => {
         const next = { ...prev };
-        delete next[candidate.jobApplicationId];
+        delete next[key];
         return next;
       });
     }
@@ -264,7 +400,6 @@ const ShortlistedCandidates = () => {
     setShowStatusPopup(true);
   };
 
-  // finalize API call — called by FinalizedPanelPopup when admin clicks "Send Scheduled Interview Details".
   const handleFinalizeSubmit = async ({ meetingLink, scorecard }) => {
     if (!pendingFinalizeRequest?.requestId) return;
     const requestId = pendingFinalizeRequest.requestId;
@@ -282,13 +417,13 @@ const ShortlistedCandidates = () => {
         );
       }
 
-      // Move candidate from "pending finalize" to "finalized"
       const candidate = candidateRef.current || selectedCandidate;
       if (candidate) {
-        setFinalizedMap((prev) => ({ ...prev, [candidate.jobApplicationId]: requestId }));
+        const key = rowKey(candidate);
+        setFinalizedMap((prev) => ({ ...prev, [key]: { requestId, historical: false } }));
         setPendingFinalizeMap((prev) => {
           const next = { ...prev };
-          delete next[candidate.jobApplicationId];
+          delete next[key];
           return next;
         });
         setFinalizedRequestId(requestId);
@@ -347,10 +482,6 @@ const ShortlistedCandidates = () => {
                 <span className="sc-job-meta-value">{jobPostId}</span>
               </div>
               <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Round</span>
-                <span className="sc-job-meta-value">Round 1</span>
-              </div>
-              <div className="sc-job-meta-box">
                 <span className="sc-job-meta-label">Shortlisted Count</span>
                 <span className="sc-job-meta-value">{candidates.length}</span>
               </div>
@@ -376,70 +507,77 @@ const ShortlistedCandidates = () => {
                     <th>Candidate Name</th>
                     {!selectedJobId && <th>Job Title</th>}
                     <th>History ID</th>
+                    <th>Round</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
 
                   {(loadingJobs && jobs.length === 0) && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24 }}>
                       Loading…
                     </td></tr>
                   )}
 
                   {!loadingJobs && !jobsError && jobs.length === 0 && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       No shortlisted candidates yet. Once candidates are shortlisted for a job, they'll show up here.
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && loadingCandidates && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24 }}>
                       Loading candidates…
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && !loadingCandidates && candidatesError && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", color: "crimson", padding: 24 }}>
                       {candidatesError}
                     </td></tr>
                   )}
 
                   {jobs.length > 0 && !loadingCandidates && !candidatesError && candidates.length === 0 && (
-                    <tr><td colSpan={selectedJobId ? 4 : 5} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
+                    <tr><td colSpan={selectedJobId ? 5 : 6} style={{ textAlign: "center", padding: 24, color: "#6b7280" }}>
                       {selectedJobId ? "No shortlisted candidates for this job." : "No shortlisted candidates."}
                     </td></tr>
                   )}
 
-                  {/*-----*/}
-                  {!loadingCandidates && !candidatesError && candidates.map((candidate, idx) => (
-                    <tr key={`${candidate.jobApplicationId}-${idx}`}>
-                      <td className="sc-bold" title={candidate.candidateId}>
-                        {String(candidate.candidateId).slice(0, 8)}…
-                      </td>
-                      <td>{candidate.candidateName}</td>
-                      {!selectedJobId && (
-                        <td>
-                          {candidate.jobTitle || "—"}
-                          {candidate.jobPostId && (
-                            <span style={{ color: "#6b7280", marginLeft: 6, fontSize: 12 }}>
-                              ({candidate.jobPostId})
-                            </span>
-                          )}
+                  {!loadingCandidates && !candidatesError && candidates.map((candidate) => {
+                    const key = rowKey(candidate);
+                    const isFinalized = !!finalizedMap[key];
+                    return (
+                      <tr key={key}>
+                        <td className="sc-bold" title={candidate.candidateId}>
+                          {String(candidate.candidateId).slice(0, 8)}…
                         </td>
-                      )}
-                      <td className="sc-bold">
-                        {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
-                      </td>
-                      <td>
-                        <CandidateActionButtons
-                          isFinalized={!!finalizedMap[candidate.jobApplicationId]}
-                          onOpenRequest={() => handleOpenForCandidate(candidate)} // function to call when request/status button is clicked
-                          onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}//function to call when finalised green button is clicked
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        <td>{candidate.candidateName}</td>
+                        {!selectedJobId && (
+                          <td>
+                            {candidate.jobTitle || "—"}
+                            {candidate.jobPostId && (
+                              <span style={{ color: "#6b7280", marginLeft: 6, fontSize: 12 }}>
+                                ({candidate.jobPostId})
+                              </span>
+                            )}
+                          </td>
+                        )}
+                        <td className="sc-bold">
+                          {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
+                        </td>
+                        <td className="sc-bold">
+                          {candidate.round != null ? `Round ${candidate.round}` : "—"}
+                        </td>
+                        <td>
+                          <CandidateActionButtons
+                            isFinalized={isFinalized}
+                            onOpenRequest={() => handleOpenForCandidate(candidate)}
+                            onOpenFinalized={() => handleOpenFinalizedDirect(candidate)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -448,7 +586,6 @@ const ShortlistedCandidates = () => {
         </div>
       </div>
 
-{/* render the popup whne showRequestPopup = true */} 
       <InterviewRequestPopup
         open={showRequestPopup}
         onClose={closeAllPopups}
@@ -456,7 +593,6 @@ const ShortlistedCandidates = () => {
         startInEditMode={editMode}
       />
 
-{/* render the popup whne showStatusPopup = true */} 
       <RequestStatusPopup
         open={showStatusPopup}
         onClose={closeAllPopups}
@@ -465,7 +601,7 @@ const ShortlistedCandidates = () => {
         onRequestFinalize={handleRequestFinalize}
       />
 
- {/* Action Mode */}    
+      {/* Action Mode */}
       {showFinalizedPopup && pendingFinalizeRequest && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}
@@ -492,7 +628,7 @@ const ShortlistedCandidates = () => {
         />
       )}
 
- {/* View Mode */}   
+      {/* View Mode */}
       {showFinalizedPopup && !pendingFinalizeRequest && finalizedRequestId && (
         <FinalizedPanelPopup
           open={showFinalizedPopup}

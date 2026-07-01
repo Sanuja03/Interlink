@@ -1,7 +1,7 @@
 .ch-page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 28px 32px 28px;
+  padding: 28px 32px 48px;
   min-height: 100%;
   background: #dadee0;
   font-family: "Outfit", sans-serif;
@@ -17,6 +17,7 @@
   color: #24698b;
 }
 
+/* ── Profile card ────────────────────────────────────────────── */
 .ch-profileCard {
   background: rgba(255, 255, 255, 0.62);
   border-radius: 22px;
@@ -45,9 +46,7 @@
   border: 2px solid rgba(36, 105, 139, 0.14);
 }
 
-.ch-profileText {
-  min-width: 0;
-}
+.ch-profileText { min-width: 0; }
 
 .ch-name {
   margin: 0 0 4px;
@@ -103,6 +102,7 @@
   font-weight: 500;
 }
 
+/* ── History box ─────────────────────────────────────────────── */
 .ch-historyBox {
   background: rgba(255, 255, 255, 0.6);
   border: 1.5px solid rgba(36, 105, 139, 0.2);
@@ -141,9 +141,8 @@
   color: #24698b;
 }
 
-.ch-tableWrap {
-  overflow-x: auto;
-}
+/* ── Table ───────────────────────────────────────────────────── */
+.ch-tableWrap { overflow-x: auto; }
 
 .ch-table {
   width: 100%;
@@ -180,14 +179,66 @@
   flex-shrink: 0;
 }
 
-.ch-statusDot.green {
-  background: #19dc19;
+.ch-statusDot.green { background: #19dc19; }
+.ch-statusDot.red   { background: #ff1e1e; }
+
+/* ── Job info & Current Status badge ────────────────────────── */
+.ch-jobInfo {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
 }
 
-.ch-statusDot.red {
-  background: #ff1e1e;
+.ch-jobInfo p { margin: 0; }
+
+/* Coloured pill badge for Current Status */
+.ch-badge {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
 }
 
+.ch-badge--shortlisted  { background: #e0f2fe; color: #0369a1; }
+.ch-badge--interview    { background: #fef9c3; color: #854d0e; }
+.ch-badge--completed    { background: #dcfce7; color: #15803d; }
+.ch-badge--rejected     { background: #fee2e2; color: #b91c1c; }
+.ch-badge--pending      { background: #f3f4f6; color: #374151; }
+.ch-badge--default      { background: #e5eaee; color: #374151; }
+
+/* ── Back button ─────────────────────────────────────────────── */
+.ch-backWrap {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ch-backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 26px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #24698b, #0c3e56);
+  color: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(12, 62, 86, 0.22);
+  transition: opacity 0.18s, transform 0.15s;
+}
+
+.ch-backBtn:hover  { opacity: 0.88; transform: translateY(-1px); }
+.ch-backBtn:active { opacity: 1;    transform: translateY(0);    }
+
+/* ── Misc ────────────────────────────────────────────────────── */
 .ch-notePill {
   min-height: 40px;
   border-radius: 999px;
@@ -200,6 +251,7 @@
   font-weight: 500;
 }
 
+/* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .ch-profileCard {
     flex-direction: column;
@@ -211,19 +263,13 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .ch-statCard {
-    width: 100%;
-  }
+  .ch-statCard { width: 100%; }
 }
 
 @media (max-width: 760px) {
-  .ch-page {
-    padding: 18px 16px 22px;
-  }
+  .ch-page { padding: 18px 16px 32px; }
 
-  .ch-pageTitle {
-    font-size: 32px;
-  }
+  .ch-pageTitle { font-size: 32px; }
 
   .ch-profileLeft {
     flex-direction: column;
@@ -235,26 +281,16 @@
     height: 96px;
   }
 
-  .ch-name {
-    font-size: 28px;
-  }
+  .ch-name { font-size: 28px; }
 
-  .ch-historyBox {
-    padding: 18px 14px 22px;
-  }
+  .ch-historyBox { padding: 18px 14px 22px; }
 
   .ch-table th,
-  .ch-table td {
-    padding: 0 10px;
-  }
+  .ch-table td { padding: 0 10px; }
 }
 
 @media (max-width: 560px) {
-  .ch-stats {
-    grid-template-columns: 1fr;
-  }
+  .ch-stats { grid-template-columns: 1fr; }
 
-  .ch-companyName {
-    font-size: 16px;
-  }
+  .ch-companyName { font-size: 16px; }
 }

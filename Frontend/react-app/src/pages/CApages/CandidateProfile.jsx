@@ -192,13 +192,6 @@ export default function CandidateProfile() {
 
           <button
             className="cp-actionBtn cp-btnBlue"
-            onClick={() => setOpenInterviewPopup(true)}
-          >
-            Schedule Interview
-          </button>
-
-          <button
-            className="cp-actionBtn cp-btnBlue"
             onClick={() => navigate(`/company/candidate-history/${applicationId}`)}
             disabled={!applicationId}
           >
@@ -232,11 +225,6 @@ export default function CandidateProfile() {
           </button>
         </div>
 
-        {openInterviewPopup && (
-          <InterviewRequestPopup
-            onClose={() => setOpenInterviewPopup(false)}
-          />
-        )}
       </div>
     </DashboardLayout>
   );

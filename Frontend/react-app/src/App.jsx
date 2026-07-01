@@ -46,6 +46,7 @@ import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
+import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -102,7 +103,7 @@ function App() {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-       
+
 
         {/* Candidate */}
         <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
@@ -132,7 +133,7 @@ function App() {
             </InterviewerRole>
           }
         />
-      
+
 
         {/* Company Admin routes */}
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
@@ -146,6 +147,7 @@ function App() {
          <Route path="/company/settings" element={<CompanyAdmin><CompanyAdminSettings /></CompanyAdmin>} />
          <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
          <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
+         <Route path="/company/interview-summary" element={<CompanyAdmin><InterviewSummaryPage /></CompanyAdmin>} />
 
         {/* All User Routes */}
         <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
