@@ -72,6 +72,26 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
         if (res.status === 204 || !res.data) { setLoadingExisting(false); return; }
 
         const data = res.data;
+
+        // Round-mismatch guard: the /current endpoint is not round-aware —
+        // it returns whatever request exists for the jobApplicationId. When a
+        // candidate moves to a new round, this would return the previous
+        // round's (finalized) request, prefilling all fields and setting
+        // isSent=true. Guard against both cases:
+        //   1. historyId returned and doesn't match → different round's request
+        //   2. overallStatus is "finalized" → belongs to a completed round
+        if (candidate.historyId != null && data.historyId != null &&
+            String(data.historyId) !== String(candidate.historyId)) {
+          setLoadingExisting(false);
+          return;
+        }
+        // The /current DTO field is "status", not "overallStatus".
+        // The backend query returns any non-cancelled request, including finalized ones.
+        if (data.status === "finalized") {
+          setLoadingExisting(false);
+          return;
+        }
+
         setPanelSize(data.panelSize || 2);
         setMode(data.mode || "Online");
         setDate(data.interviewDate || "");
@@ -181,7 +201,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       candidateId:       candidate.candidateId,
       jobApplicationId:  candidate.jobApplicationId,
       jobId:             candidate.jobId || null,
-      historyId:         candidate.historyId != null ? Number(candidate.historyId) : null,
+      historyId:         null, // candidate.historyId is a candidate_history_stages PK, not candidate_history PK — sending it violates the FK on interview_requests
       panelSize,
       interviewDate:     date,
       interviewTime:     time,

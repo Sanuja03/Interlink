@@ -321,18 +321,23 @@ const ShortlistedCandidates = () => {
         return;
       }
 
+      // The round-aware list endpoint already told us THIS row is not
+      // finalized (otherwise we'd have returned at the finalizedMap check
+      // above). /status/current is round-UNAWARE, so a "finalized" response
+      // here belongs to an EARLIER round of the same application. This round
+      // still needs its own interview — open a fresh Request popup, and do
+      // NOT cache this foreign request onto this row's key.
       if (res.data.overallStatus === "finalized") {
-        const rid = res.data.requestId;
-        setFinalizedMap((prev) => ({ ...prev, [key]: { requestId: rid, historical: false } }));
-        setFinalizedRequestId(rid);
-        setShowRequestPopup(false);
-        setShowStatusPopup(false);
-        setShowFinalizedPopup(true);
-      } else {
         setShowFinalizedPopup(false);
-        setShowRequestPopup(false);
-        setShowStatusPopup(true);
+        setShowStatusPopup(false);
+        setShowRequestPopup(true);
+        return;
       }
+
+      // Active but not finalized (pending/sent) → manage it via Status popup.
+      setShowFinalizedPopup(false);
+      setShowRequestPopup(false);
+      setShowStatusPopup(true);
     } catch (err) {
       console.error("[ShortlistedCandidates] status check failed:", err);
       setShowFinalizedPopup(false);

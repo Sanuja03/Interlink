@@ -252,13 +252,16 @@ public class ShortlistController {
                         "LEFT JOIN public.jobs         j   ON j.id           = ja.job_id " +
                         "LEFT JOIN round_info          ri  ON ri.job_application_id = lsc.job_application_id " +
                         "LEFT JOIN ( " +
-                        "  SELECT DISTINCT ON (ir.job_application_id) " +
-                        "         isc.scheduled_id, ir.request_id, ir.job_application_id " +
+                        "  SELECT isc.scheduled_id, ir.request_id, ir.job_application_id, " +
+                        "         ROW_NUMBER() OVER ( " +
+                        "           PARTITION BY ir.job_application_id " +
+                        "           ORDER BY isc.finalized_at ASC, isc.scheduled_id ASC " +
+                        "         ) AS finalize_ordinal " +
                         "  FROM   public.interview_scheduled isc " +
                         "  JOIN   public.interview_requests  ir ON ir.request_id = isc.request_id " +
                         "  WHERE  isc.status NOT IN ('cancelled') " +
-                        "  ORDER BY ir.job_application_id, isc.finalized_at DESC " +
-                        ") fin ON fin.job_application_id = lsc.job_application_id ";
+                        ") fin ON fin.job_application_id = lsc.job_application_id " +
+                        "     AND fin.finalize_ordinal   = COALESCE(ri.round_number, 1) ";
 
         Object[] args;
         if (jobId != null) {
