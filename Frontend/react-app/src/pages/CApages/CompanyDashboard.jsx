@@ -69,8 +69,9 @@ export default function CompanyDashboard() {
   return (
     <DashboardLayout>
       <div className="cd-page">
-        <div className="cd-container">
+        <h1 className="cd-title">Dashboard</h1>
 
+        <div className="cd-card">
           {/* ===== STATS ===== */}
           <div className="cd-stats-grid">
             {cards.map((card, index) => (
@@ -121,8 +122,8 @@ export default function CompanyDashboard() {
             </button>
 
           </div>
-
         </div>
+
       </div>
     </DashboardLayout>
   );

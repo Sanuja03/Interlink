@@ -64,106 +64,111 @@ export default function JobManagement() {
     <DashboardLayout>
       <div className="jm-page">
         <div className="jm-container">
-          <div className="jm-tools">
-            <div className="jm-searchWrap">
-              <input
-                className="jm-search"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <span className="jm-searchIcon">🔍</span>
+
+          <h1 className="jm-title">Job Management</h1>
+
+          <div className="jm-outer-card">
+            <div className="jm-tools">
+              <div className="jm-searchWrap">
+                <input
+                  className="jm-search"
+                  placeholder="Search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <span className="jm-searchIcon">🔍</span>
+              </div>
+
+              <select
+                className="jm-filter"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              >
+                <option value="All">Filter by Job Title</option>
+                {rows.map((r) => (
+                  <option key={r.id} value={r.title}>
+                    {r.title}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <select
-              className="jm-filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="All">Filter by Job Title</option>
-              {rows.map((r) => (
-                <option key={r.id} value={r.title}>
-                  {r.title}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="jm-table-section">
+              <h2 className="jm-cardTitle">All Job Postings</h2>
 
-          <div className="jm-card">
-            <h2 className="jm-cardTitle">Job Management</h2>
-
-            <table className="jm-table">
-              <thead>
-                <tr>
-                  <th className="jm-th">Job Title</th>
-                  <th className="jm-th">Department</th>
-                  <th className="jm-th">Status</th>
-                  <th className="jm-th">Date posted</th>
-                  <th className="jm-th"></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filtered.length === 0 ? (
+              <table className="jm-table">
+                <thead>
                   <tr>
-                    <td colSpan="5" style={{ textAlign: "center" }}>
-                      No jobs found
-                    </td>
+                    <th className="jm-th">Job Title</th>
+                    <th className="jm-th">Department</th>
+                    <th className="jm-th">Status</th>
+                    <th className="jm-th">Date posted</th>
+                    <th className="jm-th"></th>
                   </tr>
-                ) : (
-                  filtered.map((r) => (
-                    <tr key={r.id}>
-                      <td className="jm-td">{r.title}</td>
-                      <td className="jm-td">{r.dept}</td>
-                      <td className="jm-td">
-                        <span className="jm-status">
-                          <span
-                            className={
-                              "jm-dot " +
-                              (r.status === "OPEN"
-                                ? "jm-dot--green"
-                                : "jm-dot--red")
-                            }
-                          />
-                          {r.status}
-                        </span>
-                      </td>
-                      <td className="jm-td">{r.date}</td>
-                      <td className="jm-td">
-                        <div className="jm-btns">
-                          <button
-                            className="jm-btn jm-btn--edit"
-                            onClick={() => navigate(`/edit-job/${r.id}`)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className={
-                              "jm-btn " +
-                              (r.status === "OPEN"
-                                ? "jm-btn--close"
-                                : "jm-btn--active")
-                            }
-                            onClick={() => handleToggle(r.id)}
-                          >
-                            {r.status === "OPEN" ? "Close" : "Activate"}
-                          </button>
-                        </div>
+                </thead>
+
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: "center" }}>
+                        No jobs found
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    filtered.map((r) => (
+                      <tr key={r.id}>
+                        <td className="jm-td">{r.title}</td>
+                        <td className="jm-td">{r.dept}</td>
+                        <td className="jm-td">
+                          <span className="jm-status">
+                            <span
+                              className={
+                                "jm-dot " +
+                                (r.status === "OPEN"
+                                  ? "jm-dot--green"
+                                  : "jm-dot--red")
+                              }
+                            />
+                            {r.status}
+                          </span>
+                        </td>
+                        <td className="jm-td">{r.date}</td>
+                        <td className="jm-td">
+                          <div className="jm-btns">
+                            <button
+                              className="jm-btn jm-btn--edit"
+                              onClick={() => navigate(`/edit-job/${r.id}`)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className={
+                                "jm-btn " +
+                                (r.status === "OPEN"
+                                  ? "jm-btn--close"
+                                  : "jm-btn--active")
+                              }
+                              onClick={() => handleToggle(r.id)}
+                            >
+                              {r.status === "OPEN" ? "Close" : "Activate"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="jm-createWrap">
-            <button
-              className="jm-create"
-              onClick={() => navigate("/company/create-job")}
-            >
-              Create New Job Post
-            </button>
+            <div className="jm-createWrap">
+              <button
+                className="jm-create"
+                onClick={() => navigate("/company/create-job")}
+              >
+                Create New Job Post
+              </button>
+            </div>
           </div>
         </div>
       </div>

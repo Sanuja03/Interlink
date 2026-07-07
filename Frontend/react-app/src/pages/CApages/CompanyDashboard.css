@@ -1,15 +1,24 @@
-/* PAGE */
+/* PAGE — sits on the layout's gray background, no card of its own */
 .cd-page {
-  background: #f5f7f9;
-  min-height: 100vh;
+  padding: 8px 0 32px;
   font-family: 'Outfit', sans-serif;
 }
 
-/* CONTAINER */
-.cd-container {
+/* TITLE — floats outside the white card */
+.cd-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+/* CARD — white rounded box wrapping stats + action buttons */
+.cd-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
   padding: 30px;
-  max-width: 1100px;
-  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ===== STATS GRID ===== */

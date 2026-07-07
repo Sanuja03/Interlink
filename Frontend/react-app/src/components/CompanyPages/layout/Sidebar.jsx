@@ -1,20 +1,20 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import "./Sidebar.css";
+
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 import api from "../../../lib/api";
 import { supabase } from "../../../lib/supabase";
 
 import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
-
 import dashboardIcon from "../../../assets/icons/dashboard.png";
 import fileIcon from "../../../assets/icons/file.png";
 
-export default function Sidebar() {
-  const [openManage, setOpenManage] = useState(true);
-
+const Sidebar = () => {
   const navigate = useNavigate();
+
+  const [openManage, setOpenManage] = useState(true);
 
   const [companyName, setCompanyName] = useState("Company");
   const [companyLogo, setCompanyLogo] = useState(null);
@@ -66,120 +66,89 @@ export default function Sidebar() {
     loadCompany();
   }, []);
 
+  // Management dropdown sub-items (company-specific data)
+  const managementSubItems = [
+    { label: "Application Management", href: "/company/application-management" },
+    { label: "Job Management", href: "/company/job-management" },
+    { label: "Create Job", href: "/company/create-job" },
+    { label: "Shortlisted", href: "/company/shortlisted" },
+    { label: "Interview Summary", href: "/company/interview-summary" },
+    { label: "Company Settings", href: "/company/settings" },
+  ];
+
   return (
-    <div className="sb">
-      {/* ================= Logo ================= */}
-      <div className="sb-logo-area">
+    <aside className="sidebar">
+      <div className="sidebar-logo">
         <img
           src={logo}
-          alt="Interlink"
-          className="sb-logo"
+          alt="Interlink logo"
           onClick={() => navigate("/company/dashboard")}
+          style={{ cursor: "pointer" }}
         />
       </div>
 
-      {/* ================= Navigation ================= */}
-      <nav className="sb-nav">
+      <nav className="sidebar-nav">
         <NavLink
           to="/company/dashboard"
           className={({ isActive }) =>
-            isActive ? "sb-link sb-active" : "sb-link"
+            `sidebar-item ${isActive ? "active" : ""}`
           }
         >
-          <img src={dashboardIcon} className="sb-icon" alt="" />
+          <img src={dashboardIcon} alt="Dashboard icon" />
           <span>Dashboard</span>
         </NavLink>
 
-        {/* ================= Management ================= */}
-        <button
-          className="sb-dropdown-btn"
-          onClick={() => setOpenManage(!openManage)}
-        >
-          <div className="sb-dropdown-left">
-            <img src={fileIcon} className="sb-icon" alt="" />
-            <span>Management</span>
+        <div>
+          <div
+            onClick={() => setOpenManage((prev) => !prev)}
+            className="sidebar-item"
+          >
+            <img src={fileIcon} alt="Management icon" />
+            <span style={{ flex: 1 }}>Management</span>
+            <span
+              style={{
+                fontSize: 12,
+                transform: openManage ? "rotate(90deg)" : "none",
+                transition: "transform 0.2s ease",
+              }}
+            >
+              ›
+            </span>
           </div>
-          <span className={openManage ? "sb-arrow open" : "sb-arrow"}>
-            ▾
-          </span>
-        </button>
 
-        {openManage && (
-          <div className="sb-submenu">
-            <NavLink
-              to="/company/application-management"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Application Management
-            </NavLink>
-
-            <NavLink
-              to="/company/job-management"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Job Management
-            </NavLink>
-
-            <NavLink
-              to="/company/create-job"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Create Job
-            </NavLink>
-
-            <NavLink
-              to="/company/shortlisted"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Shortlisted
-            </NavLink>
-
-            {/* ── NEW ── */}
-            <NavLink
-              to="/company/interview-summary"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Interview Summary
-            </NavLink>
-
-            <NavLink
-              to="/company/settings"
-              className={({ isActive }) =>
-                isActive ? "sb-sublink sb-sub-active" : "sb-sublink"
-              }
-            >
-              Company Settings
-            </NavLink>
-          </div>
-        )}
+          {openManage && (
+            <div className="sidebar-submenu">
+              {managementSubItems.map((sub) => (
+                <NavLink
+                  key={sub.href}
+                  to={sub.href}
+                  className={({ isActive }) =>
+                    `sidebar-subitem ${isActive ? "active" : ""}`
+                  }
+                >
+                  {sub.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
-      {/* ================= Bottom Company Card ================= */}
-      <div
-        className="sb-company"
-        onClick={() => navigate("/company/settings")}
-        title="Company Settings"
-      >
-        <img
-          src={companyLogo || defaultAvatar}
-          alt="Company"
-          className="sb-company-avatar"
-        />
-        <div className="sb-company-info">
-          <div className="sb-company-name">{companyName}</div>
-          <div className="sb-company-email">{companyWebsite}</div>
-        </div>
+      <div className="sidebar-profile">
+        <Link to="/company/settings">
+          <img
+            src={companyLogo || defaultAvatar}
+            alt={companyName}
+            onError={(e) => { e.target.src = defaultAvatar; }}
+          />
+          <div className="sidebar-profile-text">
+            <p className="sidebar-profile-name">{companyName}</p>
+            <p className="sidebar-profile-email">{companyWebsite}</p>
+          </div>
+        </Link>
       </div>
-    </div>
+    </aside>
   );
-}
+};
+
+export default Sidebar;

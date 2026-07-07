@@ -1,5 +1,6 @@
 import "./DashboardLayout.css";
 import Sidebar from "./Sidebar";
+import Footer from "./Footer";
 
 import notificationicon from "../../../assets/icons/notificationicon.png";
 
@@ -33,19 +34,21 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       <main className="dl-main" style={{ marginLeft: SIDEBAR_WIDTH }}>
-        <div className="dl-top">
+        {/* top bar — plain CSS, no Tailwind dependency */}
+        <div className="dl-topbar">
+
+          {/* notification */}
           <img
-            className="dl-noti"
             src={notificationicon}
             alt="Notifications"
+            className="dl-noti-icon"
             onClick={() => setShowPopup(true)}
-            style={{ cursor: "pointer" }}
           />
 
-          <button className="dl-logout" onClick={handleLogout}>
+          <button onClick={handleLogout} className="dl-logout-btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="dl-logout-icon"
+              className="dl-logout-btn-icon"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -57,15 +60,21 @@ export default function DashboardLayout({ children }) {
                 d="M17 16l4-4m0 0l-4-4m4 4H7"
               />
             </svg>
+
             Logout
           </button>
         </div>
 
+        {/* page specific content — pages should not render their own header.
+            No forced white-card wrapper here: pages decide their own
+            layout (title on the gray background, white card around
+            content), same as the interviewer Dashboard.jsx pattern. */}
         <div className="dl-content">
-          <div className="dl-page">
-            {children}
-          </div>
+          {children}
         </div>
+
+        {/* footer — sits inside the already-offset main column */}
+        <Footer />
 
         <NotificationPopup
           isOpen={showPopup}

@@ -1,263 +1,155 @@
-/* ========================================
-   SIDEBAR
-======================================== */
-
-.sb {
-  width: 250px;
-  height: 100vh;
+/* Sidebar container */
+.sidebar {
+  min-height: 100vh;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  /* border-right removed — DashboardLayout's <aside> already has it */
-  font-family: "Outfit", sans-serif;
-  overflow-y: auto;
+  border-right: 1px solid #e5e7eb;
 }
 
-/* ========================================
-   LOGO
-======================================== */
-
-.sb-logo-area {
-  height: 120px;
+/* Logo */
+.sidebar-logo {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid #edf1f5;
+  padding: 24px 20px;
 }
 
-.sb-logo {
-  width: 90px;
-  cursor: pointer;
-  transition: 0.2s;
+.sidebar-logo img {
+  width: 160px;
+  height: 80px;
+  object-fit: contain;
 }
 
-.sb-logo:hover {
-  transform: scale(1.03);
-}
-
-/* ========================================
-   NAVIGATION
-======================================== */
-
-.sb-nav {
-  padding: 18px 12px;
+/* Navigation */
+.sidebar-nav {
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-/* ========================================
-   MAIN LINKS
-======================================== */
-
-.sb-link,
-.sb-dropdown-btn {
-  width: 100%;
+/* Menu items */
+.sidebar-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  text-decoration: none;
-
-  border: none;
-  background: transparent;
-
-  padding: 14px 16px;
-
-  border-radius: 14px;
-
-  cursor: pointer;
-
-  color: #2d3748;
-
-  font-size: 15px;
-  font-weight: 600;
-
-  transition: 0.2s;
-}
-
-.sb-link {
-  justify-content: flex-start;
   gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  color: #4b5563; /* gray-600 */
+  cursor: pointer;
 }
 
-.sb-link:hover,
-.sb-dropdown-btn:hover {
-  background: #f3f4f6;
+.sidebar-item:hover {
+  background-color: #f3f4f6; /* gray-100 */
 }
 
-.sb-active {
-  background: #d9d9d9;
-  color: #1f2937;
+/* Active item */
+.sidebar-item.active {
+  background-color: #c8c8c8;
+  color: #ffffff;
 }
 
-/* ========================================
-   ICONS
-======================================== */
-
-.sb-icon {
+/* Icons */
+.sidebar-item img {
   width: 20px;
   height: 20px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
-/* ========================================
-   DROPDOWN
-======================================== */
-
-.sb-dropdown-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sb-arrow {
-  font-size: 14px;
-  color: #6b7280;
-  transition: 0.25s;
-}
-
-.sb-arrow.open {
-  transform: rotate(180deg);
-}
-
-/* ========================================
-   SUB MENU
-======================================== */
-
-.sb-submenu {
+/* Sub menu */
+.sidebar-submenu {
+  margin-left: 32px;
   margin-top: 4px;
-  margin-left: 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.sb-sublink {
-  text-decoration: none;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 11px 16px;
+.sidebar-subitem {
+  padding: 8px 16px;
   border-radius: 12px;
-  transition: 0.2s;
-}
-
-.sb-sublink:hover {
-  background: #f5f6f8;
-}
-
-.sb-sub-active {
-  background: #d9d9d9;
-  color: #111827;
+  font-size: 13px;
   font-weight: 600;
+  color: #4b5563;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 }
 
-/* ========================================
-   COMPANY CARD
-======================================== */
+.sidebar-subitem:hover {
+  background-color: #f3f4f6;
+}
 
-.sb-company {
+.sidebar-subitem.active {
+  background-color: #c8c8c8;
+  color: #ffffff;
+}
+
+/* Bottom company/profile section */
+.sidebar-profile {
   margin-top: auto;
+  padding: 16px 12px;
+  border-top: 1px solid #e5e7eb;
+}
 
+.sidebar-profile a {
   display: flex;
   align-items: center;
   gap: 12px;
-
-  padding: 18px;
-
-  border-top: 1px solid #e5e7eb;
-
-  cursor: pointer;
-
-  transition: 0.2s;
-
-  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 }
 
-.sb-company:hover {
-  background: #f8fafc;
+.sidebar-profile a:hover {
+  background-color: #f3f4f6;
 }
 
-.sb-company-avatar {
-  width: 46px;
-  height: 46px;
-
+.sidebar-profile img {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-
-  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
-.sb-company-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.sb-company-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-
+.sidebar-profile-text p {
+  margin: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.sb-company-email {
-  margin-top: 2px;
+.sidebar-profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
 
+.sidebar-profile-email {
   font-size: 12px;
   color: #6b7280;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* ========================================
-   SCROLLBAR
-======================================== */
-
-.sb::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sb::-webkit-scrollbar-thumb {
-  background: #d4d4d4;
-  border-radius: 20px;
-}
-
-/* ========================================
+/* ==========================================
    RESPONSIVE
-======================================== */
-
-@media (max-width: 900px) {
-  .sb {
-    width: 220px;
-  }
-}
+   (kept from the company version so the sidebar
+   still collapses sensibly on small screens —
+   interviewer's Sidebar.css has none of its own,
+   this relies on DashboardLayout.css's breakpoints
+   for width/position; sizing tweaks here just keep
+   text/icons readable at narrower widths)
+========================================== */
 
 @media (max-width: 768px) {
-  .sb {
-    width: 100%;
-    height: auto;
-
+  .sidebar {
+    min-height: auto;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
-  }
-
-  .sb-logo-area {
-    height: 90px;
-  }
-
-  .sb-company {
-    padding: 14px;
-  }
-
-  .sb-company-avatar {
-    width: 40px;
-    height: 40px;
   }
 }

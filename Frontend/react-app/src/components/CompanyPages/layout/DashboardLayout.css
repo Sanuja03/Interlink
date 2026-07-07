@@ -45,57 +45,48 @@
 
 /* ==========================================
    TOP BAR
+   (plain CSS — no Tailwind dependency, so this
+   renders correctly regardless of whether Tailwind
+   is wired up in this app)
 ========================================== */
 
-.dl-top {
+.dl-topbar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 24px;
 
-  gap: 16px;
-
-  padding: 18px 24px;
+  padding: 16px 24px;
 
   background: #f5f6f8;
 
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 40;
 }
 
-/* ==========================================
-   NOTIFICATION ICON
-========================================== */
-
-.dl-noti {
-  width: 20px;
-  height: 20px;
-
+.dl-noti-icon {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 
   cursor: pointer;
-
-  opacity: 0.9;
-
-  transition: 0.2s;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
-.dl-noti:hover {
-  transform: scale(1.08);
+.dl-noti-icon:hover {
+  opacity: 1;
 }
 
-/* ==========================================
-   LOGOUT BUTTON
-========================================== */
-
-.dl-logout {
-  display: flex;
+.dl-logout-btn {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 
   padding: 6px 10px;
 
-  background: #fff1f2;
+  background: #fef2f2;
   color: #dc2626;
 
   font-size: 12px;
@@ -108,22 +99,23 @@
 
   cursor: pointer;
 
-  transition: background 0.2s;
+  transition: background 0.2s ease;
 }
 
-.dl-logout:hover {
+.dl-logout-btn:hover {
   background: #fee2e2;
 }
 
-.dl-logout:focus,
-.dl-logout:active {
+.dl-logout-btn:focus,
+.dl-logout-btn:active {
   outline: none;
   box-shadow: none;
 }
 
-.dl-logout-icon {
+.dl-logout-btn-icon {
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
 }
 
 /* ==========================================
@@ -141,21 +133,9 @@
 }
 
 /* ==========================================
-   WHITE PAGE CONTAINER
-========================================== */
-
-.dl-page {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 22px;
-  padding: 28px;
-  min-height: auto;        /* was calc(100vh - 220px) — remove fixed height */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-}
-
-
-/* ==========================================
    FOOTER
+   (Footer itself carries no sidebar-offset styling —
+   it's already inside .dl-main, which is offset)
 ========================================== */
 
 .dl-main footer {
@@ -197,17 +177,12 @@
     width: 100%;
   }
 
-  .dl-top {
-    padding: 16px;
+  .dl-topbar {
+    padding: 12px 16px;
   }
 
   .dl-content {
     padding: 18px;
-  }
-
-  .dl-page {
-    padding: 20px;
-    border-radius: 16px;
   }
 
 }

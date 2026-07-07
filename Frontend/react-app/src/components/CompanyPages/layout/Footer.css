@@ -1,19 +1,15 @@
-:root {
-  --sidebar-width: 240px;
-}
-
 /* Style guide footer color: #0C3E56 */
 /* Footer text size: 15px, line-height 20px, font Outfit */
 .il-footer {
-  background: #0c3e56; /* Footer Color from guide */
+  background: #0c3e56;
   color: rgba(255, 255, 255, 0.85);
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   padding: 34px 0 18px;
 
-  /* FIX: push footer after sidebar */
-  width: calc(100% - var(--sidebar-width));
-  margin-left: var(--sidebar-width);
-  position: relative;
+  /* No sidebar-width math here — this Footer is rendered inside
+     .dl-main, which is already margin-left/width offset for the
+     sidebar in DashboardLayout.css. Adding offset again here caused
+     it to sit partly under the sidebar. */
 }
 
 .il-footer__container {
@@ -35,8 +31,8 @@
 }
 
 .il-footer__text {
-  font-size: 15px; /* guide */
-  line-height: 20px; /* guide */
+  font-size: 15px;
+  line-height: 20px;
   margin: 0;
 }
 
@@ -85,7 +81,7 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* Social icons row centered */
+/* social icons row centered */
 .il-footer__socialRow {
   display: flex;
   justify-content: center;
@@ -113,13 +109,8 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* Responsive: stack columns on small screens */
+/* responsiveness */
 @media (max-width: 900px) {
-  .il-footer {
-    width: 100%;
-    margin-left: 0;
-  }
-
   .il-footer__container {
     grid-template-columns: 1fr 1fr;
   }

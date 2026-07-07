@@ -218,12 +218,22 @@ export default function InterviewSummaryPage() {
   /* ─── Loading ─── */
   if (loading) return (
     <DashboardLayout>
-      <div style={{ padding: 40, fontFamily: brand.font }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, color: brand.textMuted }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={brand.primary} strokeWidth="2">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-          </svg>
-          <span style={{ fontSize: 14 }}>Loading interviews…</span>
+      <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
+          Interview Summary
+        </h1>
+        <div style={{
+          background: "#ffffff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 16,
+          padding: 30,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: brand.textMuted }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={brand.primary} strokeWidth="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            <span style={{ fontSize: 14 }}>Loading interviews…</span>
+          </div>
         </div>
       </div>
     </DashboardLayout>
@@ -232,31 +242,41 @@ export default function InterviewSummaryPage() {
   /* ─── Error ─── */
   if (error) return (
     <DashboardLayout>
-      <div style={{ padding: 40, fontFamily: brand.font }}>
+      <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
+          Interview Summary
+        </h1>
         <div style={{
-          display: "inline-flex", alignItems: "center", gap: 10,
-          background: brand.dangerBg, border: `1px solid ${brand.dangerBorder}`,
-          borderRadius: brand.radius, padding: "12px 18px",
-          color: brand.danger, fontSize: 14, marginBottom: 20,
+          background: "#ffffff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 16,
+          padding: 30,
         }}>
-          ⚠ {error}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 10,
+            background: brand.dangerBg, border: `1px solid ${brand.dangerBorder}`,
+            borderRadius: brand.radius, padding: "12px 18px",
+            color: brand.danger, fontSize: 14, marginBottom: 20,
+          }}>
+            ⚠ {error}
+          </div>
+          <br />
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              background: "none",
+              border: `1px solid ${brand.border}`,
+              color: brand.textMuted,
+              padding: "8px 18px",
+              borderRadius: brand.radius,
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: brand.font,
+            }}
+          >
+            ← Go back
+          </button>
         </div>
-        <br />
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: "none",
-            border: `1px solid ${brand.border}`,
-            color: brand.textMuted,
-            padding: "8px 18px",
-            borderRadius: brand.radius,
-            cursor: "pointer",
-            fontSize: 13,
-            fontFamily: brand.font,
-          }}
-        >
-          ← Go back
-        </button>
       </div>
     </DashboardLayout>
   );
@@ -288,34 +308,33 @@ export default function InterviewSummaryPage() {
         {toast.message}
       </div>
 
-      <div style={{ padding: "28px 32px", fontFamily: brand.font }}>
+      <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
 
-        {/* Page header */}
-        <div style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: 28,
-          flexWrap: "wrap",
-          gap: 16,
+        {/* Page title — floats outside the white card, same as every other page */}
+        <h1 style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#111827",
+          margin: "0 0 4px",
         }}>
-          <div>
-            <h1 style={{
-              fontSize: 22,
-              fontWeight: 600,
-              color: brand.dark,
-              margin: 0,
-              letterSpacing: "-0.3px",
-            }}>
-              Interview Summary
-            </h1>
-            <p style={{ fontSize: 13, color: brand.textMuted, margin: "4px 0 0" }}>
-              Review scores and make pass / fail decisions for your company's interviews.
-            </p>
-          </div>
+          Interview Summary
+        </h1>
+        <p style={{ fontSize: 13, color: brand.textMuted, margin: "0 0 20px" }}>
+          Review scores and make pass / fail decisions for your company's interviews.
+        </p>
+
+        {/* One white card wraps everything below the title, same pattern
+            as CompanyDashboard's .cd-card / the other pages' outer-card */}
+        <div style={{
+          background: "#ffffff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 16,
+          padding: 30,
+          boxSizing: "border-box",
+        }}>
 
           {rows.length > 0 && (
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
               {[
                 { label: "Total",   value: rows.length,                                color: brand.primary  },
                 { label: "Decided", value: rows.filter(r => !!r.currentStatus).length, color: brand.dark     },
@@ -335,159 +354,157 @@ export default function InterviewSummaryPage() {
               ))}
             </div>
           )}
-        </div>
 
-        {/* Empty state */}
-        {rows.length === 0 ? (
-          <div style={{
-            padding: "60px 0",
-            textAlign: "center",
-            color: brand.textMuted,
-            fontSize: 14,
-            border: `1.5px dashed ${brand.border}`,
-            borderRadius: 12,
-            background: brand.surfaceAlt,
-            fontFamily: brand.font,
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-            <div style={{ fontWeight: 500, color: brand.dark, marginBottom: 6 }}>No interviews yet</div>
-            <div style={{ fontSize: 13 }}>Completed interviews will appear here for your review.</div>
-          </div>
-        ) : (
-          <div style={{
-            overflowX: "auto",
-            border: `1px solid ${brand.border}`,
-            borderRadius: 12,
-            boxShadow: "0 1px 6px rgba(12,62,86,0.06)",
-            background: brand.surface,
-          }}>
-            <table style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              tableLayout: "fixed",
-              minWidth: 960,
+          {/* Empty state */}
+          {rows.length === 0 ? (
+            <div style={{
+              padding: "60px 0",
+              textAlign: "center",
+              color: brand.textMuted,
+              fontSize: 14,
+              border: `1.5px dashed ${brand.border}`,
+              borderRadius: 12,
+              background: brand.surfaceAlt,
+              fontFamily: brand.font,
             }}>
-              <thead>
-                <tr>
-                  <Th width="17%">Candidate</Th>
-                  <Th width="10%">Interview ID</Th>
-                  <Th width="9%">Date</Th>
-                  <Th width="7%">Time</Th>
-                  <Th width="8%" center>Round</Th>
-                  <Th width="11%">Interviewer 1</Th>
-                  <Th width="11%">Interviewer 2</Th>
-                  <Th width="11%">Interviewer 3</Th>
-                  <Th width="16%" center>Decision</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, idx) => {
-                  const decided      = !!row.currentStatus;
-                  const isProcessing = deciding === row.scheduledId;
+              <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+              <div style={{ fontWeight: 500, color: brand.dark, marginBottom: 6 }}>No interviews yet</div>
+              <div style={{ fontSize: 13 }}>Completed interviews will appear here for your review.</div>
+            </div>
+          ) : (
+            <div style={{
+              overflowX: "auto",
+              border: `1px solid ${brand.border}`,
+              borderRadius: 12,
+            }}>
+              <table style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                tableLayout: "fixed",
+                minWidth: 960,
+              }}>
+                <thead>
+                  <tr>
+                    <Th width="17%">Candidate</Th>
+                    <Th width="10%">Interview ID</Th>
+                    <Th width="9%">Date</Th>
+                    <Th width="7%">Time</Th>
+                    <Th width="8%" center>Round</Th>
+                    <Th width="11%">Interviewer 1</Th>
+                    <Th width="11%">Interviewer 2</Th>
+                    <Th width="11%">Interviewer 3</Th>
+                    <Th width="16%" center>Decision</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, idx) => {
+                    const decided      = !!row.currentStatus;
+                    const isProcessing = deciding === row.scheduledId;
 
-                  return (
-                    <tr
-                      key={row.scheduledId}
-                      style={{
-                        opacity: decided ? 0.6 : 1,
-                        background: idx % 2 === 0 ? brand.surface : brand.surfaceAlt,
-                      }}
-                    >
-                      {/* Candidate */}
-                      <Td>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: brand.dark }}>
-                          {row.candidateName}
-                        </div>
-                        <div style={{ fontSize: 12, color: brand.primary, marginTop: 2 }}>
-                          {row.jobTitle}
-                        </div>
-                      </Td>
-
-                      {/* Interview ID */}
-                      <Td style={{ fontSize: 12, color: brand.textMuted, fontWeight: 500 }}>
-                        {row.interviewId}
-                      </Td>
-
-                      {/* Date */}
-                      <Td style={{ fontSize: 13 }}>
-                        {row.interviewDate
-                          ? new Date(row.interviewDate).toLocaleDateString("en-GB", {
-                              day: "numeric", month: "short",
-                            })
-                          : "—"}
-                      </Td>
-
-                      {/* Time */}
-                      <Td style={{ fontSize: 13, color: brand.textMuted }}>
-                        {row.interviewTime
-                          ? String(row.interviewTime).substring(0, 5)
-                          : "—"}
-                      </Td>
-
-                      {/* Round */}
-                      <Td center>
-                        <RoundPill current={row.currentRound} total={row.totalRounds} />
-                      </Td>
-
-                      {/* Interviewer scores */}
-                      {[0, 1, 2].map(i => (
-                        <Td key={i}>
-                          <ScoreCell score={row.interviewerScores?.[i]} />
-                        </Td>
-                      ))}
-
-                      {/* Decision */}
-                      <Td center>
-                        {decided ? (
-                          <StatusBadge status={row.currentStatus} />
-                        ) : (
-                          <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                            <button
-                              disabled={isProcessing}
-                              onClick={() => handleDecision(row.scheduledId, "PASS")}
-                              style={{
-                                background: isProcessing ? brand.successBg : brand.success,
-                                color: isProcessing ? brand.success : "#fff",
-                                border: `1px solid ${brand.successBorder}`,
-                                padding: "5px 14px",
-                                borderRadius: 20,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: isProcessing ? "wait" : "pointer",
-                                opacity: isProcessing ? 0.6 : 1,
-                                fontFamily: brand.font,
-                              }}
-                            >
-                              {isProcessing ? "…" : "Pass"}
-                            </button>
-                            <button
-                              disabled={isProcessing}
-                              onClick={() => handleDecision(row.scheduledId, "FAIL")}
-                              style={{
-                                background: "transparent",
-                                color: brand.danger,
-                                border: `1px solid ${brand.dangerBorder}`,
-                                padding: "5px 14px",
-                                borderRadius: 20,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: isProcessing ? "wait" : "pointer",
-                                opacity: isProcessing ? 0.6 : 1,
-                                fontFamily: brand.font,
-                              }}
-                            >
-                              {isProcessing ? "…" : "Fail"}
-                            </button>
+                    return (
+                      <tr
+                        key={row.scheduledId}
+                        style={{
+                          opacity: decided ? 0.6 : 1,
+                          background: idx % 2 === 0 ? brand.surface : brand.surfaceAlt,
+                        }}
+                      >
+                        {/* Candidate */}
+                        <Td>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: brand.dark }}>
+                            {row.candidateName}
                           </div>
-                        )}
-                      </Td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          <div style={{ fontSize: 12, color: brand.primary, marginTop: 2 }}>
+                            {row.jobTitle}
+                          </div>
+                        </Td>
+
+                        {/* Interview ID */}
+                        <Td style={{ fontSize: 12, color: brand.textMuted, fontWeight: 500 }}>
+                          {row.interviewId}
+                        </Td>
+
+                        {/* Date */}
+                        <Td style={{ fontSize: 13 }}>
+                          {row.interviewDate
+                            ? new Date(row.interviewDate).toLocaleDateString("en-GB", {
+                                day: "numeric", month: "short",
+                              })
+                            : "—"}
+                        </Td>
+
+                        {/* Time */}
+                        <Td style={{ fontSize: 13, color: brand.textMuted }}>
+                          {row.interviewTime
+                            ? String(row.interviewTime).substring(0, 5)
+                            : "—"}
+                        </Td>
+
+                        {/* Round */}
+                        <Td center>
+                          <RoundPill current={row.currentRound} total={row.totalRounds} />
+                        </Td>
+
+                        {/* Interviewer scores */}
+                        {[0, 1, 2].map(i => (
+                          <Td key={i}>
+                            <ScoreCell score={row.interviewerScores?.[i]} />
+                          </Td>
+                        ))}
+
+                        {/* Decision */}
+                        <Td center>
+                          {decided ? (
+                            <StatusBadge status={row.currentStatus} />
+                          ) : (
+                            <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                              <button
+                                disabled={isProcessing}
+                                onClick={() => handleDecision(row.scheduledId, "PASS")}
+                                style={{
+                                  background: isProcessing ? brand.successBg : brand.success,
+                                  color: isProcessing ? brand.success : "#fff",
+                                  border: `1px solid ${brand.successBorder}`,
+                                  padding: "5px 14px",
+                                  borderRadius: 20,
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: isProcessing ? "wait" : "pointer",
+                                  opacity: isProcessing ? 0.6 : 1,
+                                  fontFamily: brand.font,
+                                }}
+                              >
+                                {isProcessing ? "…" : "Pass"}
+                              </button>
+                              <button
+                                disabled={isProcessing}
+                                onClick={() => handleDecision(row.scheduledId, "FAIL")}
+                                style={{
+                                  background: "transparent",
+                                  color: brand.danger,
+                                  border: `1px solid ${brand.dangerBorder}`,
+                                  padding: "5px 14px",
+                                  borderRadius: 20,
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: isProcessing ? "wait" : "pointer",
+                                  opacity: isProcessing ? 0.6 : 1,
+                                  fontFamily: brand.font,
+                                }}
+                              >
+                                {isProcessing ? "…" : "Fail"}
+                              </button>
+                            </div>
+                          )}
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -217,16 +217,17 @@ export default function CreateJob() {
 
           </div>
 
-          <div className="cj-actions">
-            <button className="cj-post" onClick={handleSubmit} disabled={loading || !!sessionError}>
-              {loading ? "Posting..." : "Post"}
-            </button>
-            <button className="cj-cancel" onClick={() => window.history.back()} disabled={loading}>
-              Cancel
-            </button>
+            <div className="cj-actions">
+              <button className="cj-post" onClick={handleSubmit} disabled={loading || !!sessionError}>
+                {loading ? "Posting..." : "Post"}
+              </button>
+              <button className="cj-cancel" onClick={() => window.history.back()} disabled={loading}>
+                Cancel
+              </button>
+            </div>
+
           </div>
         </div>
-      </div>
     </DashboardLayout>
   );
 }

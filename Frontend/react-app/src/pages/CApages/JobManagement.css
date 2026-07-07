@@ -7,17 +7,13 @@
   --dot3: rgba(217, 217, 217, 0.34);
 }
 
-/* ================= PAGE ================= */
+/* ================= PAGE =================
+   Nested content inside DashboardLayout now — no min-height/
+   full-page background here anymore (that was stacking two
+   100vh containers and causing content to jump on resize).
+   The layout owns page height and background. */
 .jm-page {
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  min-height: 100vh;
-  background-color: #f3f4f6;
-  background-image:
-    radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
-    radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
-    radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
-  background-size: 56px 56px, 80px 80px, 110px 110px;
-  background-position: 0 0, 18px 22px, 40px 10px;
 }
 
 .jm-page * {
@@ -27,7 +23,15 @@
 .jm-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 28px 24px 60px;
+  padding: 8px 0 32px;
+}
+
+/* TITLE */
+.jm-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px;
 }
 
 /* ================= TOP BAR ================= */
@@ -65,12 +69,22 @@
   color: #0c3e56;
 }
 
+/* OUTER WHITE CARD — wraps search/filter + table + create button,
+   same pattern as CompanyDashboard's .cd-card */
+.jm-outer-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
 /* ================= SEARCH + FILTER ================= */
 .jm-tools {
   display: flex;
   align-items: center;
   gap: 28px;
-  margin: 18px 0 26px;
+  margin: 0 0 26px;
   flex-wrap: wrap;
 }
 
@@ -118,13 +132,10 @@
   white-space: nowrap;
 }
 
-/* ================= CARD ================= */
-.jm-card {
-  background: rgba(255,255,255,0.95);
-  border: 1px solid rgba(0,0,0,0.20);
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.10);
+/* Table section — nested inside .jm-outer-card now, so no background/
+   border/shadow of its own anymore */
+.jm-table-section {
+  padding-top: 2px;
 }
 
 .jm-cardTitle {
@@ -222,7 +233,7 @@
 .jm-createWrap {
   display: flex;
   justify-content: center;
-  margin-top: 28px;
+  margin-top: 24px;
 }
 
 .jm-create {

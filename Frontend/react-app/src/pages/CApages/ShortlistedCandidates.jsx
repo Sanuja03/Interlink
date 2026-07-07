@@ -447,63 +447,63 @@ const ShortlistedCandidates = () => {
 
           <h2 className="sc-title">Shortlisted Candidates</h2>
 
-          <div className="sc-job-picker">
-            <label className="sc-job-picker-label" htmlFor="sc-job-picker-select">
-              Job Picker:
-            </label>
-            <select
-              id="sc-job-picker-select"
-              className="sc-job-picker-select"
-              value={selectedJobId == null ? "ALL" : String(selectedJobId)}
-              onChange={handleJobChange}
-              disabled={loadingJobs || jobs.length === 0}
-            >
-              <option value="ALL">— All Jobs —</option>
-              {jobs.map((j) => (
-                <option key={j.jobId} value={j.jobId}>
-                  {j.jobTitle} ({j.jobPostId})
-                </option>
-              ))}
-            </select>
-            {loadingJobs && (
-              <span className="sc-job-picker-hint">Loading jobs…</span>
-            )}
-            {!loadingJobs && jobs.length === 0 && !jobsError && (
-              <span className="sc-job-picker-hint">No jobs with shortlisted candidates yet.</span>
-            )}
-            {!loadingJobs && jobsError && (
-              <span className="sc-job-picker-hint sc-job-picker-error">{jobsError}</span>
-            )}
-          </div>
-
-          <div className="sc-job-card">
-            <div>
-              <p className="sc-job-label">Selected Job Post</p>
-              <h3 className="sc-job-title">{jobTitle}</h3>
-            </div>
-            <div className="sc-job-meta-wrap">
-              <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Job Post ID</span>
-                <span className="sc-job-meta-value">{jobPostId}</span>
-              </div>
-              <div className="sc-job-meta-box">
-                <span className="sc-job-meta-label">Shortlisted Count</span>
-                <span className="sc-job-meta-value">{candidates.length}</span>
-              </div>
-
-              {selectedJobId && (
-                <ManageScorecardsButton
-                  jobTitle={jobTitle}
-                  jobPostId={jobPostId}
-                  jobId={selectedJobId}
-                  scorecards={scorecards}
-                  onSave={(updated) => setScorecards(updated)}
-                />
+          <div className="sc-outer-card">
+            <div className="sc-job-picker">
+              <label className="sc-job-picker-label" htmlFor="sc-job-picker-select">
+                Job Picker:
+              </label>
+              <select
+                id="sc-job-picker-select"
+                className="sc-job-picker-select"
+                value={selectedJobId == null ? "ALL" : String(selectedJobId)}
+                onChange={handleJobChange}
+                disabled={loadingJobs || jobs.length === 0}
+              >
+                <option value="ALL">— All Jobs —</option>
+                {jobs.map((j) => (
+                  <option key={j.jobId} value={j.jobId}>
+                    {j.jobTitle} ({j.jobPostId})
+                  </option>
+                ))}
+              </select>
+              {loadingJobs && (
+                <span className="sc-job-picker-hint">Loading jobs…</span>
+              )}
+              {!loadingJobs && jobs.length === 0 && !jobsError && (
+                <span className="sc-job-picker-hint">No jobs with shortlisted candidates yet.</span>
+              )}
+              {!loadingJobs && jobsError && (
+                <span className="sc-job-picker-hint sc-job-picker-error">{jobsError}</span>
               )}
             </div>
-          </div>
 
-          <div className="sc-table-card">
+            <div className="sc-job-card">
+              <div>
+                <p className="sc-job-label">Selected Job Post</p>
+                <h3 className="sc-job-title">{jobTitle}</h3>
+              </div>
+              <div className="sc-job-meta-wrap">
+                <div className="sc-job-meta-box">
+                  <span className="sc-job-meta-label">Job Post ID</span>
+                  <span className="sc-job-meta-value">{jobPostId}</span>
+                </div>
+                <div className="sc-job-meta-box">
+                  <span className="sc-job-meta-label">Shortlisted Count</span>
+                  <span className="sc-job-meta-value">{candidates.length}</span>
+                </div>
+
+                {selectedJobId && (
+                  <ManageScorecardsButton
+                    jobTitle={jobTitle}
+                    jobPostId={jobPostId}
+                    jobId={selectedJobId}
+                    scorecards={scorecards}
+                    onSave={(updated) => setScorecards(updated)}
+                  />
+                )}
+              </div>
+            </div>
+
             <div className="sc-table-wrap">
               <table className="sc-table">
                 <thead>
