@@ -70,7 +70,7 @@ const LocationBadge = ({ location }) => {
         onFocus={show}
         onBlur={hide}
       >
-        <span className="pin" aria-hidden="true">📍</span>
+        <span className="pin" aria-hidden="true"></span>
         <span>Location</span>
       </button>
       {open && (
@@ -138,9 +138,9 @@ const PendingRequestsList = ({
                     {/* Interview ID left exactly as-is */}
                     <td className="bold col-id">{row.interviewId}</td>
 
-                    <td className="col-candidate">{toTitle(row.candidate)}</td>
-                    <td className="col-job" title={toTitle(row.jobTitle)}>
-                      <span className="truncate">{toTitle(row.jobTitle)}</span>
+                    <td className="col-candidate">{row.candidate}</td>
+                    <td className="col-job" title={row.jobTitle}>
+                      <span className="truncate">{row.jobTitle}</span>
                     </td>
                     <td className="col-date">{row.date}</td>
                     <td className="col-time">{toAmPm(row.time)}</td>

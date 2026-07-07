@@ -3,14 +3,14 @@
 }
 
 .completed-header {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .completed-title {
   font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 6px;
+  margin: 16px 0 16px;
 }
 
 /* Reuse scheduled-container, scheduled-grid, scheduled-empty

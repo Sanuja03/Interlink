@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin: 16px 0 16px;
 }
 
 .singleview-title {
@@ -100,7 +100,7 @@
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
-  transition:0.2s ease;
+  transition: 0.2s ease;
 }
 
 .singleview-meeting-link:hover {
@@ -131,6 +131,7 @@
   background: #f3f4f6;
   color: #374151;
 }
+
 .singleview-history-btn {
   background: #ffffff;
   border: 1px solid #24698b;
@@ -142,12 +143,11 @@
   cursor: pointer;
   transition: 0.2s ease, color 0.2s ease;
 }
- 
+
 .singleview-history-btn:hover {
   background: #24698b;
   color: #ffffff;
 }
-
 
 @media (max-width: 700px) {
   .singleview-page {

@@ -9,7 +9,9 @@ import "./InterviewerCandidateProfile.css";
  * Interviewer Candidate Profile page.
  * Reuses the shared CandidateProfileView (same UI as company admin), but:
  *  - wrapped in the app's standard white card container
- *  - adds a page title + Back button (returns to Pending Requests)
+ *  - adds a page title + Back button that returns to wherever the user came
+ *    from (Pending Requests OR a Scheduled interview's SingleView), falling
+ *    back to Pending Requests on a direct load / refresh
  *  - READ-ONLY: Shortlist + Reject disabled; History Tracker + CV usable
  *  - data comes from the panel-gated interviewer endpoint (by requestId)
  */
@@ -32,7 +34,12 @@ export default function CandidateProfile() {
     return () => { cancelled = true; };
   }, [requestId]);
 
-  const goBack = () => navigate("/interviewer/pending-requests");
+  // Go back to wherever we came from. If there's no in-app history
+  // (direct link / refresh), fall back to Pending Requests.
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/interviewer/pending-requests");
+  };
 
   return (
     <DashboardLayout>
@@ -40,7 +47,7 @@ export default function CandidateProfile() {
         <div className="ip-profile-header">
           <h1 className="ip-profile-title">Candidate Profile</h1>
           <button className="ip-back-btn" onClick={goBack}>
-            ← Back to Pending Requests
+            ← Back
           </button>
         </div>
 

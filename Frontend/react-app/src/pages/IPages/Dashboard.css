@@ -1,15 +1,13 @@
-
 .dash-page {
-    padding: 8px 24px 32px;
-  } 
+  padding: 8px 24px 32px;
+}
 
 .dash-title {
   font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 16px;
-
-} 
+  margin: 16px 0 16px;
+}
 
 .dash-card {
   background: #ffffff;
@@ -17,15 +15,15 @@
   border-radius: 16px;
   padding: 24px;
   box-sizing: border-box;
-  max-width: 100%;   
+  max-width: 100%;
 }
-  
+
 .dash-stats-row {
   display: flex;
   justify-content: center;   /* centers cards */
-  gap: 100px;               
+  gap: 100px;
 }
-  
+
 .dash-main-row {
   display: flex;
   width: 100%;
@@ -33,49 +31,44 @@
   gap: 24px;
   flex-wrap: wrap;
 }
-  
+
 .dash-left {
   flex: 1 1 520px;
   min-width: 0;
   max-width: 100%;
 }
-  
+
 .dash-right {
   min-width: 0;
   max-width: 100%;
 }
 
-.pending-link{
+.pending-link {
   cursor: pointer;
   text-decoration: none;
 }
-  
-  /* Wrap long text, URLs, filenames, notes */
-  .dash-right a,
-  .dash-right p,
-  .dash-right span,
-  .dash-right div {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-  
 
-  .dash-right > * {
-    min-width: 0;
-    max-width: 100%;
+/* Wrap long text, URLs, filenames, notes */
+.dash-right a,
+.dash-right p,
+.dash-right span,
+.dash-right div {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dash-right > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .dash-stats-row {
+    gap: 24px;
+    flex-wrap: wrap;
   }
-  
-  
-  @media (max-width: 1200px) {
-    .dash-stats-row {
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-  
-    .dash-main-row {
-      flex-direction: column; /*layout becomes vertical*/
-    }
-  
-   
+
+  .dash-main-row {
+    flex-direction: column; /* layout becomes vertical */
   }
-  
+}

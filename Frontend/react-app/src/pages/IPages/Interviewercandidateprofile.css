@@ -15,7 +15,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 16px;
+    margin: 16px 0 16px;
     flex-wrap: wrap;
   }
   
@@ -53,9 +53,8 @@
     max-width: 100%;
   }
   
-  /* The shared view has its own .ch-page-like background/padding via .cp-page.
-     Neutralize those inside our card so it sits flush in the white container
-     instead of drawing a second background. Scoped to this wrapper only. */
+  /* Neutralize the shared view's own .cp-page background/padding so it sits
+     flush inside the white card. Scoped to this wrapper only. */
   .ip-profile-card .cp-page {
     padding: 0;
     margin: 0;

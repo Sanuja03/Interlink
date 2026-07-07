@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 16px;
+    margin: 16px 0 16px;
     flex-wrap: wrap;
   }
   
@@ -53,8 +53,7 @@
   }
   
   /* Neutralize the shared view's own page background/padding/centering so it
-     sits flush inside the white card instead of drawing its grey page bg.
-     Scoped to this wrapper only — admin history page is untouched. */
+     sits flush inside the white card. Scoped to this wrapper only. */
   .ip-history-card .ch-page {
     padding: 0;
     margin: 0;
@@ -63,9 +62,8 @@
     max-width: 100%;
   }
   
-  /* The shared view has its own big centered "History" title and a bottom
-     Back button — hide both here since this wrapper supplies the header + a
-     top-right Back button. Scoped, so admin keeps them. */
+  /* Hide the shared view's own big centered title + bottom Back button,
+     since this wrapper supplies the header + top-right Back. Scoped. */
   .ip-history-card .ch-pageTitle { display: none; }
   .ip-history-card .ch-backWrap  { display: none; }
   

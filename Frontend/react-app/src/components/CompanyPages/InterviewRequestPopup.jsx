@@ -289,19 +289,17 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
               <span className="ip-info-label">Interview ID</span>
               <span className="ip-info-value">{generatedInterviewId || "Auto-generated"}</span>
             </div>
-            <div className="ip-info-box">
-              <span className="ip-info-label">Candidate Name</span>
-              <span className="ip-info-value">{candidate.candidateName}</span>
-            </div>
+
+            {/* Empty slot — keeps the 2-column rhythm without drawing a box */}
+            <div />
+
             <div className="ip-info-box">
               <span className="ip-info-label">Job Title</span>
               <span className="ip-info-value">{candidate.jobTitle}</span>
             </div>
             <div className="ip-info-box">
-              <span className="ip-info-label">History</span>
-              <span className="ip-info-value">
-                {candidate.historyId != null ? `#${candidate.historyId}` : "—"}
-              </span>
+              <span className="ip-info-label">Candidate Name</span>
+              <span className="ip-info-value">{candidate.candidateName}</span>
             </div>
           </div>
 

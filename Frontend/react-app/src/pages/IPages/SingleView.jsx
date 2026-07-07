@@ -273,8 +273,18 @@ const SingleView = () => {
                   </span>
                 </div>
 
-                {/* History button — placeholder, no action yet */}
-                <button className="singleview-history-btn" type="button">
+                {/* Candidate History → read-only profile page (has the
+                    Candidate History Tracker button + CV inside). Gated by
+                    requestId; interviewer is on this scheduled panel so it passes. */}
+                <button
+                  className="singleview-history-btn"
+                  type="button"
+                  onClick={() =>
+                    interview.requestId &&
+                    navigate(`/interviewer/candidate-profile/${interview.requestId}`)
+                  }
+                  disabled={!interview.requestId}
+                >
                   Candidate History
                 </button>
               </div>
