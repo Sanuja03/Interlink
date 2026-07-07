@@ -16,6 +16,8 @@ import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewReque
 
 import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
 import syncX.modules.CompanyAdmin.CandidateHistory.service.CandidateHistoryService;
+import syncX.modules.CompanyAdmin.CandidateProfile.dto.CandidateProfileResponseDTO;
+import syncX.modules.CompanyAdmin.CandidateProfile.service.CandidateProfileService;
 
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.entity.Interviewer;
@@ -41,6 +43,7 @@ public class InterviewRequestService {
     @Autowired private CandidateRepository              candidateRepository;
     @Autowired private JobRepository                    jobRepository;
     @Autowired private CandidateHistoryService          candidateHistoryService;
+    @Autowired private CandidateProfileService          candidateProfileService;
 
     // ─────────────────────────────────────────────────────────────────────────
     // GET /assignable?date=&time=&durationMinutes=
@@ -424,7 +427,38 @@ public class InterviewRequestService {
     // ─────────────────────────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public CandidateHistoryResponseDTO getHistoryForInterviewer(Jwt jwt, UUID requestId) {
+        InterviewRequest ir = requireInvitedRequest(jwt, requestId);
 
+        Long jobApplicationId = ir.getJobApplicationId();
+        if (jobApplicationId == null)
+            throw new RuntimeException("This request has no linked application");
+
+        return candidateHistoryService.getHistoryByApplication(jobApplicationId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /{requestId}/candidate-profile — full candidate profile for an
+    // invited interviewer. Resolves requestId → candidateId server-side,
+    // verifies panel membership, then delegates to the existing
+    // CandidateProfileService (same profile the company admin sees).
+    // ─────────────────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public CandidateProfileResponseDTO getCandidateProfileForInterviewer(Jwt jwt, UUID requestId) {
+        InterviewRequest ir = requireInvitedRequest(jwt, requestId);
+
+        UUID candidateId = ir.getCandidateId();
+        if (candidateId == null)
+            throw new RuntimeException("This request has no linked candidate");
+
+        // jobApplicationId only drives the AI-score lookup; may be null
+        return candidateProfileService.getCandidateProfile(candidateId, ir.getJobApplicationId());
+    }
+
+    /**
+     * Loads a request with its panel and verifies the caller is on it.
+     * Shared gate for every interviewer-side read that exposes candidate data.
+     */
+    private InterviewRequest requireInvitedRequest(Jwt jwt, UUID requestId) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
         InterviewRequest ir = requestRepo.findByIdWithInterviewers(requestId)
@@ -435,11 +469,7 @@ public class InterviewRequestService {
         if (!invited)
             throw new SecurityException("You are not invited to this interview");
 
-        Long jobApplicationId = ir.getJobApplicationId();
-        if (jobApplicationId == null)
-            throw new RuntimeException("This request has no linked application");
-
-        return candidateHistoryService.getHistoryByApplication(jobApplicationId);
+        return ir;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

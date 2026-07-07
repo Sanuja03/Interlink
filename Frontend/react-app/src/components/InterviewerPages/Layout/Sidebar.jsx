@@ -1,6 +1,6 @@
 import "./Sidebar.css";
 
-import interlink from "../../../assets/interlink.png";
+import interlink from "../../../assets/interlink-logo.png";
 import dashboardIcon from "../../../assets/dashboard.png";
 import interviewIcon from "../../../assets/interviews.png";
 import calendarIcon from "../../../assets/calendar.png";

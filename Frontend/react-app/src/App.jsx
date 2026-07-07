@@ -33,6 +33,8 @@ import InterviewerPendingRequests from "./pages/IPages/PendingRequests";
 import InterviewerCompletedInterviews from "./pages/IPages/CompletedInterviews";
 import InterviewerScheduledInterviews from "./pages/IPages/ScheduledInterviews";
 import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
+import InterviewerCandidateProfile from "./pages/IPages/CandidateProfile";
+import InterviewerCandidateHistory from "./pages/IPages/CandidateHistory";
 
 // CompanyAdmin pages (FIXED)
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
@@ -128,6 +130,8 @@ function App() {
                   <Route path="completed-interviews" element={<InterviewerCompletedInterviews />} />
                   <Route path="scheduled-interviews" element={<InterviewerScheduledInterviews />} />
                   <Route path="single-view/:interviewId" element={<InterviewerCandidateSingleView />} />
+                  <Route path="candidate-profile/:requestId" element={<InterviewerCandidateProfile />} />
+                  <Route path="candidate-history/:requestId" element={<InterviewerCandidateHistory />} />
                 </Routes>
               </InterviewerProfileProvider>
             </InterviewerRole>

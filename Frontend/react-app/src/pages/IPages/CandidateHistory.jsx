@@ -1,38 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import api from "../../lib/api";
-import CandidateHistoryView from "./Candidatehistoryview";
+import CandidateHistoryView from "../CApages/Candidatehistoryview";
 
-/** Company-admin Candidate History page — fetches company endpoints. */
+/** Interviewer Candidate History page — panel-gated endpoints by requestId. */
 export default function CandidateHistory() {
-  const { applicationId } = useParams();
+  const { requestId } = useParams();
   const navigate = useNavigate();
   const [historyData, setHistoryData] = useState(null);
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!applicationId) return;
+    if (!requestId) return;
     let cancelled = false;
 
     const load = async () => {
       try {
         setLoading(true);
-        const historyRes = await api.get(
-          `/company/history/application/${applicationId}`
-        );
+        const [historyRes, profileRes] = await Promise.allSettled([
+          api.get(`/interviewer/interview-requests/${requestId}/history`),
+          api.get(`/interviewer/interview-requests/${requestId}/candidate-profile`),
+        ]);
         if (cancelled) return;
-        setHistoryData(historyRes.data);
 
-        if (historyRes.data?.candidateId) {
-          const profileRes = await api.get(
-            `/company/candidate-profile/${historyRes.data.candidateId}?applicationId=${applicationId}`
-          );
-          if (!cancelled) setCandidate(profileRes.data);
-        }
-      } catch (err) {
-        console.error("Failed to load history:", err);
+        if (historyRes.status === "fulfilled") setHistoryData(historyRes.value.data);
+        else console.error("Failed to load history:", historyRes.reason);
+
+        if (profileRes.status === "fulfilled") setCandidate(profileRes.value.data);
+        else console.error("Failed to load profile:", profileRes.reason);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -40,7 +37,7 @@ export default function CandidateHistory() {
 
     load();
     return () => { cancelled = true; };
-  }, [applicationId]);
+  }, [requestId]);
 
   return (
     <DashboardLayout>
