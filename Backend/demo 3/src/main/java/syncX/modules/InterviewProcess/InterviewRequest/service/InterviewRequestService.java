@@ -14,6 +14,9 @@ import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequestIn
 import syncX.modules.InterviewProcess.InterviewRequest.repository.AssignableInterviewerRepository;
 import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewRequestRepository;
 
+import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
+import syncX.modules.CompanyAdmin.CandidateHistory.service.CandidateHistoryService;
+
 import syncX.modules.auth.entity.Company;
 import syncX.modules.auth.entity.Interviewer;
 import syncX.modules.auth.repository.CandidateRepository;
@@ -37,6 +40,7 @@ public class InterviewRequestService {
     @Autowired private CompanyRepository                companyRepository;
     @Autowired private CandidateRepository              candidateRepository;
     @Autowired private JobRepository                    jobRepository;
+    @Autowired private CandidateHistoryService          candidateHistoryService;
 
     // ─────────────────────────────────────────────────────────────────────────
     // GET /assignable?date=&time=&durationMinutes=
@@ -409,6 +413,33 @@ public class InterviewRequestService {
         match.setResponseStatus(response);
         match.setRespondedAt(OffsetDateTime.now());
         requestRepo.save(ir);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /{requestId}/history — application history for an invited interviewer.
+    // The interviewer only holds a requestId, so we resolve requestId →
+    // jobApplicationId server-side, verify the caller is actually on this
+    // request's panel, then delegate to the existing CandidateHistoryService
+    // (same computed timeline the company admin sees).
+    // ─────────────────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public CandidateHistoryResponseDTO getHistoryForInterviewer(Jwt jwt, UUID requestId) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        InterviewRequest ir = requestRepo.findByIdWithInterviewers(requestId)
+                .orElseThrow(() -> new RuntimeException("Interview request not found"));
+
+        boolean invited = ir.getInterviewers().stream()
+                .anyMatch(iri -> iri.getInterviewerUserId().equals(userId));
+        if (!invited)
+            throw new SecurityException("You are not invited to this interview");
+
+        Long jobApplicationId = ir.getJobApplicationId();
+        if (jobApplicationId == null)
+            throw new RuntimeException("This request has no linked application");
+
+        return candidateHistoryService.getHistoryByApplication(jobApplicationId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
