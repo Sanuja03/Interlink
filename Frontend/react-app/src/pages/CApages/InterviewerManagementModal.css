@@ -44,23 +44,6 @@
   box-shadow: var(--shadow);
 }
 
-.interviewer-modal-header {
-  margin-bottom: 24px;
-}
-
-.interviewer-modal-header h2 {
-  margin: 0;
-  color: var(--primary);
-  font-size: 32px;
-  font-weight: 800;
-}
-
-.interviewer-modal-header p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
 /* ─── Stats grid variants ─── */
 
 .interviewer-stats.three-cards {
@@ -552,7 +535,6 @@
 }
 
 @media (max-width: 560px) {
-  .interviewer-modal-header,
   .interviewer-card-top,
   .interviewer-footer {
     flex-direction: column;
@@ -570,4 +552,3 @@
     width: 100%;
   }
 }
-

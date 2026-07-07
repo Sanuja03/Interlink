@@ -66,13 +66,16 @@ const Sidebar = () => {
     loadCompany();
   }, []);
 
-  // Management dropdown sub-items (company-specific data)
+  // Management dropdown sub-items (company-specific data).
+  // "Interviewer Management" is now its own page (/company/interviewer-management),
+  // so it's a plain route like everything else here.
   const managementSubItems = [
     { label: "Application Management", href: "/company/application-management" },
     { label: "Job Management", href: "/company/job-management" },
     { label: "Create Job", href: "/company/create-job" },
     { label: "Shortlisted", href: "/company/shortlisted" },
     { label: "Interview Summary", href: "/company/interview-summary" },
+    { label: "Interviewer Management", href: "/company/interviewer-management" },
     { label: "Company Settings", href: "/company/settings" },
   ];
 

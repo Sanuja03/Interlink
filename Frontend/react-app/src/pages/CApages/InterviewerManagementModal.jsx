@@ -381,15 +381,6 @@ export default function InterviewerManagementModal({ open, onClose }) {
         <div className="interviewer-modal-overlay" onClick={onClose}>
             {/* stoppropagation is used to prevent the click inside the form getting as click outside  */}
             <div className="interviewer-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="interviewer-modal-header">
-                    <div>
-                        <h2>Interviewer Management</h2>
-                        <p>
-                            Create interviewer profiles, save their details, and manage
-                            existing interviewer accounts.
-                        </p>
-                    </div>   
-                </div>
 
                 {/* stat cards */}
                 <div className="interviewer-stats three-cards">

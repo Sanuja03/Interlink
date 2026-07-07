@@ -49,6 +49,7 @@ import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
 import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
+import InterviewerManagementPage from "./pages/CApages/InterviewerManagementPage";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -152,6 +153,7 @@ function App() {
          <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
          <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
          <Route path="/company/interview-summary" element={<CompanyAdmin><InterviewSummaryPage /></CompanyAdmin>} />
+         <Route path="/company/interviewer-management" element={<InterviewerManagementPage />} />
 
         {/* All User Routes */}
         <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
