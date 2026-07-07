@@ -22,9 +22,16 @@ public interface InterviewRequestRepository
     boolean existsByCandidateIdAndJobApplicationIdAndStatus(
             UUID candidateId, Long jobApplicationId, String status);
 
+    /**
+     * "Active" now excludes both cancelled and rejected (which includes
+     * requests auto-rejected by the lifecycle job after timing out). This
+     * keeps a timed-out request from blocking a fresh one from being created
+     * and from showing up as the "current" request in the admin popup.
+     */
     @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
             "WHERE ir.companyId = :companyId AND ir.candidateId = :candidateId " +
-            "AND ir.jobApplicationId = :jobApplicationId AND ir.status <> 'cancelled' " +
+            "AND ir.jobApplicationId = :jobApplicationId " +
+            "AND ir.status NOT IN ('cancelled', 'rejected') " +
             "ORDER BY ir.createdAt DESC")
     List<InterviewRequest> findActiveByCandidateAndApplication(
             @Param("companyId") UUID companyId,
@@ -78,5 +85,27 @@ public interface InterviewRequestRepository
             "AND ir.status <> 'cancelled'")
     List<InterviewRequest> findActiveRequestsOnDate(
             @Param("companyId") UUID companyId,
+            @Param("date") LocalDate date);
+
+    /**
+     * Requests still in a given status whose interview date is strictly before
+     * the cutoff. Used by the lifecycle job to auto-reject pending requests
+     * whose interview date has passed with no response.
+     *
+     * NOTE: does NOT fetch-join interviewers — use
+     * findByStatusAndInterviewDateBeforeWithInterviewers if you need to touch
+     * the child rows, to avoid N+1 lazy loads.
+     */
+    List<InterviewRequest> findByStatusAndInterviewDateBefore(String status, LocalDate date);
+
+    /**
+     * Same as findByStatusAndInterviewDateBefore but eagerly loads interviewers,
+     * so the lifecycle job can flip child rows (pending → timed_out) without
+     * triggering a lazy load per request.
+     */
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.status = :status AND ir.interviewDate < :date")
+    List<InterviewRequest> findByStatusAndInterviewDateBeforeWithInterviewers(
+            @Param("status") String status,
             @Param("date") LocalDate date);
 }

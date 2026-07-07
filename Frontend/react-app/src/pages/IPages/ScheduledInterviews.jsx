@@ -51,7 +51,7 @@ const ScheduledInterviews = () => {
       const requestIds = panelRows.map((r) => r.request_id);
 
       // 3. Fetch interview_scheduled rows 
-      const { data: scheduledRows, error: scheduledError } = await supabase
+      let { data: scheduledRows, error: scheduledError } = await supabase
         .from("interview_scheduled")
         .select(`
           scheduled_id,
@@ -70,7 +70,8 @@ const ScheduledInterviews = () => {
         `)
         .in("request_id", requestIds)
         .in("status", ["scheduled"])
-        .order("interview_date", { ascending: true });
+        .order("interview_date", { ascending: true })
+        .order("interview_time", { ascending: true });
 
       if (scheduledError) {
         setError("Failed to load scheduled interviews.");
@@ -79,6 +80,27 @@ const ScheduledInterviews = () => {
       }
 
       if (!scheduledRows || scheduledRows.length === 0) {
+        setScheduledInterviews([]);
+        setFilteredInterviews([]);
+        return;
+      }
+
+      // Nearest upcoming interview first (left). Sort on RAW date+time
+      // (formatted "hh:mm AM/PM" would sort lexically wrong).
+      const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local
+      scheduledRows = scheduledRows
+        // Safety net: hide interviews whose date is already past. The backend
+        // job is the source of truth (expires / completes them); this only
+        // covers the few minutes before the next job run. Same-day rows stay
+        // visible (could still be ongoing).
+        .filter((r) => !r.interview_date || r.interview_date >= todayStr)
+        .sort((a, b) => {
+          const d = (a.interview_date || "").localeCompare(b.interview_date || "");
+          if (d !== 0) return d;
+          return (a.interview_time || "").localeCompare(b.interview_time || "");
+        });
+
+      if (scheduledRows.length === 0) {
         setScheduledInterviews([]);
         setFilteredInterviews([]);
         return;

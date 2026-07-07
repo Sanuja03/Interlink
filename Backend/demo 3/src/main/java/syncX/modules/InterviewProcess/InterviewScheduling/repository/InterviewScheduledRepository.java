@@ -122,4 +122,21 @@ public interface InterviewScheduledRepository
             @Param("interviewerUserId") UUID interviewerUserId,
             @Param("today") LocalDate today,
             @Param("nowTime") java.time.LocalTime nowTime);
+
+    List<InterviewScheduled> findByStatusAndInterviewDateBefore(String scheduled, LocalDate today);
+
+    /**
+     * True if ANY interviewer has submitted their scores for this scheduled
+     * interview. interviewer_score_submissions has no JPA entity, so this is a
+     * native query (same table the dashboard counts use). Used by the lifecycle
+     * job to decide completed (evaluated) vs expired (not evaluated).
+     */
+    @Query(value = """
+        SELECT EXISTS (
+            SELECT 1 FROM interviewer_score_submissions sub
+            WHERE sub.scheduled_id = :scheduledId
+              AND sub.is_submitted = true
+        )
+    """, nativeQuery = true)
+    boolean hasSubmittedEvaluation(@Param("scheduledId") UUID scheduledId);
 }

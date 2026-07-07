@@ -101,7 +101,7 @@ const ScheduledInterviewCard = ({ interview }) => {
             </button>
           ) : !isOnline && interviewLocation ? (
             <div className="si-location-box">
-              <span className="si-location-label">📍 Location</span>
+              <span className="si-location-label">Location</span>
               <span className="si-location-value">{interviewLocation}</span>
             </div>
           ) : null}

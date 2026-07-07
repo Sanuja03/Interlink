@@ -46,7 +46,8 @@ public class InterviewRequestStatusService {
 
 
     //  Only the company that owns the request may remove interviewers.
-    //  The request must not be finalised or cancelled.
+    //  The request must not be finalised, cancelled, or rejected (including
+    //  requests auto-rejected by the lifecycle job after timing out).
     //  The interviewer's responseStatus is set to "rejected" so it
     //  disappears from their pending-requests page automatically
     //  do NOT physically delete the row — we just flip the status
@@ -65,9 +66,10 @@ public class InterviewRequestStatusService {
             throw new SecurityException("You do not own this interview request");
         }
 
-        // cannot mutate a finalised or cancelled request
+        // cannot mutate a finalised, cancelled, or rejected/expired request
         if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
-                "cancelled".equalsIgnoreCase(ir.getStatus())) {
+                "cancelled".equalsIgnoreCase(ir.getStatus()) ||
+                "rejected".equalsIgnoreCase(ir.getStatus())) {
             throw new IllegalStateException(
                     "Cannot remove an interviewer from a " + ir.getStatus() + " request");
         }
@@ -117,7 +119,8 @@ public class InterviewRequestStatusService {
         }
 
         if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
-                "cancelled".equalsIgnoreCase(ir.getStatus())) {
+                "cancelled".equalsIgnoreCase(ir.getStatus()) ||
+                "rejected".equalsIgnoreCase(ir.getStatus())) {
             throw new IllegalStateException(
                     "Cannot resend for a " + ir.getStatus() + " request");
         }
@@ -159,7 +162,8 @@ public class InterviewRequestStatusService {
             throw new SecurityException("You do not own this interview request");
 
         if ("finalized".equalsIgnoreCase(ir.getStatus()) ||
-                "cancelled".equalsIgnoreCase(ir.getStatus()))
+                "cancelled".equalsIgnoreCase(ir.getStatus()) ||
+                "rejected".equalsIgnoreCase(ir.getStatus()))
             throw new IllegalStateException(
                     "Cannot add interviewers to a " + ir.getStatus() + " request");
 
