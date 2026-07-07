@@ -28,16 +28,22 @@ public class SupabaseAdminService {
         System.out.println("SERVICE KEY LOADED: " + (serviceKey != null && !serviceKey.isEmpty() ? "YES (length=" + serviceKey.length() + ")" : "NO - EMPTY!"));
     }
 
+    /** Shared admin headers (service key auth). */
+    private HttpHeaders adminHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(serviceKey);
+        headers.set("apikey", serviceKey);
+        return headers;
+    }
+
     //user for interviewer account creation
     public String createUser(String email, String password) {
 
         String url = supabaseUrl + "/auth/v1/admin/users";//Supabase API endpoint to create a user
 
         //request headers - confirm teh security/authenticity of the person whos making the account
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(serviceKey);
-        headers.set("apikey", serviceKey);
+        HttpHeaders headers = adminHeaders();
 
         //preapre the data of teh interviewer to be sent to supabase to create the user
         Map<String, Object> body = new HashMap<>();
@@ -61,15 +67,28 @@ public class SupabaseAdminService {
         return (String) responseBody.get("id");
     }
 
+    /**
+     * Delete a Supabase auth user by id. Used to roll back the external auth
+     * account when the follow-up DB writes for a new interviewer fail, so we
+     * never leave an orphaned auth user with no matching users/interviewers row.
+     */
+    public void deleteUser(String userId) {
+        if (userId == null || userId.isBlank()) return;
+
+        String url = supabaseUrl + "/auth/v1/admin/users/" + userId;
+
+        HttpEntity<Void> request = new HttpEntity<>(adminHeaders());
+
+        restTemplate.exchange(url, HttpMethod.DELETE, request, Map.class);
+
+        System.out.println("[Supabase] Deleted auth user " + userId);
+    }
 
     public void updateUserPassword(String email, String newPassword) {
         // First, find user by email
         String listUrl = supabaseUrl + "/auth/v1/admin/users?page=1&per_page=1";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(serviceKey);
-        headers.set("apikey", serviceKey);
+        HttpHeaders headers = adminHeaders();
 
         // Send HTTP GET request to Supabase to get all users existing
         ResponseEntity<Map> listResponse = restTemplate.exchange(

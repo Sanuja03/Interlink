@@ -307,6 +307,24 @@ export default function InterviewerManagementModal({ open, onClose }) {
     const createAccount = async (row) => {
         const errors = validateRow(row);
 
+        // Client-side duplicate Employee ID check against already-created
+        // interviewers in THIS company (existingInterviewers is company-scoped
+        // from /auth/interviewers). Gives instant feedback before hitting the API.
+        const empId = row.employeeId.trim().toLowerCase();
+        const dupExisting = existingInterviewers.some(
+            (i) => (i.interviewerId || "").trim().toLowerCase() === empId
+        );
+        // Also block duplicates among unsaved rows in the current form.
+        const dupInForm = rows.some(
+            (r) =>
+                r.id !== row.id &&
+                (r.employeeId || "").trim().toLowerCase() === empId &&
+                empId !== ""
+        );
+        if (dupExisting || dupInForm) {
+            errors.employeeId = "This Employee ID already exists in your company";
+        }
+
         if (Object.keys(errors).length > 0) {
             setRows((prev) =>
                 prev.map((r) => (r.id === row.id ? { ...r, errors } : r))
@@ -354,12 +372,29 @@ export default function InterviewerManagementModal({ open, onClose }) {
             fetchExistingInterviewers();
             showMessage(`Account created for ${row.name}.`, "success");
         } catch (error) {
-            const backendMessage =
+            const backendMessage = String(
                 error?.response?.data?.message ||
                 error?.response?.data ||
-                "Account creation failed.";
+                "Account creation failed."
+            );
 
-            showMessage(String(backendMessage), "error");
+            // If the backend rejected a duplicate Employee ID, surface it as an
+            // inline field error on the Employee ID input (not just the banner).
+            const isDuplicateEmpId =
+                /employee id/i.test(backendMessage) &&
+                /(already|exist)/i.test(backendMessage);
+
+            if (isDuplicateEmpId) {
+                setRows((prev) =>
+                    prev.map((r) =>
+                        r.id === row.id
+                            ? { ...r, errors: { ...r.errors, employeeId: backendMessage } }
+                            : r
+                    )
+                );
+            }
+
+            showMessage(backendMessage, "error");
         } finally {
             setLoadingId(null);
         }

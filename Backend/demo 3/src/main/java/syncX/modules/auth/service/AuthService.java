@@ -40,6 +40,9 @@ public class AuthService {
     private InterviewerRepository interviewerRepository;
 
     @Autowired
+    private InterviewerPersistenceService interviewerPersistenceService;
+
+    @Autowired
     private SupabaseAdminService supabaseAdminService;
 
     // clears isFirstLogin on first access & updates lastLoginAt
@@ -152,6 +155,23 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        // ── Employee ID must be present ──
+        if (dto.getInterviewerId() == null || dto.getInterviewerId().isBlank()) {
+            throw new RuntimeException("Employee ID is required");
+        }
+        String employeeId = dto.getInterviewerId().trim();
+
+        // ── Employee ID must be unique WITHIN this company (not globally) ──
+        // Two different companies may reuse the same ID; we only block a
+        // collision inside the admin's own company. Checked BEFORE creating the
+        // Supabase auth user so a duplicate never leaves an orphaned account.
+        if (interviewerRepository.existsByCompanyIdAndInterviewerId(
+                adminCompany.getCompanyId(), employeeId)) {
+            throw new RuntimeException(
+                    "An interviewer with Employee ID '" + employeeId
+                            + "' already exists in your company.");
+        }
+
         //Check email already exists give for the interviewer
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already exists in system");
@@ -163,38 +183,34 @@ public class AuthService {
                 dto.getPassword()
         );
 
-
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
-        User user = new User();
-        user.setUserId(interviewerUserId);
-        user.setEmail(dto.getEmail());
-        user.setRole("interviewer");
-        user.setAccountStatus("inactive");
-        user.setIsFirstLogin(true);
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
+        // ── Consistency guard ──────────────────────────────────────────────
+        // Supabase auth user is created first (external system — @Transactional
+        // can't roll it back). The two DB writes run together inside
+        // interviewerPersistenceService.persist(...) which IS transactional, so
+        // they succeed or fail as one: never a users row without an interviewers
+        // row. If that DB unit fails for any reason, we delete the Supabase user
+        // so no orphaned auth account is left behind (the bug seen before).
+        try {
+            interviewerPersistenceService.persist(
+                    dto, interviewerUserId, adminCompany, employeeId, now);
+        } catch (RuntimeException ex) {
+            try {
+                supabaseAdminService.deleteUser(supabaseUserId);
+            } catch (Exception cleanupEx) {
+                System.err.println("[completeInterviewerSignup] Failed to clean up "
+                        + "Supabase user " + supabaseUserId + " after DB failure: "
+                        + cleanupEx.getMessage());
+            }
+            throw ex;
+        }
 
-        userRepository.save(user);
-
-        Interviewer interviewer = new Interviewer();
-        interviewer.setInterviewerId(dto.getInterviewerId());
-        interviewer.setUserId(interviewerUserId);
-        interviewer.setCompanyId(adminCompany.getCompanyId());
-
-        interviewer.setFullName(dto.getFullName());
-        interviewer.setPhone(dto.getPhone());
-        interviewer.setInterviewerRole(dto.getInterviewerRole());
-        interviewer.setBranch(dto.getBranch());
-
-        interviewer.setAddress(dto.getAddress());
-        interviewer.setAbout(dto.getAbout());
-        interviewer.setEmail(dto.getEmail());
-
-        interviewer.setCreatedAt(now);
-        interviewer.setUpdatedAt(now);
-
-        interviewerRepository.save(interviewer);
+        // Re-read the freshly committed rows for the response DTO.
+        User user = userRepository.findById(interviewerUserId)
+                .orElseThrow(() -> new RuntimeException("User not found after creation"));
+        Interviewer interviewer = interviewerRepository.findByUserId(interviewerUserId)
+                .orElseThrow(() -> new RuntimeException("Interviewer not found after creation"));
 
         return mapToResponseDTO(interviewer, user);//Convert data into a clean response and send back to frontend
     }
@@ -238,13 +254,11 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Interviewer interviewer = interviewerRepository.findById(interviewerId)
-                .orElseThrow(() -> new RuntimeException("Interviewer not found"));
-
-        //check interviewer belongs to the company
-        if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
-            throw new RuntimeException("Interviewer does not belong to your company");
-        }
+        // Emp ID is unique only within a company, so resolve it together with
+        // the admin's company. This also inherently enforces ownership.
+        Interviewer interviewer = interviewerRepository
+                .findByCompanyIdAndInterviewerId(adminCompany.getCompanyId(), interviewerId)
+                .orElseThrow(() -> new RuntimeException("Interviewer not found in your company"));
 
         User user = userRepository.findById(interviewer.getUserId()).orElse(null);
         return mapToResponseDTO(interviewer, user);
@@ -264,12 +278,9 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Interviewer interviewer = interviewerRepository.findById(interviewerId)
-                .orElseThrow(() -> new RuntimeException("Interviewer not found"));
-
-        if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
-            throw new RuntimeException("Interviewer does not belong to your company");
-        }
+        Interviewer interviewer = interviewerRepository
+                .findByCompanyIdAndInterviewerId(adminCompany.getCompanyId(), interviewerId)
+                .orElseThrow(() -> new RuntimeException("Interviewer not found in your company"));
 
         User interviewerUser = userRepository.findById(interviewer.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
@@ -293,12 +304,9 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Interviewer interviewer = interviewerRepository.findById(interviewerId)
-                .orElseThrow(() -> new RuntimeException("Interviewer not found"));
-
-        if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
-            throw new RuntimeException("Interviewer does not belong to your company");
-        }
+        Interviewer interviewer = interviewerRepository
+                .findByCompanyIdAndInterviewerId(adminCompany.getCompanyId(), interviewerId)
+                .orElseThrow(() -> new RuntimeException("Interviewer not found in your company"));
 
         User interviewerUser = userRepository.findById(interviewer.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
@@ -353,7 +361,7 @@ public class AuthService {
     }
 
 
-     //Updates only the interviewer's photo URL.
+    //Updates only the interviewer's photo URL.
     public InterviewerResponseDTO updateInterviewerPhoto(Jwt jwt, String photoUrl) {
         UUID userId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
