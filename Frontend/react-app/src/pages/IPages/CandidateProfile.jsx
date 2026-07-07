@@ -3,12 +3,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import api from "../../lib/api";
 import CandidateProfileView from "../CApages/Candidateprofileview";
+import "./InterviewerCandidateProfile.css";
 
 /**
  * Interviewer Candidate Profile page.
- * Same UI as the company-admin profile (shared component), but data comes from
- * the panel-gated interviewer endpoint keyed by requestId, and it's READ-ONLY:
- * Shortlist + Reject are disabled; History Tracker + CV stay usable.
+ * Reuses the shared CandidateProfileView (same UI as company admin), but:
+ *  - wrapped in the app's standard white card container
+ *  - adds a page title + Back button (returns to Pending Requests)
+ *  - READ-ONLY: Shortlist + Reject disabled; History Tracker + CV usable
+ *  - data comes from the panel-gated interviewer endpoint (by requestId)
  */
 export default function CandidateProfile() {
   const navigate = useNavigate();
@@ -29,15 +32,30 @@ export default function CandidateProfile() {
     return () => { cancelled = true; };
   }, [requestId]);
 
+  const goBack = () => navigate("/interviewer/pending-requests");
+
   return (
     <DashboardLayout>
-      <CandidateProfileView
-        profile={profile}
-        loading={loading}
-        readOnly={true}
-        onBack={() => navigate(-1)}
-        onHistory={() => navigate(`/interviewer/candidate-history/${requestId}`)}
-      />
+      <div className="ip-profile-page">
+        <div className="ip-profile-header">
+          <h1 className="ip-profile-title">Candidate Profile</h1>
+          <button className="ip-back-btn" onClick={goBack}>
+            ← Back to Pending Requests
+          </button>
+        </div>
+
+        <div className="ip-profile-card">
+          <CandidateProfileView
+            profile={profile}
+            loading={loading}
+            readOnly={true}
+            onBack={goBack}
+            onHistory={() =>
+              navigate(`/interviewer/candidate-history/${requestId}`)
+            }
+          />
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

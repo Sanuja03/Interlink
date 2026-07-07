@@ -1,6 +1,6 @@
 import "./Login.css";
 
-import interlink from "../../assets/interlink.png";
+import interlink from "../../assets/interlink-logo.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 

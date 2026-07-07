@@ -1,0 +1,75 @@
+/* ============================================================
+   Interviewer-only wrapper around the shared CandidateHistoryView.
+   Same white-card shell as the rest of the app; Back button top-right.
+   Scoped so it never affects the admin CandidateHistory.css / .ch-* classes.
+   ============================================================ */
+
+   .ip-history-page {
+    padding: 8px 24px 32px;
+    box-sizing: border-box;
+  }
+  
+  .ip-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  
+  .ip-history-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .ip-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .ip-back-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+  .ip-back-btn:active { background: #e5e7eb; }
+  
+  /* White container holding the shared history view */
+  .ip-history-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  
+  /* Neutralize the shared view's own page background/padding/centering so it
+     sits flush inside the white card instead of drawing its grey page bg.
+     Scoped to this wrapper only — admin history page is untouched. */
+  .ip-history-card .ch-page {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    min-height: 0;
+    max-width: 100%;
+  }
+  
+  /* The shared view has its own big centered "History" title and a bottom
+     Back button — hide both here since this wrapper supplies the header + a
+     top-right Back button. Scoped, so admin keeps them. */
+  .ip-history-card .ch-pageTitle { display: none; }
+  .ip-history-card .ch-backWrap  { display: none; }
+  
+  @media (max-width: 640px) {
+    .ip-history-page { padding: 8px 12px 20px; }
+    .ip-history-card { padding: 16px; }
+  }

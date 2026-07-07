@@ -1,5 +1,5 @@
 import './SignUpCompany.css'
-import interlink from '../../assets/interlink.png'
+import interlink from '../../assets/interlink-logo.png'
 import homeicon from '../../assets/homeicon.png'
 import { supabase } from "../../lib/supabase"
 import api from "../../lib/api"
