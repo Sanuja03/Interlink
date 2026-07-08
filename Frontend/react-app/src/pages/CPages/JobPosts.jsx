@@ -8,11 +8,20 @@ import api from '../../lib/api';
 const JobPosts = () => {
     const [allJobs, setAllJobs] = useState([]);
     const [savedJobIds, setSavedJobIds] = useState([]);
+    const [appliedJobIds, setAppliedJobIds] = useState([]);
 
     useEffect(() => {
         api.get('/candidate/saved-jobs/ids')
             .then(res => setSavedJobIds(res.data || []))
             .catch(err => console.error("Error fetching saved job IDs:", err));
+
+        api.get('/candidate/applications')
+            .then(res => {
+                const appData = res.data || [];
+                const ids = appData.map(app => app.jobId);
+                setAppliedJobIds(ids);
+            })
+            .catch(err => console.error("Error fetching applied job IDs:", err));
     }, []);
 
     const navigate = useNavigate();
@@ -218,10 +227,19 @@ const JobPosts = () => {
                                     </button>
                                     <button
                                         onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
-                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-                                        style={{ background: 'linear-gradient(135deg, #0C3E56, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+                                        disabled={appliedJobIds.includes(job.id)}
+                                        className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 ${
+                                            appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
+                                        }`}
+                                        style={{
+                                            background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #0C3E56, #1a6a82)',
+                                            outline: 'none',
+                                            border: 'none',
+                                            boxShadow: appliedJobIds.includes(job.id) ? 'none' : '0 2px 8px rgba(0,0,0,0.18)',
+                                            cursor: appliedJobIds.includes(job.id) ? 'not-allowed' : 'pointer'
+                                        }}
                                     >
-                                        Apply Now
+                                        {appliedJobIds.includes(job.id) ? 'Already Applied' : 'Apply Now'}
                                     </button>
                                 </div>
                             </div>

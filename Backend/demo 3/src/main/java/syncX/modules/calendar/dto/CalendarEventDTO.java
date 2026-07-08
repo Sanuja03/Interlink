@@ -12,6 +12,7 @@ public class CalendarEventDTO {
     private String endTime;
     private String mode;
     private String meetingLink;
+    private String interviewLocation;
     private String status;
     private boolean showGenerateQuestions;
     private boolean showJoinButton;

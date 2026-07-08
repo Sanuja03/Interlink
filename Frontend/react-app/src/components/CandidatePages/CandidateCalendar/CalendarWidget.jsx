@@ -260,33 +260,55 @@ export const DetailPanel = ({
             <div className="cw-detail__date">{formatLong(y, parseInt(m) - 1, parseInt(d))}</div>
             {ivs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {ivs.map((iv, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', paddingBottom: idx < ivs.length - 1 ? '20px' : '0', borderBottom: idx < ivs.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
-                            <div>
-                                <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.title}</div>
-                                <div className="cw-detail__row"><span className="cw-detail__icon">⏰</span>{iv.time}</div>
-                                <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.mode}</div>
-                            </div>
-                            <div className="cw-detail__actions">
-                                {showJoinButton && (
-                                    isPastDay() ? (
-                                        <button className="cw-btn" disabled style={{ background: '#9ca3af', boxShadow: 'none', cursor: 'not-allowed', opacity: 0.7 }}>
-                                            Expired
+                    {ivs.map((iv, idx) => {
+                        const modeLower = iv.mode?.toLowerCase() || '';
+                        const isOnline = modeLower.includes('online');
+                        const isPhysical = modeLower.includes('physical') || modeLower.includes('onsite');
+                        return (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', paddingBottom: idx < ivs.length - 1 ? '20px' : '0', borderBottom: idx < ivs.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+                                <div>
+                                    <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.title}</div>
+                                    <div className="cw-detail__row"><span className="cw-detail__icon">⏰</span>{iv.time}</div>
+                                    <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.mode}</div>
+                                    {isOnline && iv.meetingLink && (
+                                        <div className="cw-detail__row">
+                                            <span className="cw-detail__icon">🔗</span>
+                                            <a href={iv.meetingLink.startsWith('http') ? iv.meetingLink : `https://${iv.meetingLink}`} 
+                                               target="_blank" 
+                                               rel="noopener noreferrer" 
+                                               style={{ color: '#1a6a82', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                                                {iv.meetingLink}
+                                            </a>
+                                        </div>
+                                    )}
+                                    {isPhysical && iv.interviewLocation && (
+                                        <div className="cw-detail__row">
+                                            <span className="cw-detail__icon">📍</span>
+                                            <span>{iv.interviewLocation}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="cw-detail__actions">
+                                    {showJoinButton && iv.meetingLink && (
+                                        isPastDay() ? (
+                                            <button className="cw-btn" disabled style={{ background: '#9ca3af', boxShadow: 'none', cursor: 'not-allowed', opacity: 0.7 }}>
+                                                Expired
+                                            </button>
+                                        ) : (
+                                            <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
+                                                Join Interview
+                                            </button>
+                                        )
+                                    )}
+                                    {showGenerateButton && (
+                                        <button className="cw-btn" onClick={() => onGenerateQuestions?.(iv)}>
+                                            Generate Questions
                                         </button>
-                                    ) : (
-                                        <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
-                                            Join Interview
-                                        </button>
-                                    )
-                                )}
-                                {showGenerateButton && (
-                                    <button className="cw-btn" onClick={() => onGenerateQuestions?.(iv)}>
-                                        Generate Questions
-                                    </button>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="cw-no-iv">No interviews scheduled for this date.</div>

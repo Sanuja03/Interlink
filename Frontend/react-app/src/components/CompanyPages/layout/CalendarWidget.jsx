@@ -160,27 +160,51 @@ export default function CalendarWidget({
       {/* Detail Panel */}
       {selectedInterviews.length > 0 && (
         <div className="cw-detail">
-          {selectedInterviews.map((selectedInterview, idx) => (
-            <div key={idx} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: idx < selectedInterviews.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
-              <h3>{selectedInterview.title}</h3>
-              <p>{selectedInterview.time}</p>
-              <p>{selectedInterview.mode}</p>
+          {selectedInterviews.map((selectedInterview, idx) => {
+            const modeLower = selectedInterview.mode?.toLowerCase() || '';
+            const isOnline = modeLower.includes('online');
+            const isPhysical = modeLower.includes('physical') || modeLower.includes('onsite');
+            return (
+              <div key={idx} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: idx < selectedInterviews.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
+                <h3>{selectedInterview.title}</h3>
+                <p>⏰ {selectedInterview.time}</p>
+                <p>🌐 {selectedInterview.mode}</p>
+                {isOnline && selectedInterview.meetingLink && (
+                  <p style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '8px 0' }}>
+                    <span>🔗</span>
+                    <a href={selectedInterview.meetingLink.startsWith('http') ? selectedInterview.meetingLink : `https://${selectedInterview.meetingLink}`} 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       style={{ color: '#1a6a82', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                      {selectedInterview.meetingLink}
+                    </a>
+                  </p>
+                )}
+                {isPhysical && selectedInterview.interviewLocation && (
+                  <p style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '8px 0' }}>
+                    <span>📍</span>
+                    <span>{selectedInterview.interviewLocation}</span>
+                  </p>
+                )}
 
-              <div className="cw-actions">
-                <button onClick={() => onJoinInterview?.(selectedInterview)}>
-                  Join Interview
-                </button>
+                <div className="cw-actions">
+                  {selectedInterview.meetingLink && (
+                    <button onClick={() => onJoinInterview?.(selectedInterview)}>
+                      Join Interview
+                    </button>
+                  )}
 
-                <button
-                  onClick={() =>
-                    onGenerateQuestions?.(selectedInterview)
-                  }
-                >
-                  Generate Questions
-                </button>
+                  <button
+                    onClick={() =>
+                      onGenerateQuestions?.(selectedInterview)
+                    }
+                  >
+                    Generate Questions
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

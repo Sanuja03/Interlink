@@ -34,6 +34,7 @@ const JobPostDetails = () => {
     const [job, setJob] = useState(null);
     const [allJobs, setAllJobs] = useState([]);
     const [savedJobIds, setSavedJobIds] = useState([]);
+    const [appliedJobIds, setAppliedJobIds] = useState([]);
 
     const toggleSaveJob = () => {
         if (!job) return;
@@ -63,6 +64,14 @@ const JobPostDetails = () => {
         api.get('/candidate/saved-jobs/ids')
             .then(res => setSavedJobIds(res.data || []))
             .catch(err => console.error("Error fetching saved job IDs:", err));
+
+        api.get('/candidate/applications')
+            .then(res => {
+                const appData = res.data || [];
+                const ids = appData.map(app => app.jobId);
+                setAppliedJobIds(ids);
+            })
+            .catch(err => console.error("Error fetching applied job IDs:", err));
 
         window.scrollTo(0, 0);
     }, [id]);
@@ -208,17 +217,22 @@ const JobPostDetails = () => {
                                 }}>{savedJobIds.includes(job.id) ? 'Saved' : 'Save'}</button>
                                 <button
                                     onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
+                                    disabled={appliedJobIds.includes(job.id)}
                                     style={{
-                                        background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
-                                        color: '#fff',
+                                        background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
+                                        color: appliedJobIds.includes(job.id) ? '#e2e8f0' : '#fff',
                                         border: 'none',
                                         borderRadius: '30px',
                                         padding: '12px 40px',
                                         fontSize: '14px',
                                         fontWeight: '700',
-                                        cursor: 'pointer',
+                                        cursor: appliedJobIds.includes(job.id) ? 'not-allowed' : 'pointer',
                                         minWidth: '140px',
-                                    }}>apply now</button>
+                                        opacity: appliedJobIds.includes(job.id) ? 0.7 : 1,
+                                    }}
+                                >
+                                    {appliedJobIds.includes(job.id) ? 'already applied' : 'apply now'}
+                                </button>
                             </div>
                         </div>
                     </div>

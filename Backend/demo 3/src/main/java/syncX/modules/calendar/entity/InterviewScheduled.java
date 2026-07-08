@@ -64,6 +64,9 @@ public class InterviewScheduled {
     @Column(name = "meeting_link", columnDefinition = "TEXT")
     private String meetingLink;
 
+    @Column(name = "interview_location")
+    private String interviewLocation;
+
     @Column(name = "scorecard_id")
     private UUID scorecardId;
 

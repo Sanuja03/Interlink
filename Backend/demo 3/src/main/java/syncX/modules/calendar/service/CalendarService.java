@@ -96,7 +96,11 @@ public class CalendarService {
         
         if (entity.getJob() != null) {
             dto.setJobTitle(entity.getJob().getTitle());
-            dto.setCompanyName(entity.getJob().getCompany());
+            String compName = entity.getJob().getCompany();
+            if (compName == null && entity.getCompanyDetails() != null) {
+                compName = entity.getCompanyDetails().getCompanyName();
+            }
+            dto.setCompanyName(compName);
         }
         
         if (entity.getInterviewDate() != null) {
@@ -113,6 +117,8 @@ public class CalendarService {
         if ("Online".equalsIgnoreCase(entity.getMode()) || "Online Interview".equalsIgnoreCase(entity.getMode())) {
             dto.setMeetingLink(entity.getMeetingLink());
         }
+        
+        dto.setInterviewLocation(entity.getInterviewLocation());
         
         dto.setStatus(entity.getStatus() != null ? entity.getStatus() : "Scheduled");
         
