@@ -12,11 +12,35 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import syncX.modules.auth.exception.AccountSuspendedException;
 
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<Map<String, String>> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> Map.of(
+                        "field", error.getField(),
+                        "defaultMessage", error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value"
+                ))
+                .toList();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "Bad Request",
+                        "message", "Validation failed",
+                        "status", 400,
+                        "errors", errors,
+                        "timestamp", OffsetDateTime.now().toString()
+                ));
+    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {

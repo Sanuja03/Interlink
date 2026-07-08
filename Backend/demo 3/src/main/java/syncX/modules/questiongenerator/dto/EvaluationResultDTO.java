@@ -3,6 +3,6 @@ package syncX.modules.questiongenerator.dto;
 import lombok.Data;
 
 @Data
-public class QuestionRequestDTO {
-    private Long jobId;
+public class EvaluationResultDTO {
+    private int score;
 }

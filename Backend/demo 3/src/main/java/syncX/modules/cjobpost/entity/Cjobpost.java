@@ -51,7 +51,7 @@ public class Cjobpost {
     @Column(length = 2000)
     private String description;
 
-    @Column(name = "`Deadline`")
+    @Column(name = "deadline")
     private LocalDate deadline;
 
 //    @ElementCollection

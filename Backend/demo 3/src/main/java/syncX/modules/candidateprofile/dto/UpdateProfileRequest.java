@@ -1,5 +1,7 @@
 package syncX.modules.candidateprofile.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -11,15 +13,17 @@ import lombok.Data;
 @Data
 public class UpdateProfileRequest {
 
+    @NotBlank(message = "First name is required")
     @Size(max = 50, message = "First name must be 50 characters or fewer")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     @Size(max = 50, message = "Last name must be 50 characters or fewer")
     private String lastName;
 
     @Pattern(
-        regexp = "^$|^\\+?[0-9\\s\\-()]{7,20}$",
-        message = "Phone number must be 7-20 digits and may include +, spaces, dashes, or parentheses"
+        regexp = "^$|^(?:\\+94[\\s\\-]?|94[\\s\\-]?|0[\\s\\-]?)(?:[0-9][\\s\\-]?){9}$",
+        message = "Phone number must be a valid Sri Lankan number (e.g. 0771234567 or +94771234567)"
     )
     private String phone;
 
@@ -29,6 +33,7 @@ public class UpdateProfileRequest {
     @Size(max = 100, message = "Location must be 100 characters or fewer")
     private String location;
 
+    @Past(message = "Date of birth must be in the past")
     private java.time.LocalDate dateOfBirth;
 
     @Size(max = 100, message = "Headline must be 100 characters or fewer")

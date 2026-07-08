@@ -11,10 +11,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ApplicationTrackerDto {
     private Long id;
+    private Long jobId;
     private String jobTitle;
     private String company;
     private LocalDate appliedDate;
     private LocalDate shortlistedDate;
     private LocalDate interviewDate;
     private String status;
+    private LocalDate deadline;
+    private boolean quizAttempted;
 }

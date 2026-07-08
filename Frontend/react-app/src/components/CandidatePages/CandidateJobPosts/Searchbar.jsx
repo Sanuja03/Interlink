@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
+    const navigate = useNavigate();
     // If a keyword prop is passed in, let the parent control it — otherwise we'll track it ourselves
     const [localKeyword, setLocalKeyword] = useState('');
     const [category, setCategory] = useState('');
@@ -25,7 +27,7 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
             if (category) params.set('category', category);
             if (experience) params.set('experience', experience);
             const query = params.toString();
-            window.location.href = `/candidate/jobposts${query ? '?' + query : ''}`;
+            navigate(`/candidate/jobposts${query ? '?' + query : ''}`);
         }
     };
 

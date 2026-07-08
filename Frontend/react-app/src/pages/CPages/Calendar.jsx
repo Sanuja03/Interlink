@@ -73,16 +73,13 @@ const CalendarPage = () => {
               <CalendarWidget
                 interviews={interviews}
                 showJoinButton={true}
-                showGenerateButton={true}
+                showGenerateButton={false}
                 onJoinInterview={(iv) => {
                   if (iv.meetingLink) {
                     window.open(iv.meetingLink, '_blank');
                   } else {
                     console.log('Join interview:', iv.title);
                   }
-                }}
-                onGenerateQuestions={(iv) => {
-                  navigate('/Candidate/aiquestions', { state: { job: iv.job } });
                 }}
               />
             )}

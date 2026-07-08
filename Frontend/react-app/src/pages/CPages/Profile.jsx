@@ -368,7 +368,7 @@ const Profile = () => {
             const res = await api.post('/candidate/profile/me/resume', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setResumes(prev => [res.data, ...prev]);
+            setResumes([res.data]);
             setCvFile(null);
             setEditingCV(false);
         } catch (err) {
@@ -512,7 +512,8 @@ const Profile = () => {
 
                         <div style={{ marginBottom: '12px' }}>
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>Date of Birth</label>
-                            <input type="date" value={personalDraft.dob} onChange={e => setPersonalDraft(d => ({ ...d, dob: e.target.value }))} max="2026-12-31" style={inputStyle} />
+                            <input type="date" value={personalDraft.dob} onChange={e => setPersonalDraft(d => ({ ...d, dob: e.target.value }))} max={new Date().toLocaleDateString('en-CA')} style={{ ...inputStyle, borderColor: validationErrs.dateOfBirth ? 'red' : '#d1d5db' }} />
+                            {validationErrs.dateOfBirth && <span style={{ color: 'red', fontSize: '12px', marginTop: '4px', display: 'block' }}>{validationErrs.dateOfBirth}</span>}
                         </div>
                         <div style={{ marginBottom: '12px' }}>
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>Availibility</label>

@@ -429,9 +429,16 @@ const JobApply = () => {
                   github: data.githubUrl || '',
                   yearsExp: data.yearsOfExperience ? String(data.yearsOfExperience) : '',
                   currentRole: data.currentRole || '',
+                  currentRole: data.currentRole || '',
                   currentCompany: data.currentCompany || '',
                   salary: data.expectedSalary ? String(data.expectedSalary) : ''
               }));
+              if (data.resumeUrl) {
+                  setAutofilledResume({
+                      fileName: data.resumeFileName,
+                      fileUrl: data.resumeUrl
+                  });
+              }
           })
           .catch(err => {
               console.error("Error fetching prefill data:", err);
@@ -447,6 +454,7 @@ const JobApply = () => {
     availability: '', salary: '', hearAbout: '',
   });
   const [resumeFile, setResumeFile] = useState(null);
+  const [autofilledResume, setAutofilledResume] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -458,7 +466,7 @@ const JobApply = () => {
     if (!form.lastName.trim()) e.lastName = true;
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = true;
     if (!form.phone.trim()) e.phone = true;
-    if (!resumeFile) e.resume = true;
+    if (!resumeFile && !autofilledResume) e.resume = true;
     if (!form.coverLetter.trim()) e.coverLetter = true;
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -600,24 +608,62 @@ const JobApply = () => {
                   <span className="apply-card__title-icon"><IconFile /></span>
                   Resume / CV
                 </h2>
-                <label
-                  className={`apply-upload ${resumeFile ? 'has-file' : ''}`}
-                  style={errors.resume ? { borderColor: '#e53e3e' } : {}}
-                >
-                  <input type="file" accept=".pdf,.doc,.docx" onChange={e => { setResumeFile(e.target.files[0]); setErrors(p => ({ ...p, resume: false })); }} />
-                  <div className="apply-upload__icon"><IconUpload /></div>
-                  {resumeFile ? (
-                    <>
-                      <div className="apply-upload__label">File selected</div>
-                      <div className="apply-upload__file-name">📄 {resumeFile.name}</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="apply-upload__label">Drag & drop your resume or click to browse</div>
-                      <div className="apply-upload__sub">Accepted: PDF, DOC, DOCX · Max 5MB</div>
-                    </>
-                  )}
-                </label>
+                {(resumeFile || autofilledResume) ? (
+                  <div 
+                    className="apply-upload has-file"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '20px 24px',
+                      border: '2.5px solid #1a6a82',
+                      background: '#edf4f8',
+                      borderRadius: '14px',
+                      cursor: 'default'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '40px', height: '40px', background: '#e8f4fd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <IconFile />
+                      </div>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0C3E56' }}>
+                          {resumeFile ? 'New Resume Selected' : 'Autofilled Resume'}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: '#1a6a82', fontWeight: 500, marginTop: '2px' }}>
+                          📄 {resumeFile ? resumeFile.name : autofilledResume.fileName}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ 
+                        display: 'inline-block',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        border: '1.5px solid #1a6a82',
+                        background: '#fff',
+                        color: '#1a6a82',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}>
+                        Replace
+                        <input type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={e => { if(e.target.files[0]) { setResumeFile(e.target.files[0]); setErrors(p => ({ ...p, resume: false })); } }} />
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    className="apply-upload"
+                    style={errors.resume ? { borderColor: '#e53e3e' } : {}}
+                  >
+                    <input type="file" accept=".pdf,.doc,.docx" onChange={e => { if(e.target.files[0]) { setResumeFile(e.target.files[0]); setErrors(p => ({ ...p, resume: false })); } }} />
+                    <div className="apply-upload__icon"><IconUpload /></div>
+                    <div className="apply-upload__label">Drag & drop your resume or click to browse</div>
+                    <div className="apply-upload__sub">Accepted: PDF, DOC, DOCX · Max 5MB</div>
+                  </label>
+                )}
               </div>
 
               {/* Cover Letter */}

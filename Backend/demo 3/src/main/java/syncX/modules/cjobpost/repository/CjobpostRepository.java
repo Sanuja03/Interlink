@@ -25,7 +25,7 @@ public interface CjobpostRepository extends JpaRepository<Cjobpost, Long> {
                 j.job_title AS title,
                 j.about_company AS aboutCompany,
                 j.description AS description,
-                j."Deadline" AS deadline
+                j.deadline AS deadline
             FROM jobs j
             ORDER BY j.id DESC
             """, nativeQuery = true)
@@ -43,7 +43,7 @@ public interface CjobpostRepository extends JpaRepository<Cjobpost, Long> {
                 j.job_title AS title,
                 j.about_company AS aboutCompany,
                 j.description AS description,
-                j."Deadline" AS deadline
+                j.deadline AS deadline
             FROM jobs j
             WHERE j.id = :id
             """, nativeQuery = true)

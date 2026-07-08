@@ -247,6 +247,14 @@ export const DetailPanel = ({
     if (!dateKey) return null;
     const ivs = interviews[dateKey] || [];
     const [y, m, d] = dateKey.split('-');
+
+    const isPastDay = () => {
+        const interviewDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return interviewDate < today;
+    };
+
     return (
         <div className="cw-detail">
             <div className="cw-detail__date">{formatLong(y, parseInt(m) - 1, parseInt(d))}</div>
@@ -261,9 +269,15 @@ export const DetailPanel = ({
                             </div>
                             <div className="cw-detail__actions">
                                 {showJoinButton && (
-                                    <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
-                                        Join Interview
-                                    </button>
+                                    isPastDay() ? (
+                                        <button className="cw-btn" disabled style={{ background: '#9ca3af', boxShadow: 'none', cursor: 'not-allowed', opacity: 0.7 }}>
+                                            Expired
+                                        </button>
+                                    ) : (
+                                        <button className="cw-btn" onClick={() => onJoinInterview?.(iv)}>
+                                            Join Interview
+                                        </button>
+                                    )
                                 )}
                                 {showGenerateButton && (
                                     <button className="cw-btn" onClick={() => onGenerateQuestions?.(iv)}>

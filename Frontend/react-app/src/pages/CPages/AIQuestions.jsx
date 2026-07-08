@@ -1,302 +1,589 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
-
-const mockQuestions = [
-    "Can you explain the difference between state and props in React?",
-    "What is the virtual DOM and how does it work?",
-    "How do you manage side effects in React?",
-    "Explain the concept of closures in JavaScript.",
-    "What is a REST API and how have you used it?",
-    "Describe how you would implement authentication in a web app.",
-    "What is the difference between SQL and NoSQL databases?",
-    "How do you optimize the performance of a React application?",
-    "What are React hooks? Name a few you've used.",
-    "Tell me about a challenging project and how you handled it.",
-];
+import api from '../../lib/api';
+import { 
+    Clock, 
+    AlertTriangle, 
+    Briefcase, 
+    Building2, 
+    MapPin, 
+    Sparkles, 
+    BrainCircuit, 
+    Bot, 
+    Send, 
+    Trash2,
+    Award,
+    MessageSquare,
+    Zap,
+    Trophy
+} from 'lucide-react';
 
 const AIQuestions = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    
+    // Extract job details passed via state
     const job = location.state?.job || {
+        id: null,
         title: 'Software Engineer',
         company: 'CodeWave Solutions',
         techStack: 'React',
     };
 
+    const getDaysLeft = (deadlineStr) => {
+        if (!deadlineStr) return "N/A";
+        const deadlineDate = new Date(deadlineStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return "Expired";
+        if (diffDays === 0) return "Deadline Today";
+        if (diffDays === 1) return "1 day left";
+        return `${diffDays} days left`;
+    };
+
+    const [questions, setQuestions] = useState([]);
     const [currentQ, setCurrentQ] = useState(0);
     const [answer, setAnswer] = useState('');
-    const [submitted, setSubmitted] = useState(Array(mockQuestions.length).fill(false));
     const [showFeedback, setShowFeedback] = useState(false);
+    const [score, setScore] = useState(null);
     const [timeLeft, setTimeLeft] = useState(120);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [evaluating, setEvaluating] = useState(false);
 
-    React.useEffect(() => {
-        if (showFeedback) return;
+    // Track answers and scores for final aggregate save
+    const [answersList, setAnswersList] = useState([]);
+    const [scoresList, setScoresList] = useState([]);
+
+    // Completion states
+    const [isCompleted, setIsCompleted] = useState(false);
+    const [finalScore, setFinalScore] = useState(null);
+
+    // Fetch dynamic questions using RAG (based on job requirements)
+    useEffect(() => {
+        if (!job.id) {
+            setError('No job selected. Please select a job from the list first.');
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        api.post('/candidate/question-generator/generate', { jobId: job.id })
+            .then(res => {
+                if (res.data && res.data.length > 0) {
+                    setQuestions(res.data);
+                } else {
+                    setError('Failed to generate interview questions.');
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error generating questions:', err);
+                const backendMsg = err.response?.data?.message;
+                setError(backendMsg ? `Backend Error: ${backendMsg}` : 'Failed to load dynamic interview questions. Make sure the backend server is running and the OpenAI key is configured.');
+                setLoading(false);
+            });
+    }, [job.id]);
+
+    // Timer effect
+    useEffect(() => {
+        if (loading || error || showFeedback || evaluating) return;
         const timer = setInterval(() => {
-            setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+            setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
         }, 1000);
         return () => clearInterval(timer);
-    }, [showFeedback, currentQ]);
+    }, [loading, error, showFeedback, evaluating, currentQ]);
 
-    React.useEffect(() => {
-        if (timeLeft === 0 && !showFeedback) {
+    // Automate submission on timeout
+    useEffect(() => {
+        if (timeLeft === 0 && !showFeedback && !loading && !error && !evaluating) {
             handleSubmit();
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [timeLeft, showFeedback]);
 
     const handleSubmit = () => {
-        const updated = [...submitted];
-        updated[currentQ] = true;
-        setSubmitted(updated);
-        setShowFeedback(true);
-        if (currentQ < mockQuestions.length - 1) {
+        if (!answer.trim() || evaluating) return;
+
+        setEvaluating(true);
+
+        // 1. Evaluate this single answer in-memory
+        api.post('/candidate/question-generator/evaluate', {
+            jobId: job.id,
+            question: questions[currentQ],
+            answer: answer
+        })
+        .then(res => {
+            const receivedScore = res.data.score;
+            setScore(receivedScore);
+            setShowFeedback(true);
+            setEvaluating(false);
+
+            // Add current Q&A and score to history arrays
+            const updatedAnswers = [...answersList, answer];
+            const updatedScores = [...scoresList, receivedScore];
+
+            // 2. Check if this is the final question
+            const isFinal = currentQ === questions.length - 1;
+
+            if (isFinal) {
+                // Calculate average score
+                const totalScore = updatedScores.reduce((sum, val) => sum + val, 0);
+                const finalAverageScore = Math.round(totalScore / questions.length);
+                setFinalScore(finalAverageScore);
+
+                // Save overall session score as a single record
+                api.post('/candidate/question-generator/save-score', {
+                    jobId: job.id,
+                    questions: questions,
+                    answers: updatedAnswers,
+                    score: finalAverageScore
+                })
+                .then(() => {
+                    console.log('Overall score saved successfully to DB!');
+                })
+                .catch(saveErr => {
+                    console.error('Failed to save overall score:', saveErr);
+                });
+            }
+
+            // Transition to next question or complete session after 4 seconds
             setTimeout(() => {
-                setCurrentQ(q => q + 1);
-                setAnswer('');
-                setShowFeedback(false);
-                setTimeLeft(120);
-            }, 3000);
-        }
+                if (!isFinal) {
+                    setAnswersList(updatedAnswers);
+                    setScoresList(updatedScores);
+                    setCurrentQ(q => q + 1);
+                    setAnswer('');
+                    setShowFeedback(false);
+                    setScore(null);
+                    setTimeLeft(120);
+                } else {
+                    setIsCompleted(true);
+                }
+            }, 4000);
+        })
+        .catch(err => {
+            console.error('Error evaluating answer:', err);
+            setScore(0);
+            setShowFeedback(true);
+            setEvaluating(false);
+
+            const updatedAnswers = [...answersList, answer];
+            const updatedScores = [...scoresList, 0];
+            const isFinal = currentQ === questions.length - 1;
+
+            if (isFinal) {
+                const totalScore = updatedScores.reduce((sum, val) => sum + val, 0);
+                const finalAverageScore = Math.round(totalScore / questions.length);
+                setFinalScore(finalAverageScore);
+
+                api.post('/candidate/question-generator/save-score', {
+                    jobId: job.id,
+                    questions: questions,
+                    answers: updatedAnswers,
+                    score: finalAverageScore
+                })
+                .catch(saveErr => console.error('Failed to save overall score:', saveErr));
+            }
+
+            setTimeout(() => {
+                if (!isFinal) {
+                    setAnswersList(updatedAnswers);
+                    setScoresList(updatedScores);
+                    setCurrentQ(q => q + 1);
+                    setAnswer('');
+                    setShowFeedback(false);
+                    setScore(null);
+                    setTimeLeft(120);
+                } else {
+                    setIsCompleted(true);
+                }
+            }, 4000);
+        });
     };
 
     const handleClear = () => {
         setAnswer('');
     };
 
+    // Derived helpers for Communication and Confidence ratings based on score
+    const getCommunicationRating = (s) => {
+        if (s >= 85) return 'Excellent';
+        if (s >= 65) return 'Good';
+        return 'Needs Work';
+    };
+
+    const getConfidenceRating = (s) => {
+        if (s >= 80) return 'High';
+        if (s >= 60) return 'Medium';
+        return 'Low';
+    };
+
+    if (isCompleted) {
+        return (
+            <div className="min-h-screen flex bg-slate-50 font-sans">
+                <Sidebar />
+                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30 animate-fade-in">
+                    <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 border border-slate-100/80 text-center flex flex-col items-center relative overflow-hidden">
+                        {/* Top decorative gradient bar */}
+                        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-sky-400 via-teal-500 to-blue-600"></div>
+                        
+                        {/* Animated Trophy Header */}
+                        <div className="relative flex items-center justify-center mb-6 mt-4 animate-bounce-subtle">
+                            <div className="absolute inset-0 rounded-full bg-teal-100/60 blur-xl opacity-50 animate-pulse"></div>
+                            <div className="relative w-24 h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                                <Trophy className="w-12 h-12 text-teal-600" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1.5 border-2 border-white shadow-md animate-pulse">
+                                <Sparkles className="w-4 h-4 text-white" />
+                            </div>
+                        </div>
+
+                        {/* Title & Desc */}
+                        <h2 className="text-2xl font-extrabold text-slate-800 mb-2">Session Completed!</h2>
+                        <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
+                            Thank you for completing the dynamic AI interview. Your responses have been evaluated and stored successfully.
+                        </p>
+
+                        {/* Circular Progress Marks Display */}
+                        <div className="relative flex flex-col items-center justify-center p-6 bg-slate-50/80 border border-slate-100/80 rounded-3xl w-full mb-6">
+                            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-4">Final Score</span>
+                            
+                            <div className="relative w-28 h-28 flex items-center justify-center">
+                                {/* SVG Ring */}
+                                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle 
+                                        cx="50" 
+                                        cy="50" 
+                                        r="40" 
+                                        stroke="#e2e8f0" 
+                                        strokeWidth="8" 
+                                        fill="transparent" 
+                                    />
+                                    <circle 
+                                        cx="50" 
+                                        cy="50" 
+                                        r="40" 
+                                        stroke="#0d9488" 
+                                        strokeWidth="8" 
+                                        fill="transparent" 
+                                        strokeDasharray="251.2"
+                                        strokeDashoffset={251.2 - (251.2 * (finalScore || 0)) / 100}
+                                        strokeLinecap="round"
+                                        className="transition-all duration-1000 ease-out"
+                                    />
+                                </svg>
+                                <div className="text-3xl font-black text-slate-800">
+                                    {finalScore !== null ? `${finalScore}%` : '--'}
+                                </div>
+                            </div>
+                            
+                            <div className="mt-4 px-4 py-1.5 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold rounded-full">
+                                {finalScore >= 85 ? 'Excellent Performance' : finalScore >= 65 ? 'Good Performance' : 'Completed Successfully'}
+                            </div>
+                        </div>
+
+                        {/* Summary Block */}
+                        <div className="w-full text-left bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mb-6 flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Job Title</span>
+                                <span className="font-bold text-slate-700 max-w-[180px] truncate" title={job.title}>{job.title}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Company</span>
+                                <span className="font-bold text-slate-700 max-w-[180px] truncate" title={job.company}>{job.company}</span>
+                            </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <button
+                            onClick={() => navigate('/candidate/dashboard')}
+                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold py-3.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 outline-none border-none cursor-pointer flex items-center justify-center gap-2"
+                        >
+                            <span>Return to Dashboard</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex bg-slate-50">
+                <Sidebar />
+                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                    <div className="relative flex items-center justify-center mb-6">
+                        <div className="absolute inset-0 rounded-full bg-sky-200 blur-xl opacity-35 animate-pulse"></div>
+                        <div className="relative w-20 h-20 bg-white shadow-xl rounded-2xl flex items-center justify-center border border-sky-100/80">
+                            <Bot className="w-10 h-10 text-sky-600 animate-bounce" />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 bg-teal-500 rounded-full p-1.5 border-2 border-white shadow-md">
+                            <Sparkles className="w-3.5 h-3.5 text-white animate-spin" style={{ animationDuration: '3s' }} />
+                        </div>
+                    </div>
+                    
+                    <h3 className="text-xl font-extrabold text-slate-800 mb-2">Generating AI Interview</h3>
+                    <p className="text-sm text-slate-500 text-center max-w-sm leading-relaxed animate-pulse">
+                        Retrieving job parameters and tailoring real-time evaluation questions...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex bg-slate-50">
+                <Sidebar />
+                <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-red-100 text-center flex flex-col items-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                            <AlertTriangle className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-3">Interview Session Interrupted</h3>
+                        <p className="text-sm text-slate-500 leading-relaxed mb-6">{error}</p>
+                        <button
+                            onClick={() => navigate('/candidate/jobposts')}
+                            className="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 outline-none border-none cursor-pointer"
+                        >
+                            Back to Job Posts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div style={{ minHeight: '100vh', background: '#f0f0f0', display: 'flex', fontFamily: 'sans-serif' }}>
+        <div className="min-h-screen flex bg-slate-50 font-sans">
             <Sidebar />
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+            <div className="flex-1 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
 
                 {/* Title Bar */}
-                <div style={{
-                    background: '#4a4a4a',
-                    padding: '16px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    color: '#ffffff',
-                }}>
-                    <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
-                    <div style={{
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        letterSpacing: '0.5px',
-                        textAlign: 'center',
-                        flex: 1
-                    }}>
-                        AI Generated Questions
+                <div className="bg-slate-800 shadow-sm border-b border-slate-700/50 px-8 py-5 flex items-center justify-between text-white">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-sky-500/10 p-2 rounded-lg border border-sky-400/20">
+                            <BrainCircuit className="w-5 h-5 text-sky-400 animate-pulse" />
+                        </div>
+                        <div>
+                            <span className="text-[10px] text-sky-400 uppercase tracking-widest font-extrabold">Interview Module</span>
+                            <h1 className="text-base font-bold tracking-tight">AI Generated Questions</h1>
+                        </div>
                     </div>
-                    <div style={{
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        padding: '6px 14px',
-                        borderRadius: '20px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        minWidth: '120px'
-                    }}>
-                        <span>⏳</span> 2 days left
+                    <div className="flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-md">
+                        <Clock className="w-4 h-4 text-sky-300 animate-pulse" />
+                        <span>{getDaysLeft(job.deadline)}</span>
                     </div>
                 </div>
 
-                <main style={{ flex: 1, maxWidth: '700px', margin: '0 auto', width: '100%', padding: '28px 20px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
 
                     {/* Job Details Panel */}
-                    <div style={{
-                        background: '#fff',
-                        borderRadius: '12px',
-                        border: '2px solid #1a6a82',
-                        padding: '22px 28px',
-                    }}>
-                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#111', marginBottom: '18px', borderBottom: '1px solid #e9eaec', paddingBottom: '10px' }}>
-                            Job Details
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-3">
+                            <Briefcase className="w-4 h-4 text-sky-500" />
+                            <span>Job Session Details</span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div>
-                                <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '600', marginBottom: '4px' }}>Selected Job Title</div>
-                                <div style={{ fontSize: '15px', fontWeight: '700', color: '#111' }}>{job.title}</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '600', marginBottom: '4px' }}>Company Name</div>
-                                <div style={{ fontSize: '15px', fontWeight: '700', color: '#111' }}>{job.company}</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '600', marginBottom: '8px' }}>Required Skills</div>
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    {['React', 'JavaScript', 'SQL'].map(skill => (
-                                        <span key={skill} style={{
-                                            background: '#f3f4f6',
-                                            border: '1px solid #e5e7eb',
-                                            borderRadius: '6px',
-                                            padding: '3px 12px',
-                                            fontSize: '12px',
-                                            fontWeight: '600',
-                                            color: '#374151',
-                                        }}>{skill}</span>
-                                    ))}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                                    <Briefcase className="w-3 h-3 text-slate-400" />
+                                    <span>Job Title</span>
                                 </div>
+                                <div className="text-xs font-bold text-slate-800 truncate" title={job.title}>{job.title}</div>
                             </div>
-                            <div>
-                                <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '600', marginBottom: '4px' }}>Interview Type</div>
-                                <div style={{ fontSize: '15px', fontWeight: '700', color: '#111' }}>Technical / HR</div>
+                            
+                            <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                                    <Building2 className="w-3 h-3 text-slate-400" />
+                                    <span>Company</span>
+                                </div>
+                                <div className="text-xs font-bold text-slate-800 truncate" title={job.company}>{job.company}</div>
+                            </div>
+
+                            <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                                    <MapPin className="w-3 h-3 text-slate-400" />
+                                    <span>Location</span>
+                                </div>
+                                <div className="text-xs font-bold text-slate-800 truncate" title={job.location || 'Remote'}>{job.location || 'Remote'}</div>
+                            </div>
+
+                            <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                                    <Sparkles className="w-3 h-3 text-slate-400 animate-pulse" />
+                                    <span>Session Type</span>
+                                </div>
+                                <div className="text-xs font-bold text-slate-800">Dynamic AI Interview</div>
                             </div>
                         </div>
                     </div>
 
                     {/* AI Interview Simulator Panel */}
-                    <div style={{
-                        background: '#fff',
-                        borderRadius: '12px',
-                        border: '2px solid #1a6a82',
-                        padding: '22px 28px',
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                            <div style={{ fontSize: '13px', fontWeight: '800', color: '#111', letterSpacing: '0.5px' }}>
-                                AI INTERVIEW SIMULATOR
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-5">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
+                                <Bot className="w-4 h-4 text-sky-500 animate-bounce" style={{ animationDuration: '3s' }} />
+                                <span>AI Interview Simulator</span>
                             </div>
-                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                <div style={{ 
-                                    fontSize: '13px', 
-                                    fontWeight: '700', 
-                                    color: timeLeft <= 15 ? '#e53e3e' : '#1a6a82',
-                                    background: timeLeft <= 15 ? '#fee2e2' : '#e0f2f7',
-                                    padding: '4px 10px',
-                                    borderRadius: '6px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    transition: 'all 0.3s ease'
-                                }}>
-                                    <span>⏱️</span> {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                            <div className="flex items-center gap-3">
+                                {/* Timer block */}
+                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border ${
+                                    timeLeft <= 15 
+                                        ? 'bg-red-50 text-red-600 animate-pulse border-red-100' 
+                                        : 'bg-sky-50 text-sky-700 border-sky-100'
+                                }`}>
+                                    <Clock className={`w-3.5 h-3.5 ${timeLeft <= 15 ? 'animate-spin' : ''}`} style={{ animationDuration: timeLeft <= 15 ? '2s' : '' }} />
+                                    <span>{Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
                                 </div>
-                                <div style={{ fontSize: '12px', fontWeight: '700', color: '#00b09b' }}>
-                                    Question {currentQ + 1} of {mockQuestions.length}
-                                </div>
+                                {/* Progress badge */}
+                                <span className="bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                                    Question {currentQ + 1} of {questions.length}
+                                </span>
                             </div>
                         </div>
 
-                        {/* Question Box */}
-                        <div style={{
-                            background: '#f9fafb',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            padding: '18px 20px',
-                            marginBottom: '16px',
-                            fontSize: '14px',
-                            color: '#1a1a1a',
-                            fontStyle: 'italic',
-                            fontWeight: '500',
-                            lineHeight: '1.6',
-                        }}>
-                            "{mockQuestions[currentQ]}"
+                        {/* Question Box with Bot prompt style */}
+                        <div className="relative bg-gradient-to-r from-slate-50 to-sky-50/20 border border-slate-100 rounded-2xl p-5 pl-14 shadow-inner">
+                            <div className="absolute top-5 left-4 bg-sky-500 text-white rounded-xl p-1.5 shadow-md">
+                                <Bot className="w-4 h-4" />
+                            </div>
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">AI Interviewer Question</span>
+                            <p className="text-slate-800 text-sm font-medium italic leading-relaxed">
+                                "{questions[currentQ]}"
+                            </p>
                         </div>
 
                         {/* Answer Text Area */}
-                        <textarea
-                            value={answer}
-                            onChange={e => setAnswer(e.target.value)}
-                            placeholder="Type your answer here or use the microphone..."
-                            rows={6}
-                            style={{
-                                width: '100%',
-                                borderRadius: '8px',
-                                border: '1px solid #e5e7eb',
-                                padding: '14px 16px',
-                                fontSize: '14px',
-                                color: '#374151',
-                                resize: 'vertical',
-                                outline: 'none',
-                                fontFamily: 'inherit',
-                                boxSizing: 'border-box',
-                                background: '#fff',
-                            }}
-                        />
+                        <div className="relative">
+                            <textarea
+                                value={answer}
+                                onChange={e => setAnswer(e.target.value)}
+                                disabled={evaluating || showFeedback}
+                                placeholder="Write your professional answer here... (be detailed and clear to secure a higher evaluation score)"
+                                rows={6}
+                                className={`w-full rounded-2xl border p-4 text-sm text-slate-700 resize-none outline-none transition-all duration-200 ${
+                                    (evaluating || showFeedback) 
+                                        ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
+                                        : 'bg-white border-slate-200 hover:border-slate-300 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10'
+                                }`}
+                            />
+                            {evaluating && (
+                                <div className="absolute inset-0 bg-white/75 backdrop-blur-xs flex items-center justify-center rounded-2xl">
+                                    <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-850 text-white rounded-xl shadow-lg border border-slate-700/80">
+                                        <div className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-xs font-semibold">AI is analyzing your response...</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Buttons */}
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '16px' }}>
+                        <div className="flex justify-end gap-3 mt-1">
                             <button
                                 onClick={handleClear}
-                                style={{
-                                    background: '#e5e7eb',
-                                    border: 'none',
-                                    borderRadius: '30px',
-                                    padding: '11px 40px',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    color: '#374151',
-                                    cursor: 'pointer',
-                                }}
-                            >Clear</button>
+                                disabled={evaluating || showFeedback || !answer.trim()}
+                                className={`flex items-center gap-2 font-semibold text-xs py-2.5 px-5 rounded-full transition-all duration-200 border-none outline-none ${
+                                    (!answer.trim() || evaluating || showFeedback)
+                                        ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 cursor-pointer'
+                                }`}
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Clear</span>
+                            </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={!answer.trim()}
-                                style={{
-                                    background: answer.trim() ? 'linear-gradient(135deg, #1a6a82, #1a3f5c)' : '#9ca3af',
-                                    border: 'none',
-                                    borderRadius: '30px',
-                                    padding: '11px 40px',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    color: '#fff',
-                                    cursor: answer.trim() ? 'pointer' : 'not-allowed',
-                                }}
-                            >Submit</button>
+                                disabled={!answer.trim() || evaluating || showFeedback}
+                                className={`flex items-center gap-2 font-semibold text-xs py-2.5 px-6 rounded-full transition-all duration-200 shadow-md border-none outline-none ${
+                                    (answer.trim() && !evaluating && !showFeedback)
+                                        ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 hover:shadow-lg cursor-pointer transform hover:-translate-y-0.5'
+                                        : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                                }`}
+                            >
+                                <Send className="w-3.5 h-3.5" />
+                                <span>{evaluating ? 'Evaluating...' : 'Submit Answer'}</span>
+                            </button>
                         </div>
                     </div>
 
                     {/* AI Feedback Panel */}
-                    <div style={{
-                        background: '#fff',
-                        borderRadius: '12px',
-                        border: '2px solid #1a6a82',
-                        padding: '22px 28px',
-                    }}>
-                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#111', letterSpacing: '0.5px', marginBottom: '20px' }}>
-                            AI FEEDBACK PANEL
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4">
+                        <div className="flex items-center justify-between border-b border-slate-50 pb-3">
+                            <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
+                                <Sparkles className="w-4 h-4 text-sky-500" />
+                                <span>Real-Time AI Feedback</span>
+                            </div>
+                            {showFeedback && (
+                                <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100 animate-pulse">
+                                    Feedback Active
+                                </span>
+                            )}
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                            {/* Technical Accuracy */}
-                            <div style={{
-                                background: '#e8f4fd',
-                                borderRadius: '10px',
-                                padding: '18px 12px',
-                                textAlign: 'center',
-                            }}>
-                                <div style={{ fontSize: '11px', color: '#5ba4cf', fontWeight: '600', marginBottom: '8px' }}>Technical Accuracy</div>
-                                <div style={{ fontSize: '28px', fontWeight: '800', color: '#1a6a82' }}>
-                                    {showFeedback ? '80%' : '--'}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Evaluation Score */}
+                            <div className={`rounded-2xl p-5 text-center flex flex-col items-center justify-center transition-all duration-300 border ${
+                                showFeedback 
+                                    ? 'bg-gradient-to-br from-sky-500/10 to-blue-500/10 border-sky-100 shadow-md scale-102' 
+                                    : 'bg-slate-50/50 border-slate-100 text-slate-400'
+                             }`}>
+                                <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                                    showFeedback ? 'text-sky-600' : 'text-slate-400'
+                                }`}>
+                                    <Award className="w-3.5 h-3.5" />
+                                    <span>Evaluation Score</span>
+                                </div>
+                                <div className={`text-3xl font-extrabold tracking-tight ${
+                                    showFeedback ? 'text-sky-700' : 'text-slate-300'
+                                }`}>
+                                    {showFeedback ? `${score}%` : '--'}
                                 </div>
                             </div>
+
                             {/* Communication */}
-                            <div style={{
-                                background: '#e8fdf4',
-                                borderRadius: '10px',
-                                padding: '18px 12px',
-                                textAlign: 'center',
-                            }}>
-                                <div style={{ fontSize: '11px', color: '#4cb87a', fontWeight: '600', marginBottom: '8px' }}>Communication</div>
-                                <div style={{ fontSize: '28px', fontWeight: '800', color: '#1a7a4a' }}>
-                                    {showFeedback ? 'Good' : '--'}
+                            <div className={`rounded-2xl p-5 text-center flex flex-col items-center justify-center transition-all duration-300 border ${
+                                showFeedback 
+                                    ? 'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-100 shadow-md scale-102' 
+                                    : 'bg-slate-50/50 border-slate-100 text-slate-400'
+                             }`}>
+                                <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                                    showFeedback ? 'text-emerald-600' : 'text-slate-400'
+                                }`}>
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    <span>Communication</span>
+                                </div>
+                                <div className={`text-xl font-extrabold ${
+                                    showFeedback ? 'text-emerald-700' : 'text-slate-300'
+                                }`}>
+                                    {showFeedback ? getCommunicationRating(score) : '--'}
                                 </div>
                             </div>
+
                             {/* Confidence Level */}
-                            <div style={{
-                                background: '#f5eeff',
-                                borderRadius: '10px',
-                                padding: '18px 12px',
-                                textAlign: 'center',
-                            }}>
-                                <div style={{ fontSize: '11px', color: '#a855f7', fontWeight: '600', marginBottom: '8px' }}>Confidence Level</div>
-                                <div style={{ fontSize: '28px', fontWeight: '800', color: '#d63384' }}>
-                                    {showFeedback ? 'High' : '--'}
+                            <div className={`rounded-2xl p-5 text-center flex flex-col items-center justify-center transition-all duration-300 border ${
+                                showFeedback 
+                                    ? 'bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-100 shadow-md scale-102' 
+                                    : 'bg-slate-50/50 border-slate-100 text-slate-400'
+                             }`}>
+                                <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                                    showFeedback ? 'text-violet-600' : 'text-slate-400'
+                                }`}>
+                                    <Zap className="w-3.5 h-3.5" />
+                                    <span>Confidence Level</span>
+                                </div>
+                                <div className={`text-xl font-extrabold ${
+                                    showFeedback ? 'text-violet-700' : 'text-slate-300'
+                                }`}>
+                                    {showFeedback ? getConfidenceRating(score) : '--'}
                                 </div>
                             </div>
                         </div>

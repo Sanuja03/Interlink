@@ -24,4 +24,8 @@ public class CandidatePrefillDTO {
     private String currentCompany;
     private Integer yearsOfExperience;
     private Double expectedSalary;
+    
+    // Autofilled CV details
+    private String resumeUrl;
+    private String resumeFileName;
 }

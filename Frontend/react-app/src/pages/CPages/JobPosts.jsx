@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/FilterPanel';
-import Searchbar from '../../components/CandidatePages/CandidateJobPosts/Searchbar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import api from '../../lib/api';
 
@@ -16,17 +15,18 @@ const JobPosts = () => {
             .catch(err => console.error("Error fetching saved job IDs:", err));
     }, []);
 
-    // Read initial values from URL query params (passed from Home page Searchbar)
-    const urlParams = new URLSearchParams(window.location.search);
     const navigate = useNavigate();
-    const [keyword, setKeyword] = useState(urlParams.get('keyword') || '');
+    const [searchParams, setSearchParams] = useSearchParams();
     const [visibleCount, setVisibleCount] = useState(5);
     const [filterExpanded, setFilterExpanded] = useState(false);
-    const [filters, setFilters] = useState({
-        category: urlParams.get('category') || '',
-        experience: urlParams.get('experience') || '',
-        mode: '',
-    });
+
+    // Read values directly from URL search parameters (single source of truth)
+    const keyword = searchParams.get('keyword') || '';
+    const filters = {
+        category: searchParams.get('category') || '',
+        experience: searchParams.get('experience') || '',
+        mode: searchParams.get('mode') || '',
+    };
 
     useEffect(() => {
         let url = '/jobs';
@@ -67,7 +67,13 @@ const JobPosts = () => {
 
     const handleFilterChange = (field, value) => {
         setVisibleCount(5);
-        setFilters((prev) => ({ ...prev, [field]: value }));
+        const params = new URLSearchParams(searchParams);
+        if (value) {
+            params.set(field, value);
+        } else {
+            params.delete(field);
+        }
+        setSearchParams(params);
     };
 
     const toggleSaveJob = (jobId) => {
@@ -83,9 +89,8 @@ const JobPosts = () => {
     };
 
     const handleReset = () => {
-        setFilters({ category: '', experience: '', mode: '' });
-        setKeyword('');
         setVisibleCount(5);
+        setSearchParams({});
     };
 
     const hasFilters = Object.values(filters).some(Boolean);
@@ -119,22 +124,7 @@ const JobPosts = () => {
 
             <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
 
-                {/* Shared Search Bar */}
-                <div className="-mx-4">
-                    <Searchbar
-                        keyword={keyword}
-                        onKeywordChange={(val) => { setKeyword(val); setVisibleCount(5); }}
-                        onSearch={({ keyword: kw, category, experience }) => {
-                            setKeyword(kw);
-                            setFilters((prev) => ({
-                                ...prev,
-                                ...(category !== undefined && { category }),
-                                ...(experience !== undefined && { experience }),
-                            }));
-                            setVisibleCount(5);
-                        }}
-                    />
-                </div>
+
 
                 {/* Filter toggle icon row */}
                 <div className="flex items-center gap-2 mb-4">

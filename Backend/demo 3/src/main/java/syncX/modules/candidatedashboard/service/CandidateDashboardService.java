@@ -54,12 +54,27 @@ public class CandidateDashboardService {
         List<ApplicationTrackerDto> tracker = rawRows.stream().map(row -> {
             ApplicationTrackerDto dto = new ApplicationTrackerDto();
             dto.setId(row.get("id") != null ? ((Number) row.get("id")).longValue() : null);
+            dto.setJobId(row.get("jobid") != null ? ((Number) row.get("jobid")).longValue() : null);
             dto.setJobTitle((String) row.get("jobtitle"));
             dto.setCompany((String) row.get("company"));
             dto.setAppliedDate(toLocalDate(row.get("applieddate")));
             dto.setShortlistedDate(toLocalDate(row.get("shortlisteddate")));
             dto.setInterviewDate(toLocalDate(row.get("interviewdate")));
             dto.setStatus(row.get("status") != null ? row.get("status").toString() : "PENDING");
+            dto.setDeadline(toLocalDate(row.get("deadline")));
+            
+            Object qaObj = row.get("quizattempted");
+            boolean quizAttempted = false;
+            if (qaObj instanceof Boolean) {
+                quizAttempted = (Boolean) qaObj;
+            } else if (qaObj instanceof Number) {
+                quizAttempted = ((Number) qaObj).intValue() > 0;
+            } else if (qaObj instanceof String) {
+                quizAttempted = Boolean.parseBoolean((String) qaObj) || "t".equalsIgnoreCase((String) qaObj) || "1".equals(qaObj);
+            } else if (qaObj != null) {
+                quizAttempted = Boolean.parseBoolean(qaObj.toString()) || "t".equalsIgnoreCase(qaObj.toString()) || "1".equals(qaObj.toString());
+            }
+            dto.setQuizAttempted(quizAttempted);
             return dto;
         }).collect(Collectors.toList());
 

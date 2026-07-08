@@ -38,13 +38,14 @@ const SavedJobs = () => {
         <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
             <Sidebar />
 
-            <main className="flex-1 w-full px-4 py-8 overflow-y-auto">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold" style={{ color: '#1a3f5c' }}>Saved Jobs</h1>
-                    <p className="text-gray-500 text-sm mt-1">Review and apply to jobs you've saved for later.</p>
-                </div>
+            <main className="flex-1 w-full px-4 py-8 overflow-y-auto flex flex-col items-center">
+                <div className="w-full max-w-4xl">
+                    <div className="mb-6">
+                        <h1 className="text-3xl font-bold" style={{ color: '#1a3f5c' }}>Saved Jobs</h1>
+                        <p className="text-gray-500 text-sm mt-1">Review and apply to jobs you've saved for later.</p>
+                    </div>
 
-                <div className="flex-1 flex flex-col gap-4 max-w-5xl">
+                    <div className="flex flex-col gap-4">
                     {loading ? (
                         <div className="flex justify-center py-16 text-gray-400">Loading saved jobs...</div>
                     ) : savedJobs.length > 0 ? (
@@ -60,8 +61,26 @@ const SavedJobs = () => {
                                     style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
                                 >
                                     {/* Logo */}
-                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
-                                        <img src={job.logo || '/default-company-logo.png'} alt={job.company} className="w-12 h-12 object-contain" />
+                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-xl">
+                                        {job.logo ? (
+                                            <img 
+                                                src={job.logo} 
+                                                alt={job.company} 
+                                                className="w-full h-full object-cover" 
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    if (e.target.nextSibling) {
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }
+                                                }}
+                                            />
+                                        ) : null}
+                                        <div 
+                                            style={{ display: job.logo ? 'none' : 'flex' }} 
+                                            className="w-full h-full items-center justify-center animate-pulse-subtle"
+                                        >
+                                            {job.company ? job.company.charAt(0).toUpperCase() : 'J'}
+                                        </div>
                                     </div>
 
                                     {/* Info */}
@@ -128,6 +147,7 @@ const SavedJobs = () => {
                             </button>
                         </div>
                     )}
+                    </div>
                 </div>
             </main>
         </div>

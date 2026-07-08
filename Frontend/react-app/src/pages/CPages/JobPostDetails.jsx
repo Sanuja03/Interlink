@@ -193,20 +193,6 @@ const JobPostDetails = () => {
 
                             {/* Action Buttons */}
                             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                <button
-                                    onClick={() => navigate('/Candidate/aiquestions', { state: { job } })}
-                                    style={{
-                                        background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '30px',
-                                        padding: '12px 28px',
-                                        fontSize: '14px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer',
-                                        minWidth: '160px',
-                                    }}
-                                >Generate Questions</button>
                                 <button 
                                     onClick={toggleSaveJob}
                                     style={{

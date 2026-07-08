@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
 import Footer from "../../components/CandidatePages/CandidateDashboard/Footer";
 import StatCard from "../../components/CandidatePages/CandidateDashboard/StatCard";
@@ -136,6 +137,7 @@ const dashStyles = `
 
 /* ── Component ──────────────────────────────────────────── */
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [keyword, setKeyword] = useState("");
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -195,6 +197,9 @@ const Dashboard = () => {
     // Safely map backend "date" fields to frontend's expected properties
     const dynamicApplications = applicationTracker.map(app => ({
         ...app,
+        jobId: app.jobId,
+        deadline: app.deadline,
+        quizAttempted: app.quizAttempted,
         applied: app.appliedDate || "-",
         shortlisted: app.shortlistedDate || "-",
         interview: app.interviewDate || "-",
@@ -219,7 +224,7 @@ const Dashboard = () => {
                                 if (category) params.set('category', category);
                                 if (experience) params.set('experience', experience);
                                 const query = params.toString();
-                                window.location.href = `/candidate/jobposts${query ? '?' + query : ''}`;
+                                navigate(`/candidate/jobposts${query ? '?' + query : ''}`);
                             }}
                         />
                     </div>

@@ -27,12 +27,18 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     @Query(value = """
             SELECT
                 a.id,
+                a.job_id                                   AS jobId,
                 COALESCE(j.job_title, a.job_title)        AS jobTitle,
                 COALESCE(c.company_name, j.company, a.company) AS company,
                 a.applied_date                             AS appliedDate,
                 COALESCE(a.shortlisted_date, CAST(ir.created_at AS date)) AS shortlistedDate,
                 ir.interview_date                          AS interviewDate,
-                COALESCE(a.status::text, 'PENDING')        AS status
+                COALESCE(a.status::text, 'PENDING')        AS status,
+                j.deadline                                 AS deadline,
+                EXISTS (
+                    SELECT 1 FROM ai_question_scores aqs
+                    WHERE aqs.candidate_id = a.candidate_id AND aqs.job_id = a.job_id
+                )                                          AS quizAttempted
             FROM job_applications a
             LEFT JOIN jobs j         ON j.id         = a.job_id
             LEFT JOIN companies c    ON c.company_id = a."Company_Id"

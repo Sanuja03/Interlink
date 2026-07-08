@@ -269,6 +269,20 @@ public class CandidateProfileService {
             throw new Exception("Invalid file: filename is empty");
         }
 
+        // Delete any existing CVs from DB and storage to ensure candidate has only one CV at a time
+        List<CandidateResume> existingResumes = resumeRepository.findByCandidateIdOrderByUploadedAtDesc(internalId);
+        for (CandidateResume oldResume : existingResumes) {
+            String oldFileName = extractFileNameFromUrl(oldResume.getFileUrl(), ENCODED_RESUME_BUCKET);
+            if (oldFileName != null) {
+                try {
+                    storageService.deleteFile(RESUME_BUCKET, oldFileName);
+                } catch (Exception e) {
+                    // ignore storage deletion warnings to ensure DB cleanup succeeds
+                }
+            }
+            resumeRepository.delete(oldResume);
+        }
+
         String uniqueFileName = "cv_" + internalId + "_" + System.currentTimeMillis() + "_" + originalFilename;
         String publicUrl = storageService.uploadResume(file, uniqueFileName);
 

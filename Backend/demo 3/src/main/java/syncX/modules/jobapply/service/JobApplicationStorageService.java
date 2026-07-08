@@ -45,7 +45,23 @@ public class JobApplicationStorageService {
             throw new IllegalArgumentException("Resume file must not exceed 5 MB");
         }
 
-        return upload(file, uniqueFileName);
+        return upload(file.getBytes(), uniqueFileName);
+    }
+
+    /**
+     * Uploads raw byte array content to the Supabase 'resumes' bucket.
+     * Returns the public URL.
+     */
+    public String uploadResume(byte[] bytes, String uniqueFileName) throws Exception {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("Resume file content must not be empty");
+        }
+
+        if (bytes.length > MAX_BYTES) {
+            throw new IllegalArgumentException("Resume file must not exceed 5 MB");
+        }
+
+        return upload(bytes, uniqueFileName);
     }
 
     /**
@@ -62,7 +78,8 @@ public class JobApplicationStorageService {
             headers.set("Authorization", "Bearer " + serviceKey);
             headers.set("apikey", serviceKey);
 
-            restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(headers), String.class);
+            java.net.URI deleteUri = java.net.URI.create(url);
+            restTemplate.exchange(deleteUri, HttpMethod.DELETE, new HttpEntity<>(headers), String.class);
         } catch (Exception e) {
             System.err.println("[JobApplicationStorage] Delete warning: " + e.getMessage());
         }
@@ -70,7 +87,7 @@ public class JobApplicationStorageService {
 
     // ── Private Helpers ──────────────────────────────────────────────────────────
 
-    private String upload(MultipartFile file, String fileName) throws Exception {
+    private String upload(byte[] bytes, String fileName) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
 
         String encodedBucket = URLEncoder.encode(BUCKET, StandardCharsets.UTF_8).replace("+", "%20");
@@ -83,8 +100,9 @@ public class JobApplicationStorageService {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.set("x-upsert", "true");
 
-        HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
-        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, request, String.class);
+        HttpEntity<byte[]> request = new HttpEntity<>(bytes, headers);
+        java.net.URI uploadUri = java.net.URI.create(uploadUrl);
+        ResponseEntity<String> response = restTemplate.exchange(uploadUri, HttpMethod.POST, request, String.class);
 
         if (response.getStatusCode().is2xxSuccessful()) {
             return supabaseUrl + "/storage/v1/object/public/" + encodedBucket + "/" + encodedFile;

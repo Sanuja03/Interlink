@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 /* ============================================================
    ApplicationTracker — CSS + JSX in one file
    ============================================================ */
@@ -76,6 +78,56 @@ const atStyles = `
   .at-result--accepted { color: #15803d; }
   .at-result--selected { color: #15803d; }
   .at-result--shortlisted { color: #1d4ed8; }
+
+  .at-action-btn {
+    background: linear-gradient(135deg, #1a6a82, #1a3f5c);
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(26, 106, 130, 0.15);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .at-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(26, 106, 130, 0.25);
+    background: linear-gradient(135deg, #1d7994, #204e72);
+  }
+
+  .at-action-btn:active {
+    transform: translateY(0);
+  }
+
+  .at-action-expired {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    background: #f3f4f6;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    cursor: not-allowed;
+  }
+
+  .at-action-attempted {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #047857;
+    background: #d1fae5;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    cursor: not-allowed;
+  }
 `;
 
 const resultStyle = (r) => {
@@ -102,46 +154,86 @@ const displayResult = (result) => {
     .replace(/^\w/, (letter) => letter.toUpperCase());
 };
 
-const ApplicationTracker = ({ applications }) => (
-  <>
-    <style>{atStyles}</style>
-    <div className="at-section">
-      <h3 className="at-title">Application Status Tracker</h3>
-      <table className="at-table">
-        <thead>
-          <tr>
-            <th>Job Title</th>
-            <th>Company</th>
-            <th>Applied</th>
-            <th>Shortlisted</th>
-            <th>Interview</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {applications.map((app, i) => (
-            <tr key={i}>
-              <td>{app.jobTitle}</td>
-              <td>{app.company}</td>
-              <td>{app.applied}</td>
-              <td>{app.shortlisted}</td>
-              <td>
-                <span className="at-badge">
-                  <span className="at-dot" style={{ background: dotColor(app.result) }} />
-                  {app.interview}
-                </span>
-              </td>
-              <td>
-                <span className={`at-badge ${resultStyle(app.result)}`}>
-                  {displayResult(app.result)}
-                </span>
-              </td>
+const isDeadlinePassed = (deadlineStr) => {
+  if (!deadlineStr) return false;
+  const deadlineDate = new Date(deadlineStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return deadlineDate < today;
+};
+
+const ApplicationTracker = ({ applications }) => {
+  const navigate = useNavigate();
+
+  return (
+    <>
+      <style>{atStyles}</style>
+      <div className="at-section">
+        <h3 className="at-title">Application Status Tracker</h3>
+        <table className="at-table">
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Company</th>
+              <th>Applied</th>
+              <th>Shortlisted</th>
+              <th>Interview</th>
+              <th>Result</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </>
-);
+          </thead>
+          <tbody>
+            {applications.map((app, i) => (
+              <tr key={i}>
+                <td>{app.jobTitle}</td>
+                <td>{app.company}</td>
+                <td>{app.applied}</td>
+                <td>{app.shortlisted}</td>
+                <td>
+                  <span className="at-badge">
+                    <span className="at-dot" style={{ background: dotColor(app.result) }} />
+                    {app.interview}
+                  </span>
+                </td>
+                <td>
+                  <span className={`at-badge ${resultStyle(app.result)}`}>
+                    {displayResult(app.result)}
+                  </span>
+                </td>
+                <td>
+                  {app.quizAttempted ? (
+                    <span className="at-action-attempted" title="You have already completed the AI interview quiz for this job.">
+                      Attempted
+                    </span>
+                  ) : !isDeadlinePassed(app.deadline) ? (
+                    <button
+                      className="at-action-btn"
+                      onClick={() => navigate('/Candidate/aiquestions', {
+                        state: {
+                          job: {
+                            id: app.jobId,
+                            title: app.jobTitle,
+                            company: app.company,
+                            deadline: app.deadline
+                          }
+                        }
+                      })}
+                    >
+                      Practice with AI ✨
+                    </button>
+                  ) : (
+                    <span className="at-action-expired" title="The deadline for this job post has passed.">
+                      Deadline Passed
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+};
 
 export default ApplicationTracker;

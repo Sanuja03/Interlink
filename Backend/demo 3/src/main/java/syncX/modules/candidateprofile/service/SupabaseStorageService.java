@@ -81,7 +81,8 @@ public class SupabaseStorageService {
             headers.set("Authorization", "Bearer " + serviceKey);
             headers.set("apikey", serviceKey);
 
-            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, new HttpEntity<>(headers), String.class);
+            java.net.URI deleteUri = java.net.URI.create(deleteUrl);
+            restTemplate.exchange(deleteUri, HttpMethod.DELETE, new HttpEntity<>(headers), String.class);
             System.out.println("[Storage] Deleted " + bucket + "/" + fileName);
         } catch (Exception e) {
             // Log but do not throw — the file may have already been removed
@@ -127,8 +128,9 @@ public class SupabaseStorageService {
 
         HttpEntity<byte[]> requestEntity = new HttpEntity<>(file.getBytes(), headers);
 
+        java.net.URI uploadUri = java.net.URI.create(uploadUrl);
         ResponseEntity<String> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.POST, requestEntity, String.class);
+                uploadUri, HttpMethod.POST, requestEntity, String.class);
 
         if (response.getStatusCode().is2xxSuccessful()) {
             // Public URL uses the encoded bucket name so browsers can resolve it

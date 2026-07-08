@@ -20,6 +20,9 @@ import syncX.modules.jobpostdetails.repository.JobDetailsRepository;
 
 import syncX.modules.jobapply.entity.CandidatePreference;
 import syncX.modules.jobapply.repository.CandidatePreferenceRepository;
+import syncX.modules.candidateprofile.entity.CandidateResume;
+import syncX.modules.candidateprofile.repository.CandidateResumeRepository;
+import syncX.modules.candidateprofile.service.SupabaseStorageService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,6 +51,12 @@ public class JobApplicationService {
     @Autowired
     private JobDetailsRepository jobDetailsRepository;
 
+    @Autowired
+    private CandidateResumeRepository resumeRepository;
+
+    @Autowired
+    private SupabaseStorageService profileStorageService;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -68,6 +77,14 @@ public class JobApplicationService {
             dto.setBio(profile.getBio());
             dto.setHeadline(profile.getHeadline());
             dto.setProfilePictureUrl(profile.getProfilePictureUrl());
+            
+            // Autofill CV details
+            List<CandidateResume> resumes = resumeRepository.findByCandidateIdOrderByUploadedAtDesc(profile.getId());
+            if (!resumes.isEmpty()) {
+                CandidateResume cv = resumes.get(0);
+                dto.setResumeUrl(cv.getFileUrl());
+                dto.setResumeFileName(cv.getFileName());
+            }
             
             candidatePreferenceRepository.findById(profile.getId()).ifPresent(pref -> {
                 dto.setYearsOfExperience(pref.getYearsOfExperience());
@@ -110,12 +127,63 @@ public class JobApplicationService {
             throw new IllegalStateException("You have already applied for this job.");
         }
 
-        // 4. Upload resume (if provided)
+        // 4. Upload resume (if provided) or use existing CV
         String resumeUrl = null;
         if (resumeFile != null && !resumeFile.isEmpty()) {
-            String uniqueName = "app_" + candidateId + "_job" + req.getJobId()
-                    + "_" + System.currentTimeMillis() + ".pdf";
-            resumeUrl = storageService.uploadResume(resumeFile, uniqueName);
+            // A new CV was uploaded during the application process.
+            // Under the "only one CV" constraint, this new CV becomes their active profile CV!
+            
+            // 1. Delete existing profile resumes
+            List<CandidateResume> existingResumes = resumeRepository.findByCandidateIdOrderByUploadedAtDesc(candidateId);
+            for (CandidateResume oldResume : existingResumes) {
+                String oldFileName = extractFileNameFromUrl(oldResume.getFileUrl(), "c_resume");
+                if (oldFileName != null) {
+                    try {
+                        profileStorageService.deleteFile("c_resume", oldFileName);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                resumeRepository.delete(oldResume);
+            }
+            
+            // 2. Upload new CV to c_resume bucket
+            String originalFilename = resumeFile.getOriginalFilename();
+            String profileFileName = "cv_" + candidateId + "_" + System.currentTimeMillis() + "_" + originalFilename;
+            String profileCvUrl = profileStorageService.uploadResume(resumeFile, profileFileName);
+            
+            // 3. Save new profile resume to DB
+            CandidateResume profileResume = new CandidateResume();
+            profileResume.setCandidateId(candidateId);
+            profileResume.setFileName(originalFilename);
+            profileResume.setFileUrl(profileCvUrl);
+            profileResume.setUploadedAt(java.time.LocalDateTime.now());
+            resumeRepository.save(profileResume);
+            
+            // 4. Upload to resumes bucket for this job application
+            String appFileName = "app_" + candidateId + "_job" + req.getJobId() + "_" + System.currentTimeMillis() + "_" + originalFilename;
+            resumeUrl = storageService.uploadResume(resumeFile, appFileName);
+        } else {
+            // Use existing profile CV if one exists (prefill/autofill flow)
+            List<CandidateResume> resumes = resumeRepository.findByCandidateIdOrderByUploadedAtDesc(candidateId);
+            if (!resumes.isEmpty()) {
+                CandidateResume cv = resumes.get(0);
+                String cvUrl = cv.getFileUrl();
+                String cvFileName = cv.getFileName();
+                
+                // Copy/Upload the existing CV to the job applications storage bucket
+                try {
+                    org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+                    byte[] cvBytes = restTemplate.getForObject(cvUrl, byte[].class);
+                    if (cvBytes != null && cvBytes.length > 0) {
+                        String appFileName = "app_" + candidateId + "_job" + req.getJobId() + "_" + System.currentTimeMillis() + "_" + cvFileName;
+                        resumeUrl = storageService.uploadResume(cvBytes, appFileName);
+                    }
+                } catch (Exception e) {
+                    // Fallback to direct URL if download/copy fails
+                    resumeUrl = cvUrl;
+                }
+            }
         }
 
         // Save Candidate Preferences
@@ -299,5 +367,15 @@ public class JobApplicationService {
         dto.setResult(app.getResult());
         dto.setScore(app.getScore());
         return dto;
+    }
+
+    private String extractFileNameFromUrl(String url, String encodedBucket) {
+        if (url == null) return null;
+        String marker = "/public/" + encodedBucket + "/";
+        int idx = url.indexOf(marker);
+        if (idx >= 0) {
+            return url.substring(idx + marker.length());
+        }
+        return null;
     }
 }
