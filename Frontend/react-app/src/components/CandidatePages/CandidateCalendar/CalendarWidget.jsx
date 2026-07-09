@@ -267,16 +267,16 @@ export const DetailPanel = ({
                         return (
                             <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', paddingBottom: idx < ivs.length - 1 ? '20px' : '0', borderBottom: idx < ivs.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
                                 <div>
-                                    <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.title}</div>
+                                    <div className="cw-detail__row"><span className="cw-detail__icon">💼</span>{iv.title}</div>
                                     <div className="cw-detail__row"><span className="cw-detail__icon">⏰</span>{iv.time}</div>
-                                    <div className="cw-detail__row"><span className="cw-detail__icon">🌐</span>{iv.mode}</div>
+                                    <div className="cw-detail__row"><span className="cw-detail__icon">👥</span>{iv.mode}</div>
                                     {isOnline && iv.meetingLink && (
                                         <div className="cw-detail__row">
                                             <span className="cw-detail__icon">🔗</span>
-                                            <a href={iv.meetingLink.startsWith('http') ? iv.meetingLink : `https://${iv.meetingLink}`} 
-                                               target="_blank" 
-                                               rel="noopener noreferrer" 
-                                               style={{ color: '#1a6a82', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                                            <a href={iv.meetingLink.startsWith('http') ? iv.meetingLink : `https://${iv.meetingLink}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ color: '#1a6a82', textDecoration: 'underline', wordBreak: 'break-all' }}>
                                                 {iv.meetingLink}
                                             </a>
                                         </div>
