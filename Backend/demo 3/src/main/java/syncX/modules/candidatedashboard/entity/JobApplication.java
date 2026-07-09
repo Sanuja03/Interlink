@@ -1,4 +1,5 @@
 package syncX.modules.candidatedashboard.entity;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -22,7 +24,7 @@ public class JobApplication {
     // ── Foreign Keys ──────────────────────────────────
     @Column(name = "candidate_id")
     private UUID candidateId;
-    
+
     @Column(name = "job_id")
     private Long jobId;
 

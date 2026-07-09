@@ -1,10 +1,10 @@
 import "./Footer.css";
 
-import logo from "../../assets/footer/logo.png";
-import facebook from "../../assets/footer/facebook.png";
-import instagram from "../../assets/footer/instagram.png";
-import whatsapp from "../../assets/footer/whatsapp.png";
-import linkedin from "../../assets/footer/linkedin.png";
+import logo from "../../../assets/footer/logo.png";
+import facebook from "../../../assets/footer/facebook.png";
+import instagram from "../../../assets/footer/instagram.png";
+import whatsapp from "../../../assets/footer/whatsapp.png";
+import linkedin from "../../../assets/footer/linkedin.png";
 
 export default function Footer() {
   return (

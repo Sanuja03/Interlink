@@ -1,4 +1,5 @@
 package syncX.modules.candidatedashboard.repository;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,9 @@ import java.util.Map;
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
     List<JobApplication> findByCandidateId(UUID candidateId);
+
     long countByCandidateId(UUID candidateId);
+
     long countByCandidateIdAndResult(UUID candidateId, String result);
 
     @Query(value = """
@@ -55,6 +58,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     List<Map<String, Object>> findApplicationTrackerByCandidateId(@Param("candidateId") UUID candidateId);
 
     List<JobApplication> findByJobId(Long jobId);
+
     List<JobApplication> findByStatus(String status);
+
     boolean existsByCandidateIdAndJobId(UUID candidateId, Long jobId);
 }

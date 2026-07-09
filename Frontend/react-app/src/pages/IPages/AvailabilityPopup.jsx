@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import "./AvailabilityPopup.css";
+import api from "../../lib/api";
 
 import {
   getCurrentWeekDates,
   getWeekKey,
-  getSavedAvailability,
   submitAvailability,
-  checkWeekStatus,
 } from "../../utils/weekUtils";
+
 
 const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
   const weekDates = getCurrentWeekDates();
@@ -16,27 +16,42 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
   const [selectedDays, setSelectedDays] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadSavedAvailability = async () => {
       try {
-        const status = await checkWeekStatus();
-        if (status.submitted) {
-          setAlreadySubmitted(true);
-          setSelectedDays(status.availableDays || []);
-        } else {
-          const savedDays = await getSavedAvailability();
-          setSelectedDays(savedDays);
-        }
+        // get saved availability for the week and teh status- if any if not it returns empty array
+        const res = await api.get("/interviewer/availability/my-week", {
+          params: { weekKey },
+        });
+        if (cancelled) return;        
+
+        const data = res.data || {};
+        const isSubmitted = data.status === "submitted";
+
+        setAlreadySubmitted(isSubmitted);
+        setSelectedDays(data.availableDays || []);
       } catch (error) {
+        if (cancelled) return;
         console.error("Failed to load saved availability:", error);
         setSelectedDays([]);
+        setAlreadySubmitted(false);
+      } finally {
+        if (!cancelled) setLoadingData(false);
       }
     };
 
     loadSavedAvailability();
-  }, []);
 
+    return () => {
+      cancelled = true;                 
+    };
+  }, [weekKey]);
+
+  //can add or remove the day as selcted or not
   const toggleDay = (fullDate) => {
     if (alreadySubmitted) return;
     setSelectedDays((prev) =>
@@ -53,19 +68,20 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
 
     try {
       await submitAvailability(selectedDays);
-
-      console.log("Week:", weekKey);
-      console.log("Available days:", selectedDays);
-
       setAlreadySubmitted(true);
       if (onSubmitSuccess) onSubmitSuccess();
     } catch (error) {
       console.error("Failed to submit availability:", error);
+      alert(
+        error?.response?.data?.message ||
+        "Failed to submit availability. Please refresh the page and try again."
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
+  //converts the first and last dates of the week into readable text like "May 5 - May 11"
   const startLabel = weekDates[0].date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -96,6 +112,7 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
         </div>
 
         <div className="availability-body">
+
           <label className="availability-label">
             {alreadySubmitted
               ? "Your availability for this week"
@@ -103,12 +120,15 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
           </label>
 
           <div className="availability-days">
+            {/* it creates buttons for eahc date and check 2 things - selectedday or past day   */}
+
             {weekDates.map((day) => {
               const isSelected = selectedDays.includes(day.fullDate);
               const isPast =
                 day.date < new Date(new Date().setHours(0, 0, 0, 0));
 
               return (
+
                 <button
                   key={day.fullDate}
                   type="button"
@@ -116,7 +136,7 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
                     isSelected ? "selected" : ""
                   } ${isPast || alreadySubmitted ? "past" : ""}`}
                   onClick={() => toggleDay(day.fullDate)}
-                  disabled={isPast || submitting || alreadySubmitted}
+                  disabled={isPast || submitting || alreadySubmitted || loadingData}
                 >
                   <span className="availability-day-name">
                     {day.shortDay}
@@ -129,7 +149,9 @@ const AvailabilityPopup = ({ onClose, onSubmitSuccess }) => {
             })}
           </div>
 
-          {alreadySubmitted ? (
+          {loadingData ? (
+            <p className="availability-summary">Loading...</p>
+          ) : alreadySubmitted ? (
             <div className="availability-submitted-msg">
               You have already submitted your availability for this week.
             </div>

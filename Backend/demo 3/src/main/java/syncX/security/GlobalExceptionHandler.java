@@ -1,8 +1,7 @@
-// ============================================================
-// FILE: src/main/java/syncX/security/GlobalExceptionHandler.java (NEW)
+
 // PURPOSE: Returns clean JSON error responses for auth failures
 //          instead of Spring's default HTML error pages
-// ============================================================
+
 package syncX.security;
 
 import org.springframework.http.HttpStatus;
@@ -68,6 +67,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
         // Map specific messages to appropriate HTTP statuses

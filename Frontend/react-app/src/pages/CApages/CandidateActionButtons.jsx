@@ -1,34 +1,28 @@
-import FinalizedPanelButton from "./FinalizedPanelButton";
+import "./CandidateActionButtons.css";
 
-/**
- * CandidateActionButtons
- *
- * The "Request / Status" button calls onOpenRequest (handleOpenForCandidate
- * in ShortlistedCandidates) which checks /current and opens either the
- * Request popup or Status popup with the candidate passed correctly.
- *
- * StatusButton removed — its logic is owned by ShortlistedCandidates.
- */
 const CandidateActionButtons = ({
-  candidate,
-  interviewDetails,
-  acceptedInterviewers,
-  scorecards,
   onOpenRequest,
-  onSendDetails,
+  onOpenFinalized,
+  isFinalized = false,
 }) => {
+  if (isFinalized) {
+    return (
+      <div className="cab-group">
+        <button className="cab-btn cab-btn--disabled" disabled>
+          Request / Status
+        </button>
+        <button className="cab-btn cab-btn--finalized" onClick={onOpenFinalized}>
+          Finalized
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="sc-action-group">
-      <button className="sc-request-btn" onClick={onOpenRequest}>
+    <div className="cab-group">
+      <button className="cab-btn cab-btn--primary" onClick={onOpenRequest}>
         Request / Status
       </button>
-
-      <FinalizedPanelButton
-        interviewDetails={interviewDetails}
-        acceptedInterviewers={acceptedInterviewers}
-        scorecards={scorecards}
-        onSendDetails={onSendDetails}
-      />
     </div>
   );
 };

@@ -6,7 +6,7 @@
   font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 16px;
+  margin: 16px 0 16px;
 }
 
 .modal-overlay {
@@ -49,63 +49,6 @@
   cursor: pointer;
   font-size: 18px;
   color: #64748b;
-}
-
-.modal-sub {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
-  color: #374151;
-  font-size: 14px;
-}
-
-.modal-label {
-  font-weight: 700;
-  color: #1f5f7a;
-}
-
-.modal-body {
-  padding: 6px 4px 2px;
-}
-
-.history-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.history-item {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid #f3f4f6;
-}
-
-.history-item:first-child {
-  border-top: none;
-}
-
-.history-date {
-  min-width: 110px;
-  font-weight: 700;
-  color: #111827;
-}
-
-.history-event {
-  color: #374151;
-}
-
-.history-empty {
-  color: #6b7280;
-  padding: 10px 0;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
 }
 
 @media (max-width: 640px) {

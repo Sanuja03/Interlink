@@ -1,0 +1,45 @@
+/* Scoped under .im-embed so this ONLY affects the page-embedded usage
+   (InterviewerManagementPage.jsx). The real modal usage in
+   CompanyAdminSettings.jsx is untouched — its CSS file
+   (InterviewerManagementModal.css) is unmodified. */
+
+/* Title floats outside the white card, same pattern as CompanyDashboard's
+   .cd-title */
+   .im-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+  }
+  
+  .im-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 20px;
+  }
+  
+  .im-embed .interviewer-modal-overlay {
+    position: static;
+    inset: auto;
+    background: transparent;
+    backdrop-filter: none;
+    padding: 0;
+    display: block;
+    z-index: auto;
+  }
+  
+  .im-embed .interviewer-modal {
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: none;
+    padding: 30px;
+  }
+  
+  /* No "Close" button on a page — there's nothing to close back to */
+  .im-embed .footer-close-btn {
+    display: none;
+  }

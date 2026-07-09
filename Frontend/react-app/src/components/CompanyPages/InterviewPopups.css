@@ -1,493 +1,549 @@
 :root {
-    --heading: #24698b;
-    --dot1: rgba(36, 105, 139, 0.18);
-    --dot2: rgba(36, 105, 139, 0.22);
-    --dot3: rgba(217, 217, 217, 0.34);
-  }
-  
-  .ip-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-  }
-  
-  .ip-modal {
-    width: min(900px, 96vw);
-    max-height: 94vh;
-    overflow-y: auto;
-    border-radius: 18px;
-    padding: 28px 24px 32px;
-    font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background-color: #f3f4f6;
-    background-image:
-      radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
-      radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
-      radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
-    background-size: 56px 56px, 80px 80px, 110px 110px;
-    background-position: 0 0, 18px 22px, 40px 10px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-  }
-  
-  .ip-title {
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
-    margin: 6px 0 18px;
-    color: #000;
-  }
-  
-  .ip-card {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    border-radius: 16px;
-    padding: 26px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-    max-width: 760px;
-    margin: 0 auto;
-  }
-  
-  .ip-info-grid {
-    display: grid;
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-  
-  .ip-info-grid-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .ip-info-box {
-    background: #f9fafb;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
-    padding: 14px;
-  }
-  
-  .ip-info-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 6px;
-  }
-  
-  .ip-info-value {
-    display: block;
-    font-size: 17px;
-    font-weight: 700;
-    color: #111827;
-  }
-  
-  .ip-field {
-    margin-bottom: 16px;
-  }
-  
-  .ip-label {
-    display: block;
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #000;
-  }
-  
-  .ip-input,
-  .ip-select {
-    width: 100%;
-    height: 52px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.35);
-    padding: 10px 14px;
-    font-size: 18px;
-    outline: none;
-    background: #fff;
-    box-sizing: border-box;
-  }
-  
-  .ip-textarea {
-    width: 100%;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.35);
-    padding: 12px 14px;
-    font-size: 18px;
-    outline: none;
-    background: #fff;
-    box-sizing: border-box;
-    resize: vertical;
-    font-family: inherit;
-  }
-  
-  .ip-input::placeholder,
-  .ip-textarea::placeholder {
-    color: rgba(0, 0, 0, 0.35);
-  }
-  
-  .ip-input:disabled,
-  .ip-select:disabled,
-  .ip-textarea:disabled,
-  .ip-dropdown-btn:disabled {
-    background: #f3f4f6;
-    cursor: not-allowed;
-    opacity: 0.75;
-  }
-  
-  .ip-person-list,
-  .ip-status-list,
-  .ip-selected-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .ip-person-card,
-  .ip-status-card,
-  .ip-selected-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    border-radius: 12px;
-    padding: 14px 16px;
-    background: #ffffff;
-    flex-wrap: wrap;
-  }
-  
-  .ip-person-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 4px;
-  }
-  
-  .ip-person-role {
-    font-size: 15px;
-    color: #6b7280;
-    margin: 0;
-  }
-  
-  .ip-status-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  
-  .ip-badge {
-    min-width: 100px;
-    text-align: center;
-    padding: 9px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  
-  .ip-accepted {
-    background: #dcfce7;
-    color: #166534;
-  }
-  
-  .ip-rejected {
-    background: #fee2e2;
-    color: #b91c1c;
-  }
-  
-  .ip-pending {
-    background: #fef3c7;
-    color: #92400e;
-  }
-  
-  .ip-timeout {
-    background: #e5e7eb;
-    color: #374151;
-  }
-  
-  .ip-small-btn {
-    border: none;
-    border-radius: 10px;
-    background: var(--heading);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 10px 14px;
-    cursor: pointer;
-  }
-  
-  .ip-remove-btn,
-  .ip-remove-mini-btn {
-    border: none;
-    border-radius: 8px;
-    background: #ef4444;
-    color: #fff;
-    cursor: pointer;
-  }
-  
-  .ip-remove-btn {
-    font-size: 14px;
-    font-weight: 700;
-    padding: 10px 14px;
-  }
-  
-  .ip-remove-mini-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
-    font-weight: 700;
-  }
-  
-  .ip-note-box {
-    margin-top: 16px;
-    border-radius: 12px;
-    padding: 16px;
-    background: #f9fafb;
-    border: 1px solid rgba(0, 0, 0, 0.14);
-    font-size: 15px;
-    color: #374151;
-  }
-  
-  .ip-actions {
-    display: flex;
-    justify-content: center;
-    gap: 26px;
-    margin-top: 22px;
-  }
-  
-  .ip-primary-btn {
-    width: 280px;
-    min-height: 58px;
-    border-radius: 18px;
-    border: none;
-    background: var(--heading);
-    color: #fff;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 14px 26px rgba(36, 105, 139, 0.28);
-  }
-  
-  .ip-primary-btn:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  
-  .ip-danger-btn {
-    width: 220px;
-    min-height: 58px;
-    border-radius: 18px;
-    border: none;
-    background: #ff0000;
-    color: #fff;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 14px 26px rgba(255, 0, 0, 0.25);
-  }
-  
-  .ip-dropdown-btn {
-    width: 100%;
-    min-height: 52px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.35);
-    padding: 10px 14px;
-    font-size: 18px;
-    outline: none;
-    background: #fff;
-    text-align: left;
-    cursor: pointer;
-  }
-  
-  .ip-dropdown-panel {
-    margin-top: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    border-radius: 12px;
-    background: #ffffff;
-    padding: 14px;
-  }
-  
-  .ip-group-block + .ip-group-block {
-    margin-top: 18px;
-  }
-  
-  .ip-group-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #24698b;
-    margin: 0 0 10px;
-  }
-  
-  .ip-dropdown-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 10px;
-    padding: 12px 14px;
-    background: #f9fafb;
-    margin-bottom: 10px;
-    cursor: pointer;
-  }
-  
-  @media (max-width: 700px) {
-    .ip-info-grid-2 {
-      grid-template-columns: 1fr;
-    }
-  
-    .ip-actions {
-      flex-direction: column;
-      gap: 14px;
-    }
-  
-    .ip-primary-btn,
-    .ip-danger-btn {
-      width: 100%;
-    }
-  }
+  --heading: #24698b;
+  --heading-dark: #1d5872;
+}
 
-  .ip-panel-top {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-  
-  .ip-panel-box {
-    background: #f9fafb;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
-    padding: 14px;
-  }
-  
-  .ip-primary-btn:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  
-  .ip-status-accepted {
-    background: #dcfce7;
-    color: #166534;
-  }
-  
-  .ip-status-rejected {
-    background: #fee2e2;
-    color: #b91c1c;
-  }
-  
-  .ip-status-pending {
-    background: #fef3c7;
-    color: #92400e;
-  }
-  
-  .ip-status-timeout {
-    background: #e5e7eb;
-    color: #374151;
-  }
+/* ============ OVERLAY & MODAL ============ */
 
-  /* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
-/* Add these to your existing InterviewPopups.css file                      */
+.ip-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
 
+.ip-modal {
+  width: min(640px, 96vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  padding: 22px 24px 20px;
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.ip-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+/* ============ MAIN CARD ============ */
+
+.ip-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+/* ============ INFO GRID (read-only fields like ID, candidate name) ============ */
+
+.ip-info-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ip-info-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.ip-info-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ip-info-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.ip-info-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ============ FORM FIELDS ============ */
+
+.ip-field {
+  margin-bottom: 14px;
+}
+
+.ip-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+.ip-input,
+.ip-select,
+.ip-dropdown-btn {
+  width: 100%;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+  background: #ffffff;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ip-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 9px 12px;
+  font-size: 14px;
+  outline: none;
+  background: #ffffff;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+  color: #0f172a;
+  min-height: 70px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ip-input:focus,
+.ip-select:focus,
+.ip-textarea:focus,
+.ip-dropdown-btn:focus {
+  border-color: var(--heading);
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}
+
+.ip-input::placeholder,
+.ip-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.ip-input:disabled,
+.ip-select:disabled,
+.ip-textarea:disabled,
+.ip-dropdown-btn:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Custom select arrow */
 .ip-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
+  background-position: right 10px center;
+  padding-right: 32px;
   cursor: pointer;
 }
 
-.ip-scorecard-preview {
-  margin-top: 10px;
-  background: #f8fafc;
+.ip-dropdown-btn {
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #0f172a;
+}
+
+.ip-dropdown-btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+/* ============ DROPDOWN PANEL (interviewers list) ============ */
+
+.ip-dropdown-panel {
+  margin-top: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 12px 14px;
+  background: #ffffff;
+  padding: 10px;
 }
 
-.ip-scorecard-preview-title {
+.ip-group-block + .ip-group-block {
+  margin-top: 12px;
+}
+
+.ip-group-title {
   font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--heading);
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.ip-scorecard-chips {
+.ip-dropdown-item {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.ip-scorecard-chip {
-  background: #e0e7ff;
-  color: #4338ca;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
+.ip-dropdown-item:last-child {
+  margin-bottom: 0;
 }
 
-/* ===== Additional styles for FinalizedPanelPopup scorecard selector ===== */
-/* Add these to your existing InterviewPopups.css file                      */
+.ip-dropdown-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
 
-.ip-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
+.ip-dropdown-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--heading);
   cursor: pointer;
 }
 
-.ip-scorecard-preview {
-  margin-top: 10px;
-  background: #f8fafc;
+/* ============ PERSON / SELECTED / STATUS CARDS ============ */
+
+.ip-person-list,
+.ip-status-list,
+.ip-selected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ip-person-card,
+.ip-status-card,
+.ip-selected-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 12px 14px;
-}
-
-.ip-scorecard-preview-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  margin: 0 0 8px;
-}
-
-.ip-scorecard-chips {
-  display: flex;
+  padding: 10px 12px;
+  background: #ffffff;
   flex-wrap: wrap;
-  gap: 6px;
 }
 
-.ip-scorecard-chip {
-  background: #e0e7ff;
-  color: #4338ca;
-  font-size: 11px;
+.ip-person-name {
+  font-size: 14px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
+  color: #0f172a;
+  margin: 0 0 2px;
 }
 
-/* ── Admin-removed interviewer styles ── */
+.ip-person-role {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
 
-/* Grey "Removed" badge — replaces the normal status badge */
+.ip-status-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ============ BADGES ============ */
+
+.ip-badge {
+  min-width: 70px;
+  text-align: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ip-accepted,
+.ip-status-accepted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ip-rejected,
+.ip-status-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.ip-pending,
+.ip-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ip-timeout,
+.ip-status-timeout {
+  background: #e5e7eb;
+  color: #374151;
+}
+
 .ip-status-removed {
   background: #e5e7eb;
   color: #6b7280;
 }
 
-/* Greyed-out disabled "Removed" button — replaces the red Remove button */
+/* ============ BUTTONS ============ */
+
+.ip-small-btn {
+  border: none;
+  border-radius: 6px;
+  background: var(--heading);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:0.15s ease;
+}
+
+.ip-small-btn:hover:not(:disabled) {
+  background: var(--heading-dark);
+}
+
+.ip-small-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.ip-remove-btn {
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ip-remove-btn:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.ip-remove-btn:disabled {
+  background: #fca5a5;
+  cursor: not-allowed;
+}
+
+.ip-remove-mini-btn {
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.ip-remove-mini-btn:hover {
+  background: #dc2626;
+}
+
 .ip-removed-done {
   background: #d1d5db !important;
-  color: #9ca3af !important;
+  color: #6b7280 !important;
   cursor: not-allowed !important;
   opacity: 1 !important;
   box-shadow: none !important;
+}
+
+/* ============ ACTIONS BAR ============ */
+
+.ip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.ip-primary-btn {
+  min-width: 140px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: var(--heading);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ip-primary-btn:hover:not(:disabled) {
+  background: var(--heading-dark);
+  box-shadow: 0 4px 12px rgba(36, 105, 139, 0.25);
+}
+
+.ip-primary-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ip-danger-btn {
+  min-width: 100px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 18px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ip-danger-btn:hover {
+  background: #dc2626;
+}
+
+/* ============ NOTE BOX (info messages) ============ */
+
+.ip-note-box {
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+/* ============ PANEL TOP (stats like Panel Size / Accepted) ============ */
+
+.ip-panel-top {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ip-panel-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+/* ============ SCORECARD PREVIEW ============ */
+
+.ip-scorecard-preview {
+  margin-top: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ip-scorecard-preview-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ip-scorecard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ip-scorecard-chip {
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ============ ADD INTERVIEWERS INLINE PANEL ============ */
+
+.ip-add-panel {
+  margin-top: 12px;
+  border: 1.5px dashed rgba(36, 105, 139, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  background: #f0f7fb;
+}
+
+/* ============ MOBILE ============ */
+
+@media (max-width: 600px) {
+  .ip-modal {
+    padding: 18px 16px;
+  }
+
+  .ip-title {
+    font-size: 16px;
+  }
+
+  .ip-info-grid-2,
+  .ip-panel-top {
+    grid-template-columns: 1fr;
+  }
+
+  .ip-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .ip-primary-btn,
+  .ip-danger-btn {
+    width: 100%;
+  }
+
+  .ip-status-card,
+  .ip-status-right {
+    width: 100%;
+  }
+
+  .ip-status-right {
+    justify-content: flex-end;
+  }
 }

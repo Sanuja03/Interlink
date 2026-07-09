@@ -1,0 +1,69 @@
+/* ============================================================
+   Interviewer-only wrapper around the shared CandidateProfileView.
+   Matches the app's standard shell: padded page + white rounded card
+   (same recipe as .dash-page / .dash-card). Does NOT touch the admin
+   CandidateProfile.css or the .cp-* classes.
+   ============================================================ */
+
+   .ip-profile-page {
+    padding: 8px 24px 32px;
+    box-sizing: border-box;
+  }
+  
+  .ip-profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 16px 0 16px;
+    flex-wrap: wrap;
+  }
+  
+  .ip-profile-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .ip-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .ip-back-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+  .ip-back-btn:active { background: #e5e7eb; }
+  
+  /* White container that holds the whole shared profile view */
+  .ip-profile-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  
+  /* Neutralize the shared view's own .cp-page background/padding so it sits
+     flush inside the white card. Scoped to this wrapper only. */
+  .ip-profile-card .cp-page {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    min-height: 0;
+    max-width: 100%;
+  }
+  
+  @media (max-width: 640px) {
+    .ip-profile-page { padding: 8px 12px 20px; }
+    .ip-profile-card { padding: 16px; }
+  }

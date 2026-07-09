@@ -1,114 +1,166 @@
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../lib/api";
 import "./ApplicationManagement.css";
 
 export default function ApplicationManagement() {
   const navigate = useNavigate();
 
-  const [showAll, setShowAll] = useState(false); // ✅ toggle
+  const [applications, setApplications] = useState([]);
+  const [showAll, setShowAll] = useState(false);
 
-  const rows = [
-    { name: "Amal Dissanayaka", title: "UI/UX Designer", score: "80%", status: "Shortlisted", color: "green" },
-    { name: "Sumudu Perera", title: "Software Engineer", score: "89%", status: "Interview", color: "yellow" },
-    { name: "Kamal Ranjan", title: "QA", score: "30%", status: "Rejected", color: "red" },
-    { name: "Nilkamal perera", title: "HR manager", score: "90%", status: "Under Review", color: "blue" },
+  const fetchApplications = async () => {
+    try {
+      const companyId = localStorage.getItem("companyId");
+      if (!companyId) {
+        console.error("No companyId found");
+        return;
+      }
+      const res = await api.get("/company/applications/" + companyId);
+      setApplications(res.data);
+    } catch (err) {
+      console.error("FETCH ERROR:", err);
+    }
+  };
 
-    { name: "User 1", title: "Dev", score: "70%", status: "Shortlisted", color: "green" },
-    { name: "User 2", title: "Dev", score: "60%", status: "Rejected", color: "red" },
-    { name: "User 3", title: "Dev", score: "85%", status: "Interview", color: "yellow" },
-    { name: "User 4", title: "Dev", score: "92%", status: "Under Review", color: "blue" },
-    { name: "User 5", title: "Dev", score: "75%", status: "Shortlisted", color: "green" },
-  ];
+  useEffect(function () {
+    fetchApplications();
+  }, []);
 
-  const visibleRows = showAll ? rows : rows.slice(0, 4);
+  const total = applications.length;
+  const pending = applications.filter(function (a) { return a.status === "PENDING"; }).length;
+  const underReview = applications.filter(function (a) { return a.status === "UNDER_REVIEW"; }).length;
+  const shortlisted = applications.filter(function (a) { return a.status === "SHORTLISTED"; }).length;
+  const rejected = applications.filter(function (a) { return a.status === "REJECTED"; }).length;
+  const accepted = applications.filter(function (a) { return a.status === "ACCEPTED"; }).length;
+
+  const visibleRows = showAll ? applications : applications.slice(0, 4);
+
+  const getStatusColor = function (status) {
+    switch (status) {
+      case "PENDING":      return "yellow";
+      case "UNDER_REVIEW": return "blue";
+      case "ACCEPTED":     return "green";
+      case "SHORTLISTED":  return "green";
+      case "INTERVIEW":    return "blue";
+      case "REJECTED":     return "red";
+      default:             return "gray";
+    }
+  };
+
+  const formatStatus = function (status) {
+    switch (status) {
+      case "PENDING":      return "Pending";
+      case "UNDER_REVIEW": return "Under Review";
+      case "ACCEPTED":     return "Accepted";
+      case "SHORTLISTED":  return "Shortlisted";
+      case "INTERVIEW":    return "Interview";
+      case "REJECTED":     return "Rejected";
+      default:             return status || "N/A";
+    }
+  };
 
   return (
     <DashboardLayout>
       <div className="am-page">
         <div className="am-container">
 
-          {/* Stats */}
-          <div className="am-stats">
-            <div className="am-statCard">
-              <div className="am-statTitle">Total Applications</div>
-              <div className="am-statValue">129</div>
-            </div>
+          <h1 className="am-title">Application Management</h1>
 
-            <div className="am-statCard">
-              <div className="am-statTitle">Under review</div>
-              <div className="am-statValue">56</div>
-            </div>
-
-            <div className="am-statCard">
-              <div className="am-statTitle">Shortlisted</div>
-              <div className="am-statValue">46</div>
-            </div>
-
-            <div className="am-statCard">
-              <div className="am-statTitle">Rejected</div>
-              <div className="am-statValue">29</div>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="am-card">
-            <div className="am-cardTitle">Application Status Tracker</div>
-
-            <table className="am-table">
-              <thead>
-                <tr>
-                  <th className="am-th">Candidate</th>
-                  <th className="am-th">Job Title</th>
-                  <th className="am-th">AI Score</th>
-                  <th className="am-th">Status</th>
-                  <th className="am-th"></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {visibleRows.map((r, i) => (
-                  <tr key={i}>
-                    <td className="am-td">{r.name}</td>
-                    <td className="am-td">{r.title}</td>
-                    <td className="am-td">{r.score}</td>
-
-                    <td className="am-td">
-                      <span className={`am-statusDot ${r.color}`}></span>
-                      {r.status}
-                    </td>
-
-                    <td className="am-td">
-                      <button
-                        className="am-btn am-view"
-                        onClick={() => navigate("/candidate-profile")}
-                      >
-                        View Profile
-                      </button>
-
-                      <button className="am-btn am-shortlist">
-                        Shortlist
-                      </button>
-
-                      <button className="am-btn am-reject">
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* ✅ SEE MORE BUTTON */}
-            {rows.length > 4 && (
-              <div className="am-see-more">
-                <button onClick={() => setShowAll(!showAll)}>
-                  {showAll ? "▲ Show Less" : "▼ See More"}
-                </button>
+          <div className="am-outer-card">
+            <div className="am-stats">
+              <div className="am-statCard">
+                <div className="am-statTitle">Total Applications</div>
+                <div className="am-statValue">{total}</div>
               </div>
-            )}
-          </div>
+              <div className="am-statCard">
+                <div className="am-statTitle">Pending</div>
+                <div className="am-statValue">{pending + underReview}</div>
+              </div>
+              <div className="am-statCard">
+                <div className="am-statTitle">Shortlisted</div>
+                <div className="am-statValue">{shortlisted + accepted}</div>
+              </div>
+              <div className="am-statCard">
+                <div className="am-statTitle">Rejected</div>
+                <div className="am-statValue">{rejected}</div>
+              </div>
+            </div>
 
+            <div className="am-table-section">
+              <div className="am-cardTitle">Application Status Tracker</div>
+
+              <table className="am-table">
+                <thead>
+                  <tr>
+                    <th className="am-th">Candidate</th>
+                    <th className="am-th">Job</th>
+                    <th className="am-th">AI Score</th>
+                    <th className="am-th">Status</th>
+                    <th className="am-th"></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {visibleRows.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
+                        No applications found
+                      </td>
+                    </tr>
+                  ) : (
+                    visibleRows.map(function (r) {
+                      return (
+                        <tr key={r.id}>
+                          <td className="am-td">
+                            {r.candidateName || "Unknown"}
+                          </td>
+                          <td className="am-td">
+                            {r.jobTitle || "N/A"}
+                          </td>
+                          <td className="am-td">
+                            {r.aiScore != null ? r.aiScore + "%" : "N/A"}
+                          </td>
+                          <td className="am-td">
+                            <span className={"am-statusDot " + getStatusColor(r.status)}></span>
+                            {formatStatus(r.status)}
+                          </td>
+                          <td className="am-td">
+                            <button
+                              className="am-btn am-view"
+                              onClick={function () {
+                                navigate("/company/candidate-profile/" + r.candidateId + "?applicationId=" + r.id);
+                              }}
+                            >
+                              View Profile
+                            </button>
+
+                            <button
+                              className="am-btn am-change-status"
+                              onClick={function () {
+                                navigate("/company/shortlist/" + r.id);
+                              }}
+                            >
+                              Change Status
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+
+              {applications.length > 4 && (
+                <div className="am-see-more">
+                  <button onClick={function () { setShowAll(!showAll); }}>
+                    {showAll ? "Show Less" : "See More"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

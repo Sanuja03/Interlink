@@ -3,9 +3,10 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import "./EditJob.css";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
 
 export default function EditJob() {
-  const { id } = useParams();
+  const { jobId } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -15,55 +16,67 @@ export default function EditJob() {
     category: "",
     location: "",
     experience: "",
-    vacancies: "",
-    interviewRounds: "",
+    vacancies: 1,
+    interviewRounds: 1,
   });
 
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/jobs/${id}`)
-      .then(res => {
+    const getToken = async () => {
+      const { data } = await supabase.auth.getSession();
+      setToken(data.session?.access_token);
+    };
+    getToken();
+  }, []);
+
+  useEffect(() => {
+    if (!jobId || !token) return;
+
+    axios
+      .get(`http://localhost:8080/api/jobs/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
         const job = res.data;
-
         setForm({
-          title: job.title || "",
+          title: job.jobTitle || "",
           department: job.department || "",
-          type: job.type || "",
+          type: job.employmentType || "",
           category: job.category || "",
-          location: job.location || "",
-          experience: job.experience || "",
-          vacancies: job.vacancies || "",
-          interviewRounds: job.interviewRounds || "",
+          location: job.jobLocation || "",
+          experience: job.experienceLevel || "",
+          vacancies: job.vacancies || 1,
+          interviewRounds: job.interviewRounds || 1,
         });
-
         setInterviewStages(
           job.interviewStages ? job.interviewStages.split(", ") : []
         );
-
         setReqs(
-          job.requirements ? job.requirements.split(", ") : [""]
+          job.keyRequirements ? job.keyRequirements.split(", ") : [""]
         );
-      });
-  }, [id]);
+      })
+      .catch((err) => console.error("FETCH ERROR:", err));
+  }, [jobId, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setForm(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-
+    setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "interviewRounds") {
-      setInterviewStages(Array(Number(value)).fill(""));
+      const count = Number(value);
+      setInterviewStages((prev) => {
+        const updated = [...prev];
+        while (updated.length < count) updated.push("");
+        return updated.slice(0, count);
+      });
     }
   };
 
-  const handleStageChange = (index, value) => {
+  const handleStageChange = (i, val) => {
     const updated = [...interviewStages];
-    updated[index] = value;
+    updated[i] = val;
     setInterviewStages(updated);
   };
 
@@ -74,118 +87,234 @@ export default function EditJob() {
   };
 
   const addReq = () => setReqs([...reqs, ""]);
-  const removeReq = (i) => setReqs(reqs.filter((_, index) => index !== i));
+  const removeReq = (i) => setReqs(reqs.filter((_, idx) => idx !== i));
 
   const handleUpdate = async () => {
-    const data = {
-      ...form,
-      vacancies: Number(form.vacancies),
-      interviewRounds: Number(form.interviewRounds),
-      interviewStages: interviewStages.join(", "),
-      requirements: reqs.join(", "),
-    };
+    try {
+      const companyId = localStorage.getItem("companyId");
+      if (!companyId) { alert("Company ID missing"); return; }
+      if (!token) { alert("Token missing. Reload page."); return; }
 
-    await axios.put(`http://localhost:8080/jobs/${id}`, data);
-    alert("Job Updated!");
-    navigate("/job-management");
+      const data = {
+        ...form,
+        vacancies: Number(form.vacancies),
+        interviewRounds: Number(form.interviewRounds),
+        interviewStages: interviewStages.filter(Boolean).join(", "),
+        requirementText: reqs.filter(Boolean).join(", "),
+        companyId,
+      };
+
+      await axios.put(`http://localhost:8080/api/jobs/${jobId}`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert("Updated!");
+      navigate("/company/job-management");
+    } catch (err) {
+      console.error("UPDATE ERROR:", err);
+      alert("Update failed");
+    }
   };
 
   const handleDelete = async () => {
-    await axios.delete(`http://localhost:8080/jobs/${id}`);
-    alert("Job Deleted!");
-    navigate("/job-management");
+    try {
+      if (!token) return;
+      await axios.delete(`http://localhost:8080/api/jobs/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Deleted!");
+      navigate("/company/job-management");
+    } catch (err) {
+      console.error("DELETE ERROR:", err);
+    }
   };
 
   return (
     <DashboardLayout>
       <div className="ej-page">
         <div className="ej-container">
-
           <h2 className="ej-title">Update Job</h2>
 
           <div className="ej-card">
 
-            <input name="title" value={form.title} onChange={handleChange} className="ej-input" />
-
-            <select name="department" value={form.department} onChange={handleChange} className="ej-input">
-              <option>Engineering</option>
-              <option>Design</option>
-              <option>QA</option>
-              <option>HR</option>
-            </select>
-
-            <select name="type" value={form.type} onChange={handleChange} className="ej-input">
-              <option>Full-Time</option>
-              <option>Part-Time</option>
-            </select>
-
-            <select name="category" value={form.category} onChange={handleChange} className="ej-input">
-              <option>Finance</option>
-              <option>IT</option>
-            </select>
-
-            <select name="interviewRounds" value={form.interviewRounds} onChange={handleChange} className="ej-input">
-              {[1,2,3,4].map(n => <option key={n}>{n}</option>)}
-            </select>
-
-            {interviewStages.map((stage, i) => (
-              <select
-                key={i}
-                value={stage}
-                onChange={(e) => handleStageChange(i, e.target.value)}
+            <div className="ej-field">
+              <label className="ej-label">Job Title</label>
+              <input
+                name="title"
+                value={form.title+1}
                 className="ej-input"
+                onChange={handleChange}
+                placeholder="e.g. Frontend Developer"
+              />
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Department</label>
+              <select
+                name="department"
+                value={form.department}
+                className="ej-select"
+                onChange={handleChange}
               >
-                <option>Technical</option>
+                <option value="">Select</option>
+                <option>Engineering</option>
+                <option>Design</option>
+                <option>QA</option>
                 <option>HR</option>
-                <option>Managerial</option>
               </select>
-            ))}
+            </div>
 
-            <input name="location" value={form.location} onChange={handleChange} className="ej-input" />
+            <div className="ej-field">
+              <label className="ej-label">Employment Type</label>
+              <select
+                name="type"
+                value={form.type}
+                className="ej-select"
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                <option value="REMOTE">Remote</option>
+                <option value="ONSITE">Onsite</option>
+                <option value="HYBRID">Hybrid</option>
+              </select>
+            </div>
 
-            <select name="experience" value={form.experience} onChange={handleChange} className="ej-input">
-              <option>Junior</option>
-              <option>Mid</option>
-              <option>Senior</option>
-            </select>
+            <div className="ej-field">
+              <label className="ej-label">Category</label>
+              <select
+                name="category"
+                value={form.category}
+                className="ej-select"
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Design">Design</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Finance">Finance</option>
+                <option value="Healthcare">Healthcare</option>
+              </select>
+            </div>
 
-            <select name="vacancies" value={form.vacancies} onChange={handleChange} className="ej-input">
-              {[...Array(100)].map((_, i) => (
-                <option key={i+1}>{i+1}</option>
-              ))}
-            </select>
+            <div className="ej-field">
+              <label className="ej-label">Number of Interview Rounds</label>
+              <select
+                name="interviewRounds"
+                value={form.interviewRounds}
+                className="ej-select"
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            </div>
 
-            {reqs.map((r, i) => (
-              <div key={i} className="ej-req-row">
-                <button className="ej-req-btn" onClick={() => removeReq(i)}>-</button>
-
-                <input
-                  className="ej-input ej-req-input"
-                  value={r}
-                  onChange={(e) => handleReqChange(i, e.target.value)}
-                />
-
-                <button className="ej-req-btn" onClick={addReq}>+</button>
+            {interviewStages.map((stage, index) => (
+              <div className="ej-field" key={index}>
+                <label className="ej-label">Stage {index + 1}</label>
+                <select
+                  className="ej-select"
+                  value={stage}
+                  onChange={(e) => handleStageChange(index, e.target.value)}
+                >
+                  <option value="">Select Stage</option>
+                  <option>HR</option>
+                  <option>Technical</option>
+                  <option>Managerial</option>
+                  <option>Final</option>
+                </select>
               </div>
             ))}
+
+            <div className="ej-field">
+              <label className="ej-label">Job Location</label>
+              <input
+                name="location"
+                value={form.location}
+                className="ej-input"
+                onChange={handleChange}
+                placeholder="e.g. Colombo, Remote"
+              />
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Experience Level</label>
+              <select
+                name="experience"
+                value={form.experience}
+                className="ej-select"
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                <option value="ENTRY_LEVEL">Entry Level</option>
+                <option value="MID_LEVEL">Mid Level</option>
+                <option value="SENIOR_LEVEL">Senior Level</option>
+                <option value="DIRECTOR">Director</option>
+                <option value="EXECUTIVE">Executive</option>
+              </select>
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Vacancies</label>
+              <select
+                name="vacancies"
+                value={form.vacancies}
+                className="ej-select"
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Key Requirements</label>
+              <p className="ej-hint">
+                Add each requirement separately. AI will extract skills from these.
+              </p>
+              {reqs.map((req, index) => (
+                <div key={index} className="ej-req-row">
+                  <button
+                    type="button"
+                    onClick={() => removeReq(index)}
+                    className="ej-reqBtn"
+                  >
+                    −
+                  </button>
+                  <input
+                    className="ej-reqInput"
+                    value={req}
+                    placeholder="e.g. React, 3+ years experience"
+                    onChange={(e) => handleReqChange(index, e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={addReq}
+                    className="ej-reqBtn"
+                  >
+                    +
+                  </button>
+                </div>
+              ))}
+            </div>
 
           </div>
 
           <div className="ej-actions">
-            <button className="ej-save" onClick={handleUpdate}>Save</button>
-
-            <button
-              className="ej-cancel"
-              onClick={() => navigate("/job-management")}
-            >
+            <button className="ej-btn-save" onClick={handleUpdate}>
+              Save
+            </button>
+            <button className="ej-btn-cancel" onClick={() => window.history.back()}>
               Cancel
             </button>
-
-            <button className="ej-delete" onClick={handleDelete}>
-              Delete Job
+            <button className="ej-btn-delete" onClick={handleDelete}>
+              Delete
             </button>
           </div>
-
         </div>
       </div>
     </DashboardLayout>

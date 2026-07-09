@@ -181,7 +181,30 @@
   opacity: 0.7;
   flex: 0 0 auto;
 }
+.cas-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
+/* 🔥 FIX LOGO SIZE + MAKE IT CIRCLE */
+.cas-company-logo {
+  width: 100px;        /* adjust size (try 80px–120px) */
+  height: 100px;
+  object-fit: cover;   /* keeps image nicely fitted */
+  border-radius: 50%;  /* makes it circular */
+  border: 3px solid #e0e0e0; /* optional clean border */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* optional soft shadow */
+}
+
+/* Optional: improve title spacing */
+.cas-title {
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 600;
+}
 @media (max-width: 700px) {
   .cas-companyName { font-size: 28px; }
   .cas-card { padding: 16px; }

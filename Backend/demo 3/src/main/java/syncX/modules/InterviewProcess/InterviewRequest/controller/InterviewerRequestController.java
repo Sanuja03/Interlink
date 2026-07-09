@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import syncX.modules.InterviewProcess.InterviewRequest.dto.InterviewRequestDTO;
 import syncX.modules.InterviewProcess.InterviewRequest.service.InterviewRequestService;
+import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
+import syncX.modules.CompanyAdmin.CandidateProfile.dto.CandidateProfileResponseDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,14 +22,21 @@ public class InterviewerRequestController {
     @Autowired
     private InterviewRequestService service;
 
-    /**
-     * GET /api/interviewer/interview-requests/pending
-     */
+
     @GetMapping("/pending")
     @PreAuthorize("hasRole('interviewer')")
-    public ResponseEntity<List<InterviewRequestDTO.PendingRequestForInterviewer>> getMyPending(
+    public ResponseEntity<?> getMyPending(
             @AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(service.getPendingForInterviewer(jwt));
+        try {
+            List<InterviewRequestDTO.PendingRequestForInterviewer> result =
+                    service.getPendingForInterviewer(jwt);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
     }
 
     /**
@@ -39,9 +48,63 @@ public class InterviewerRequestController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID requestId,
             @RequestParam String response) {
+        try {
+            UUID userId = UUID.fromString(jwt.getSubject());
+            service.respondToRequest(requestId, userId, response);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 
-        UUID userId = UUID.fromString(jwt.getSubject());
-        service.respondToRequest(requestId, userId, response);
-        return ResponseEntity.ok().build();
+    /**
+     * GET /api/interviewer/interview-requests/{requestId}/history
+     * Returns the candidate's application history for this request.
+     * Only interviewers on the request's panel may read it.
+     */
+    @GetMapping("/{requestId}/history")
+    @PreAuthorize("hasRole('interviewer')")
+    public ResponseEntity<?> getHistory(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId) {
+        try {
+            CandidateHistoryResponseDTO result = service.getHistoryForInterviewer(jwt, requestId);
+            return ResponseEntity.ok(result);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * GET /api/interviewer/interview-requests/{requestId}/candidate-profile
+     * Returns the full candidate profile for this request.
+     * Only interviewers on the request's panel may read it.
+     */
+    @GetMapping("/{requestId}/candidate-profile")
+    @PreAuthorize("hasRole('interviewer')")
+    public ResponseEntity<?> getCandidateProfile(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId) {
+        try {
+            CandidateProfileResponseDTO result =
+                    service.getCandidateProfileForInterviewer(jwt, requestId);
+            return ResponseEntity.ok(result);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
     }
 }

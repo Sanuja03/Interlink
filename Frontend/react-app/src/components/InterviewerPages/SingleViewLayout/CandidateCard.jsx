@@ -1,5 +1,6 @@
 import "./CandidateCard.css";
 
+// takes candidate object from SingleView.jsx and displays the relevant info in a card format
 const CandidateCard = ({ candidate }) => {
   return (
     <div className="candidatecard-right-panel">
@@ -40,10 +41,6 @@ const CandidateCard = ({ candidate }) => {
           >
             View Profile
           </a>
-        </p>
-
-        <p className="candidatecard-detail-line">
-          <strong>Details:</strong> {candidate.history}
         </p>
       </div>
     </div>

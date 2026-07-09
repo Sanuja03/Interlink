@@ -17,12 +17,7 @@ public interface WeeklyAvailabilityRepository extends JpaRepository<WeeklyAvaila
     Optional<WeeklyAvailability> findByUserIdAndWeekKey(UUID userId, String weekKey);
 
     // Company admin: find all submitted availability for a week within the company
-    List<WeeklyAvailability> findByCompanyIdAndWeekKeyAndStatus(
-            UUID companyId, String weekKey, String status);
-
-    // Company admin: find all availability (any status) for a week within the company
-    List<WeeklyAvailability> findByCompanyIdAndWeekKey(UUID companyId, String weekKey);
-
-    // Check if interviewer has already submitted for this week
-    boolean existsByUserIdAndWeekKeyAndStatus(UUID userId, String weekKey, String status);
+//    List<WeeklyAvailability> findByCompanyIdAndWeekKeyAndStatus(
+//            UUID companyId, String weekKey, String status);
 }
+

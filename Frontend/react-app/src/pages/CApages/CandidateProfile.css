@@ -345,6 +345,10 @@
 
 .cp-btnRed {
   background: #ff3636;
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 420px;
+  max-width: 100%;
 }
 
 .cp-btnRed:hover {

@@ -21,24 +21,21 @@ public class InterviewRequestController {
     private InterviewRequestService service;
 
     /**
-     * Get assignable interviewers for a given date,
-     * split into "available" and "other".
-     *
-     * GET /api/company/interview-requests/assignable?date=2026-04-30
+     * GET /api/company/interview-requests/assignable?date=&time=&durationMinutes=
+     * Returns three groups: available, other, unavailable (schedule conflict).
      */
     @GetMapping("/assignable")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<InterviewRequestDTO.AssignableInterviewersResponse> getAssignable(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam String date) {
+            @RequestParam String date,
+            @RequestParam(required = false, defaultValue = "00:00") String time,
+            @RequestParam(required = false, defaultValue = "60") int durationMinutes) {
 
-        return ResponseEntity.ok(service.getAssignable(jwt, date));
+        return ResponseEntity.ok(service.getAssignable(jwt, date, time, durationMinutes));
     }
 
     /**
-     * Get the current (non-cancelled) interview request for a candidate+application.
-     * Returns 204 No Content if nothing exists yet — frontend treats that as "fresh form".
-     *
      * GET /api/company/interview-requests/current?candidateId=UUID&jobApplicationId=123
      */
     @GetMapping("/current")
@@ -51,16 +48,11 @@ public class InterviewRequestController {
         InterviewRequestDTO.ExistingRequestResponse existing =
                 service.getExistingRequest(jwt, candidateId, jobApplicationId);
 
-        if (existing == null) {
-            return ResponseEntity.noContent().build();
-        }
+        if (existing == null) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(existing);
     }
 
     /**
-     * Create a new interview request. If a non-cancelled one exists for this
-     * (candidate, application), it is auto-cancelled first (Edit → resend flow).
-     *
      * POST /api/company/interview-requests
      */
     @PostMapping
@@ -72,6 +64,24 @@ public class InterviewRequestController {
         return ResponseEntity.ok(service.createRequest(jwt, request));
     }
 
+    /**
+     * GET /api/company/interview-requests/{requestId}
+     * Single request by id — used by the finalize popup to inherit the stored location.
+     */
+    @GetMapping("/{requestId}")
+    @PreAuthorize("hasRole('company_admin')")
+    public ResponseEntity<InterviewRequestDTO.ExistingRequestResponse> getById(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId) {
+
+        InterviewRequestDTO.ExistingRequestResponse r = service.getRequestById(jwt, requestId);
+        if (r == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(r);
+    }
+
+    /**
+     * GET /api/company/interview-requests
+     */
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<InterviewRequestDTO.ExistingRequestResponse>> listMine(

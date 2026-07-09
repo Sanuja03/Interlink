@@ -24,9 +24,9 @@ public class OtpController {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
-    // ── Send OTP for signup (email doesn't need to exist in DB) ──
+
     @PostMapping("/send-signup-otp")
-    public ResponseEntity<?> sendSignupOtp(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> sendSignupOtp(@RequestBody Map<String, String> body) {//data from frontend will be stored in key value pairs
         String email = body.get("email");
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
@@ -39,13 +39,13 @@ public class OtpController {
 
         String otp = otpService.generateOtp(email.trim());
 
-        // Send email in a separate thread so it doesn't block the response
+
         new Thread(() -> InterLinkMailSender.sendSignupOTP(email.trim(), otp)).start();
 
         return ResponseEntity.ok(Map.of("message", "OTP sent to your email"));
     }
 
-    // ── Verify signup OTP ──
+    // Verify signup OTP
     @PostMapping("/verify-signup-otp")
     public ResponseEntity<?> verifySignupOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -63,7 +63,7 @@ public class OtpController {
         return ResponseEntity.ok(Map.of("message", "OTP verified"));
     }
 
-    // ── Send OTP for forgot password (email MUST exist in DB) ──
+    // Send OTP for forgot password
     @PostMapping("/send-reset-otp")
     public ResponseEntity<?> sendResetOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -77,11 +77,11 @@ public class OtpController {
             new Thread(() -> InterLinkMailSender.sendPasswordResetOTP(email.trim(), otp)).start();
         }
 
-        // Always return success (prevents email enumeration)
+        // Always return success
         return ResponseEntity.ok(Map.of("message", "If this email is registered, you'll receive a reset code"));
     }
 
-    // ── Verify reset OTP ──
+    // Verify reset OTP
     @PostMapping("/verify-reset-otp")
     public ResponseEntity<?> verifyResetOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -99,7 +99,7 @@ public class OtpController {
         return ResponseEntity.ok(Map.of("message", "OTP verified"));
     }
 
-    // ── Reset password (after OTP verified) ──
+    // Reset password (after OTP verified)
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");

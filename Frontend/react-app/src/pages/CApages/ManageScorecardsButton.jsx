@@ -1,21 +1,11 @@
 import { useState } from "react";
 import ScorecardManager from "../../components/CompanyPages/ScoreCardManager";
 
-/**
- * ManageScorecardsButton
- *
- * Self-contained component: renders the trigger button and manages
- * its own popup open/close state internally.
- *
- * Props:
- *  - jobTitle    : string
- *  - jobPostId   : string
- *  - scorecards  : array  — lifted state from page
- *  - onSave      : (updatedList) => void — callback to update page state
- */
+//shortlisted passes these data and btn takes these data as props and passes to managescorecard
 const ManageScorecardsButton = ({
   jobTitle = "",
   jobPostId = "",
+  jobId = null,
   scorecards = [],
   onSave,
 }) => {
@@ -24,17 +14,19 @@ const ManageScorecardsButton = ({
   return (
     <>
       <button className="sc-template-btn" onClick={() => setOpen(true)}>
-        📋 Manage Scorecards
+        Manage Scorecards
         {scorecards.length > 0 && (
           <span className="sc-template-count">{scorecards.length}</span>
         )}
       </button>
+      
 
       <ScorecardManager
         open={open}
         onClose={() => setOpen(false)}
         jobTitle={jobTitle}
         jobPostId={jobPostId}
+        jobId={jobId}
         scorecards={scorecards}
         onSave={onSave}
       />

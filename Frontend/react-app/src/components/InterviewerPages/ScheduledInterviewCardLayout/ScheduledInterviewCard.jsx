@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";//chnages page without reloading
 import "./ScheduledInterviewCard.css";
 
 const ScheduledInterviewCard = ({ interview }) => {
@@ -7,6 +7,7 @@ const ScheduledInterviewCard = ({ interview }) => {
 
   const {
     interviewId,
+    scheduledId,
     date,
     time,
     jobTitle,
@@ -15,6 +16,9 @@ const ScheduledInterviewCard = ({ interview }) => {
     meetingLink,
     panelMembers,
     adminNote,
+    candidateId,
+    jobApplicationId,
+    interviewLocation,
   } = interview;
 
   const handleOpenPanelInfo = (e) => {
@@ -41,26 +45,32 @@ const ScheduledInterviewCard = ({ interview }) => {
   const handleJoinMeeting = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(meetingLink, "_blank", "noopener,noreferrer");
+    if (meetingLink) {
+      window.open(meetingLink, "_blank", "noopener,noreferrer");//open in new tab ,prevents the new tab accessing this page,hides the url for that tab
+    }
   };
 
   const statusClass =
-    meetingStatus?.toLowerCase() === "ongoing"
-      ? "status-ongoing"
+    meetingStatus?.toLowerCase() === "completed"
+      ? "status-completed"
       : "status-scheduled";
 
   const modeClass =
     mode?.toLowerCase() === "online" ? "si-mode-online" : "si-mode-physical";
 
+  const isOnline = mode?.toLowerCase() === "online";
+
   return (
     <>
       <div className="si-card si-card-clickable">
+
         <div className="si-header">
           <h3 className="si-title">{interviewId}</h3>
           <span className={`si-badge ${statusClass}`}>{meetingStatus}</span>
         </div>
 
         <div className="si-body">
+
           <div className="si-details">
             <div className="si-row">
               <span className="si-label">Date</span>
@@ -79,15 +89,22 @@ const ScheduledInterviewCard = ({ interview }) => {
 
             <div className="si-row">
               <span className="si-label">Mode</span>
-              <span className={`si-mode-pill ${modeClass}`}>{mode}</span>
+              <span className={`si-mode-pill ${modeClass}`}>
+                {mode?.toUpperCase()}
+              </span>
             </div>
           </div>
 
-          {mode?.toLowerCase() === "online" && (
+          {isOnline && meetingLink ? (
             <button className="si-join" onClick={handleJoinMeeting}>
               Join Meeting
             </button>
-          )}
+          ) : !isOnline && interviewLocation ? (
+            <div className="si-location-box">
+              <span className="si-location-label">Location</span>
+              <span className="si-location-value">{interviewLocation}</span>
+            </div>
+          ) : null}
 
           <div className="si-divider"></div>
 
@@ -97,8 +114,9 @@ const ScheduledInterviewCard = ({ interview }) => {
 
           <p className="si-hint"></p>
 
+          {/* Pass interview data via state to SingleView */}
           <Link
-            to={`/interviewer/single-view/:interviewId${interviewId}`}
+            to={`/interviewer/single-view/${interviewId}`}
             state={{ interview }}
             className="si-view-link"
           >
@@ -110,6 +128,7 @@ const ScheduledInterviewCard = ({ interview }) => {
       {showPanelInfo && (
         <div className="si-overlay" onClick={handleOverlayClick}>
           <div className="si-modal" onClick={handleModalClick}>
+
             <div className="si-modal-header">
               <h3 className="si-modal-title">Panel Information</h3>
               <button className="si-close" onClick={handleClosePanelInfo}>
@@ -130,8 +149,8 @@ const ScheduledInterviewCard = ({ interview }) => {
                   </thead>
                   <tbody>
                     {panelMembers && panelMembers.length > 0 ? (
-                      panelMembers.map((member) => (
-                        <tr key={member.emNo}>
+                      panelMembers.map((member, idx) => (
+                        <tr key={member.emNo || idx}>
                           <td>{member.emNo}</td>
                           <td>{member.name}</td>
                           <td>{member.position}</td>

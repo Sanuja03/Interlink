@@ -1,127 +1,325 @@
+/* =============================================================
+   SHORTLISTED CANDIDATES — modern, tight, professional styling
+   Design system aligned with InterviewPopups.css:
+   - Brand blue: #24698b
+   - Slate neutrals: #f8fafc / #e2e8f0 / #64748b / #0f172a
+   - Soft shadows, 8–10px radii, 38–40px control height
+============================================================= */
+
+:root {
+  --sc-brand: #24698b;
+  --sc-brand-dark: #1d5872;
+  --sc-bg: #f1f5f9;
+  --sc-card: #ffffff;
+  --sc-border: #e2e8f0;
+  --sc-text: #0f172a;
+  --sc-muted: #64748b;
+  --sc-row-hover: #f8fafc;
+}
+
+/* ============ PAGE LAYOUT ============
+   Nested content inside DashboardLayout now — no min-height: 100vh
+   here anymore (that was stacking two 100vh containers and causing
+   content to jump on resize). The layout owns page height/background. */
+
+.sc-page {
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--sc-text);
+}
+
 .sc-container {
-  padding: 24px;
-  background: #dadee0;
-  min-height: 100vh;
-  font-family: "Outfit", sans-serif;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px 28px 40px;
 }
 
-/* Title */
+/* ============ PAGE TITLE ============ */
+
 .sc-title {
-  font-size: 28px;
-  color: #24698b;
-  margin-bottom: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sc-text);
+  margin: 0 0 18px;
+  letter-spacing: -0.01em;
 }
 
-/* Card */
-.sc-card {
-  background: #ffffff;
+/* ============ OUTER WHITE CARD ============
+   Wraps job picker + selected-job info + table, same pattern as
+   CompanyDashboard's .cd-card */
+
+.sc-outer-card {
+  background: var(--sc-card);
+  border: 1px solid var(--sc-border);
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  box-sizing: border-box;
 }
 
-/* Table */
+/* ============ JOB PICKER BAR ============ */
+
+.sc-job-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.sc-job-picker-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+.sc-job-picker-select {
+  flex: 1;
+  min-width: 280px;
+  max-width: 480px;
+  height: 38px;
+  padding: 0 36px 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: var(--sc-text);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.sc-job-picker-select:focus {
+  border-color: var(--sc-brand);
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.12);
+}
+
+.sc-job-picker-select:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+  color: var(--sc-muted);
+}
+
+.sc-job-picker-hint {
+  font-size: 12px;
+  color: var(--sc-muted);
+  font-style: italic;
+}
+
+.sc-job-picker-error {
+  color: #b91c1c;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ============ SELECTED JOB CARD ============ */
+
+.sc-job-card {
+  background: #f8fafc;
+  border: 1px solid var(--sc-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sc-job-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 4px;
+}
+
+.sc-job-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sc-text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.sc-job-meta-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sc-job-meta-box {
+  background: #f8fafc;
+  border: 1px solid var(--sc-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sc-job-meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.sc-job-meta-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sc-text);
+}
+
+/* ============ MANAGE SCORECARDS BUTTON ============ */
+
+.sc-template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sc-brand);
+  color: #ffffff;
+  border: none;
+  padding: 0 14px;
+  height: 38px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sc-template-btn:hover {
+  background: var(--sc-brand-dark);
+  box-shadow: 0 4px 10px rgba(36, 105, 139, 0.25);
+}
+
+.sc-template-btn:active {
+  transform: translateY(1px);
+}
+
+.sc-template-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ============ TABLE ============ */
+
+.sc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: 12px;
+}
+
 .sc-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
+}
+
+.sc-table thead {
+  background: #f8fafc;
 }
 
 .sc-table th {
   text-align: left;
-  padding: 12px;
-  font-size: 14px;
-  color: #24698b;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.sc-table td {
-  padding: 12px;
-  font-size: 14px;
-  color: #000;
-  border-bottom: 1px solid #eee;
-  vertical-align: top;
-}
-
-/* Status badge */
-.status-badge {
-  background: rgba(36, 105, 139, 0.15);
-  color: #24698b;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-}
-
-/* Actions */
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Buttons base */
-.btn {
-  border: none;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  cursor: pointer;
-  color: #fff;
-  transition: 0.2s;
-}
-
-/* Button variations */
-.btn.request {
-  background: #24698b;
-}
-
-.btn.status {
-  background: #3b82f6;
-}
-
-.btn.finalize {
-  background: #7c3aed;
-}
-
-/* Hover */
-.btn:hover {
-  opacity: 0.85;
-}
-/* ===== Additional styles for the Manage Scorecards button ===== */
-/* Add these to your existing ShortlistedCandidates.css file       */
-
-.sc-template-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #4f46e5;
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--sc-border);
   white-space: nowrap;
 }
 
-.sc-template-btn:hover {
-  background: #4338ca;
-  transform: translateY(-1px);
+.sc-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--sc-text);
+  border-bottom: 1px solid var(--sc-border);
+  vertical-align: middle;
 }
 
-.sc-template-btn:active {
-  transform: translateY(0);
+.sc-table tbody tr {
+  transition: background-color 0.12s ease;
 }
 
-.sc-template-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
-  min-width: 20px;
-  text-align: center;
+.sc-table tbody tr:hover {
+  background: var(--sc-row-hover);
+}
+
+.sc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sc-bold {
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: #334155;
+}
+
+/* ============ MOBILE ============ */
+
+@media (max-width: 768px) {
+  .sc-container {
+    padding: 16px;
+  }
+
+  .sc-title {
+    font-size: 20px;
+  }
+
+  .sc-job-picker {
+    padding: 10px 12px;
+  }
+
+  .sc-job-picker-select {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .sc-job-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sc-job-meta-wrap {
+    width: 100%;
+  }
+
+  .sc-job-meta-box {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sc-table th,
+  .sc-table td {
+    padding: 10px 12px;
+  }
 }
