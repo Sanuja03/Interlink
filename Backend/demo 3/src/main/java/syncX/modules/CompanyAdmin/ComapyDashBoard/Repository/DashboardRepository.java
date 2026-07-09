@@ -1,4 +1,4 @@
-package syncX.modules.CompanyAdmin.Dashboard.repository;
+package syncX.modules.CompanyAdmin.ComapyDashBoard.Repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

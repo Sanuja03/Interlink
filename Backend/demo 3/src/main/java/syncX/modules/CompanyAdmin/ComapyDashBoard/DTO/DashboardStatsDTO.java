@@ -1,4 +1,4 @@
-package syncX.modules.CompanyAdmin.Dashboard.dto;
+package syncX.modules.CompanyAdmin.ComapyDashBoard.DTO;
 
 public class DashboardStatsDTO {
     private long totalJobPosts;

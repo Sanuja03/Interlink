@@ -1,8 +1,8 @@
-package syncX.modules.CompanyAdmin.Dashboard.service;
+package syncX.modules.CompanyAdmin.ComapyDashBoard.Service;
 
 import org.springframework.stereotype.Service;
-import syncX.modules.CompanyAdmin.Dashboard.dto.DashboardStatsDTO;
-import syncX.modules.CompanyAdmin.Dashboard.repository.DashboardRepository;
+import syncX.modules.CompanyAdmin.ComapyDashBoard.DTO.DashboardStatsDTO;
+import syncX.modules.CompanyAdmin.ComapyDashBoard.Repository.DashboardRepository;
 
 import java.util.UUID;
 

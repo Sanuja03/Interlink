@@ -1,10 +1,10 @@
-package syncX.modules.CompanyAdmin.Dashboard.controller;
+package syncX.modules.CompanyAdmin.ComapyDashBoard.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import syncX.modules.CompanyAdmin.Dashboard.dto.DashboardStatsDTO;
-import syncX.modules.CompanyAdmin.Dashboard.service.DashboardService;
+import syncX.modules.CompanyAdmin.ComapyDashBoard.DTO.DashboardStatsDTO;
+import syncX.modules.CompanyAdmin.ComapyDashBoard.Service.DashboardService;
 
 import java.util.UUID;
 

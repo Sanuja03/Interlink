@@ -1,4 +1,4 @@
-package syncX.modules.InterviewProcess.lifecycle.job;
+package syncX.modules.InterviewProcess.lifecycle;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,8 +24,8 @@ public class InterviewLifecycleJob {
     @Scheduled(fixedDelayString = "${interview.lifecycle.interval-ms:900000}")
     public void run() {
         try {
-            int rejected  = lifecycleService.expirePendingPastDate();
-            int changed   = lifecycleService.completeOrExpireScheduledPastDate();
+            int rejected = lifecycleService.expirePendingPastDate();
+            int changed = lifecycleService.completeOrExpireScheduledPastDate();
             if (rejected > 0 || changed > 0) {
                 System.out.println("[InterviewLifecycleJob] pending→rejected: "
                         + rejected + ", scheduled transitioned: " + changed);
