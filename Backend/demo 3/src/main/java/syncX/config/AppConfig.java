@@ -11,9 +11,6 @@ import org.springframework.web.client.RestTemplate;
  * across the application rather than being created on every API call.
  * This enables connection pooling and is the Spring-recommended pattern.
  *
- * If your project already has an AppConfig or WebConfig class,
- * just add the restTemplate() @Bean method there instead of
- * creating a new file.
  */
 @Configuration
 public class AppConfig {

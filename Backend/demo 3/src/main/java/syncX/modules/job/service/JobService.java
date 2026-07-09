@@ -43,7 +43,7 @@ public class JobService {
 
         // ── SUBSCRIPTION JOB LIMIT CHECK ──────────────────────────────────
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
-            UUID companyId = UUID.fromString(dto.getCompanyId());
+            UUID companyId = UUID.fromString(dto.getCompanyId());     //convert to uuid
 
             ActiveSubscription activeSub = activeSubscriptionRepository
                     .findByCompanyId(companyId)
@@ -65,7 +65,7 @@ public class JobService {
         // ─────────────────────────────────────────────────────────────────
 
         // AI extraction
-        String aiResponse = aiService.extractJobData(rawText);
+        String aiResponse = aiService.extractJobData(rawText);    //ai service call
         JobAiDto aiData = mapper.readValue(aiResponse, JobAiDto.class);
 
         // Build Job entity
@@ -94,7 +94,7 @@ public class JobService {
 
         Job saved = jobRepo.save(job);
 
-        if (aiData.getSkills() != null) {
+        if (aiData.getSkills() != null) {   //save requiremments
             for (String skill : aiData.getSkills()) {
                 if (skill == null || skill.trim().isEmpty()) continue;
                 JobRequirement r = new JobRequirement();

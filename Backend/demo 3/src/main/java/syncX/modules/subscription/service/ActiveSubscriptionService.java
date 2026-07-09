@@ -30,22 +30,24 @@ public class ActiveSubscriptionService {
     // ─────────────────────────────────────────────
     public List<ActiveSubscriptionDTO> getAll() {
 
-        SubscriptionPlan freePlan = planRepository.findByName("Free")
+        SubscriptionPlan freePlan = planRepository.findByName("Free")    //looks for free plan
                 .orElseThrow(() -> new RuntimeException("Free plan not found"));
 
-        List<Object[]> companies = repository.findAllCompanyNamesRaw();
+        List<Object[]> companies = repository.findAllCompanyNamesRaw();  //loads all companies from db
 
         Map<UUID, String> companyNameMap = new HashMap<>();
         Map<UUID, LocalDate> companyCreatedAtMap = new HashMap<>();
 
-        for (Object[] row : companies) {
+        for (Object[] row : companies) {  //extract data from object sent by db to map
             UUID id = UUID.fromString(row[0].toString());
             String name = row[1] != null ? row[1].toString() : "Unknown";
             companyNameMap.put(id, name);
 
+            //handle created at
             LocalDate createdAt = LocalDate.now();
             if (row[2] != null) {
                 try {
+                    //time stamp conversion to local dat format
                     if (row[2] instanceof java.sql.Timestamp) {
                         createdAt = ((java.sql.Timestamp) row[2]).toLocalDateTime().toLocalDate();
                     } else {
@@ -59,9 +61,9 @@ public class ActiveSubscriptionService {
         }
 
         // Auto-create Free subscription for companies that have none
-        for (UUID companyId : companyNameMap.keySet()) {
+        for (UUID companyId : companyNameMap.keySet()) {    //loop
             if (repository.findByCompanyId(companyId).isEmpty()) {
-                ActiveSubscription sub = new ActiveSubscription();
+                ActiveSubscription sub = new ActiveSubscription();  //new object
                 sub.setCompanyId(companyId);
                 sub.setPlan(freePlan);
                 sub.setStartDate(companyCreatedAtMap.get(companyId));
@@ -76,8 +78,8 @@ public class ActiveSubscriptionService {
         return repository.findAll().stream().map(sub -> {
             // Sync status to DB: mark as Expired if end date has passed and still showing Active
             if (sub.getEndDate() != null
-                    && sub.getEndDate().isBefore(LocalDate.now())
-                    && !"Free".equalsIgnoreCase(sub.getPlan().getName())
+                    && sub.getEndDate().isBefore(LocalDate.now())  //check expiry date is before current date
+                    && !"Free".equalsIgnoreCase(sub.getPlan().getName())   //not a freeplan caz they dont have end dates
                     && "Active".equals(sub.getStatus())) {
                 sub.setStatus("Expired");
                 repository.save(sub);
@@ -149,22 +151,23 @@ public class ActiveSubscriptionService {
     //  - Downgrading to Free: clears dates, resets usage
     // ─────────────────────────────────────────────
     public ActiveSubscription changePlan(Long id, Long newPlanId, String startDateStr) {
-        ActiveSubscription sub = repository.findById(id)
+        ActiveSubscription sub = repository.findById(id)   //gets the current subscription
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-        SubscriptionPlan newPlan = planRepository.findById(newPlanId)
+        SubscriptionPlan newPlan = planRepository.findById(newPlanId)  //get the id of the new plan
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        sub.setPlan(newPlan);
+        sub.setPlan(newPlan);    //update
         sub.setPaymentConfirmed(false);
 
+        //plan type handling
         if ("Free".equalsIgnoreCase(newPlan.getName())) {
             sub.setStartDate(LocalDate.now());
             sub.setEndDate(null);
             sub.setAiCvUsed(0);
         } else {
             LocalDate startDate = (startDateStr != null && !startDateStr.isBlank())
-                    ? LocalDate.parse(startDateStr)
+                    ? LocalDate.parse(startDateStr)   //if selected use that date
                     : LocalDate.now();
             sub.setStartDate(startDate);
             sub.setEndDate(startDate.plusMonths(1));
@@ -177,6 +180,7 @@ public class ActiveSubscriptionService {
 
     // ─────────────────────────────────────────────
     //  INCREMENT AI CV USAGE  (with limit check)
+    //  Called from ActiveSubscriptionController for the legacy frontend endpoint
     // ─────────────────────────────────────────────
     public void incrementCvUsage(UUID companyId) {
         ActiveSubscription sub = repository.findByCompanyId(companyId)
@@ -185,6 +189,7 @@ public class ActiveSubscriptionService {
         int used = sub.getAiCvUsed() == null ? 0 : sub.getAiCvUsed();
         int limit = sub.getPlan().getAiCvLimit(); // assumes SubscriptionPlan has aiCvLimit field
 
+        //AI Screening limit
         if (limit > 0 && used >= limit) {
             throw new RuntimeException("AI CV generation limit reached for this plan");
         }
@@ -192,6 +197,31 @@ public class ActiveSubscriptionService {
         sub.setAiCvUsed(used + 1);
         repository.save(sub);
     }
+
+    // ── backend limit check + increment called from ScoreController ──
+    // Combines the check and increment atomically so two simultaneous
+    // requests cannot both pass the limit check before either increments.
+    public void checkAndIncrementCvUsage(UUID companyId) {
+        ActiveSubscription sub = repository.findByCompanyId(companyId)
+                .orElseThrow(() -> new RuntimeException("No subscription found for company"));
+
+        SubscriptionPlan plan = sub.getPlan();
+        boolean isUnlimited = Boolean.TRUE.equals(plan.getIsUnlimited());
+        Integer limit = plan.getAiCvLimit();
+        int used = sub.getAiCvUsed() == null ? 0 : sub.getAiCvUsed();
+
+        if (!isUnlimited && limit != null && limit > 0 && used >= limit) {
+            throw new RuntimeException(
+                    "CV analysis limit reached. Your " + plan.getName() +
+                            " plan allows " + limit + " CV analyses."
+            );
+        }
+
+        // Passed check — increment
+        sub.setAiCvUsed(used + 1);
+        repository.save(sub);
+    }
+    // ── END ADDED ────────────────────────────────────────────────────────────
 
     // ─────────────────────────────────────────────
     //  CRON: Called by SubscriptionScheduler daily
@@ -255,6 +285,7 @@ public class ActiveSubscriptionService {
         sub.setAiCvUsed(0);
     }
 
+    //maps to the dto
     private ActiveSubscriptionDTO toDTO(ActiveSubscription sub, Map<UUID, String> companyNameMap) {
         ActiveSubscriptionDTO dto = new ActiveSubscriptionDTO();
         dto.setId(sub.getId());
@@ -272,6 +303,7 @@ public class ActiveSubscriptionService {
         int openJobs = (sub.getCompanyId() != null)
                 ? (int) jobRepository.countByCompanyIdAndStatus(sub.getCompanyId(), "Open")
                 : 0;
+        //used job count
         dto.setActiveJobsUsed(openJobs);
         dto.setActiveJobsLimit(sub.getPlan().getActiveJobs() != null ? sub.getPlan().getActiveJobs() : 0);
 

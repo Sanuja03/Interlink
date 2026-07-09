@@ -5,8 +5,6 @@ import syncX.modules.support.dto.SupportTicketDTO;
 import syncX.modules.support.dto.SupportTicketRequest;
 import syncX.modules.support.entity.Response;
 import syncX.modules.support.entity.SupportTicket;
-import syncX.modules.support.entity.TicketCategory;
-import syncX.modules.support.entity.TicketPriority;
 import syncX.modules.support.entity.TicketStatus;
 import syncX.modules.support.repository.ResponseRepository;
 import syncX.modules.support.repository.SupportTicketRepository;
@@ -25,14 +23,15 @@ public class SupportTicketService {
     // ─── Validation constants ─────────────────────────────────────────────────
     // Defined here so they are the single source of truth for the backend.
     // Frontend mirrors these values but backend is the authoritative boundary.
+    //DRY Principle enforced
 
     private static final int TITLE_MIN_LENGTH = 5;
     private static final int TITLE_MAX_LENGTH = 150;
     private static final int DESC_MIN_LENGTH  = 10;
-    private static final int DESC_MAX_LENGTH  = 5000;
+    private static final int DESC_MAX_LENGTH  = 2000;
     private static final int REPLY_MAX_LENGTH = 2000;
 
-    // ─── Dependencies (constructor injection) ────────────────────────────────
+    // ─── Dependencies (two repos are injected for use in the service) ────────────────────────────────
 
     private final SupportTicketRepository repository;
     private final ResponseRepository      responseRepository;
@@ -51,11 +50,11 @@ public class SupportTicketService {
      * "authenticated" for everyone by default.
      */
     public String getRoleFromDb(UUID userId) {
-        return repository.findRoleByUserId(userId).orElse("user");
+        return repository.findRoleByUserId(userId).orElse("user");  //calls the native query in the repository
     }
 
     public boolean isSuperAdmin(UUID userId) {
-        return "super_admin".equals(getRoleFromDb(userId));
+        return "super_admin".equals(getRoleFromDb(userId));     //super admin stored in boolean for future permission checks
     }
 
     // ─── CREATE ──────────────────────────────────────────────────────────────
@@ -90,7 +89,7 @@ public class SupportTicketService {
 
     // ─── READ ─────────────────────────────────────────────────────────────────
 
-    public List<SupportTicket> getAll() {
+    public List<SupportTicket> getAll() {   //returns all tickets only for SAs
         return repository.findAll();
     }
 
@@ -102,17 +101,17 @@ public class SupportTicketService {
         return repository.findByUserId(userId);
     }
 
-    public SupportTicketDTO getTicketDTO(Long id) {
+    public SupportTicketDTO getTicketDTO(Long id) { //db query to get the tickets
         SupportTicket ticket = repository.findByIdWithResponses(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
         List<ResponseDTO> responses = ticket.getResponses() == null
-                ? List.of()
-                : ticket.getResponses().stream()
-                .map(r -> new ResponseDTO(r.getId(), r.getSender(),
+                ? List.of() // if null → return empty list
+                : ticket.getResponses().stream()    //convert the tickets to a stream
+                .map(r -> new ResponseDTO(r.getId(), r.getSender(),     //get the details of the tickets and put into a new response objects
                         r.getMessage(), r.getSentAt()))
-                .toList();
+                .toList();  //converts the ticket back into a list
 
         return new SupportTicketDTO(
                 ticket.getId(),
@@ -125,7 +124,7 @@ public class SupportTicketService {
                 ticket.getSubmittedBy(),
                 ticket.getCreatedAt(),
                 ticket.getUserId(),
-                responses
+                responses               //setting the dto response sent to the frontend
         );
     }
 
@@ -271,7 +270,7 @@ public class SupportTicketService {
         }
         if (len > max) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    fieldName + " must be " + max + " characters or fewer");
+                    fieldName + " must be " + max + " characters or fewer");    //reusable called in title and and dec
         }
     }
 }

@@ -14,7 +14,7 @@ public class JobController {
     private JobService jobService;
 
     /**
-     * Used by your AI module / Postman testing
+     * Used by  AI module
      */
     @PostMapping("/api/jobs")
     public ResponseEntity<?> createWithAI(@RequestBody JobRequestDto dto) {

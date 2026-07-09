@@ -15,8 +15,7 @@ import java.util.*;
  * - RestTemplate is injected as a shared Spring bean instead of being
  *   created per-request (new RestTemplate() per call is wasteful and
  *   prevents connection pooling).
- * - The @Bean definition belongs in a @Configuration class — see
- *   AppConfig.java (or add to your existing config class):
+ *
  *
  *   @Bean
  *   public RestTemplate restTemplate() { return new RestTemplate(); }
@@ -52,10 +51,12 @@ public class AiService {
             throw new RuntimeException("AI feature is disabled (missing API key)");
         }
 
+        //request body to send to api
         Map<String, Object> body = new HashMap<>();
         body.put("model", "gpt-4o-mini");
-        body.put("max_tokens", 300); // Cost control — sufficient for structured JSON output
+        body.put("max_tokens", 300); // For Cost control — sufficient for structured JSON output
 
+        //conversation sent to ai
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of(
                 "role", "user",
@@ -74,12 +75,16 @@ public class AiService {
         - Do NOT return sentences
         - Split combined skills into separate items
         - Keep skills short and standardized
+        - Infer related skills based on context (e.g., "Spring Boot" implies "Java", backend development)
+        - Include both explicit and implicit skills
+        - Normalize similar technologies into common terms where appropriate
         
         CV:
-        """ + text
+        """ + text   //cv text attached
         ));
         body.put("messages", messages);
 
+        //http request sent to the api
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -159,6 +164,8 @@ Text:
      * @return          clean JSON string
      */
     @SuppressWarnings("unchecked")
+
+    //convert raw ai response to clear json string
     private String extractContent(Map<String, Object> response) {
         try {
             List<Map<String, Object>> choices =
@@ -175,7 +182,7 @@ Text:
 
             // Strip markdown code fences the model occasionally wraps responses in
             return content
-                    .replace("```json", "")
+                    .replace("```json", "")         //removes markdown formatting
                     .replace("```", "")
                     .trim();
 

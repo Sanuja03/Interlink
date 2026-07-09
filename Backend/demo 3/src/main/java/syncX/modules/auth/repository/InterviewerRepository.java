@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface InterviewerRepository extends JpaRepository<Interviewer, String> {
 
     List<Interviewer> findByCompanyId(UUID companyId);
+    long countByCompanyId(UUID companyId);
 }

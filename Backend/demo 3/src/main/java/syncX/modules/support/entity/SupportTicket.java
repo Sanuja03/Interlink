@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference; //library to convert Java Onjects  to JSON
 
 /**
  * Persistent entity for a user-submitted support ticket.
@@ -20,15 +20,15 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Table(name = "support_tickets")
 public class SupportTicket {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id //marking the primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY)     //handled automatically by db
     private Long id;
 
-    // Database-level length constraints — defence-in-depth below service validation
+    // Database-level length constraints — defence-in-depth below service validation - to prtect direct data inputs that bypass service level validation
     @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(nullable = false, length = 5000, columnDefinition = "TEXT")
+    @Column(nullable = false, length = 5000, columnDefinition = "TEXT")     //Text type used inorder toprovide more space space than varchar
     private String description;
 
     /**
@@ -62,7 +62,7 @@ public class SupportTicket {
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Response> responses;
+    private List<Response> responses;  //List is used here instead of arrays here because of lists flexible size - we are not sure how many response we will get
 
     public SupportTicket() {}
 

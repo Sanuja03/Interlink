@@ -12,6 +12,11 @@ import syncX.modules.auth.repository.InterviewerRepository;
 import syncX.modules.auth.repository.UserRepository;
 import syncX.modules.auth.repository.CandidateRepository;
 import syncX.modules.auth.repository.CompanyRepository;
+// ── ADDED ──
+import syncX.modules.subscription.entity.ActiveSubscription;
+import syncX.modules.subscription.entity.SubscriptionPlan;
+import syncX.modules.subscription.repository.ActiveSubscriptionRepository;
+// ── END ADDED ──
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,6 +45,11 @@ public class AuthService {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
+    // ── ADDED ──
+    @Autowired
+    private ActiveSubscriptionRepository activeSubscriptionRepository;
+    // ── END ADDED ──
+
     // ── UPDATED: clears isFirstLogin on first access & updates lastLoginAt ──
     public Object getCurrentUser(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -47,15 +57,11 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         OffsetDateTime now = OffsetDateTime.now();
-        boolean changed = false;
 
-        // Clear first login flag when user actually logs in / calls /me
         if (Boolean.TRUE.equals(user.getIsFirstLogin())) {
             user.setIsFirstLogin(false);
-            changed = true;
         }
 
-        // Always update last login timestamp
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
         userRepository.save(user);
@@ -136,6 +142,29 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        // ── ADDED: Backend interviewer limit check ──
+        UUID companyId = adminCompany.getCompanyId();
+
+        ActiveSubscription sub = activeSubscriptionRepository
+                .findByCompanyId(companyId)
+                .orElse(null);
+
+        if (sub != null) {
+            SubscriptionPlan plan = sub.getPlan();
+            Integer interviewerLimit = plan.getInterviewers();
+
+            if (interviewerLimit != null && interviewerLimit > 0) {
+                long currentCount = interviewerRepository.countByCompanyId(companyId);
+                if (currentCount >= interviewerLimit) {
+                    throw new RuntimeException(
+                            "Interviewer limit reached. Your " + plan.getName() +
+                                    " plan allows " + interviewerLimit + " interviewer accounts."
+                    );
+                }
+            }
+        }
+        // ── END ADDED ────────────────────────────────────────────────────────
+
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already exists in system");
         }
@@ -165,22 +194,18 @@ public class AuthService {
         interviewer.setInterviewerId(dto.getInterviewerId());
         interviewer.setUserId(interviewerUserId);
         interviewer.setCompanyId(adminCompany.getCompanyId());
-
         interviewer.setFullName(dto.getFullName());
         interviewer.setPhone(dto.getPhone());
         interviewer.setInterviewerRole(dto.getInterviewerRole());
         interviewer.setBranch(dto.getBranch());
-
         interviewer.setAddress(dto.getAddress());
         interviewer.setAbout(dto.getAbout());
         interviewer.setEmail(dto.getEmail());
-
         interviewer.setCreatedAt(now);
         interviewer.setUpdatedAt(now);
 
         interviewerRepository.save(interviewer);
 
-        // Return the created interviewer details
         return mapToResponseDTO(interviewer, user);
     }
 
@@ -225,7 +250,6 @@ public class AuthService {
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Make sure this interviewer belongs to the admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
@@ -234,12 +258,11 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    // ── NEW: Deactivate an interviewer account ──
+    // ── Deactivate an interviewer account ──
     public void deactivateInterviewer(Jwt jwt, String interviewerId) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        // Verify admin
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -247,20 +270,16 @@ public class AuthService {
             throw new RuntimeException("Only company admins can deactivate interviewers");
         }
 
-        // Get admin's company
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // Find the interviewer
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-        // Ensure interviewer belongs to admin's company
         if (!interviewer.getCompanyId().equals(adminCompany.getCompanyId())) {
             throw new RuntimeException("Interviewer does not belong to your company");
         }
 
-        // Update account_status in the users table to "inactive"
         User interviewerUser = userRepository.findById(interviewer.getUserId())
                 .orElseThrow(() -> new RuntimeException("Interviewer user account not found"));
 

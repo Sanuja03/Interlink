@@ -28,7 +28,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
  */
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173")  //frontend cross origin allowance
 public class SupportTicketController {
 
     private final SupportTicketService service;
@@ -36,6 +36,7 @@ public class SupportTicketController {
     public SupportTicketController(SupportTicketService service) {
         this.service = service;
     }
+    
 
     // ─── CREATE ──────────────────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ public class SupportTicketController {
     @PostMapping
     public ResponseEntity<SupportTicket> create(
             @RequestBody SupportTicketRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal Jwt jwt) {     // Spring Security intercepts the request, validates the token gets the curret users token
 
         UUID   userId    = UUID.fromString(jwt.getSubject());
         String email     = jwt.getClaimAsString("email");
@@ -67,7 +68,7 @@ public class SupportTicketController {
         }
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.CREATED) //http 201
                 .body(service.create(request, userId, email, name));
     }
 
@@ -84,7 +85,7 @@ public class SupportTicketController {
         UUID userId = UUID.fromString(jwt.getSubject());
 
         List<SupportTicket> tickets = service.isSuperAdmin(userId)
-                ? service.getAll()
+                ? service.getAll()      // admin → all tickets
                 : service.getByUser(userId);
 
         return ResponseEntity.ok(tickets);

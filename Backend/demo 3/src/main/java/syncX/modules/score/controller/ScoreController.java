@@ -7,56 +7,49 @@ import syncX.modules.cv.service.CvService;
 import syncX.modules.job.repository.JobRepository;
 import syncX.modules.score.service.ScoringService;
 import syncX.modules.job.entity.Job;
+// ── ADDED ──
+import syncX.modules.subscription.service.ActiveSubscriptionService;
+import java.util.UUID;
+// ── END ADDED ──
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST controller for CV scoring against a job posting.
- *
- * Security notes:
- * - CORS restricted to frontend origin only (was @CrossOrigin("*"))
- * - Constructor injection used instead of @Autowired field injection
- * - File validated for type and size before processing
- */
 @RestController
 @RequestMapping("/api/score")
 @CrossOrigin(origins = "http://localhost:5173")
 public class ScoreController {
 
-    private final CvService      cvService;
-    private final JobRepository  jobRepository;
+    private final CvService cvService;
+    private final JobRepository jobRepository;
     private final ScoringService scoringService;
+    // ── ADDED ──
+    private final ActiveSubscriptionService activeSubscriptionService;
+    // ── END ADDED ──
 
-    /**
-     * Constructor injection — makes dependencies explicit and testable.
-     * Replaced @Autowired field injection which hides dependencies.
-     */
     public ScoreController(CvService cvService,
                            JobRepository jobRepository,
-                           ScoringService scoringService) {
-        this.cvService      = cvService;
-        this.jobRepository  = jobRepository;
+                           ScoringService scoringService,
+
+                           ActiveSubscriptionService activeSubscriptionService
+
+    ) {
+        this.cvService = cvService;
+        this.jobRepository = jobRepository;
         this.scoringService = scoringService;
+
+        this.activeSubscriptionService = activeSubscriptionService;
+
     }
 
-    /**
-     * Analyzes a CV file against a job's requirements and returns scores.
-     *
-     * Validates:
-     * - File presence and non-empty
-     * - File extension (PDF or DOCX only)
-     * - File size (max 2 MB)
-     * - jobId is a positive value
-     *
-     * @param file  the uploaded CV file
-     * @param jobId the ID of the job to score against
-     */
     @PostMapping("/analyze")
     public ResponseEntity<?> analyze(
             @RequestParam MultipartFile file,
-            @RequestParam Long jobId
+            @RequestParam Long jobId,
+            // companyId from frontend to enforce CV limit on backend ──
+            @RequestParam(required = false) String companyId
+
     ) {
         // ── Input validation ──────────────────────────────────────────────────
 
@@ -74,6 +67,16 @@ public class ScoreController {
 
         if (jobId == null || jobId <= 0)
             return ResponseEntity.badRequest().body("Invalid jobId");
+
+        //  Backend CV limit check before any AI processing ──
+        if (companyId != null && !companyId.isBlank()) {
+            try {
+                activeSubscriptionService.checkAndIncrementCvUsage(UUID.fromString(companyId));
+            } catch (RuntimeException e) {
+                // 429 Too Many Requests — limit reached
+                return ResponseEntity.status(429).body(e.getMessage());
+            }
+        }
 
         // ── Processing ────────────────────────────────────────────────────────
 
