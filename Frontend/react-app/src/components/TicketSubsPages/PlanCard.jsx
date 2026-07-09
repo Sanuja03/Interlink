@@ -1,6 +1,6 @@
 export default function PlanCard({ plan, onChange }) {
 
-  // ✅ helper formatters (UI-safe)
+  // helper formatters (UI-safe)
   const formatValue = (value) => {
     if (value === null || value === undefined) return "Unlimited";
     return value;
@@ -27,7 +27,7 @@ export default function PlanCard({ plan, onChange }) {
 
         <h3 className="text-lg font-semibold">{plan.name} Plan</h3>
 
-        {/* ✅ FIXED PRICE */}
+        {/* PRICE */}
         <p className="text-sm opacity-90">{formatPrice(plan.price)}</p>
       </div>
 
@@ -40,7 +40,7 @@ export default function PlanCard({ plan, onChange }) {
         
         <p>✔ Interviewer Accounts: {formatValue(plan.interviewers)}</p>
         
-        {/* ✅ FIXED AI VALUES */}
+        {/* AI VALUES */}
         <p>✔ AI CV Screening: {formatAI(plan.aiCvLimit, plan.isUnlimited)}</p>
         
         <p className="whitespace-nowrap">

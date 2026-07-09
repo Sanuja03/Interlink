@@ -10,10 +10,11 @@ const CATEGORIES = [
   { value: "TECHNICAL", label: "Technical Issue" },
 ];
 
-const TITLE_MAX       = 120;
+const TITLE_MAX       = 100;
 const TITLE_MIN       = 5;
 const DESC_MAX        = 2000;
 const DESC_MIN        = 10;
+
 
 /**
  * TicketModal
@@ -32,6 +33,7 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
   const [description, setDescription] = useState("");
   const [category,    setCategory]    = useState("");
   const [submitting,  setSubmitting]  = useState(false);
+const [categoryOpen, setCategoryOpen] = useState(false);
 
   // Per-field inline errors — empty string means no error
   const [errors, setErrors] = useState({ title: "", description: "", category: "" });
@@ -247,27 +249,66 @@ export default function TicketModal({ ticket = null, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* CATEGORY */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={category}
-              onChange={handleCategoryChange}
-              className={`w-full border rounded-xl px-4 py-3 bg-white
-                focus:outline-none focus:ring-2 focus:ring-[#0C3E56] transition
-                ${fieldBorder("category")}`}
-            >
-              <option value="">Select a category</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-            {touched.category && errors.category && (
-              <p className="text-xs text-red-500 mt-1">{errors.category}</p>
+        
+{/* CATEGORY */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Category <span className="text-red-500">*</span>
+  </label>
+
+  <div className="relative">
+    <button
+      type="button"
+      onClick={() => setCategoryOpen(o => !o)}
+      onBlur={() => handleBlur("category", category)}
+      className={`w-full border rounded-xl px-4 py-3 bg-white text-left
+        focus:outline-none focus:ring-2 focus:ring-[#0C3E56] transition
+        flex items-center justify-between cursor-pointer ${fieldBorder("category")}`}
+    >
+      <span className={category ? "text-gray-800" : "text-gray-400"}>
+        {CATEGORIES.find(c => c.value === category)?.label || "Select a category"}
+      </span>
+      <svg className={`w-4 h-4 text-gray-400 transition-transform ${categoryOpen ? "rotate-180" : ""}`}
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
+
+    {categoryOpen && (
+      <div className="absolute top-[calc(100%+4px)] left-0 right-0 z-50
+        bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        {CATEGORIES.map(c => (
+          <button
+            key={c.value}
+            type="button"
+            onClick={() => {
+              setCategory(c.value);
+              setTouched(prev => ({ ...prev, category: true }));
+              setErrors(prev => ({ ...prev, category: validateField("category", c.value) }));
+              setCategoryOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 text-sm hover:bg-[#EAF3F8]
+              transition-colors flex items-center justify-between"
+            style={{ color: c.value === category ? "#0C3E56" : "#374151",
+                     fontWeight: c.value === category ? 600 : 400 }}
+          >
+            {c.label}
+            {c.value === category && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="#0C3E56" strokeWidth={3} strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
             )}
-          </div>
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {touched.category && errors.category && (
+    <p className="text-xs text-red-500 mt-1">{errors.category}</p>
+  )}
+</div>
 
           {/* ACTIONS */}
           <div className="flex justify-end gap-4 pt-2">

@@ -26,8 +26,8 @@ const STATUS_WEIGHT   = { OPEN: 1, PENDING: 2, RESOLVED: 3, CLOSED: 4 };
 
 function sortTickets(list) {
   return [...list].sort((a, b) => {
-    const sd = (STATUS_WEIGHT[a.status]   ?? 5) - (STATUS_WEIGHT[b.status]   ?? 5);
-    if (sd !== 0) return sd;
+    const sd = (STATUS_WEIGHT[a.status]   ?? 5) - (STATUS_WEIGHT[b.status]   ?? 5);    //js sort logic negative comes first
+    if (sd !== 0) return sd;    //if both status same this becomes zero
     if (a.status === "OPEN" && b.status === "OPEN") {
       const pd = (PRIORITY_WEIGHT[a.priority] ?? 5) - (PRIORITY_WEIGHT[b.priority] ?? 5);
       if (pd !== 0) return pd;
@@ -61,12 +61,11 @@ export default function AdminTickets() {
 
   useEffect(() => { fetchTickets(); }, []);
 
-  // FIX: single useEffect watches all filter state — no more 4 near-identical
-  // handler functions and no risk of stale closure bugs.
+ 
   useEffect(() => {
-    let data = [...tickets];
+    let data = [...tickets];    //cloned array
 
-    if (search.trim()) {
+    if (search.trim()) {   //if search is not empty
       const lower = search.toLowerCase();
       data = data.filter((t) =>
         (t.title       || "").toLowerCase().includes(lower) ||
@@ -76,7 +75,7 @@ export default function AdminTickets() {
       );
     }
     if (statusFilter)   data = data.filter((t) => t.status   === statusFilter);
-    if (priorityFilter) data = data.filter((t) => t.priority === priorityFilter);
+    if (priorityFilter) data = data.filter((t) => t.priority === priorityFilter);   //creates a new array that passes the condition
     if (categoryFilter) data = data.filter((t) => t.category === categoryFilter);
 
     setFilteredTickets(data);
@@ -102,7 +101,7 @@ export default function AdminTickets() {
     setCategoryFilter("");
   };
 
-  // ── Active filter chips ───────────────────────────────────────────────────
+  // ── Active filter display ───────────────────────────────────────────────────
   const activeChips = [
     statusFilter   && { key: "status",   label: `Status: ${statusFilter}`,     onRemove: () => setStatusFilter("") },
     priorityFilter && { key: "priority", label: `Priority: ${priorityFilter}`, onRemove: () => setPriorityFilter("") },
@@ -171,7 +170,7 @@ export default function AdminTickets() {
                     bg-[#EBF5FB] border border-[#BDD8EA] text-[#24698B] text-xs font-medium">
                   {chip.label}
                   <button
-                    onClick={chip.onRemove}
+                    onClick={chip.onRemove}   //defined in activeChips array above
                     className="text-[#24698B] text-[11px] opacity-70 hover:opacity-100
                       bg-transparent border-none cursor-pointer p-0 leading-none"
                   >

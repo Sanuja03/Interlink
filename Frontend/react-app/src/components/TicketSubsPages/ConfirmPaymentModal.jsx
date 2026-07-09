@@ -12,7 +12,7 @@ import { PlanBaseModal, PlanModalFooter } from "./PlanBaseModal";
  */
 export default function ConfirmPaymentModal({ row, onCancel, onConfirm }) {
   const expired = isExpired(row);
-  const nextMonth = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString();
+  const nextMonth = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString();  //take today's date + 1 month for the new end date if confirming an expired plan
 
   return (
     <PlanBaseModal onClose={onCancel}>

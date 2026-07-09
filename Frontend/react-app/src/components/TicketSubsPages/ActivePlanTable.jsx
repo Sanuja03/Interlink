@@ -32,7 +32,7 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
   // Lazy-load available plans only when the dropdown is first opened
   const fetchPlans = async () => {
     if (plans.length > 0) return;
-    const res = await api.get("/subscriptions");
+    const res = await api.get("/subscriptions");   //plans are stored in state to avoid refetching on every dropdown open
     setPlans(res.data);
   };
 
@@ -104,7 +104,7 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
           <p className="text-center text-gray-400 py-10 text-sm">
             No subscriptions found
           </p>
-        ) : (
+        ) : (  //run for each row
           data.map((row) => {
             const expired = isExpired(row);
             const free    = isFree(row);
@@ -126,7 +126,7 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
                   <div
                     onClick={() => {
                       fetchPlans();
-                      setOpenDropdown(openDropdown === row.id ? null : row.id);
+                      setOpenDropdown(openDropdown === row.id ? null : row.id);  //only one dropdown open at a time, clicking the same toggles it, clicking another switches to it
                     }}
                     className="px-2.5 py-1.5 text-xs rounded-lg border border-gray-200
                       bg-white inline-flex items-center gap-1.5 cursor-pointer
@@ -143,7 +143,7 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
                         <div
                           key={p.id}
                           onClick={() => {
-                            setOpenDropdown(null);
+                            setOpenDropdown(null);   //close dropdown on plan select
                             if (p.name === row.planName) return;
                             setChangePlanModal({ row, plan: p });
                             setCustomStartDate("");
@@ -155,7 +155,7 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
                               : ""}`}
                         >
                           {p.name}
-                          {p.name === row.planName && (
+                          {p.name === row.planName && (    //mark current plan in dropdown
                             <span className="ml-1 text-[9px] text-gray-400">(current)</span>
                           )}
                         </div>

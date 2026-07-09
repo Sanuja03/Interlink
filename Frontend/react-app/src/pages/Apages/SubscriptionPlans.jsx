@@ -12,6 +12,7 @@ export default function SubscriptionPlans() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
+  // Fetch plans and add icons based on plan name, then sort by predefined order
   const fetchPlans = async () => {
     try {
       const res = await api.get("/subscriptions");
@@ -27,6 +28,7 @@ export default function SubscriptionPlans() {
 
   useEffect(() => { fetchPlans(); }, []);
 
+  // Update plan details
   const updatePlan = async (updatedPlan) => {
     try {
       await api.put(`/subscriptions/${updatedPlan.name}`, updatedPlan);
@@ -37,6 +39,8 @@ export default function SubscriptionPlans() {
     }
   };
 
+
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -46,7 +50,7 @@ export default function SubscriptionPlans() {
 
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <div className="grid md:grid-cols-3 gap-10">
-          {plans.map((plan) => (
+          {plans.map((plan) => ( //display each plan in a card
             <PlanCard key={plan.name} plan={plan} onChange={() => setSelectedPlan(plan)} />
           ))}
         </div>

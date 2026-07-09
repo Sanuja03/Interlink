@@ -95,7 +95,7 @@ const JobApply = () => {
 
     useEffect(() => {
         const load = async () => {
-            // ✅ ALWAYS fetch job from DB to get real company_id
+            // ALWAYS fetch job from DB to get real company_id
             const { data, error } = await supabase
                 .from('jobs')
                 .select('id, job_title, location, employment_type, category, experience_level, company_id')
@@ -112,12 +112,12 @@ const JobApply = () => {
                     category: data.category || '',
                     experience: data.experience_level || '',
                     logo: 'https://img.icons8.com/color/96/briefcase.png',
-                    companyId: data.company_id,  // ✅ real UUID — used in job_applications insert
+                    companyId: data.company_id,  // real UUID — used in job_applications insert
                 });
             }
 
             
-            // ✅ Get real candidate_id from candidates table (user_id = auth UUID)
+            // Get real candidate_id from candidates table (user_id = auth UUID)
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
     const { data: candidate } = await supabase
@@ -169,20 +169,20 @@ if (session) {
             const { data: urlData } = supabase.storage.from('resumes').getPublicUrl(filePath);
             const resumeUrl = urlData.publicUrl;
 
-            // 3. ✅ Insert into job_applications — company_id comes from the job row in DB
+            // 3. Insert into job_applications — company_id comes from the job row in DB
             const { error: insertError } = await supabase
                 .from('job_applications')
                 .insert({
                     candidate_id:   candidateId,
-                    Company_Id:     job.companyId,   // ✅ real UUID from jobs.company_id
+                    Company_Id:     job.companyId,   // real UUID from jobs.company_id
                     job_id:         job.id,
                     job_title:      job.title,
                     company:        job.company,
                     resume_url:     resumeUrl,
-                    status:         'Applied',
+                    status:         'PENDING',
                     applied_date:   new Date().toISOString().split('T')[0],
                     candidate_name: `${form.firstName} ${form.lastName}`,
-                    // TEMP: teammate to add cover_letter, linkedin etc. columns and wire here
+                    // TEMP:  to add cover_letter, linkedin etc. columns and wire here
                 });
 
             if (insertError) throw new Error('Application save failed: ' + insertError.message);
@@ -270,7 +270,7 @@ if (session) {
                                 </label>
                             </div>
 
-                            {/* Cover Letter — TEMP: teammate to save to DB */}
+                            {/* Cover Letter — TEMP:  to save to DB */}
                             <div className="apply-card">
                                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconFile /></span>Cover Letter</h2>
                                 <div className="apply-field">
@@ -279,7 +279,7 @@ if (session) {
                                 </div>
                             </div>
 
-                            {/* Online Profiles — TEMP: teammate to wire */}
+                            {/* Online Profiles — TEMP: to wire */}
                             <div className="apply-card">
                                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconLink /></span>Online Profiles</h2>
                                 <div className="apply-frow apply-frow--full"><div className="apply-field"><label className="apply-label">LinkedIn Profile URL</label><input className="apply-input" value={form.linkedin} onChange={set('linkedin')} placeholder="https://linkedin.com/in/yourprofile" /></div></div>
@@ -289,7 +289,7 @@ if (session) {
                                 </div>
                             </div>
 
-                            {/* Work Experience — TEMP: teammate to wire */}
+                            {/* Work Experience — TEMP:  to wire */}
                             <div className="apply-card">
                                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconBriefcase /></span>Work Experience</h2>
                                 <div className="apply-frow">
@@ -302,7 +302,7 @@ if (session) {
                                 </div>
                             </div>
 
-                            {/* Preferences — TEMP: teammate to wire */}
+                            {/* Preferences — TEMP:  to wire */}
                             <div className="apply-card">
                                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconBriefcase /></span>Preferences</h2>
                                 <div className="apply-frow">
@@ -320,7 +320,7 @@ if (session) {
                             </div>
                         </div>
 
-                        {/* Right sidebar — unchanged */}
+                        {/* Right sidebar */}
                         <div>
                             <div className="apply-steps">
                                 <p className="apply-steps__title">📋 Application Steps</p>

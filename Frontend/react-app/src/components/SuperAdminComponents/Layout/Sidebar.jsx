@@ -8,6 +8,7 @@ import settingsIcon from "../../../assets/settings.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import RecentActivities from "../../../assets/RecentActivities.png";
 import ChatBot from "../../../assets/ChatBot.png";
+import SupportTickets from "../../../assets/SupportTickets.jpeg";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -105,6 +106,12 @@ const Sidebar = () => {
           path="/admin/ChatBot"
           icon={ChatBot}
         />
+
+<SidebarItem
+  label="Support tickets"
+  path="/admin/tickets"
+  icon={SupportTickets}
+/>
 
       </nav>
 

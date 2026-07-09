@@ -71,7 +71,7 @@ export default function CreateJob() {
     setErrors({});
     setLimitError(null);
 
-    const jobData = {
+    const jobData = {    //prepare data to send to backend
       title:           form.title.trim(),
       department:      form.department,
       type:            form.type,
@@ -90,9 +90,10 @@ export default function CreateJob() {
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
       setInterviewStages([]); setReqs([""]);
+    
     } catch (error) {
       const msg = error.response?.data;
-      if (typeof msg === "string" && msg.includes("Job limit reached")) {
+      if (typeof msg === "string" && msg.includes("limit reached")) {  // ← "Job limit reached" to "limit reached"
         setLimitError(msg);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {

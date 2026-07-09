@@ -15,7 +15,7 @@ export default function UsageCell({ used, limit }) {
     const pct = (used / limit) * 100;
     const color =
       pct >= 90 ? "text-red-500" :
-      pct >= 65 ? "text-amber-500" :
+      pct >= 65 ? "text-amber-500" :    //color based in usage
       "text-gray-700";
   
     return (

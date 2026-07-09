@@ -72,16 +72,18 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
     }
   };
   
+
+
   const checkLimitBeforeCreate = async () => {
     if (!companyId) {
       setLimitError("Cannot verify subscription limit. Please reload and try again.");
       return false;
     }
   
-    // Query subscription_plans directly via plan_id — avoids RLS issues on active_subscriptions
+    // Query subscription_plans directly via plan_id 
     const { data: subData, error: subError } = await supabase
       .from("active_subscriptions")
-      .select("plan_id, subscription_plans(interviewers, name)")
+      .select("plan_id, subscription_plans(interviewers, name)")    // join to get plan details in one query 
       .eq("company_id", companyId)
       .single();
   
@@ -93,8 +95,9 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
     const plan = subData.subscription_plans;
     const limit = plan?.interviewers;
   
-    if (!limit || limit <= 0) return true; // unlimited
+    if (!limit || limit <= 0) return true; // unlimited gets immediate pass
   
+      // Count current interviewers for the company
     const { count, error: countError } = await supabase
       .from("interviewers")
       .select("*", { count: "exact", head: true })
@@ -110,9 +113,11 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
       return false;
     }
   
-    setLimitError("");
+    setLimitError("");   // Clear any previous limit errors
     return true;
   };
+
+
 
   const fetchExistingInterviewers = async () => {
     try {
@@ -269,7 +274,9 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
     ? `${totalCount} / ${interviewerLimit.limit ?? "∞"} interviewers used`
     : null;
 
-  return (
+  
+  
+    return (
     <div className="interviewer-modal-overlay" onClick={onClose}>
       <div className="interviewer-modal" onClick={(e) => e.stopPropagation()}>
 
@@ -345,6 +352,7 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
                       <button type="button" className="btn secondary" onClick={() => copyDetails(row)}>
                         {copiedId === row.id ? "Copied" : "Copy Details"}
                       </button>
+
                       <button type="button" className="btn light" onClick={() => saveRow(row.id)} disabled={loadingId === row.id}>Save</button>
                       {!row.created ? (
                         <button type="button" className="btn primary" onClick={() => createAccount(row)} disabled={loadingId === row.id}>

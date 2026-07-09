@@ -59,13 +59,13 @@ export function fmt(dateStr) {
 
 // ─── Subscription Helpers ────────────────────────────────────────────────────
 
-/** Returns true if the subscription's end date is before today. */
+
 export function isExpired(row) {
-  if (!row.endDate) return false;
+  if (!row.endDate) return false;   //end date exists? if not, can't be expired
   const end = new Date(row.endDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);   //set both date to midnight to compare only date part
   return end < today;
 }
 
@@ -79,7 +79,7 @@ export function displayStatus(row) {
   return isExpired(row) ? "Expired" : row.status || "Active";
 }
 
-/** Returns Tailwind classes for a subscription status badge. */
+/** Tailwind classes for a subscription status badge. */
 export function statusStyle(status) {
   switch (status) {
     case "Active":  return "bg-emerald-100 text-emerald-700 border border-emerald-200";

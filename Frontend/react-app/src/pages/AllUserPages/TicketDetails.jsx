@@ -2,22 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import Footer from "../../components/TicketSubsPages/Footer";
-import logo from "../../assets/interlink-logo.png";
 import ConfirmModal from "../../components/TicketSubsPages/ConfirmModal";
+import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
 import toast from "react-hot-toast";
+import { formatDate } from "../../utils/subscriptionUtils";
 
-function formatDate(dateString) {
-  return new Date(dateString).toLocaleString("en-US", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  });
-}
 
-const STATUS_STYLES = {
-  OPEN:     "bg-green-100 text-green-700",
-  PENDING:  "bg-yellow-100 text-yellow-700",
-  RESOLVED: "bg-blue-100 text-blue-700",
-  CLOSED:   "bg-gray-200 text-gray-600",
+const STATUS_PILL = {
+  OPEN:     "bg-[#EAF3F8] text-[#24698B] border border-[#B8D8EA]",
+  PENDING:  "bg-amber-50 text-amber-700 border border-amber-200",
+  RESOLVED: "bg-blue-50 text-blue-700 border border-blue-200",
+  CLOSED:   "bg-gray-100 text-gray-500 border border-gray-200",
+};
+
+const CATEGORY_LABELS = {
+  GENERAL: "General", LOGIN: "Login Issue",
+  PAYMENT: "Payment Issue", TECHNICAL: "Technical Issue",
 };
 
 export default function TicketDetails() {
@@ -76,13 +76,16 @@ export default function TicketDetails() {
 
   if (error && !ticket) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#F4F7FA]">
-        <div className="flex-grow max-w-5xl mx-auto w-full px-6 py-20 text-center">
-          <p className="text-red-500 font-medium">{error}</p>
-          <button onClick={() => navigate("/tickets")}
-            className="mt-6 bg-[#24698B] text-white px-6 py-2 rounded-full hover:opacity-90">
-            ← Back to tickets
-          </button>
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <p className="text-red-500 font-medium mb-4">{error}</p>
+            <button onClick={() => navigate("/tickets")}
+              className="bg-[#24698B] text-white px-6 py-2 rounded-full hover:opacity-90">
+              ← Back to tickets
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -90,13 +93,16 @@ export default function TicketDetails() {
 
   if (!ticket) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F4F7FA]">
-        <div className="flex items-center gap-3 text-gray-500">
-          <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth={2}>
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
-          </svg>
-          Loading ticket…
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex items-center gap-3 text-gray-400">
+            <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth={2}>
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+            </svg>
+            Loading ticket…
+          </div>
         </div>
       </div>
     );
@@ -106,172 +112,219 @@ export default function TicketDetails() {
   const hasReplies = ticket.responses && ticket.responses.length > 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4F7FA]">
+    <div className="flex min-h-screen">
+      <Sidebar />
 
-      {/* HEADER */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
-          <img src={logo} alt="Interlink" className="h-10" />
-          <h1 className="text-xl font-semibold text-gray-700">Support Ticket</h1>
-        </div>
-      </div>
+      <div className="flex-1 flex flex-col bg-gray-50">
+        <div className="flex-grow px-8 py-8">
 
-      <div className="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
 
-        <button onClick={() => navigate("/tickets")}
-          className="inline-flex items-center gap-2 bg-[#EAF3F8] text-[#24698B]
-            px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#d8eaf3] transition mb-8"
-          style={{ border: "none", outline: "none", boxShadow: "none" }}>
-          ← Back to tickets
-        </button>
+          {/* ── MAIN CARD ──────────────────────────────────────────────── */}
+          <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
-        <div className="bg-white p-10 rounded-2xl shadow-sm border">
+            {/* blue top bar */}
+            <div className="h-3 bg-[#24698B]" />
 
-          {/* HEADER ROW */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-semibold text-gray-800">Ticket #{ticket.id}</h2>
-            <span className={`px-4 py-1 rounded-full text-sm font-medium
-              ${STATUS_STYLES[ticket.status] ?? "bg-gray-200 text-gray-600"}`}>
-              {ticket.status}
-            </span>
-          </div>
-
-          {/* INFO GRID */}
-          <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-600 mb-8">
-            <div className="space-y-1">
-              <p><strong>Submitted By:</strong> {ticket.submittedBy ?? "—"}</p>
-              <p><strong>Date Submitted:</strong> {formatDate(ticket.createdAt)}</p>
-              <p><strong>Category:</strong> {ticket.category ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p><strong>Email:</strong> {ticket.email ?? "—"}</p>
-              <p><strong>Status:</strong> {ticket.status}</p>
-              {ticket.priority && <p><strong>Priority:</strong> {ticket.priority}</p>}
-            </div>
-          </div>
-
-          <hr className="my-8 border-gray-200" />
-
-          {/* SUBJECT */}
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-700 mb-2">Subject</h3>
-            <p className="text-gray-800">{ticket.title}</p>
-          </div>
-
-          {/* DESCRIPTION */}
-          <div className="mb-8">
-            <h3 className="font-semibold text-gray-700 mb-3">Description</h3>
-            <div className="bg-gray-50 border p-6 rounded-xl text-gray-700 whitespace-pre-wrap">
-              {ticket.description}
-            </div>
-          </div>
-
-          {/* ── CHAT BUBBLES ─────────────────────────────────────────── */}
-          <div className="mb-8">
-            <h3 className="font-semibold text-gray-700 mb-4">Conversation</h3>
-
-            {!hasReplies ? (
-              <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                <svg className="w-10 h-10 mb-3 opacity-30" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth={1.5}>
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <p className="text-sm">No messages yet. Start the conversation below.</p>
+            {/* ── TICKET INFO ─────────────────────────────────────────── */}
+            <div className="px-7 py-6 border-b border-gray-100">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-[#24698B]/50 uppercase
+                    tracking-widest mb-1">
+                    Ticket #{ticket.id}
+                  </p>
+                  <h2 className="text-xl font-bold text-gray-800">{ticket.title}</h2>
+                </div>
+                <span className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1
+                  rounded-full text-xs font-semibold
+                  ${STATUS_PILL[ticket.status] ?? STATUS_PILL.CLOSED}`}>
+                  {ticket.status}
+                </span>
               </div>
-            ) : (
-              <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto px-2 py-2 bg-gray-50 rounded-xl border">
-                {ticket.responses.map((res) => {
-                  const isAdmin = res.sender === "ADMIN";
-                  return (
-                    <div key={res.id}
-                      className={`flex ${isAdmin ? "justify-start" : "justify-end"}`}>
-                      <div className={`flex flex-col gap-1 max-w-[70%] ${isAdmin ? "items-start" : "items-end"}`}>
-                        <span className="text-xs text-gray-400 px-2">
-                          {isAdmin ? "Support Team" : "You"}
-                        </span>
-                        <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
-                          ${isAdmin
-                            ? "bg-white border border-gray-200 text-gray-800 rounded-tl-none"
-                            : "bg-[#0C3E56] text-white rounded-tr-none"
-                          }`}>
-                          {res.message}
+
+              {/* meta data row */}
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-gray-500 mb-5">
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#24698B] opacity-50" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  {ticket.submittedBy ?? "—"}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#24698B] opacity-50" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  {ticket.email ?? "—"}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#24698B] opacity-50" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth={2}>
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  {formatDate(ticket.createdAt)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#24698B] opacity-50" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                  </svg>
+                  {CATEGORY_LABELS[ticket.category] ?? ticket.category ?? "—"}
+                </span>
+              </div>
+
+              {/* description */}
+              <div className="bg-[#F4F8FA] rounded-xl px-5 py-4 text-sm text-gray-700
+                whitespace-pre-wrap leading-relaxed border border-[#E0EEF5]">
+                {ticket.description}
+              </div>
+            </div>
+
+            {/* ── CONVERSATION ────────────────────────────────────────── */}
+            <div>
+              {/* header */}
+              <div className="px-7 py-4 border-b border-gray-100 bg-[#F4F8FA]
+                flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-[#24698B]" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth={2}>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                  <span className="text-sm font-semibold text-gray-700">Conversation</span>
+                </div>
+                {hasReplies && (
+                  <span className="text-xs text-[#24698B] bg-[#EAF3F8]
+                    border border-[#B8D8EA] px-2.5 py-0.5 rounded-full font-medium">
+                    {ticket.responses.length} message{ticket.responses.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+
+              {/* messages */}
+              <div className="px-7 py-5 bg-[#F8FAFB] min-h-[160px] flex flex-col gap-1">
+                {!hasReplies ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                    <svg className="w-9 h-9 mb-3 opacity-20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth={1.5}>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <p className="text-sm">No messages yet. Start the conversation below.</p>
+                  </div>
+                ) : (
+                  <>
+                    {ticket.responses.map((res, idx) => {
+                      const isAdmin  = res.sender === "ADMIN";
+                      const prev     = ticket.responses[idx - 1];
+                      const showName = !prev || prev.sender !== res.sender;
+                      return (
+                        <div key={res.id}
+                          className={`flex flex-col
+                            ${isAdmin ? "items-start" : "items-end"}
+                            ${showName ? "mt-4" : "mt-0.5"}`}>
+                          {showName && (
+                            <span className="text-[11px] font-medium text-gray-400 mb-1 px-1">
+                              {isAdmin ? "Support Team" : "You"}
+                            </span>
+                          )}
+                          <div className={`max-w-[60%] px-4 py-2.5 text-sm leading-relaxed
+                            break-words shadow-sm
+                            ${isAdmin
+                              ? "bg-white text-gray-800 rounded-2xl rounded-tl-sm border border-gray-100"
+                              : "bg-[#0C3E56] text-white rounded-2xl rounded-tr-sm"
+                            }`}>
+                            {res.message}
+                          </div>
+                          <span className="text-[10px] text-gray-400 mt-0.5 px-1">
+                            {formatDate(res.sentAt)}
+                          </span>
                         </div>
-                        <span className="text-[11px] text-gray-400 px-2">
-                          {formatDate(res.sentAt)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div ref={chatBottomRef} />
+                      );
+                    })}
+                    <div ref={chatBottomRef} />
+                  </>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* ── REPLY BOX ────────────────────────────────────────────── */}
-          {isClosed ? (
-            <div className="bg-gray-50 border border-dashed border-gray-300
-              rounded-xl p-5 text-sm text-gray-500 text-center mb-6">
-              This ticket is closed. No further replies can be added.
-            </div>
-          ) : (
-            <div className="border-t pt-6 mb-6">
-              <h3 className="font-semibold mb-3 text-gray-700 text-sm">Send a message</h3>
-              <div className="flex gap-3 items-end">
-                <textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleReply();
-                  }}
-                  placeholder="Type your message… (Ctrl+Enter to send)"
-                  rows={3}
-                  disabled={sending}
-                  className="flex-1 border rounded-xl p-4 focus:ring-2 focus:ring-[#24698B]
-                    outline-none resize-none disabled:opacity-60 text-sm"
-                />
+              {/* reply box */}
+              {isClosed ? (
+                <div className="px-7 py-4 border-t border-gray-100 bg-gray-50
+                  text-xs text-center text-gray-400">
+                  This ticket is closed. No further replies can be added.
+                </div>
+              ) : (
+                <div className="px-7 py-4 border-t border-gray-100 bg-white">
+                  <div className="flex gap-3 items-end">
+                    <textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleReply();
+                      }}
+                      placeholder="Type your message… (Ctrl+Enter to send)"
+                      rows={2}
+                      disabled={sending}
+                      className="flex-1 bg-[#F4F8FA] border border-[#D6E8F2] rounded-xl
+                        px-4 py-2.5 text-sm outline-none resize-none
+                        focus:ring-2 focus:ring-[#24698B]/20 focus:border-[#24698B]
+                        disabled:opacity-50 placeholder:text-gray-400 transition"
+                    />
+                    <button
+                      onClick={handleReply}
+                      disabled={sending || !reply.trim()}
+                      className="h-11 w-11 shrink-0 flex items-center justify-center
+                        rounded-xl bg-[#0C3E56] text-white
+                        hover:bg-[#14597A] active:scale-95 transition
+                        disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ border: "none" }}
+                    >
+                      {sending ? (
+                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M12 2v4M12 18v4"/>
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                          <line x1="22" y1="2" x2="11" y2="13"/>
+                          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* delete */}
+              <div className="px-7 py-4 border-t border-gray-100 flex justify-end">
                 <button
-                  onClick={handleReply}
-                  disabled={sending || !reply.trim()}
-                  className="h-12 w-12 flex items-center justify-center rounded-xl
-                    bg-[#0C3E56] text-white hover:bg-[#14597A] transition
-                    disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-red-400
+                    hover:text-red-600 font-medium transition"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
-                  {sending ? (
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth={2}>
-                      <path d="M12 2v4M12 18v4"/>
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                      <line x1="22" y1="2" x2="11" y2="13"/>
-                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                    </svg>
-                  )}
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                  Delete this ticket
                 </button>
               </div>
             </div>
-          )}
 
-          {/* DELETE LINK */}
-          <div className="border-t pt-5">
-            <button onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-2 text-sm text-red-500
-                hover:text-red-600 font-medium transition"
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6M14 11v6"/>
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-              </svg>
-              Delete this ticket
-            </button>
           </div>
-
         </div>
+
+        <Footer />
       </div>
 
       <ConfirmModal
@@ -282,8 +335,6 @@ export default function TicketDetails() {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteModal(false)}
       />
-
-      <Footer />
     </div>
   );
 }

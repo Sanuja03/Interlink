@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
-// ─── Bounds ──────────────────────────────────────────────────────────────────
+// input sanitization 
 const MAX_PRICE        = 10000;
 const MAX_JOBS         = 10000;
 const MAX_INTERVIEWERS = 10000;
@@ -22,7 +22,7 @@ const MAX_AI_LIMIT     = 100000;
  */
 export default function PlanModal({ plan, onClose, onSave }) {
 
-  const initialData = {
+  const initialData = {   //fetch earlier plan data and convert to strings for form inputs
     price:           String(plan.price          ?? ""),
     activeJobs:      String(plan.activeJobs     ?? ""),
     interviewers:    String(plan.interviewers   ?? ""),
@@ -82,19 +82,22 @@ export default function PlanModal({ plan, onClose, onSave }) {
 
   const validateAll = () => {
     const fields = ["price", "activeJobs", "interviewers", "aiCvLimit", "aiQuestionLimit"];
-    const newErrors = {};
-    fields.forEach((name) => {
-      newErrors[name] = validateField(name, formData[name], formData.isUnlimited);
+    const newErrors = {};    // accumulate errors for all fields
+    //loop
+    fields.forEach((name) => {  
+      newErrors[name] = validateField(name, formData[name], formData.isUnlimited);   //store error
     });
     setErrors(newErrors);
     setTouched({ price: true, activeJobs: true, interviewers: true, aiCvLimit: true, aiQuestionLimit: true });
-    return !Object.values(newErrors).some(Boolean);
+    return !Object.values(newErrors).some(Boolean);  //return true if no errors, false if any error exists
   };
 
   // ── Change / Blur handlers ────────────────────────────────────────────────
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value })); //load previous data and overwrite the changed field
+    
+    //avoid showing error on first change, only after field has been touched at least once
     if (touched[field]) {
       setErrors((prev) => ({
         ...prev,
@@ -108,14 +111,14 @@ export default function PlanModal({ plan, onClose, onSave }) {
     if (touched.aiCvLimit || touched.aiQuestionLimit) {
       setErrors((prev) => ({
         ...prev,
-        aiCvLimit:       validateField("aiCvLimit",       formData.aiCvLimit,       checked),
+        aiCvLimit:       validateField("aiCvLimit",       formData.aiCvLimit,       checked),  // re-validate AI limits when toggling unlimited
         aiQuestionLimit: validateField("aiQuestionLimit", formData.aiQuestionLimit, checked),
       }));
     }
   };
 
   const handleBlur = (name) => {
-    setTouched((prev) => ({ ...prev, [name]: true }));
+    setTouched((prev) => ({ ...prev, [name]: true }));  //mark field as touched and validate it to show error if any
     setErrors((prev) => ({
       ...prev,
       [name]: validateField(name, formData[name], formData.isUnlimited),
@@ -129,6 +132,8 @@ export default function PlanModal({ plan, onClose, onSave }) {
       toast.error("Please fix the errors before saving.");
       return;
     }
+
+    //prepare payload with correct types for the backend 
     const payload = {
       name:            plan.name,
       price:           Number(formData.price),
@@ -149,13 +154,13 @@ export default function PlanModal({ plan, onClose, onSave }) {
   const fieldClass = (name, original) => {
     if (touched[name] && errors[name])     return `${inputBase} border-red-400 bg-red-50`;
     if (touched[name] && !errors[name] && formData[name] !== String(original ?? ""))
-                                           return `${inputBase} border-yellow-400 bg-yellow-50`;
-    if (touched[name] && !errors[name])    return `${inputBase} border-emerald-400`;
-    if (formData[name] !== String(original ?? "")) return `${inputBase} border-yellow-400 bg-yellow-50`;
+                                           return `${inputBase} border-yellow-400 bg-yellow-50`;  //touched and changed but no error
+    if (touched[name] && !errors[name])    return `${inputBase} border-emerald-400`;   // touched not changed  and valid 
+    if (formData[name] !== String(original ?? "")) return `${inputBase} border-yellow-400 bg-yellow-50`; // not touched but changed - still typing
     return `${inputBase} border-gray-300`;
   };
 
-  const FieldError = ({ name }) =>
+  const FieldError = ({ name }) =>  //display error message if field is touched and has an error
     touched[name] && errors[name]
       ? <p className="text-xs text-red-500 mt-1">{errors[name]}</p>
       : null;
@@ -216,7 +221,7 @@ export default function PlanModal({ plan, onClose, onSave }) {
             </label>
             <input type="number" min="0" max={MAX_AI_LIMIT}
               value={formData.aiCvLimit}
-              disabled={formData.isUnlimited}
+              disabled={formData.isUnlimited}  //disable input if unlimited is checked
               onChange={(e) => handleChange("aiCvLimit", e.target.value)}
               onBlur={() => handleBlur("aiCvLimit")}
               className={`${fieldClass("aiCvLimit", plan.aiCvLimit)} disabled:opacity-50 disabled:cursor-not-allowed`} />
