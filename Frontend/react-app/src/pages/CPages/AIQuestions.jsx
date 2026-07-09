@@ -17,7 +17,11 @@ import {
     Award,
     MessageSquare,
     Zap,
-    Trophy
+    Trophy,
+    CheckCircle2,
+    XCircle,
+    BookOpen,
+    Lightbulb
 } from 'lucide-react';
 
 const AIQuestions = () => {
@@ -58,6 +62,7 @@ const AIQuestions = () => {
     // Track answers and scores for final aggregate save
     const [answersList, setAnswersList] = useState([]);
     const [scoresList, setScoresList] = useState([]);
+    const [evaluationsList, setEvaluationsList] = useState([]);
 
     // Completion states
     const [isCompleted, setIsCompleted] = useState(false);
@@ -120,7 +125,8 @@ const AIQuestions = () => {
             answer: answer
         })
         .then(res => {
-            const receivedScore = res.data.score;
+            const evaluation = res.data;
+            const receivedScore = evaluation.finalScore || evaluation.score || 0;
             setScore(receivedScore);
             setShowFeedback(true);
             setEvaluating(false);
@@ -128,6 +134,7 @@ const AIQuestions = () => {
             // Add current Q&A and score to history arrays
             const updatedAnswers = [...answersList, answer];
             const updatedScores = [...scoresList, receivedScore];
+            const updatedEvaluations = [...evaluationsList, evaluation];
 
             // 2. Check if this is the final question
             const isFinal = currentQ === questions.length - 1;
@@ -158,12 +165,14 @@ const AIQuestions = () => {
                 if (!isFinal) {
                     setAnswersList(updatedAnswers);
                     setScoresList(updatedScores);
+                    setEvaluationsList(updatedEvaluations);
                     setCurrentQ(q => q + 1);
                     setAnswer('');
                     setShowFeedback(false);
                     setScore(null);
                     setTimeLeft(120);
                 } else {
+                    setEvaluationsList(updatedEvaluations);
                     setIsCompleted(true);
                 }
             }, 4000);
@@ -174,8 +183,24 @@ const AIQuestions = () => {
             setShowFeedback(true);
             setEvaluating(false);
 
+            const fallbackEval = {
+                score: 0,
+                technicalAccuracy: 0,
+                coverage: 0,
+                practicalUnderstanding: 0,
+                communication: 0,
+                bestPractices: 0,
+                strengths: ["Submitted"],
+                weaknesses: ["System feedback extraction mismatch"],
+                missingTopics: [],
+                recommendations: [],
+                feedback: "Parsing error on assessment results.",
+                finalScore: 0
+            };
+
             const updatedAnswers = [...answersList, answer];
             const updatedScores = [...scoresList, 0];
+            const updatedEvaluations = [...evaluationsList, fallbackEval];
             const isFinal = currentQ === questions.length - 1;
 
             if (isFinal) {
@@ -196,12 +221,14 @@ const AIQuestions = () => {
                 if (!isFinal) {
                     setAnswersList(updatedAnswers);
                     setScoresList(updatedScores);
+                    setEvaluationsList(updatedEvaluations);
                     setCurrentQ(q => q + 1);
                     setAnswer('');
                     setShowFeedback(false);
                     setScore(null);
                     setTimeLeft(120);
                 } else {
+                    setEvaluationsList(updatedEvaluations);
                     setIsCompleted(true);
                 }
             }, 4000);
@@ -226,88 +253,232 @@ const AIQuestions = () => {
     };
 
     if (isCompleted) {
+        // Compute Averages
+        const avgTechnical = evaluationsList.length > 0 
+            ? Math.round(evaluationsList.reduce((sum, e) => sum + (e.technicalAccuracy || 0), 0) / evaluationsList.length)
+            : 0;
+        const avgCoverage = evaluationsList.length > 0 
+            ? Math.round(evaluationsList.reduce((sum, e) => sum + (e.coverage || 0), 0) / evaluationsList.length)
+            : 0;
+        const avgPractical = evaluationsList.length > 0 
+            ? Math.round(evaluationsList.reduce((sum, e) => sum + (e.practicalUnderstanding || 0), 0) / evaluationsList.length)
+            : 0;
+        const avgCommunication = evaluationsList.length > 0 
+            ? Math.round(evaluationsList.reduce((sum, e) => sum + (e.communication || 0), 0) / evaluationsList.length)
+            : 0;
+        const avgBestPractices = evaluationsList.length > 0 
+            ? Math.round(evaluationsList.reduce((sum, e) => sum + (e.bestPractices || 0), 0) / evaluationsList.length)
+            : 0;
+
+        // Flatten qualitative lists
+        const allStrengths = Array.from(new Set(evaluationsList.flatMap(e => e.strengths || []).filter(Boolean)));
+        const allWeaknesses = Array.from(new Set(evaluationsList.flatMap(e => e.weaknesses || []).filter(Boolean)));
+        const allMissingTopics = Array.from(new Set(evaluationsList.flatMap(e => e.missingTopics || []).filter(Boolean)));
+        const allRecommendations = Array.from(new Set(evaluationsList.flatMap(e => e.recommendations || []).filter(Boolean)));
+
         return (
             <div className="min-h-screen flex bg-slate-50 font-sans">
                 <Sidebar />
-                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30 animate-fade-in">
-                    <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 border border-slate-100/80 text-center flex flex-col items-center relative overflow-hidden">
-                        {/* Top decorative gradient bar */}
-                        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-sky-400 via-teal-500 to-blue-600"></div>
+                <div className="flex-1 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                    <div className="max-w-5xl w-full mx-auto px-6 py-10 flex flex-col gap-8 animate-fade-in">
                         
-                        {/* Animated Trophy Header */}
-                        <div className="relative flex items-center justify-center mb-6 mt-4 animate-bounce-subtle">
-                            <div className="absolute inset-0 rounded-full bg-teal-100/60 blur-xl opacity-50 animate-pulse"></div>
-                            <div className="relative w-24 h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                                <Trophy className="w-12 h-12 text-teal-600" />
-                            </div>
-                            <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1.5 border-2 border-white shadow-md animate-pulse">
-                                <Sparkles className="w-4 h-4 text-white" />
-                            </div>
-                        </div>
-
-                        {/* Title & Desc */}
-                        <h2 className="text-2xl font-extrabold text-slate-800 mb-2">Session Completed!</h2>
-                        <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
-                            Thank you for completing the dynamic AI interview. Your responses have been evaluated and stored successfully.
-                        </p>
-
-                        {/* Circular Progress Marks Display */}
-                        <div className="relative flex flex-col items-center justify-center p-6 bg-slate-50/80 border border-slate-100/80 rounded-3xl w-full mb-6">
-                            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-4">Final Score</span>
+                        {/* Header Banner */}
+                        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-teal-500 to-blue-600"></div>
                             
-                            <div className="relative w-28 h-28 flex items-center justify-center">
-                                {/* SVG Ring */}
-                                <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle 
-                                        cx="50" 
-                                        cy="50" 
-                                        r="40" 
-                                        stroke="#e2e8f0" 
-                                        strokeWidth="8" 
-                                        fill="transparent" 
-                                    />
-                                    <circle 
-                                        cx="50" 
-                                        cy="50" 
-                                        r="40" 
-                                        stroke="#0d9488" 
-                                        strokeWidth="8" 
-                                        fill="transparent" 
-                                        strokeDasharray="251.2"
-                                        strokeDashoffset={251.2 - (251.2 * (finalScore || 0)) / 100}
-                                        strokeLinecap="round"
-                                        className="transition-all duration-1000 ease-out"
-                                    />
-                                </svg>
-                                <div className="text-3xl font-black text-slate-800">
-                                    {finalScore !== null ? `${finalScore}%` : '--'}
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center border border-teal-100 shadow-sm">
+                                    <Trophy className="w-8 h-8 text-teal-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-extrabold text-slate-800">AI Assessment Report</h2>
+                                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                                        Detailed breakdown for <strong>{job.title}</strong> at <strong>{job.company}</strong>
+                                    </p>
                                 </div>
                             </div>
+
+                            <button
+                                onClick={() => navigate('/candidate/dashboard')}
+                                className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 outline-none border-none cursor-pointer text-xs"
+                            >
+                                Return to Dashboard
+                            </button>
+                        </div>
+
+                        {/* Two Column Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             
-                            <div className="mt-4 px-4 py-1.5 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold rounded-full">
-                                {finalScore >= 85 ? 'Excellent Performance' : finalScore >= 65 ? 'Good Performance' : 'Completed Successfully'}
+                            {/* Left Column: Scores & Rubrics */}
+                            <div className="lg:col-span-5 flex flex-col gap-6">
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-4">Overall Score</span>
+                                    <div className="relative w-36 h-36 flex items-center justify-center mb-4">
+                                        <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="8" fill="transparent" />
+                                            <circle 
+                                                cx="50" cy="50" r="42" stroke="#0d9488" strokeWidth="8" fill="transparent" 
+                                                strokeDasharray="263.89"
+                                                strokeDashoffset={263.89 - (263.89 * (finalScore || 0)) / 100}
+                                                strokeLinecap="round"
+                                                className="transition-all duration-1000 ease-out"
+                                            />
+                                        </svg>
+                                        <div className="text-4xl font-black text-slate-800">
+                                            {finalScore !== null ? `${finalScore}%` : '--'}
+                                        </div>
+                                    </div>
+                                    <div className="px-4 py-1.5 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold rounded-full">
+                                        {finalScore >= 85 ? 'Excellent Performance' : finalScore >= 65 ? 'Good Performance' : 'Session Completed'}
+                                    </div>
+                                </div>
+
+                                {/* Rubric Breakdown */}
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-5">
+                                    <h3 className="text-sm font-extrabold text-slate-800 border-b border-slate-50 pb-2">Rubric Breakdown</h3>
+                                    
+                                    <div className="flex flex-col gap-4">
+                                        {/* Technical Accuracy (40 marks) */}
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between text-xs font-bold text-slate-700">
+                                                <span>Technical Accuracy</span>
+                                                <span>{avgTechnical} / 40</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-sky-500 h-full rounded-full" style={{ width: `${(avgTechnical / 40) * 100}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Concept Coverage (25 marks) */}
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between text-xs font-bold text-slate-700">
+                                                <span>Required Concepts Coverage</span>
+                                                <span>{avgCoverage} / 25</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-teal-500 h-full rounded-full" style={{ width: `${(avgCoverage / 25) * 100}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Practical Understanding (15 marks) */}
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between text-xs font-bold text-slate-700">
+                                                <span>Practical Understanding</span>
+                                                <span>{avgPractical} / 15</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-violet-500 h-full rounded-full" style={{ width: `${(avgPractical / 15) * 100}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Communication (10 marks) */}
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between text-xs font-bold text-slate-700">
+                                                <span>Communication & Clarity</span>
+                                                <span>{avgCommunication} / 10</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-amber-500 h-full rounded-full" style={{ width: `${(avgCommunication / 10) * 100}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Best Practices (10 marks) */}
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between text-xs font-bold text-slate-700">
+                                                <span>Best Practices</span>
+                                                <span>{avgBestPractices} / 10</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-rose-500 h-full rounded-full" style={{ width: `${(avgBestPractices / 10) * 100}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Detailed Qualitative Feedback */}
+                            <div className="lg:col-span-7 flex flex-col gap-6">
+                                
+                                {/* Strengths */}
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                        <span>Candidate Strengths</span>
+                                    </div>
+                                    {allStrengths.length > 0 ? (
+                                        <ul className="flex flex-col gap-2.5 pl-0 list-none m-0">
+                                            {allStrengths.map((str, idx) => (
+                                                <li key={idx} className="text-xs text-slate-600 bg-emerald-50/40 border border-emerald-100/50 px-3.5 py-2.5 rounded-xl flex items-start gap-2.5 animate-fade-in">
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-[10px] text-emerald-700 font-black shrink-0">✓</span>
+                                                    <span className="leading-relaxed">{str}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">No specific strengths recorded in evaluation.</div>
+                                    )}
+                                </div>
+
+                                {/* Weaknesses */}
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+                                        <XCircle className="w-4 h-4 text-rose-500" />
+                                        <span>Candidate Weaknesses</span>
+                                    </div>
+                                    {allWeaknesses.length > 0 ? (
+                                        <ul className="flex flex-col gap-2.5 pl-0 list-none m-0">
+                                            {allWeaknesses.map((weak, idx) => (
+                                                <li key={idx} className="text-xs text-slate-600 bg-rose-50/40 border border-rose-100/50 px-3.5 py-2.5 rounded-xl flex items-start gap-2.5 animate-fade-in">
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-[10px] text-rose-700 font-black shrink-0">✗</span>
+                                                    <span className="leading-relaxed">{weak}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">No major weaknesses identified.</div>
+                                    )}
+                                </div>
+
+                                {/* Missing Topics */}
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+                                        <BookOpen className="w-4 h-4 text-indigo-500" />
+                                        <span>Missing Technical Topics</span>
+                                    </div>
+                                    {allMissingTopics.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2 animate-fade-in">
+                                            {allMissingTopics.map((topic, idx) => (
+                                                <span key={idx} className="text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-full font-semibold">
+                                                    {topic}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">All expected context topics were successfully addressed.</div>
+                                    )}
+                                </div>
+
+                                {/* Recommendations */}
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
+                                        <Lightbulb className="w-4 h-4 text-amber-500" />
+                                        <span>Recommendations for Improvement</span>
+                                    </div>
+                                    {allRecommendations.length > 0 ? (
+                                        <ul className="flex flex-col gap-2 pl-4 list-disc text-xs text-slate-600 leading-relaxed animate-fade-in">
+                                            {allRecommendations.map((rec, idx) => (
+                                                <li key={idx} className="pl-1">
+                                                    {rec}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">No specific recommendations needed. Keep up the good work!</div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Summary Block */}
-                        <div className="w-full text-left bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mb-6 flex flex-col gap-2">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Job Title</span>
-                                <span className="font-bold text-slate-700 max-w-[180px] truncate" title={job.title}>{job.title}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Company</span>
-                                <span className="font-bold text-slate-700 max-w-[180px] truncate" title={job.company}>{job.company}</span>
-                            </div>
-                        </div>
-
-                        {/* Action Button */}
-                        <button
-                            onClick={() => navigate('/candidate/dashboard')}
-                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold py-3.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 outline-none border-none cursor-pointer flex items-center justify-center gap-2"
-                        >
-                            <span>Return to Dashboard</span>
-                        </button>
                     </div>
                 </div>
             </div>
