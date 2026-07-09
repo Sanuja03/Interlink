@@ -18,8 +18,6 @@ public class AdminInterviewerAvailabilityDay {
     @Column(name = "intavailability_id")
     private UUID intavailabilityId;
 
-    @Column(name = "interviewer_id")
-    private UUID interviewerId;
 
     @Column(name = "available_date")
     private LocalDate availableDate;

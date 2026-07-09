@@ -170,7 +170,7 @@ public class AdminUserService {
                 "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
         );
 
-        Map<String, Boolean> dbMap = availabilityRepo.findByInterviewerId(userId)
+        Map<String, Boolean> dbMap = availabilityRepo.findByintavailabilityId(userId)
                 .stream()
                 .collect(Collectors.toMap(
                         d -> d.getDayName().trim(),

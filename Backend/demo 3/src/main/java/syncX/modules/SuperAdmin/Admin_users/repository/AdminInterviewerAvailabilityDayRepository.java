@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface AdminInterviewerAvailabilityDayRepository
         extends JpaRepository<AdminInterviewerAvailabilityDay, UUID> {
 
-    List<AdminInterviewerAvailabilityDay> findByInterviewerId(UUID interviewerId);
+    List<AdminInterviewerAvailabilityDay> findByintavailabilityId(UUID intavailabilityId);
 }

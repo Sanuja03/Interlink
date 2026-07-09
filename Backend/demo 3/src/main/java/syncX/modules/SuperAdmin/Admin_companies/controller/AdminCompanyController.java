@@ -19,8 +19,6 @@ public class AdminCompanyController {
     // Service layer to handle company-related business logic
     private final AdminCompanyService service;
 
-    // TODO: Add auth check (SUPER_ADMIN role)
-
     // Get all companies with pending status
     @GetMapping("/pending")
     public List<AdminCompanyListDto> getPendingCompanies() {
