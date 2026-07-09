@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { sendMessage, getHistory } from "../../../api/RagChatbotApi";
 
-const DAILY_LIMIT = 50;
-const WARNING_THRESHOLD = 45;
+const DAILY_LIMIT = 15;
 
 export default function ChatBot() {
   const [input, setInput] = useState("");
@@ -24,13 +23,20 @@ export default function ChatBot() {
     const fetchHistory = async () => {
       try {
         const res = await getHistory();
-        const normalized = res.data.map((m) => ({
+        const { history = [], remaining: rem } = res.data;
+        const normalized = history.map((m) => ({
           role: m.role === "assistant" ? "ai" : "user",
           text: m.content,
           time: formatTime(new Date(m.time)),
         }));
         setMessages(normalized);
-      } catch {
+        if (rem !== undefined) {
+          setRemaining(rem);
+          setLimitReached(rem <= 0);
+
+        }
+      } catch (err) {
+        console.error("Error loading chat history:", err);
         setMessages([]);
       }
     };
