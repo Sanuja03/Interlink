@@ -13,7 +13,7 @@ import syncX.modules.enums.ExperienceLevel;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/jobs")
+@RequestMapping("/api/cjobposts")
 @CrossOrigin(origins = "http://localhost:5173")
 public class CjobpostController {
 
@@ -59,9 +59,6 @@ public class CjobpostController {
         }
         return ResponseEntity.ok(job);
     }
-
-    @PostMapping
-    public ResponseEntity<Cjobpost> createJob(@RequestBody Cjobpost job) {
-        return ResponseEntity.ok(service.saveJobPost(job));
-    }
 }
+
+

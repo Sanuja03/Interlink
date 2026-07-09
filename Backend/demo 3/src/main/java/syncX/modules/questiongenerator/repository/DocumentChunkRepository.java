@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import syncX.modules.questiongenerator.entity.DocumentChunk;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Long> {
@@ -21,13 +22,13 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     @Modifying
     @Transactional
     @Query(value = "INSERT INTO document_chunks (job_id, chunk_content, embedding, chunk_type, company_id, experience_level, employment_type) " +
-            "VALUES (:jobId, :content, :embedding::vector, :chunkType, :companyId, :experienceLevel, :employmentType)", nativeQuery = true)
+            "VALUES (:jobId, :content, cast(:embedding as vector), :chunkType, :companyId, :experienceLevel, :employmentType)", nativeQuery = true)
     void insertChunk(
             @Param("jobId") Long jobId,
             @Param("content") String content,
             @Param("embedding") String embedding,
             @Param("chunkType") String chunkType,
-            @Param("companyId") Long companyId,
+            @Param("companyId") UUID companyId,
             @Param("experienceLevel") String experienceLevel,
             @Param("employmentType") String employmentType
     );
@@ -35,7 +36,7 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     @Query(value = "SELECT COUNT(*) FROM document_chunks WHERE job_id = :jobId", nativeQuery = true)
     int countByJobId(@Param("jobId") Long jobId);
 
-    @Query(value = "SELECT chunk_content, (1 - (embedding <=> :queryEmbedding::vector)) AS similarity " +
+    @Query(value = "SELECT chunk_content, (1 - (embedding <=> cast(:queryEmbedding as vector))) AS similarity " +
             "FROM document_chunks " +
             "WHERE job_id = :jobId " +
             "AND (:companyId IS NULL OR company_id = :companyId) " +
@@ -46,13 +47,13 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     List<Object[]> vectorSearchWithoutTypes(
             @Param("queryEmbedding") String queryEmbedding,
             @Param("jobId") Long jobId,
-            @Param("companyId") Long companyId,
+            @Param("companyId") UUID companyId,
             @Param("expLevel") String expLevel,
             @Param("empType") String empType,
             @Param("limit") int limit
     );
 
-    @Query(value = "SELECT chunk_content, (1 - (embedding <=> :queryEmbedding::vector)) AS similarity " +
+    @Query(value = "SELECT chunk_content, (1 - (embedding <=> cast(:queryEmbedding as vector))) AS similarity " +
             "FROM document_chunks " +
             "WHERE job_id = :jobId " +
             "AND (:companyId IS NULL OR company_id = :companyId) " +
@@ -64,14 +65,14 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     List<Object[]> vectorSearchWithTypes(
             @Param("queryEmbedding") String queryEmbedding,
             @Param("jobId") Long jobId,
-            @Param("companyId") Long companyId,
+            @Param("companyId") UUID companyId,
             @Param("expLevel") String expLevel,
             @Param("empType") String empType,
             @Param("allowedTypes") List<String> allowedTypes,
             @Param("limit") int limit
     );
 
-    @Query(value = "SELECT chunk_content, (1 - (embedding <=> :queryEmbedding::vector)) AS similarity " +
+    @Query(value = "SELECT chunk_content, (1 - (embedding <=> cast(:queryEmbedding as vector))) AS similarity " +
             "FROM document_chunks " +
             "WHERE job_id = :jobId " +
             "AND (:companyId IS NULL OR company_id = :companyId) " +
@@ -81,13 +82,13 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     List<Object[]> ftsSearchWithoutTypes(
             @Param("queryEmbedding") String queryEmbedding,
             @Param("jobId") Long jobId,
-            @Param("companyId") Long companyId,
+            @Param("companyId") UUID companyId,
             @Param("expLevel") String expLevel,
             @Param("empType") String empType,
             @Param("searchTerms") String searchTerms
     );
 
-    @Query(value = "SELECT chunk_content, (1 - (embedding <=> :queryEmbedding::vector)) AS similarity " +
+    @Query(value = "SELECT chunk_content, (1 - (embedding <=> cast(:queryEmbedding as vector))) AS similarity " +
             "FROM document_chunks " +
             "WHERE job_id = :jobId " +
             "AND (:companyId IS NULL OR company_id = :companyId) " +
@@ -98,7 +99,7 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     List<Object[]> ftsSearchWithTypes(
             @Param("queryEmbedding") String queryEmbedding,
             @Param("jobId") Long jobId,
-            @Param("companyId") Long companyId,
+            @Param("companyId") UUID companyId,
             @Param("expLevel") String expLevel,
             @Param("empType") String empType,
             @Param("allowedTypes") List<String> allowedTypes,

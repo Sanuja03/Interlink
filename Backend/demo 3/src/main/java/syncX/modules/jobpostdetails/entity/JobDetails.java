@@ -27,12 +27,14 @@ public class JobDetails {
     private String location;
 
     @Convert(converter = EmploymentTypeConverter.class)
+    @Column(name = "employment_type")
     private EmploymentType employmentType;
 
     @Convert(converter = CategoryConverter.class)
     private Category category;
 
     @Convert(converter = ExperienceLevelConverter.class)
+    @Column(name = "experience_level")
     private ExperienceLevel experienceLevel;
     
     @Column(name = "job_title")

@@ -5,7 +5,7 @@ import lombok.Data;
 
 import java.util.UUID;
 
-@Entity
+@Entity(name = "CandidateSideProfile")
 @Data
 @Table(name = "candidates")
 public class CandidateProfile {

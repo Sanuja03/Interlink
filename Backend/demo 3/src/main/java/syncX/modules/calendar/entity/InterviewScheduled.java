@@ -10,7 +10,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "CalendarInterviewScheduled")
 @Table(name = "interview_scheduled")
 @Data
 public class InterviewScheduled {

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
+@Repository("adminCompanyDetailsRepository")
 public interface CompanyDetailsRepository extends JpaRepository<CompanyDetails, UUID> {
     Optional<CompanyDetails> findByCompanyId(UUID companyId);
 }

@@ -13,9 +13,14 @@ import syncX.modules.job.repository.JobRequirementRepository;
 
 import java.util.List;
 import java.util.UUID;
+import syncX.modules.questiongenerator.service.RetrievalService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class JobService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
     @Autowired
     private AiService aiService;
@@ -25,6 +30,9 @@ public class JobService {
 
     @Autowired
     private JobRequirementRepository reqRepo;
+
+    @Autowired
+    private RetrievalService retrievalService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -74,6 +82,13 @@ public class JobService {
         List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
         saved.setRequirements(reqs);
 
+        // Auto-generate embeddings for the new job
+        try {
+            retrievalService.generateAndStoreEmbeddingsForJob(saved.getId());
+        } catch (Exception e) {
+            logger.error("Failed to generate and store embeddings for job ID: {}", saved.getId(), e);
+        }
+
         return saved;
     }
 
@@ -112,7 +127,16 @@ public class JobService {
             job.setCompanyId(UUID.fromString(dto.getCompanyId()));
         }
 
-        return jobRepo.save(job);
+        Job saved = jobRepo.save(job);
+
+        // Auto-generate embeddings for the updated job
+        try {
+            retrievalService.generateAndStoreEmbeddingsForJob(saved.getId());
+        } catch (Exception e) {
+            logger.error("Failed to generate and store embeddings for updated job ID: {}", saved.getId(), e);
+        }
+
+        return saved;
     }
 
     // ================= TOGGLE =================

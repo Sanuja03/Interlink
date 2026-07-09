@@ -7,7 +7,7 @@ import syncX.modules.candidateprofile.entity.CandidateEducation;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Repository("candidateSideEducationRepository")
 public interface CandidateEducationRepository extends JpaRepository<CandidateEducation, Long> {
     List<CandidateEducation> findByCandidateId(UUID candidateId);
     void deleteByCandidateIdAndId(UUID candidateId, Long id);

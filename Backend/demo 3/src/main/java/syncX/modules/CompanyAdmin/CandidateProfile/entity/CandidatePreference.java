@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "CompanyCandidatePreference")
 @Table(name = "candidate_preferences")
 public class CandidatePreference {
 

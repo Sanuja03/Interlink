@@ -6,7 +6,7 @@ import syncX.modules.CompanyAdmin.CandidateProfile.entity.CandidatePreference;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
+@Repository("companyCandidatePreferenceRepository")
 public interface CandidatePreferenceRepository extends JpaRepository<CandidatePreference, UUID> {
     Optional<CandidatePreference> findByCandidateId(UUID candidateId);
 }

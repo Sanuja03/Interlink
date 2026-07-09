@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "AdminCompanyDetails")
 @Table(name = "company_details")
 @Data
 public class CompanyDetails {

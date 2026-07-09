@@ -11,21 +11,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Repository("calendarInterviewScheduledRepository")
 public interface InterviewScheduledRepository extends JpaRepository<InterviewScheduled, UUID> {
 
     List<InterviewScheduled> findByCandidateId(UUID candidateId);
 
-    @Query("SELECT i FROM InterviewScheduled i LEFT JOIN FETCH i.job WHERE i.candidateId = :candidateId AND i.interviewDate >= :startDate AND i.interviewDate <= :endDate AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewDate ASC, i.interviewTime ASC")
+    @Query("SELECT i FROM CalendarInterviewScheduled i LEFT JOIN FETCH i.job WHERE i.candidateId = :candidateId AND i.interviewDate >= :startDate AND i.interviewDate <= :endDate AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewDate ASC, i.interviewTime ASC")
     List<InterviewScheduled> findCandidateEvents(@Param("candidateId") UUID candidateId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT i FROM InterviewScheduled i LEFT JOIN FETCH i.job WHERE i.companyId = :companyId AND i.interviewDate >= :startDate AND i.interviewDate <= :endDate AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewDate ASC, i.interviewTime ASC")
+    @Query("SELECT i FROM CalendarInterviewScheduled i LEFT JOIN FETCH i.job WHERE i.companyId = :companyId AND i.interviewDate >= :startDate AND i.interviewDate <= :endDate AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewDate ASC, i.interviewTime ASC")
     List<InterviewScheduled> findInterviewerEvents(@Param("companyId") UUID companyId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT i FROM InterviewScheduled i LEFT JOIN FETCH i.job WHERE i.candidateId = :candidateId AND i.interviewDate = :date AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewTime ASC")
+    @Query("SELECT i FROM CalendarInterviewScheduled i LEFT JOIN FETCH i.job WHERE i.candidateId = :candidateId AND i.interviewDate = :date AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewTime ASC")
     List<InterviewScheduled> findCandidateEventsByDate(@Param("candidateId") UUID candidateId, @Param("date") LocalDate date);
 
-    @Query("SELECT i FROM InterviewScheduled i LEFT JOIN FETCH i.job WHERE i.companyId = :companyId AND i.interviewDate = :date AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewTime ASC")
+    @Query("SELECT i FROM CalendarInterviewScheduled i LEFT JOIN FETCH i.job WHERE i.companyId = :companyId AND i.interviewDate = :date AND (i.status IS NULL OR i.status != 'cancelled') ORDER BY i.interviewTime ASC")
     List<InterviewScheduled> findInterviewerEventsByDate(@Param("companyId") UUID companyId, @Param("date") LocalDate date);
 
     long countByCandidateId(UUID candidateId);
@@ -42,7 +42,7 @@ public interface InterviewScheduledRepository extends JpaRepository<InterviewSch
                 COALESCE(i.status, 'SCHEDULED'),
                 i.meetingLink
             )
-            FROM InterviewScheduled i
+            FROM CalendarInterviewScheduled i
             LEFT JOIN i.job j
             LEFT JOIN i.companyDetails c
             WHERE i.candidateId = :candidateId
@@ -53,4 +53,5 @@ public interface InterviewScheduledRepository extends JpaRepository<InterviewSch
     List<UpcomingInterviewDto> findUpcomingInterviewsByCandidateId(
             @Param("candidateId") UUID candidateId,
             @Param("currentDate") LocalDate currentDate);
+
 }

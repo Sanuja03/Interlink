@@ -28,7 +28,7 @@ public class Job {
     @Column(name = "interview_rounds")
     private int interviewRounds;
 
-    @Column(name = "location")
+    @Column(name = "job_location")
     private String jobLocation;
 
     @Column(name = "experience_level")

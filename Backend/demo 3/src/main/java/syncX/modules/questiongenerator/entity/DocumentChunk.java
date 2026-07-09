@@ -3,6 +3,7 @@ package syncX.modules.questiongenerator.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -24,7 +25,7 @@ public class DocumentChunk {
     private String chunkType;
 
     @Column(name = "company_id")
-    private Long companyId;
+    private UUID companyId;
 
     @Column(name = "experience_level")
     private String experienceLevel;

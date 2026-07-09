@@ -29,7 +29,7 @@ import java.util.UUID;
  *
  * Base path: /api/candidate/profile  (secured to ROLE_candidate in SecurityConfig)
  */
-@RestController
+@RestController("candidateSideProfileController")
 @RequestMapping("/api/candidate/profile")
 public class CandidateProfileController {
 

@@ -38,7 +38,7 @@ const JobPosts = () => {
     };
 
     useEffect(() => {
-        let url = '/jobs';
+        let url = '/cjobposts';
         const params = new URLSearchParams();
         if (filters.category) {
             params.append('category', filters.category);

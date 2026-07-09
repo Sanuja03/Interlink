@@ -40,7 +40,19 @@ public class RetrievalService {
         try {
             jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS id SERIAL PRIMARY KEY");
             jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS chunk_type VARCHAR(50)");
-            jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS company_id BIGINT");
+            
+            // Safe database migration to UUID type for company_id
+            try {
+                jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS company_id UUID");
+            } catch (Exception e) {
+                logger.info("[RAG] company_id column might already exist. Attempting to alter type to UUID.");
+            }
+            try {
+                jdbcTemplate.execute("ALTER TABLE document_chunks ALTER COLUMN company_id TYPE UUID USING company_id::text::uuid");
+            } catch (Exception e) {
+                logger.warn("[RAG] Could not alter company_id column type to UUID: {}", e.getMessage());
+            }
+
             jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS experience_level VARCHAR(50)");
             jdbcTemplate.execute("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS employment_type VARCHAR(50)");
             logger.info("[RAG] Verified and updated document_chunks table schema successfully.");
@@ -85,7 +97,13 @@ public class RetrievalService {
         String jobTitle = (String) jobRow.get("job_title");
         String description = (String) jobRow.get("description");
         String keyRequirements = (String) jobRow.get("key_requirements");
-        Long companyId = (jobRow.get("company_id") != null) ? ((Number) jobRow.get("company_id")).longValue() : null;
+        UUID companyId = null;
+        Object rawCompanyId = jobRow.get("company_id");
+        if (rawCompanyId instanceof UUID) {
+            companyId = (UUID) rawCompanyId;
+        } else if (rawCompanyId instanceof String) {
+            companyId = UUID.fromString((String) rawCompanyId);
+        }
         String expLevel = (String) jobRow.get("experience_level");
         String empType = (String) jobRow.get("employment_type");
 
@@ -175,7 +193,13 @@ public class RetrievalService {
                 logger.warn("[RAG] Failed to fetch job metadata for pre-filtering on jobId {}, skipping metadata filters", jobId, e);
                 jobMeta = Collections.emptyMap();
             }
-            Long companyId = (jobMeta.get("company_id") != null) ? ((Number) jobMeta.get("company_id")).longValue() : null;
+            UUID companyId = null;
+            Object rawCompanyId = jobMeta.get("company_id");
+            if (rawCompanyId instanceof UUID) {
+                companyId = (UUID) rawCompanyId;
+            } else if (rawCompanyId instanceof String) {
+                companyId = UUID.fromString((String) rawCompanyId);
+            }
             String expLevel = (String) jobMeta.get("experience_level");
             String empType = (String) jobMeta.get("employment_type");
 

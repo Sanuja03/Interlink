@@ -407,7 +407,7 @@ const JobApply = () => {
   const [job, setJob] = useState(null);
 
   useEffect(() => {
-      api.get(`/jobs/${id}`)
+      api.get(`/cjobposts/${id}`)
           .then(res => setJob(res.data))
           .catch(err => {
               const text = err.response?.data || err.message;

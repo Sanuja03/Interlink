@@ -7,7 +7,7 @@ import syncX.modules.candidateprofile.entity.CandidateSkill;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Repository("candidateSideSkillRepository")
 public interface CandidateSkillRepository extends JpaRepository<CandidateSkill, Long> {
     List<CandidateSkill> findByCandidateId(UUID candidateId);
     void deleteByCandidateIdAndId(UUID candidateId, Long skillId);

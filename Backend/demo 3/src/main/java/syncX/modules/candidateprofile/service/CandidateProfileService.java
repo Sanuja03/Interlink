@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("candidateSideProfileService")
 public class CandidateProfileService {
 
     // Must match SupabaseStorageService constants exactly

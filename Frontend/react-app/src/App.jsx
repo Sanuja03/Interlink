@@ -107,7 +107,7 @@ function App() {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/company/shortlisted-candidates" element={<CompanyShortlistedCandidates />} />
+        <Route path="/company/shortlisted-candidates" element={<ShortlistedCandidates />} />
         <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate />} />
 
 

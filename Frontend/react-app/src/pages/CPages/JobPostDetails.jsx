@@ -57,7 +57,7 @@ const JobPostDetails = () => {
                 console.error("Error fetching job details:", text);
             });
 
-        api.get('/jobs')
+        api.get('/cjobposts')
             .then(res => setAllJobs(res.data))
             .catch(err => console.error("Error fetching jobs:", err));
 

@@ -6,7 +6,7 @@ import syncX.modules.candidateprofile.entity.CandidateProfile;
 
 import java.util.UUID;
 
-@Repository
+@Repository("candidateSideProfileRepository")
 public interface CandidateProfileRepository extends JpaRepository<CandidateProfile, UUID> {
     java.util.Optional<CandidateProfile> findByUserId(UUID userId);
 }
