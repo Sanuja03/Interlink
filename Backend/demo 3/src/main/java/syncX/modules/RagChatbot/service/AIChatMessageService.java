@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import lombok.RequiredArgsConstructor;
+import syncX.modules.RagChatbot.dto.AIChatHistoryWrapperDto;
 import syncX.modules.RagChatbot.dto.AIChatMessageDto;
 import syncX.modules.RagChatbot.dto.AIChatResponseDto;
 import syncX.modules.RagChatbot.entity.AIChatMessage;
@@ -30,10 +31,10 @@ public class AIChatMessageService {
     private static final Logger logger = LoggerFactory.getLogger(AIChatMessageService.class);
 
     // Daily message cap per user — AI replies do not count toward this
-    private static final int DAILY_LIMIT = 50;
+    private static final int DAILY_LIMIT = 15;
 
     // Warn the user when they hit this threshold
-    private static final int WARNING_THRESHOLD = 45;
+    private static final int WARNING_THRESHOLD = 13;
 
     private final AIChatSessionRepository chatSessionRepository;
     private final AIChatMessageRepository chatMessageRepository;
@@ -160,12 +161,20 @@ public class AIChatMessageService {
     }
 
     /**
-     * Returns the message history for the user's current day session.
-     * Returns an empty list if no session exists yet today.
+     * Returns the message history AND the current daily limits
+     * for the user's current day session.
      */
-    public List<AIChatMessageDto> getTodayHistory(UUID userId) {
-        return chatSessionRepository
-                .findByUserIdAndSessionDate(userId, LocalDate.now())
+    public AIChatHistoryWrapperDto getTodayHistory(UUID userId) {
+        // 1. Check for an existing session today
+        Optional<AIChatSession> sessionOpt = chatSessionRepository
+                .findByUserIdAndSessionDate(userId, LocalDate.now());
+
+        // 2. Calculate the current message count and remaining limit
+        int currentCount = sessionOpt.map(AIChatSession::getMessageCount).orElse(0);
+        int remaining = DAILY_LIMIT - currentCount;
+
+        // 3. Fetch the chat history (empty list if no session exists yet)
+        List<AIChatMessageDto> history = sessionOpt
                 .map(session -> chatMessageRepository
                         .findBySessionOrderByCreatedAtAsc(session)
                         .stream()
@@ -176,6 +185,13 @@ public class AIChatMessageService {
                                 .build())
                         .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
+
+        // 4. Return the combined data
+        return AIChatHistoryWrapperDto.builder()
+                .history(history)
+                .remaining(remaining)
+                .limit(DAILY_LIMIT)
+                .build();
     }
 
      // Extracts the reply text from an OpenAI chat/completions response.

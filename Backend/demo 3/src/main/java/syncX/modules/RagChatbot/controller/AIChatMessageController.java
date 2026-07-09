@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import syncX.modules.RagChatbot.dto.AIChatHistoryWrapperDto;
 import syncX.modules.RagChatbot.dto.AIChatMessageDto;
 import syncX.modules.RagChatbot.dto.AIChatRequestDto;
 import syncX.modules.RagChatbot.dto.AIChatResponseDto;
@@ -62,10 +63,10 @@ public class AIChatMessageController {
             UUID userId = UUID.fromString(jwt.getSubject());
 
             // Fetch today's chat history from service
-            List<AIChatMessageDto> result = aiService.getTodayHistory(userId);
+            AIChatHistoryWrapperDto response = aiService.getTodayHistory(userId);
 
             // Return history list
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             // Handle unexpected server errors
