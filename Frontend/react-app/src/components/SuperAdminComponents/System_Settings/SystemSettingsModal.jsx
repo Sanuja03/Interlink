@@ -3,10 +3,12 @@ import CommunicationForm from "./Forms/CommunicationForm";
 import StorageForm from "./Forms/StorageForm";
 import ApiForm from "./Forms/ApiForm";
 import SystemForm from "./Forms/SystemForm";
+import { useState } from "react";
 
 export default function SystemSettingsModal({ type, onClose }) {
+  const [loading, setLoading] = useState(false);
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-0 sm:p-4" onClick={(e) => e.target === e.currentTarget}>
 
       <div className="bg-white rounded-xl p-6 w-[420px] shadow-lg">
 
@@ -14,16 +16,18 @@ export default function SystemSettingsModal({ type, onClose }) {
           {getTitle(type)}
         </h2>
 
-        {renderForm(type)}
+        {renderForm(type, { loading, setLoading, onClose })}
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
+        <div className="flex justify-end gap-3 mt-4">
+          <button onClick={onClose}
+          disabled={loading}
+          className={`px-4 py-2 rounded w-full ${
+            loading ? "bg-gray-300 cursor-not-allowed" : "bg-gray-200"
+          }`}
+          >
             Cancel
           </button>
 
-          <button className="px-4 py-2 bg-[#24698B] text-white rounded-lg">
-            Save Changes
-          </button>
         </div>
       </div>
     </div>
@@ -42,13 +46,13 @@ function getTitle(type) {
   }
 }
 
-function renderForm(type) {
+function renderForm(type, props) {
   switch (type) {
-    case "auth": return <AuthForm />;
-    case "communication": return <CommunicationForm />;
-    case "storage": return <StorageForm />;
-    case "api": return <ApiForm />;
-    case "system": return <SystemForm />;
+    case "auth": return <AuthForm {...props} />;
+    case "communication": return <CommunicationForm {...props} />;
+    case "storage": return <StorageForm {...props} />;
+    case "api": return <ApiForm {...props} />;
+    case "system": return <SystemForm {...props} />;
     default: return null;
   }
 }

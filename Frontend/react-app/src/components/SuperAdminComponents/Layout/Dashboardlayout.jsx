@@ -1,12 +1,9 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
-import defaultAvatar from "../../../assets/default-avatar.png";
 import notificationicon from "../../../assets/notification.png";
 import Footer from "./Footer";
 import { useAuth } from "../../../context/Authcontext";
-
-const SIDEBAR_WIDTH = 240;
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -23,65 +20,59 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
 
-      {/* SIDEBAR (fixed) */}
-      <aside
-        className="fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50"
-        style={{ width: SIDEBAR_WIDTH }}
-      >
+      {/* SIDEBAR */}
+      <aside className="bg-white border-r border-gray-200 h-full overflow-y-auto">
         <Sidebar />
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <div style={{ marginLeft: SIDEBAR_WIDTH }}>
+      {/* MAIN AREA */}
+      <div className="flex flex-col flex-1 min-w-0 h-full">
 
         {/* TOP BAR */}
-        <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
+        <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 border-b shrink-0">
 
-          {/* Notification */}
           <img
             src={notificationicon}
             alt="Notifications"
             className="w-9 h-9 cursor-pointer opacity-80 hover:opacity-100"
           />
 
-          {/* Logout button */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
-              bg-red-50 text-red-600 text-xs font-semibold
-              hover:bg-red-100 transition duration-200
-              cursor-pointer focus:outline-none active:outline-none
-              outline-none border-none"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-3.5 h-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7"
-              />
-            </svg>
-            Logout
-          </button>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogout}>
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+                        bg-red-50 text-red-600 text-xs font-semibold
+                        hover:bg-red-100 transition duration-200
+                        cursor-pointer
+                        focus:outline-none focus:ring-0 active:outline-none
+                        outline-none border-none">
+
+              <svg xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7" />
+              </svg>
+
+              Logout
+            </button>
+          </div>
 
         </div>
 
-        {/* PAGE CONTENT */}
-        <div className="p-6 min-h-screen">
-          {children}
-        </div>
+        {/* CONTENT + FOOTER WRAPPER */}
+        <div className="flex flex-col flex-1 overflow-y-auto">
 
-        {/* FOOTER */}
-        <div>
+          {/* PAGE CONTENT */}
+          <div className="flex-1 p-6">
+            {children}
+          </div>
+
+          {/* FOOTER */}
           <Footer />
+
         </div>
 
       </div>

@@ -1,160 +1,189 @@
 import { useEffect, useState } from "react";
+import SearchFilterBar from "../../components/SuperAdminComponents/Layout/SearchFilterBar";
 import { fetchActivityLogs } from "../../api/ActivityLogsApi";
-//import { useNavigate } from "react-router-dom";
+
+const ROLE_OPTS = [
+  { label: "Super Admin",   value: "ADMIN"         },
+  { label: "Company Admin", value: "COMPANY_ADMIN" },
+  { label: "Candidate",     value: "Candidate"     },
+  { label: "Interviewer",   value: "Interviewer"   },
+];
+
+// Badge color per action type
+const ACTION_COLOR = {
+  LOGIN:   "bg-blue-100 text-blue-700",
+  UPDATE:  "bg-yellow-100 text-yellow-700",
+  SUSPEND: "bg-red-100 text-red-700",
+  RESTORE: "bg-green-100 text-green-700",
+  FLAG:    "bg-orange-100 text-orange-700",
+  UNFLAG:  "bg-gray-100 text-gray-600",
+  APPROVE: "bg-teal-100 text-teal-700",
+  REJECT:  "bg-red-100 text-red-700",
+};
 
 export default function AllActivitiesPage() {
-  const [activities, setActivities] = useState([]);
-  //const navigate = useNavigate();
-  const [roleFilter, setRoleFilter] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [activities,      setActivities]      = useState([]);
+  const [loading,         setLoading]         = useState(true);
+  const [search,          setSearch]          = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [roleFilter,      setRoleFilter]      = useState("");
+  const [fromDate,        setFromDate]        = useState("");
+  const [toDate,          setToDate]          = useState("");
+  const [currentPage,     setCurrentPage]     = useState(0);
+  const [totalPages,      setTotalPages]      = useState(1);
 
-
+  // Debounce search input to avoid firing on every keystroke
   useEffect(() => {
-    fetchActivityLogs({ page: 0, size: 10, role: roleFilter, fromDate, toDate })
-      .then(res => {
-        setActivities(res.data.content);
+    const t = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Fetch logs whenever filters or page change
+  useEffect(() => {
+    setLoading(true);
+    fetchActivityLogs({
+      userRole: roleFilter        || "",
+      fromDate: fromDate          || null,
+      toDate:   toDate            || null,
+      search:   debouncedSearch   || "",
+      page:     currentPage,
+      size:     10,
+    })
+      .then((res) => {
+        setActivities(res.data.content  ?? []);
+        setTotalPages(res.data.totalPages ?? 1);
       })
-      .catch(err => console.error(err));
-  }, [roleFilter, fromDate, toDate]);
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, [roleFilter, fromDate, toDate, debouncedSearch, currentPage]);
+
+  const handleClear = () => {
+    setSearch("");
+    setRoleFilter("");
+    setFromDate("");
+    setToDate("");
+    setCurrentPage(0); // reset to first page on filter clear
+  };
+
+  // Reset to first page when any filter changes to ensure user sees results from the beginning
+  const handleRoleChange  = (v) => { setRoleFilter(v);  setCurrentPage(0); };
+  const handleFromChange  = (v) => { setFromDate(v);    setCurrentPage(0); };
+  const handleToChange    = (v) => { setToDate(v);      setCurrentPage(0); };
+  const handleSearchChange = (v) => { setSearch(v);     setCurrentPage(0); };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">
-          All Activities
-        </h2>
+    <div className="space-y-5">
+      <h2 className="text-xl font-semibold text-[#24698B]">All Activities</h2>
 
-        {/*<button
-          onClick={() => navigate(-1)}
-          className="text-sm text-blue-600 font-medium hover:bg-blue-100 border border-blue-600 rounded-md px-3 py-1 transition duration-200"
-        >
-          Back to Dashboard
-        </button>*/}
-      </div>
+      <SearchFilterBar
+        search={search}
+        onSearch={handleSearchChange}
+        placeholder="Search by action, description, role..."
+        onClear={handleClear}
+        filters={[
+          {
+            key:      "role",
+            label:    "All Roles",
+            value:    roleFilter,
+            onChange: handleRoleChange,
+            options:  ROLE_OPTS,
+          },
+          {
+            key:      "fromDate",
+            label:    "",
+            type:     "date",
+            value:    fromDate,
+            onChange: handleFromChange,
+          },
+          {
+            key:      "toDate",
+            label:    "",
+            type:     "date",
+            value:    toDate,
+            onChange: handleToChange,
+          },
+        ]}
+      />
 
-      {/* Filters Card */}
-     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-
-      {/* Role Filter */}
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1 cursor-pointer">
-          User Role
-        </label>
-        <select
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none hover:bg-gray-200 cursor-pointer"
-          value={roleFilter}
-          onChange={e => setRoleFilter(e.target.value)}
-        >
-          <option value="">All Roles</option>
-          <option value="SUPER_ADMIN">Super Admin</option>
-          <option value="COMPANY_ADMIN">Company Admin</option>
-          <option value="JOB_SEEKER">Candidate</option>
-          <option value="RECRUITER">Interviewer</option>
-        </select>
-      </div>
-
-      {/* From Date */}
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">
-          From Date
-        </label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none hover:bg-gray-200 cursor-pointer"
-          value={fromDate}
-          onChange={e => setFromDate(e.target.value)}
-        />
-      </div>
-
-      {/* To Date */}
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">
-          To Date
-        </label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none hover:bg-gray-200 cursor-pointer"
-          value={toDate}
-          onChange={e => setToDate(e.target.value)}
-        />
-      </div>
-
-      {/* Clear Filters */}
-      <button
-        onClick={() => {
-          setRoleFilter("");
-          setFromDate("");
-          setToDate("");
-        }}
-        className="h-10 text-sm border border-gray-300 rounded-lg hover:bg-orange-500 transition"
-      >
-        Clear Filters
-      </button>
-
-    </div>
-  </div>
-
-
-
-      {/* Table Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-50 border-b border-gray-200">
+      {/* ACTIVITY TABLE */}
+      <div className="bg-white rounded-2xl border border-[#DADEE0] shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-[#DADEE0]">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                User Role
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                Action
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                Description
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                Date
-              </th>
+              {["User Role", "Action", "Description", "Date"].map((h) => (
+                <th
+                  key={h}
+                  className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
-<tbody className="bg-gray-100 space-y-2">
-  {activities.map(a => (
-    <tr key={a.id}>
-      <td colSpan={4} className="px-4 py-2">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:bg-blue-100 hover:shadow-md transition p-4 grid grid-cols-4 gap-4">
-          
-          <div className="text-sm font-medium text-gray-700">
-            {a.userRole}
-          </div>
-
-          <div className="text-sm font-semibold text-gray-900">
-            {a.action}
-          </div>
-
-          <div className="text-sm text-gray-700">
-            {a.description}
-          </div>
-
-          <div className="text-sm text-gray-500 text-right">
-            {new Date(a.createdAt).toLocaleString()}
-          </div>
-
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="py-12 text-center text-sm text-gray-400">
+                  Loading activities...
+                </td>
+              </tr>
+            ) : activities.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-12 text-center text-sm text-gray-400">
+                  No activities found.
+                </td>
+              </tr>
+            ) : (
+              activities.map((a) => (
+                <tr
+                  key={a.id}
+                  className="border-b border-[#DADEE0] hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-4 py-3 text-sm text-gray-600 capitalize">
+                    {a.userRole?.toLowerCase().replace("_", " ") || "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ACTION_COLOR[a.action] || "bg-gray-100 text-gray-600"}`}>
+                      {a.action}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {a.description || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                    {new Date(a.createdAt).toLocaleString()}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
-
-        {/* Empty State */}
-        {activities.length === 0 && (
-          <div className="p-6 text-center text-sm text-gray-500">
-            No activities found.
-          </div>
-        )}
       </div>
+
+      {/* PAGINATION — only shown when there is more than one page */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            disabled={currentPage === 0}
+            className="px-4 py-2 rounded-lg bg-[#24698B] text-white text-sm
+                       disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-500">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={currentPage >= totalPages - 1}
+            className="px-4 py-2 rounded-lg bg-[#24698B] text-white text-sm
+                       disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
