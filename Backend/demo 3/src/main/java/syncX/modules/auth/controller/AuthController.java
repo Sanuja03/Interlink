@@ -1,11 +1,10 @@
-// ============================================================
-// FILE: src/main/java/syncX/modules/auth/controller/AuthController.java (UPDATED)
-// PURPOSE: Added @PreAuthorize for method-level role checks
-// ============================================================
+
 package syncX.modules.auth.controller;
 
 import syncX.modules.auth.dto.InterviewerSignupDTO;
 import syncX.modules.auth.dto.InterviewerResponseDTO;
+import syncX.modules.auth.dto.InterviewerUpdateDTO;
+import syncX.modules.auth.dto.PhotoUpdateDTO;
 import syncX.modules.auth.service.AuthService;
 import syncX.modules.auth.dto.CandidateSignupDTO;
 import syncX.modules.auth.dto.CompanySignupDTO;
@@ -32,6 +31,12 @@ public class AuthController {
         return authService.getCurrentUser(jwt);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@AuthenticationPrincipal Jwt jwt) {
+        authService.logoutUser(jwt);
+        return ResponseEntity.ok("Logged out");
+    }
+
     // Public (permitAll in SecurityConfig) — called right after Supabase signup
     @PostMapping("/complete-candidate-signup")
     public String completeCandidateSignup(
@@ -45,13 +50,13 @@ public class AuthController {
     @PostMapping("/complete-company-signup")
     public String completeCompanySignup(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CompanySignupDTO dto) {
-        authService.completeCompanySignup(jwt, dto);
+            @RequestBody CompanySignupDTO dto) { //json data sent from frontend about company will be converted to a dto
+        authService.completeCompanySignup(jwt, dto);//call service
         return "Company created";
     }
 
     // Only company admins can create interviewers
-    @PreAuthorize("hasRole('company_admin')")
+    @PreAuthorize("hasRole('company_admin')")//security check
     @PostMapping("/complete-interviewer-signup")
     public ResponseEntity<InterviewerResponseDTO> completeInterviewerSignup(
             @AuthenticationPrincipal Jwt jwt,
@@ -87,5 +92,43 @@ public class AuthController {
             @PathVariable String interviewerId) {
         authService.deactivateInterviewer(jwt, interviewerId);
         return ResponseEntity.ok("Interviewer deactivated");
+    }
+
+    @PreAuthorize("hasRole('company_admin')")
+    @PutMapping("/interviewers/{interviewerId}/activate")
+    public ResponseEntity<String> activateInterviewer(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String interviewerId) {
+        authService.activateInterviewer(jwt, interviewerId);
+        return ResponseEntity.ok("Interviewer activated");
+    }
+
+    // Interviewer views their own profile
+    @PreAuthorize("hasRole('interviewer')")
+    @GetMapping("/interviewer/profile")
+    public ResponseEntity<InterviewerResponseDTO> getOwnProfile(
+            @AuthenticationPrincipal Jwt jwt) {
+        InterviewerResponseDTO profile = authService.getInterviewerOwnProfile(jwt);
+        return ResponseEntity.ok(profile);
+    }
+
+    // Interviewer updates their own profile (only editable fields)
+    @PreAuthorize("hasRole('interviewer')")
+    @PutMapping("/interviewer/profile")
+    public ResponseEntity<InterviewerResponseDTO> updateOwnProfile(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody InterviewerUpdateDTO dto) {
+        InterviewerResponseDTO updated = authService.updateInterviewerOwnProfile(jwt, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    // Interviewer updates their profile photo
+    @PreAuthorize("hasRole('interviewer')")
+    @PutMapping("/interviewer/profile/photo")
+    public ResponseEntity<InterviewerResponseDTO> updateProfilePhoto(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody PhotoUpdateDTO dto) {
+        InterviewerResponseDTO updated = authService.updateInterviewerPhoto(jwt, dto.getPhotoUrl());
+        return ResponseEntity.ok(updated);
     }
 }

@@ -1,115 +1,157 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import "./Sidebar.css";
 
-import { useAuth } from "../../../context/Authcontext";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-// ✅ FIXED PATHS
+import api from "../../../lib/api";
+import { supabase } from "../../../lib/supabase";
+
 import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
-
-// ICONS
 import dashboardIcon from "../../../assets/icons/dashboard.png";
 import fileIcon from "../../../assets/icons/file.png";
-import settingsIcon from "../../../assets/icons/settings.png";
 
-export default function Sidebar() {
-  const [openManage, setOpenManage] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
+const Sidebar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
-  const handleManageClick = () => {
-    if (collapsed) {
-      setCollapsed(false);
-      setTimeout(() => setOpenManage(true), 200);
-    } else {
-      setOpenManage((s) => !s);
-    }
-  };
+  const [openManage, setOpenManage] = useState(true);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const [companyName, setCompanyName] = useState("Company");
+  const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyWebsite, setCompanyWebsite] = useState("");
+
+  useEffect(() => {
+    const loadCompany = async () => {
+      let companyId = localStorage.getItem("companyId");
+
+      if (!companyId) {
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
+          if (session?.user?.id) {
+            const { data } = await supabase
+              .from("companies")
+              .select("company_id")
+              .eq("user_id", session.user.id)
+              .single();
+
+            if (data?.company_id) {
+              companyId = data.company_id;
+              localStorage.setItem("companyId", companyId);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch companyId:", err);
+          return;
+        }
+      }
+
+      if (!companyId) return;
+
+      api
+        .get(`/company/${companyId}/details`)
+        .then((res) => {
+          const data = res.data;
+          setCompanyName(data.companyName || "Company");
+          setCompanyLogo(data.logoUrl || null);
+          setCompanyWebsite(data.website || "");
+        })
+        .catch((err) =>
+          console.error("Failed to load company details:", err)
+        );
+    };
+
+    loadCompany();
+  }, []);
+
+  // Management dropdown sub-items (company-specific data).
+  // "Interviewer Management" is now its own page (/company/interviewer-management),
+  // so it's a plain route like everything else here.
+  const managementSubItems = [
+    { label: "Application Management", href: "/company/application-management" },
+    { label: "Job Management", href: "/company/job-management" },
+    { label: "Create Job", href: "/company/create-job" },
+    { label: "Shortlisted", href: "/company/shortlisted" },
+    { label: "Interview Summary", href: "/company/interview-summary" },
+    { label: "Interviewer Management", href: "/company/interviewer-management" },
+    { label: "Company Settings", href: "/company/settings" },
+  ];
 
   return (
-    <div className={collapsed ? "sb collapsed" : "sb"}>
-
-      <div className="sb-toggle">
-        <button onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? "›" : "‹"}
-        </button>
-      </div>
-
-      <div className="sb-top">
+    <aside className="sidebar">
+      <div className="sidebar-logo">
         <img
-          className={collapsed ? "sb-logo small" : "sb-logo"}
           src={logo}
-          alt="Interlink"
+          alt="Interlink logo"
+          onClick={() => navigate("/company/dashboard")}
+          style={{ cursor: "pointer" }}
         />
       </div>
 
-      <nav className="sb-nav">
-
-        <NavLink to="/" className="sb-link">
-          <img src={dashboardIcon} className="sb-iconImg" />
-          {!collapsed && "Dashboard"}
+      <nav className="sidebar-nav">
+        <NavLink
+          to="/company/dashboard"
+          className={({ isActive }) =>
+            `sidebar-item ${isActive ? "active" : ""}`
+          }
+        >
+          <img src={dashboardIcon} alt="Dashboard icon" />
+          <span>Dashboard</span>
         </NavLink>
 
-        <button className="sb-dropBtn" onClick={handleManageClick}>
-          <img src={fileIcon} className="sb-iconImg" />
-          {!collapsed && "Management"}
-
-          {!collapsed && (
-            <span className={openManage ? "sb-arrow sb-arrowOpen" : "sb-arrow"}>
+        <div>
+          <div
+            onClick={() => setOpenManage((prev) => !prev)}
+            className="sidebar-item"
+          >
+            <img src={fileIcon} alt="Management icon" />
+            <span style={{ flex: 1 }}>Management</span>
+            <span
+              style={{
+                fontSize: 12,
+                transform: openManage ? "rotate(90deg)" : "none",
+                transition: "transform 0.2s ease",
+              }}
+            >
               ›
             </span>
-          )}
-        </button>
-
-        {openManage && !collapsed && (
-          <div className="sb-sub">
-            <NavLink to="/application-management" className="sb-sublink">
-              Application Management
-            </NavLink>
-
-            <NavLink to="/job-management" className="sb-sublink">
-              Job Management
-            </NavLink>
-
-            <NavLink to="/create-job" className="sb-sublink">
-              Create Job
-            </NavLink>
-
-            <NavLink to="/company/shortlisted-candidates" className="sb-sublink">
-              Shortlisted
-            </NavLink>
           </div>
-        )}
 
-        <NavLink to="/company-admin-settings" className="sb-link">
-          <img src={settingsIcon} className="sb-iconImg" />
-          {!collapsed && "Settings"}
-        </NavLink>
+          {openManage && (
+            <div className="sidebar-submenu">
+              {managementSubItems.map((sub) => (
+                <NavLink
+                  key={sub.href}
+                  to={sub.href}
+                  className={({ isActive }) =>
+                    `sidebar-subitem ${isActive ? "active" : ""}`
+                  }
+                >
+                  {sub.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
-      <div className="sb-logout">
-        <button onClick={handleLogout}>
-          <span>⎋</span>
-          {!collapsed && "Logout"}
-        </button>
-      </div>
-
-      {!collapsed && (
-        <div className="sb-bottom">
-          <img className="sb-bottomAvatar" src={defaultAvatar} />
-          <div className="sb-bottomText">
-            <div className="sb-bottomName">Horizon Global</div>
-            <div className="sb-bottomMail">horizonglobal.com</div>
+      <div className="sidebar-profile">
+        <Link to="/company/settings">
+          <img
+            src={companyLogo || defaultAvatar}
+            alt={companyName}
+            onError={(e) => { e.target.src = defaultAvatar; }}
+          />
+          <div className="sidebar-profile-text">
+            <p className="sidebar-profile-name">{companyName}</p>
+            <p className="sidebar-profile-email">{companyWebsite}</p>
           </div>
-        </div>
-      )}
-    </div>
+        </Link>
+      </div>
+    </aside>
   );
-}
+};
+
+export default Sidebar;

@@ -6,6 +6,40 @@
   font-size: 24px;
   font-weight: 700;
   color: #111827;
+  margin: 16px 0 16px;
+}
+
+/* success / error banners */
+.profile-success-msg {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.profile-error-msg {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* loading / error states */
+.profile-loading,
+.profile-error {
+  padding: 48px 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.profile-error p {
   margin-bottom: 16px;
 }
 
@@ -24,7 +58,7 @@
   flex-wrap: wrap;
 }
 
-/* left side */
+/* LEFT SIDE ---- */
 .profile-left {
   width: 340px;
   border: 1px solid #e5e7eb;
@@ -39,6 +73,7 @@
 }
 
 .profile-avatar-wrap {
+  position: relative;
   width: 176px;
   height: 176px;
   border-radius: 12px;
@@ -53,6 +88,24 @@
   object-fit: cover;
 }
 
+/* uploading overlay */
+.avatar-uploading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border-radius: 12px;
+}
+
+.avatar-uploading-overlay span {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .change-photo-btn {
   margin-top: 16px;
   padding: 8px 16px;
@@ -61,22 +114,18 @@
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
 }
 
 .change-photo-btn:hover {
   opacity: 0.9;
 }
 
+.change-photo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* readonly */
-.profile-readonly-list {
-  margin-top: 24px;
-}
-
-.readonly-block {
-  margin-bottom: 16px;
-}
-
 .readonly-label {
   font-size: 12px;
   color: #6b7280;
@@ -89,6 +138,7 @@
   border: 1px solid #e5e7eb;
   font-weight: 600;
   background: #ffffff;
+  word-break: break-word;
 }
 
 /* right */
@@ -174,11 +224,24 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 
 .edit-btn:hover {
   background: #cddfe8;
+}
+
+.cancel-btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  color: #374151;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #d1d5db;
 }
 
 .save-btn {
@@ -189,11 +252,15 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 
 .save-btn:hover {
   background: #092f41;
+}
+
+.save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* responsive */
@@ -218,6 +285,7 @@
   }
 
   .edit-btn,
+  .cancel-btn,
   .save-btn {
     width: 100%;
   }

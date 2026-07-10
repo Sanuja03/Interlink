@@ -10,12 +10,14 @@ public class OtpService {
     // Stores: email -> { otp, expiryTimeMillis }
     private final Map<String, OtpEntry> otpStore = new ConcurrentHashMap<>();
 
-    private static final long OTP_VALIDITY_MS = 5 * 60 * 1000; // 5 minutes
+    private static final long OTP_VALIDITY_MS = 5 * 60 * 1000; // otp is valid for only 5 minutes
 
+    //creates a one time otp ,saves it for email and returns the otp
     public String generateOtp(String email) {
         // Generate random 6-digit OTP
         String otp = String.valueOf(100000 + (int)(Math.random() * 900000));
-        otpStore.put(email.toLowerCase(), new OtpEntry(otp, System.currentTimeMillis() + OTP_VALIDITY_MS));
+        System.out.println("Otp generated for email: " + otp +" "+ email);
+        otpStore.put(email.toLowerCase(), new OtpEntry(otp, System.currentTimeMillis() + OTP_VALIDITY_MS));//save the otp
         return otp;
     }
 
@@ -33,6 +35,7 @@ public class OtpService {
         return false;
     }
 
+    //Create a new OtpEntry and store it
     private static class OtpEntry {
         String otp;
         long expiryTime;

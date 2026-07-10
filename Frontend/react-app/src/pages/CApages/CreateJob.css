@@ -1,178 +1,176 @@
 :root {
-  --heading: #24698b; /* guide */
+  --heading: #24698b;
   --dot1: rgba(36, 105, 139, 0.18);
   --dot2: rgba(36, 105, 139, 0.22);
   --dot3: rgba(217, 217, 217, 0.34);
 }
 
+/* Nested content inside DashboardLayout now — no min-height/
+   full-page background here anymore (that was stacking two
+   100vh containers and causing content to jump on resize).
+   The layout owns page height and background. */
 .cj-page {
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  min-height: 100vh;
-  background-color: #f3f4f6;
-  background-image:
-    radial-gradient(var(--dot1) 1.2px, transparent 1.2px),
-    radial-gradient(var(--dot3) 1.2px, transparent 1.2px),
-    radial-gradient(var(--dot2) 1.2px, transparent 1.2px);
-  background-size: 56px 56px, 80px 80px, 110px 110px;
-  background-position: 0 0, 18px 22px, 40px 10px;
 }
 
 .cj-container {
-  max-width: 1100px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 28px 24px 60px;
+  padding: 8px 16px 40px;
 }
 
-/* top row */
 .cj-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .cj-back {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
+  gap: 8px;
+  padding: 8px 14px;
   border-radius: 999px;
   background: var(--heading);
   color: white;
   border: none;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(36, 105, 139, 0.25);
+  box-shadow: 0 8px 18px rgba(36, 105, 139, 0.25);
 }
 
 .cj-company {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 800;
   color: #0c3e56;
 }
 
-/* title */
 .cj-title {
   text-align: center;
-  font-size: 28px;
-  font-weight: 800;
-  margin: 14px 0 18px;
-  color: #000;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  color: #111827;
 }
 
-/* form card */
 .cj-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 16px;
-  padding: 26px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.10);
-  max-width: 760px;
+  padding: 30px;
+  box-sizing: border-box;
+  max-width: 640px;
   margin: 0 auto;
 }
 
 .cj-field {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .cj-label {
   display: block;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   color: #000;
 }
 
 .cj-input,
 .cj-select {
   width: 100%;
-  height: 52px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  padding: 10px 14px;
-  font-size: 18px;
+  height: 38px;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  padding: 6px 10px;
+  font-size: 13px;
   outline: none;
   background: #fff;
+  box-sizing: border-box;
 }
 
 .cj-input::placeholder {
   color: rgba(0, 0, 0, 0.35);
 }
 
-/* key requirements list */
 .cj-reqRow {
   display: grid;
-  grid-template-columns: 46px 1fr;
-  gap: 12px;
+  grid-template-columns: 34px 1fr;
+  gap: 8px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .cj-reqBtn {
-  width: 46px;
-  height: 46px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
   border: none;
   background: #333;
   color: #fff;
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 800;
   cursor: pointer;
+  line-height: 1;
 }
 
 .cj-reqInput {
-  height: 46px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  padding: 10px 14px;
-  font-size: 18px;
+  height: 34px;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  padding: 6px 10px;
+  font-size: 13px;
   outline: none;
   background: #fff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* bottom buttons */
 .cj-actions {
   display: flex;
   justify-content: center;
-  gap: 26px;
-  margin-top: 22px;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .cj-post {
-  width: 220px;
-  height: 58px;
-  border-radius: 18px;
+  width: 160px;
+  height: 42px;
+  border-radius: 12px;
   border: none;
   background: var(--heading);
   color: #fff;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 14px 26px rgba(36, 105, 139, 0.28);
+  box-shadow: 0 8px 18px rgba(36, 105, 139, 0.28);
 }
 
 .cj-cancel {
-  width: 220px;
-  height: 58px;
-  border-radius: 18px;
+  width: 160px;
+  height: 42px;
+  border-radius: 12px;
   border: none;
   background: #ff0000;
   color: #fff;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 14px 26px rgba(255, 0, 0, 0.25);
+  box-shadow: 0 8px 18px rgba(255, 0, 0, 0.22);
 }
+
 .cj-error {
   color: red;
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 11px;
+  margin-top: 3px;
 }
+
 @media (max-width: 700px) {
   .cj-actions {
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
   }
   .cj-post,
   .cj-cancel {

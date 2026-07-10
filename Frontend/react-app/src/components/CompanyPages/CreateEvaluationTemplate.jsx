@@ -1,146 +1,203 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { GRADE_BANDS } from "./ScorecardUtils"; //to only display the colored badges.
 import "./CreateEvaluationTemplate.css";
 
-const CreateEvaluationTemplate = () => {
+
+
+const CreateEvaluationTemplate = ({
+  open,
+  onClose,
+  initialData = null,
+  readOnly = false,
+  onSaveTemplate,
+}) => {
   const [templateName, setTemplateName] = useState("Default Evaluation Form");
   const [fields, setFields] = useState([
     { id: 1, label: "Technical Skills", maxScore: 10 },
     { id: 2, label: "Communication", maxScore: 10 },
   ]);
 
+
+  useEffect(() => {
+    if (initialData) {
+      setTemplateName(initialData.name || "");
+      setFields(initialData.fields || []);
+    } else {
+      setTemplateName("Default Evaluation Form");
+      setFields([
+        { id: 1, label: "Technical Skills", maxScore: 10 },
+        { id: 2, label: "Communication", maxScore: 10 },
+      ]);
+    }
+  }, [initialData]);
+
+  if (!open) return null;
+
+
   const addField = () => {
+    if (readOnly) return;
     setFields([
       ...fields,
-      {
-        id: Date.now(),
-        label: "",
-        maxScore: 10,
-      },
+      { id: Date.now(), label: "", maxScore: 10 },
     ]);
   };
 
   const updateField = (id, key, value) => {
+    if (readOnly) return;
     setFields((prev) =>
       prev.map((field) =>
-        field.id === id ? { ...field, [key]: value } : field
+        field.id === id ? { ...field, [key]: key === "maxScore" ? Number(value) || 0 : value } : field
       )
     );
   };
 
   const deleteField = (id) => {
+    if (readOnly) return;
     setFields((prev) => prev.filter((field) => field.id !== id));
   };
 
-  const handleSaveTemplate = () => {
-    const template = {
-      templateName,
-      dynamicFields: fields,
-      fixedFields: ["comments", "recommendation"],
-    };
-
-    console.log("Saved Template:", template);
-    alert("Evaluation template saved successfully!");
+  const handleSave = () => {
+    //validations
+    if (!templateName.trim()) {
+      alert("Please enter a template name.");
+      return;
+    }
+    if (fields.length === 0) {
+      alert("Add at least one evaluation field.");
+      return;
+    }
+    const emptyLabel = fields.find((f) => !f.label.trim());
+    if (emptyLabel) {
+      alert("All fields must have a label name.");
+      return;
+    }
+    onSaveTemplate({ name: templateName, fields }); //template data sent to scorecard manager
   };
 
   return (
-    <div className="template-page">
-      <div className="template-card">
-        <h1 className="template-title">Create Evaluation Template</h1>
+    <div className="cet-overlay" onClick={onClose}>
+      <div className="cet-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="cet-title">
+          {readOnly ? "View Template" : initialData ? "Edit Template" : "Create Evaluation Template"}
+        </h2>
 
-        <div className="template-group">
-          <label className="template-label">Template Name</label>
+        {/* Template name */}
+        <div className="cet-group">
+          <label className="cet-label">Template Name</label>
           <input
             type="text"
-            className="template-input"
+            className="cet-input"
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
             placeholder="Enter template name"
+            disabled={readOnly}
           />
         </div>
 
-        <div className="template-section">
-          <div className="template-section-top">
-            <h2 className="template-subtitle">Custom Evaluation Fields</h2>
-            <button className="template-add-btn" onClick={addField}>
-              + Add Field
-            </button>
+        {/* Dynamic fields */}
+        <div className="cet-section">
+          <div className="cet-section-top">
+            <h3 className="cet-subtitle">Evaluation Criteria</h3>
+            {!readOnly && (
+              <button className="cet-add-btn" onClick={addField}>
+                + Add Field
+              </button>
+            )}
           </div>
 
+          {fields.length === 0 && (
+            <p className="cet-empty-note">No fields added yet.</p>
+          )}
+
           {fields.map((field, index) => (
-            <div className="template-field-row" key={field.id}>
+            <div className="cet-field-row" key={field.id}>
+
+              <span className="cet-field-num">{index + 1}</span>
+
               <input
                 type="text"
-                className="template-input"
+                className="cet-input cet-field-name-input"
                 placeholder={`Field ${index + 1} Name`}
                 value={field.label}
-                onChange={(e) =>
-                  updateField(field.id, "label", e.target.value)
-                }
+                onChange={(e) => updateField(field.id, "label", e.target.value)}
+                disabled={readOnly}
               />
 
-              <input
-                type="number"
-                min="1"
-                className="template-input score-input"
-                placeholder="Max Score"
-                value={field.maxScore}
-                onChange={(e) =>
-                  updateField(field.id, "maxScore", e.target.value)
-                }
-              />
+              <div className="cet-max-score-wrap">
+                <label className="cet-max-label">Max</label>
 
-              <button
-                className="template-delete-btn"
-                onClick={() => deleteField(field.id)}
-              >
-                Delete
-              </button>
+                <input
+                  type="number"
+                  min="1"
+                  className="cet-input cet-score-input"
+                  value={field.maxScore}
+                  onChange={(e) => updateField(field.id, "maxScore", e.target.value)}
+                  disabled={readOnly}
+                />
+
+              </div>
+
+              {!readOnly && (
+                <button
+                  className="cet-delete-btn"
+                  onClick={() => deleteField(field.id)}
+                  title="Remove field"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
         </div>
 
-        <div className="template-section">
-          <h2 className="template-subtitle">Always Included Fields</h2>
-
-          <div className="fixed-field-box">Comments</div>
-          <div className="fixed-field-box">Recommendation</div>
-        </div>
-
-        <div className="template-section">
-          <h2 className="template-subtitle">Live Preview</h2>
-
-          <div className="preview-box">
-            {fields.map((field) => (
-              <input
-                key={field.id}
-                type="number"
-                disabled
-                className="template-input preview-input"
-                placeholder={`${field.label || "Untitled Field"} (0-${
-                  field.maxScore || 10
-                })`}
-              />
-            ))}
-
-            <textarea
-              disabled
-              className="template-textarea"
-              placeholder="Comments"
-            />
-
-            <select disabled className="template-input preview-input">
-              <option>Recommendation</option>
-              <option>Strong Hire</option>
-              <option>Hire</option>
-              <option>Hold</option>
-              <option>Reject</option>
-            </select>
+        {/* Fixed fields */}
+        <div className="cet-section">
+          <h3 className="cet-subtitle">Always Included</h3>
+          <div className="cet-fixed-fields">
+            <span className="cet-fixed-chip">Comments</span>
           </div>
         </div>
 
-        <div className="template-actions">
-          <button className="template-save-btn" onClick={handleSaveTemplate}>
-            Save Template
+        {/* Scoring formula explanation */}
+        <div className="cet-section">
+          <h3 className="cet-subtitle">Scoring System</h3>
+          <div className="cet-scoring-info">
+            <p>
+              <strong>Weighted Percentage</strong> — Each field's score is divided by its max,
+              then combined into an overall percentage (0–100%).
+            </p>
+
+            <div className="cet-grade-bands">
+              {GRADE_BANDS.map((band, index) => {
+                const upper = index === 0 ? 100 : GRADE_BANDS[index - 1].min - 1;
+                return (
+                  <span
+                    key={band.label}
+                    className="cet-band"
+                    style={{ background: band.color }}
+                  >
+                    {band.min}–{upper}% {band.label}
+                  </span>
+                );
+              })}
+            </div>
+
+            <p className="cet-formula">
+              Score = ( Σ field scores ) / ( Σ max scores ) × 100
+            </p>
+
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="cet-actions">
+          {!readOnly && (
+            <button className="cet-save-btn" onClick={handleSave}>
+              {initialData ? "Update Template" : "Save Template"}
+            </button>
+          )}
+          <button className="cet-cancel-btn" onClick={onClose}>
+            {readOnly ? "Close" : "Cancel"}
           </button>
         </div>
       </div>

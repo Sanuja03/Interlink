@@ -4,13 +4,28 @@ import CompanyDetailsModal from "./CompanyDetailsModal";
 import RolePermissionModal from "./RolePermissionModal";
 import InterviewerManagementModal from "./InterviewerManagementModal";
 import { supabase } from "../../lib/supabase";
+import api from "../../lib/api";
 import "./CompanyAdminSettings.css";
+import defaultAvatar from "../../assets/images/default-avatar.png";
 
 export default function CompanyAdminSettings() {
   const [openCompanyDetails, setOpenCompanyDetails] = useState(false);
   const [openRolePerm, setOpenRolePerm] = useState(false);
   const [openInterviewerManagement, setOpenInterviewerManagement] = useState(false);
   const [companyId, setCompanyId] = useState(null);
+  const [companyName, setCompanyName] = useState("Company Admin Settings");
+  const [companyLogo, setCompanyLogo] = useState(null);
+
+  const fetchCompanyDetails = async (id) => {
+    if (!id) return;
+    try {
+      const res = await api.get(`/company/${id}/details`);
+      setCompanyName(res.data.companyName || "Company Admin Settings");
+      setCompanyLogo(res.data.logoUrl || null);
+    } catch (err) {
+      console.error("Failed to load company info:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchCompanyId = async () => {
@@ -23,7 +38,10 @@ export default function CompanyAdminSettings() {
         .eq("user_id", session.user.id)
         .single();
 
-      if (!error && data) setCompanyId(data.company_id);
+      if (!error && data) {
+        setCompanyId(data.company_id);
+        fetchCompanyDetails(data.company_id);
+      }
     };
     fetchCompanyId();
   }, []);
@@ -41,12 +59,6 @@ export default function CompanyAdminSettings() {
       icon: "🧑‍💼",
       action: () => setOpenInterviewerManagement(true),
     },
-    {
-      title: "Role-Based Permission Settings",
-      desc: "Manage Roles & Permissions",
-      icon: "🔒",
-      action: () => setOpenRolePerm(true),
-    },
   ];
 
   return (
@@ -54,10 +66,24 @@ export default function CompanyAdminSettings() {
       <DashboardLayout>
         <div className="cas-page">
           <div className="cas-container">
-            <h1 className="cas-title">Company Admin Settings</h1>
+            {/* Company Logo + Name Header */}
+            <div className="cas-header">
+              <img
+                className="cas-company-logo"
+                src={companyLogo || defaultAvatar}
+                alt="Company"
+              />
+              <h1 className="cas-title">{companyName}</h1>
+            </div>
+
             <div className="cas-list">
               {items.map((it) => (
-                <button key={it.title} className="cas-card" type="button" onClick={it.action}>
+                <button
+                  key={it.title}
+                  className="cas-card"
+                  type="button"
+                  onClick={it.action}
+                >
                   <span className="cas-bar" />
                   <span className="cas-icon">{it.icon}</span>
                   <span className="cas-content">
@@ -74,15 +100,16 @@ export default function CompanyAdminSettings() {
 
       <CompanyDetailsModal
         open={openCompanyDetails}
-        onClose={() => setOpenCompanyDetails(false)}
+        onClose={() => {
+          setOpenCompanyDetails(false);
+          fetchCompanyDetails(companyId);
+        }}
       />
-
       <InterviewerManagementModal
         open={openInterviewerManagement}
         onClose={() => setOpenInterviewerManagement(false)}
         companyId={companyId}
       />
-
       <RolePermissionModal
         open={openRolePerm}
         onClose={() => setOpenRolePerm(false)}

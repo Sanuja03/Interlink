@@ -88,26 +88,34 @@ public class ScoreController {
             @SuppressWarnings("unchecked")
             Map<String, Object> cv = (Map<String, Object>) parsed;
 
+            // ✅ SAFE EXTRACTION (no logic change, just safer)
             List<String> cvSkills = new ArrayList<>();
-            if (cv.get("skills") instanceof List<?>)
-                cvSkills = (List<String>) cv.get("skills");
+            if (cv.get("skills") instanceof List<?> list) {
+                for (Object s : list) {
+                    if (s != null) cvSkills.add(s.toString());
+                }
+            }
 
             double expYears = 0;
-            if (cv.get("experienceYears") instanceof Number)
-                expYears = ((Number) cv.get("experienceYears")).doubleValue();
+            if (cv.get("experienceYears") instanceof Number num) {
+                expYears = num.doubleValue();
+            }
 
             String education = cv.get("education") != null
                     ? cv.get("education").toString()
                     : "";
 
+            // Fetch job — includes requirements via @OneToMany
             Job job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new RuntimeException("Job not found: " + jobId));
 
+            // ✅ Read directly from job entity — no derivation needed
             double skillScore = scoringService.skillScore(cvSkills, job.getRequirements());
             double expScore   = scoringService.experienceScore(expYears, job.getExperienceRequired());
             double eduScore   = scoringService.educationScore(education, job.getEducationRequired());
             double finalScore = scoringService.finalScore(skillScore, expScore, eduScore);
 
+            // ✅ RESPONSE (UNCHANGED)
             return ResponseEntity.ok(Map.of(
                     "score",          finalScore,
                     "skillScore",     Math.round(skillScore * 100),
@@ -118,6 +126,7 @@ public class ScoreController {
 
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Something went wrong: " + e.getMessage());
         }

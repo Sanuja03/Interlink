@@ -13,26 +13,28 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Step 1: Send reset OTP
+  // sent reset OTP
   const handleSendOtp = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError(""); setMessage("");
-
+    e.preventDefault();// in from submissions to prevent teh page from reloading since all states will be lost if it did 
+    setLoading(true); //button becomes disabled when on submit 
+    setError(""); 
+    setMessage("");
     try {
       await api.post("/otp/send-reset-otp", { email: email.trim() });
       setMessage("If this email is registered, you'll receive a code.");
       setStep(2);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to send code");
+      setError(err?.response?.data?.message || "Failed to send code");//shows the backend msg or default
     }
     setLoading(false);
   };
 
-  // Step 2: Verify OTP
+  // verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setMessage("");
-
+    setLoading(true); 
+    setError(""); 
+    setMessage("");
     try {
       await api.post("/otp/verify-reset-otp", { email: email.trim(), otp: otp.trim() });
       setStep(3);
@@ -42,11 +44,10 @@ const ForgotPassword = () => {
     setLoading(false);
   };
 
-  // Step 3: Set new password
+  // set new password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError("");
-
     if (newPassword !== confirmPassword) {
       setError("Passwords don't match");
       return;
@@ -55,7 +56,6 @@ const ForgotPassword = () => {
       setError("Password must be at least 8 characters");
       return;
     }
-
     setLoading(true);
     try {
       await api.post("/otp/reset-password", {
@@ -76,9 +76,10 @@ const ForgotPassword = () => {
         <h1>{step === 3 ? "Set New Password" : "Forgot Password"}</h1>
 
         {error && <p className="error-text">{error}</p>}
+        {/* if there is a value fro teh message show the para or nothing  */}
         {message && <p style={{ color: "green" }}>{message}</p>}
 
-        {/* Step 1: Enter email */}
+        {/* display Enter email page */}
         {step === 1 && (
           <form onSubmit={handleSendOtp}>
             <p>Enter your email and we'll send you a reset code.</p>
@@ -93,7 +94,7 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* Step 2: Enter OTP */}
+        {/* display Enter OTP screen */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp}>
             <p>Enter the 6-digit code sent to {email}</p>
@@ -109,19 +110,22 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        {/* Step 3: New password */}
+        {/* display set New password screen  */}
         {step === 3 && (
           <form onSubmit={handleResetPassword}>
+
             <div className="input-group">
               <label>New Password</label>
               <input type="password" className="input-field" placeholder="Enter new password"
                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
             </div>
+
             <div className="input-group">
               <label>Confirm Password</label>
               <input type="password" className="input-field" placeholder="Confirm new password"
                 value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
             </div>
+
             <button className="login-button" type="submit" disabled={loading}>
               {loading ? "Updating..." : "Update Password"}
             </button>

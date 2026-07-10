@@ -3,6 +3,7 @@ package syncX.modules.job.entity;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "jobs")
@@ -27,7 +28,7 @@ public class Job {
     @Column(name = "interview_rounds")
     private int interviewRounds;
 
-    @Column(name = "location")           // ✅ was "job_location" — actual column is "location"
+    @Column(name = "location")
     private String jobLocation;
 
     @Column(name = "experience_level")
@@ -54,8 +55,22 @@ public class Job {
     @Column(name = "education_required")
     private String educationRequired;
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobRequirement> requirements;
+
+    //  Auto set created time
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+
+        //  ensure default status (fix inconsistency)
+        if (this.status == null) {
+            this.status = "Open";
+        }
+    }
 
     // ===== GETTERS & SETTERS =====
 
@@ -106,4 +121,7 @@ public class Job {
 
     public List<JobRequirement> getRequirements() { return requirements; }
     public void setRequirements(List<JobRequirement> requirements) { this.requirements = requirements; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

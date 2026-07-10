@@ -71,7 +71,7 @@ export default function CreateJob() {
     setErrors({});
     setLimitError(null);
 
-    const jobData = {    //prepare data to send to backend
+    const jobData = {
       title:           form.title.trim(),
       department:      form.department,
       type:            form.type,
@@ -90,10 +90,9 @@ export default function CreateJob() {
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
       setInterviewStages([]); setReqs([""]);
-    
     } catch (error) {
       const msg = error.response?.data;
-      if (typeof msg === "string" && msg.includes("limit reached")) {  // ← "Job limit reached" to "limit reached"
+      if (typeof msg === "string" && msg.includes("limit reached")) {
         setLimitError(msg);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
@@ -110,14 +109,12 @@ export default function CreateJob() {
         <div className="cj-container">
           <h2 className="cj-title">Create new job</h2>
 
-          {/* Session Error */}
           {sessionError && (
             <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
             </div>
           )}
 
-          {/* Limit Error Banner */}
           {limitError && (
             <div className="flex items-start justify-between gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
               <div className="flex items-start gap-2">
@@ -176,6 +173,7 @@ export default function CreateJob() {
                 <option value="Marketing">Marketing</option>
                 <option value="Finance">Finance</option>
                 <option value="Healthcare">Healthcare</option>
+                <option value="IT">IT</option>
               </select>
             </div>
 

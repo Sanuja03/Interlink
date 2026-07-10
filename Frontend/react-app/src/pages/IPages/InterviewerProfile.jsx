@@ -1,103 +1,198 @@
-import { useState } from "react";
-import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
-import defaultAvatar from "../../assets/default-avatar.png";
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "../../lib/supabase";
+import api from "../../lib/api";
 import "./InterviewerProfile.css";
 
+import defaultAvatar from "../../assets/default-avatar.png";
+
+import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
+import { useInterviewerProfile } from "../../context/InterviewerProfileContext";
+
+const BUCKET_NAME = "profile-photos";
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 const InterviewerProfile = () => {
-  const profile = {
-    eid: "E1023",
-    name: "Sanj Perera",
-    email: "senithi.perera@interlink.com",
-    phone: "+94 77 123 4567",
-    avatar: defaultAvatar,
-  };
+  const { fetchProfile: refreshSidebar } = useInterviewerProfile();
 
-  const initialDetails = {
-    role: "Interviewer",
-    branch: "Colombo",
-    password: "",
-    address: "University of Moratuwa, Moratuwa",
-    about:
-      "Focused on UI/UX roles. Experienced in panel interviews and portfolio evaluation.",
-  };
-
-  const [details, setDetails] = useState(initialDetails);
+  const [profile, setProfile] = useState(null);
+  const [editableDetails, setEditableDetails] = useState({
+    interviewerRole: "",
+    branch: "",
+    address: "",
+    about: "",
+  });
+  const [originalDetails, setOriginalDetails] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
 
   const [errors, setErrors] = useState({
-    role: "",
+    interviewerRole: "",
     branch: "",
-    password: "",
     address: "",
     about: "",
   });
 
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const meRes = await api.get("/auth/me");
+      const userData = meRes.data;
+
+      const profileRes = await api.get("/auth/interviewer/profile");
+      const interviewerData = profileRes.data;
+
+      setProfile({
+        interviewerId: interviewerData.interviewerId,
+        fullName: interviewerData.fullName,
+        email: interviewerData.email || userData.email,
+        phone: interviewerData.phone,
+        photoUrl: interviewerData.photoUrl,
+        userId: interviewerData.userId,
+      });
+
+      const editable = {
+        interviewerRole: interviewerData.interviewerRole || "",
+        branch: interviewerData.branch || "",
+        address: interviewerData.address || "",
+        about: interviewerData.about || "",
+      };
+
+      setEditableDetails(editable);
+      setOriginalDetails(editable);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      setError("Failed to load profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = "";
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setError("Please upload a JPG, PNG, or WebP image.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setError("Image must be smaller than 2MB.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setError(null);
+    setSuccessMsg("");
+
+    //upload photo to supabase
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${profile.userId}.${fileExt}`;
+      const filePath = `interviewers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { data: urlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+
+      await api.put("/auth/interviewer/profile/photo", { photoUrl: publicUrl });
+
+      setProfile((prev) => ({
+        ...prev,
+        photoUrl: `${publicUrl}?t=${Date.now()}`,
+      }));
+
+      refreshSidebar(); // updates sidebar avatar instantly
+
+      setSuccessMsg("Profile photo updated!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      console.error("Photo upload error:", err);
+      setError("Failed to upload photo. Please try again.");
+      setTimeout(() => setError(null), 4000);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
+    setSuccessMsg("");
+    setErrors({ interviewerRole: "", branch: "", address: "", about: "" });
+  };
+
+  const handleCancel = () => {
+    setEditableDetails({ ...originalDetails });
+    setIsEditing(false);
+    setErrors({ interviewerRole: "", branch: "", address: "", about: "" });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
+    setEditableDetails((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
     let valid = true;
     const newErrors = {
-      role: "",
+      interviewerRole: "",
       branch: "",
-      password: "",
       address: "",
       about: "",
     };
 
-    // Role: required, no numbers
-    if (!details.role.trim()) {
-      newErrors.role = "Role is required.";
+    if (!editableDetails.interviewerRole.trim()) {
+      newErrors.interviewerRole = "Role is required.";
       valid = false;
-    } else if (/\d/.test(details.role)) {
-      newErrors.role = "Role cannot contain numbers.";
+    } else if (/\d/.test(editableDetails.interviewerRole)) {
+      newErrors.interviewerRole = "Role cannot contain numbers.";
       valid = false;
     }
 
-    // Branch: required, no numbers
-    if (!details.branch.trim()) {
+    if (!editableDetails.branch.trim()) {
       newErrors.branch = "Branch is required.";
       valid = false;
-    } else if (/\d/.test(details.branch)) {
-      newErrors.branch = "Branch cannot contain numbers.";
-      valid = false;
-    }
-
-    // Password: required, 8+ chars, must contain symbol
-    if (!details.password.trim()) {
-      newErrors.password = "Password is required.";
-      valid = false;
-    } else if (details.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters.";
-      valid = false;
-    } else if (!/[!@#$%^&*(),.?":{}|<>_\-\\/[\];'`~+=]/.test(details.password)) {
-      newErrors.password = "Password must contain at least one symbol.";
-      valid = false;
-    }
-
-    // Address: optional here, no strict validation
-    if (!details.address.trim()) {
+    } 
+    
+    if (!editableDetails.address.trim()) {
       newErrors.address = "Address cannot be empty.";
       valid = false;
     }
 
-    // About: optional here, no strict validation
-    if (!details.about.trim()) {
+    if (!editableDetails.about.trim()) {
       newErrors.about = "About cannot be empty.";
       valid = false;
     }
@@ -106,49 +201,122 @@ const InterviewerProfile = () => {
     return valid;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
 
-    setIsEditing(false);
-    alert("Profile details saved successfully!");
-    console.log("Saved Details:", details);
+    setSaving(true);
+    setSuccessMsg("");
+    try {
+      await api.put("/auth/interviewer/profile", {
+        interviewerRole: editableDetails.interviewerRole,
+        branch: editableDetails.branch,
+        address: editableDetails.address,
+        about: editableDetails.about,
+      });
+
+      setOriginalDetails({ ...editableDetails });
+      setIsEditing(false);
+      refreshSidebar(); // updates sidebar name if changed
+      setSuccessMsg("Profile updated successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      setError(err?.response?.data?.message || "Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="profile-page">
+          <h1 className="profile-title">My Profile</h1>
+          <div className="profile-card">
+            <div className="profile-loading">Loading profile...</div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error && !profile) {
+    return (
+      <DashboardLayout>
+        <div className="profile-page">
+          <h1 className="profile-title">My Profile</h1>
+          <div className="profile-card">
+            <div className="profile-error">
+              <p>{error}</p>
+              <button className="edit-btn" onClick={fetchProfile}>
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  /*correct one*/
   return (
     <DashboardLayout>
       <div className="profile-page">
         <h1 className="profile-title">My Profile</h1>
 
+        {successMsg && <div className="profile-success-msg">{successMsg}</div>}
+        {error && <div className="profile-error-msg">{error}</div>}
+
         <div className="profile-card">
           <div className="profile-grid">
+            {/* Left: Read-only info + Photo */}
             <div className="profile-left">
               <div className="profile-left-top">
                 <div className="profile-avatar-wrap">
+                  {uploadingPhoto && (
+                    <div className="avatar-uploading-overlay">
+                      <span>Uploading...</span>
+                    </div>
+                  )}
                   <img
-                    src={profile.avatar}
+                    src={profile.photoUrl || defaultAvatar}
                     alt="Profile"
                     className="profile-avatar"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultAvatar;
+                    }}
                   />
                 </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoChange}
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: "none" }}
+                />
 
                 <button
                   type="button"
                   className="change-photo-btn"
                   style={{ backgroundColor: "#24698B" }}
+                  onClick={handlePhotoClick}
+                  disabled={uploadingPhoto}
                 >
-                  Change Photo
+                  {uploadingPhoto ? "Uploading..." : "Change Photo"}
                 </button>
               </div>
 
               <div className="profile-readonly-list">
                 <div className="readonly-block">
                   <p className="readonly-label">EID</p>
-                  <div className="readonly-value">{profile.eid}</div>
+                  <div className="readonly-value">{profile.interviewerId}</div>
                 </div>
 
                 <div className="readonly-block">
                   <p className="readonly-label">Name</p>
-                  <div className="readonly-value">{profile.name}</div>
+                  <div className="readonly-value">{profile.fullName}</div>
                 </div>
 
                 <div className="readonly-block">
@@ -163,24 +331,25 @@ const InterviewerProfile = () => {
               </div>
             </div>
 
+            {/* Right: Editable details */}
             <div className="profile-right">
               <h2 className="profile-right-title">User Details</h2>
 
-              <form
-                className="profile-form"
-                onSubmit={(e) => e.preventDefault()}
-              >
+              <div className="profile-form">
                 <div>
                   <label className="field-label">Role</label>
+
                   <input
                     type="text"
-                    name="role"
+                    name="interviewerRole"
                     className="profile-input"
-                    value={details.role}
+                    value={editableDetails.interviewerRole}
                     onChange={handleChange}
                     disabled={!isEditing}
                   />
-                  {errors.role && <p className="field-error">{errors.role}</p>}
+                  {errors.interviewerRole && (
+                    <p className="field-error">{errors.interviewerRole}</p>
+                  )}
                 </div>
 
                 <div>
@@ -189,7 +358,7 @@ const InterviewerProfile = () => {
                     type="text"
                     name="branch"
                     className="profile-input"
-                    value={details.branch}
+                    value={editableDetails.branch}
                     onChange={handleChange}
                     disabled={!isEditing}
                   />
@@ -199,28 +368,12 @@ const InterviewerProfile = () => {
                 </div>
 
                 <div>
-                  <label className="field-label">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="profile-input"
-                    value={details.password}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    placeholder="Enter new password"
-                  />
-                  {errors.password && (
-                    <p className="field-error">{errors.password}</p>
-                  )}
-                </div>
-
-                <div>
                   <label className="field-label">Address</label>
                   <input
                     type="text"
                     name="address"
                     className="profile-input"
-                    value={details.address}
+                    value={editableDetails.address}
                     onChange={handleChange}
                     disabled={!isEditing}
                   />
@@ -234,7 +387,7 @@ const InterviewerProfile = () => {
                   <textarea
                     name="about"
                     className="profile-input profile-textarea"
-                    value={details.about}
+                    value={editableDetails.about}
                     onChange={handleChange}
                     rows={4}
                     disabled={!isEditing}
@@ -245,23 +398,36 @@ const InterviewerProfile = () => {
                 </div>
 
                 <div className="form-actions">
-                  <button
-                    type="button"
-                    className="edit-btn"
-                    onClick={handleEdit}
-                  >
-                    Edit
-                  </button>
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      className="edit-btn"
+                      onClick={handleEdit}
+                    >
+                      Edit
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="cancel-btn"
+                        onClick={handleCancel}
+                      >
+                        Cancel
+                      </button>
 
-                  <button
-                    type="button"
-                    className="save-btn"
-                    onClick={handleSave}
-                  >
-                    Save Changes
-                  </button>
+                      <button
+                        type="button"
+                        className="save-btn"
+                        onClick={handleSave}
+                        disabled={saving}
+                      >
+                        {saving ? "Saving..." : "Save Changes"}
+                      </button>
+                    </>
+                  )}
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

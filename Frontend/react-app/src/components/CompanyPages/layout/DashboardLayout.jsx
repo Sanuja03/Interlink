@@ -1,63 +1,89 @@
 import "./DashboardLayout.css";
 import Sidebar from "./Sidebar";
+import Footer from "./Footer";
 
-// ✅ FIXED PATHS
 import notificationicon from "../../../assets/icons/notificationicon.png";
-import defaultAvatar from "../../../assets/images/default-avatar.png";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/Authcontext";
 import NotificationPopup from "./NotificationPopup";
 
 const SIDEBAR_WIDTH = 260;
 
 export default function DashboardLayout({ children }) {
-
   const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.removeItem("companyId");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/");
+    }
+  };
 
   return (
     <div className="dl-root">
-
-      {/* Sidebar */}
       <aside className="dl-sidebar" style={{ width: SIDEBAR_WIDTH }}>
         <Sidebar />
       </aside>
 
-      {/* Main */}
       <main className="dl-main" style={{ marginLeft: SIDEBAR_WIDTH }}>
+        {/* top bar — plain CSS, no Tailwind dependency */}
+        <div className="dl-topbar">
 
-        {/* Top right row */}
-        <div className="dl-top">
-
-          {/* 🔔 Notification icon */}
+          {/* notification */}
           <img
-            className="dl-noti"
             src={notificationicon}
             alt="Notifications"
+            className="dl-noti-icon"
             onClick={() => setShowPopup(true)}
-            style={{ cursor: "pointer" }}
           />
 
-          {/* Profile */}
-          <div className="dl-company">
-            <img className="dl-avatar" src={defaultAvatar} alt="Avatar" />
-            <span className="dl-companyName">Horizon Global</span>
-          </div>
+          <button onClick={handleLogout} className="dl-logout-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="dl-logout-btn-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7"
+              />
+            </svg>
 
+            Logout
+          </button>
         </div>
 
-        {/* Page content */}
-        <div className="dl-content">{children}</div>
+        {/* page specific content — pages should not render their own header.
+            No forced white-card wrapper here: pages decide their own
+            layout (title on the gray background, white card around
+            content), same as the interviewer Dashboard.jsx pattern. */}
+        <div className="dl-content">
+          {children}
+        </div>
 
-        {/* 🔥 Notification Popup */}
+        {/* footer — sits inside the already-offset main column */}
+        <Footer />
+
         <NotificationPopup
           isOpen={showPopup}
           onClose={() => setShowPopup(false)}
           onView={() => {
             setShowPopup(false);
-            window.location.href = "/candidate-history";
+            navigate("/company/candidate-history");
           }}
         />
-
       </main>
     </div>
   );

@@ -9,12 +9,10 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
     const scoreColor = (s) => s >= 70 ? "#22c55e" : s >= 45 ? "#f59e0b" : "#ef4444";
     const scoreLabel = (s) => s >= 70 ? "✓ Recommended" : "✗ Not Recommended";
   
-    // Main analysis flow
     const analyze = async () => {
       setStage("analyzing");
       try {
   
-        // STEP 1: Frontend limit check (UX only — backend also enforces this)
         const { data: subData, error: subError } = await supabase
           .from("active_subscriptions")
           .select("ai_cv_used, subscription_plans!active_subscriptions_plan_id_fkey(ai_cv_limit, is_unlimited, name)")
@@ -35,23 +33,21 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
           );
         }
   
-        // STEP 2: Run analysis — companyId passed so backend can check + increment atomically
-        const fileRes = await fetch(application.resume_url);
+        const fileRes = await fetch(application.resumeUrl);
         if (!fileRes.ok) throw new Error("Could not fetch CV file from storage");
-        const blob = await fileRes.blob();    // downloaded as binary and stored as blob in memory
-        const filename = application.resume_url.split("/").pop();
-        const file = new File([blob], filename, { type: blob.type });  // convert to file
+        const blob = await fileRes.blob();
+        const filename = application.resumeUrl.split("/").pop();
+        const file = new File([blob], filename, { type: blob.type });
   
         const { data: sessionData } = await supabase.auth.getSession();
         const session = sessionData?.session;
   
-        // Prepare form data for backend API
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("jobId", String(application.job_id));
-        formData.append("companyId", companyId); // backend uses this for limit check + increment
+        formData.append("jobId", String(application.jobId));
+        formData.append("companyId", companyId);
   
-        const res = await fetch("http://localhost:8080/api/score/analyze", {  // send to backend for analysis
+        const res = await fetch("http://localhost:8080/api/score/analyze", {
           method: "POST",
           headers: { Authorization: `Bearer ${session?.access_token}` },
           body: formData,
@@ -61,15 +57,12 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
           const errText = await res.text();
           throw new Error(errText);
         }
-        const scoreData = await res.json();   // data returned from backend with score and breakdown
+        const scoreData = await res.json();
   
-        // STEP 3: Save score to db
         await supabase
           .from("job_applications")
           .update({ score: scoreData.score, score_details: scoreData })
           .eq("id", application.id);
-  
-      
   
         setResult(scoreData);
         setStage("done");
@@ -88,7 +81,7 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
           <div className="cv-header">
             <div>
               <h2 className="cv-header-title">CV Analysis</h2>
-              <p className="cv-header-sub">{application.candidate_name} · {application.job_title}</p>
+              <p className="cv-header-sub">{application.candidateName} · {application.jobTitle}</p>
             </div>
             <button className="cv-close-btn" onClick={onClose}>×</button>
           </div>

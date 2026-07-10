@@ -1,34 +1,48 @@
-// ============================================================
-// FILE: src/pages/LoginSignup/Login.jsx
-// PURPOSE: Uses AuthContext for login + proper redirect logic
-// ============================================================
 import "./Login.css";
 
-import interlink from "../../assets/interlink.png";
+import interlink from "../../assets/interlink-logo.png";
 import signin from "../../assets/signin.png";
 import homeicon from "../../assets/homeicon.png";
 
+import api from "../../lib/api";
 import { useAuth } from "../../context/Authcontext";
+import { supabase } from "../../lib/supabase";
+
 import { useForm } from "react-hook-form";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated, role, loading } = useAuth();
   const [loginError, setLoginError] = useState("");
-
+  const { login, isAuthenticated, role, loading, suspendedMessage, setSuspendedMessage } = useAuth();//useEffect runs only if these changes 
+  
+ 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ mode: "onTouched" });
 
-  // Redirect when genuinely authenticated
+   //calls login funtion in Authcontext
+  const onSubmit = async (data) => {
+    try {
+      setLoginError("");
+      setSuspendedMessage(""); 
+      await login(data.email.trim(), data.password);
+      
+    
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setLoginError(err?.message || "Invalid email or password");
+    }
+  };
+
+  // after page renders loading of auth finishes,authenticted,role is set choose where to send the user (prev page,role's dashboard,home)
   useEffect(() => {
     if (loading) return;
-
     if (isAuthenticated && role) {
       const dashboardMap = {
         candidate: "/candidate/dashboard",
@@ -39,17 +53,36 @@ const Login = () => {
       const from = location.state?.from?.pathname || dashboardMap[role] || "/";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, role, loading, navigate, location]);
+  }, [isAuthenticated, role, loading, navigate, location]);//array which says run this useEffect if any of thse changes 
 
-  const onSubmit = async (data) => {
-    try {
-      setLoginError("");
-      await login(data.email.trim(), data.password);
-    } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      setLoginError(err?.message || "Invalid email or password");
-    }
-  };
+  // handle Google login
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          const provider = session.user?.app_metadata?.provider;
+          if (provider === "google") {
+            try {
+              await api.get("/auth/me", {
+                headers: { Authorization: `Bearer ${session.access_token}` },//Send Supabase JWT token to backend
+              });
+            } catch (err) {
+              if (err?.response?.status === 403) {
+                await supabase.auth.signOut();
+                setLoginError("Your account has been suspended. Please contact support.");
+              } else if (err?.response?.status === 500 || err?.response?.status === 404) {
+                await supabase.auth.signOut();
+                setLoginError("No account found for this Google email. Please sign up first.");
+              }
+            }
+          }
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
+
+ 
 
   return (
     <div className="page">
@@ -68,67 +101,85 @@ const Login = () => {
           </div>
         </div>
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          {loginError && <p className="error-text">{loginError}</p>}
+          <form className="form" onSubmit={handleSubmit(onSubmit)}>
 
-          <div className="input-group">
-            {errors.email && <p className="error-text">{errors.email.message}</p>}
-            <label>email address</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className={`input-field ${errors.email ? "input-error" : ""}`}
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Please enter a valid email address",
-                },
-              })}
-            />
-          </div>
+          {/* show these paras if suspendedMessage or LoginError has values */}
+            {suspendedMessage && (<p className="error-text" style={{ color: "#d32f2f"}}>{suspendedMessage}</p>)}
+            {loginError && <p className="error-text">{loginError}</p>}
 
-          <div className="input-group">
-            {errors.password && <p className="error-text">{errors.password.message}</p>}
-            <label>password</label>
-            <input
-              type="password"
-              placeholder="Password"
-              className={`input-field ${errors.password ? "input-error" : ""}`}
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters",
-                },
-              })}
-            />
-          </div>
+            {/* take email input,validate,showerrors */}
+            <div className="input-group">
+              {errors.email && <p className="error-text">{errors.email.message}</p>}
+              <label>email address</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className={`input-field ${errors.email ? "input-error" : ""}`}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
+              />
+            </div>
 
-          <div className="forgot-password">
-            <p><Link to="/forgot-password">Forgot Password</Link></p>
-          </div>
+            <div className="input-group">
+              {errors.password && <p className="error-text">{errors.password.message}</p>}
+              <label>password</label>
+              <input
+                type="password"
+                placeholder="Password"
+                className={`input-field ${errors.password ? "input-error" : ""}`}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters",
+                  },
+                })}
+              />
+            </div>
 
-          <div>
-            <button className="login-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Logging in..." : "Login"}
-            </button>
-          </div>
+            <div className="forgot-password">
+              <p><Link to="/forgot-password">Forgot Password</Link></p>
+            </div>
 
-          <div className="or-container">
-            <span>OR</span>
-          </div>
+            <div>
+              <button className="login-button" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Logging in..." : "Login"}
+              </button>
+            </div>
 
-          <div className="google-signin">
-            <img src={signin} alt="Sign in with Google" />
-          </div>
+            <div className="or-container">
+              <span>OR</span>
+            </div>
 
-          <div>
-            <p>
-              Don't have an account? <Link to="/?section=howitworks">Signup</Link>
-            </p>
-          </div>
-        </form>
+            <div className="google-signin">
+              <img
+                src={signin}
+                alt="Sign in with Google"
+                style={{ cursor: "pointer" }}
+                onClick={async () => {
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                      redirectTo: window.location.origin + "/login",
+                    },
+                  });
+                  if (error) setLoginError(error.message);
+                }}
+              />
+            </div>
+
+            <div>
+              <p>
+                Don't have an account? <Link to="/?section=howitworks">Signup</Link>
+              </p>
+            </div>
+         </form>
+         
       </div>
     </div>
   );

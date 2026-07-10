@@ -1,160 +1,190 @@
-.schedule-card {
+/* ============================================================
+   PendingRequestsList — lean scannable table, horizontal scroll.
+   Location: a popover pill stacked BELOW "Physical".
+   ============================================================ */
+
+   .schedule-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     padding: 24px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
   }
   
+  /* Scroll container — scrolls sideways instead of squashing columns */
   .table-wrapper {
+    width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
   }
+  .table-wrapper:focus-visible { outline: 2px solid #3d5ccb; outline-offset: -2px; }
+  .table-wrapper::-webkit-scrollbar { height: 8px; }
+  .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   
   .schedule-table {
     width: 100%;
-    min-width: 980px;
-    border-collapse: collapse;
+    min-width: 1040px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
   }
   
-  .schedule-table thead tr {
+  .schedule-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8fafc;
+    text-align: left;
     color: #1f5f7a;
     font-weight: 600;
-    text-align: left;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
   }
   
-  .schedule-table th {
-    padding: 12px 16px 12px 0;
-  }
-  
-  .schedule-table td {
-    padding: 16px 16px 16px 0;
+  /* Rows share a comfortable min-height; a Physical row grows slightly to
+     fit the pill on its own line without cramping the others */
+  .schedule-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
     color: #374151;
+    white-space: nowrap;
+    vertical-align: middle;
+    height: 56px;   /* behaves as a min-height when a cell is taller */
+    box-sizing: border-box;
   }
+  .schedule-table tbody tr:last-child td { border-bottom: none; }
+  .schedule-table tbody tr:hover td { background: #f9fafb; }
   
-  .schedule-table tbody tr {
-    border-top: 1px solid #f3f4f6;
-  }
+  .bold { font-weight: 600; color: #111827; }
+  .align-right { text-align: right; }
   
-  .bold {
-    font-weight: 500;
-  }
-  
-  .align-right {
-    text-align: right;
-  }
-  
-  .mode-cell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .mode-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-  
-  .mode-online {
-    background: #3d5ccb;
-  }
-  
-  .mode-physical {
-    background: #d81d1d;
-  }
-  
-  .notes-cell {
-    max-width: 220px;
-    font-size: 14px;
-    color: #374151;
-    word-break: break-word;
-  }
-  
-  .switch {
-    position: relative;
+  /* Truncation for job title + notes (title="" gives full text on hover) */
+  .truncate {
     display: inline-block;
-    width: 46px;
-    height: 22px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
   }
+  .col-job   { max-width: 200px; }
+  .col-job .truncate   { max-width: 180px; }
+  .col-notes { max-width: 240px; }
+  .col-notes .truncate { max-width: 208px; font-size: 13px; }
   
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+  /* Mode + Location pill stacked vertically */
+  .mode-block {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
   }
+  .mode-cell { display: inline-flex; align-items: center; gap: 8px; }
+  .mode-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex: 0 0 auto; background: #94a3b8;
+  }
+  .mode-online   { background: #3d5ccb; }
+  .mode-physical { background: #d81d1d; }
+  .mode-label { font-weight: 500; }
   
-  .slider {
-    position: absolute;
-    inset: 0;
-    background: #94a3b8;
+  /* Location pill (Physical only) — sits directly below the mode line,
+     flush-left with the dot so the two lines form a clean stack */
+  .loc-wrap { position: relative; display: inline-flex; margin-top: 2px; }
+  .loc-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid #f0d4d4;
+    background: #fdeeee;
+    color: #b3261e;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 10px;
     border-radius: 999px;
-    transition: 0.2s ease;
+    cursor: pointer;
+    transition: background 0.15s ease;
   }
+  .loc-trigger:hover { background: #fbe1e1; }
+  .loc-trigger:focus-visible { outline: 2px solid #d81d1d; outline-offset: 1px; }
+  .loc-trigger .pin { font-size: 11px; line-height: 1; }
   
-  .slider:before {
+  /* Popover — fixed so the scroll container can't clip it */
+  .loc-popover {
+    position: fixed;
+    z-index: 60;
+    max-width: 280px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.45;
+    padding: 8px 11px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    white-space: normal;
+    word-break: break-word;
+    pointer-events: none;   /* read-only; never steals hover */
+  }
+  .loc-popover::before {
     content: "";
     position: absolute;
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    top: 3px;
-    background: #ffffff;
-    border-radius: 999px;
-    transition: 0.2s ease;
+    top: -5px;
+    left: 14px;
+    border-width: 0 5px 5px 5px;
+    border-style: solid;
+    border-color: transparent transparent #111827 transparent;
   }
   
-  .switch input:checked + .slider {
-    background: #009933;
-  }
-  
-  .switch input:checked + .slider:before {
-    transform: translateX(22px);
-  }
-  
-  .view-btn {
-    color: #ffffff;
-    font-weight: 600;
-    padding: 8px 24px;
-    border-radius: 9999px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(to bottom, #009933 0%, #006600 100%);
-    transition: filter 0.2s ease, transform 0.1s ease;
-  }
-  
-  .view-btn:hover {
-    filter: brightness(1.1);
-  }
-  
-  .view-btn:active {
-    transform: scale(0.95);
-  }
-  
+  /* History button */
   .history-btn {
-    color: #ffffff;
-    font-weight: 600;
-    padding: 8px 18px;
-    border-radius: 9999px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
+    color: #374151; font-weight: 600; font-size: 13px;
+    padding: 6px 16px; border-radius: 9999px;
+    border: 1px solid #d1d5db; background: #ffffff; cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .history-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+  
+  /* Send button */
+  .send-btn {
+    color: #ffffff; font-weight: 600; font-size: 14px;
+    padding: 8px 22px; border-radius: 9999px; border: none; cursor: pointer;
+    background: linear-gradient(to bottom, #009933 0%, #006600 100%);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    background: #1f5f7a;
-    transition: background 0.2s ease, transform 0.1s ease;
   }
+  .send-btn:hover { filter: brightness(1.1); }
   
-  .history-btn:hover {
-    background: #17485d;
+  /* Decision toggle */
+  .decision-cell { display: inline-flex; align-items: center; gap: 8px; }
+  .switch { position: relative; display: inline-block; width: 46px; height: 22px; flex: 0 0 auto; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; background: #e1a6a6;
+    border-radius: 999px; transition: 0.2s ease; cursor: pointer;
   }
+  .slider::before {
+    content: ""; position: absolute; height: 16px; width: 16px; left: 3px; top: 3px;
+    background: #ffffff; border-radius: 999px; transition: transform 0.2s ease;
+  }
+  .switch input:checked + .slider { background: #a8dfbb; }
+  .switch input:checked + .slider::before { transform: translateX(22px); }
+  .switch input:focus-visible + .slider { outline: 2px solid #3d5ccb; outline-offset: 2px; }
   
-  .history-btn:active {
-    transform: scale(0.95);
-  }
+  .decision-label { font-size: 13px; font-weight: 600; color: #374151; min-width: 46px; }
+  .decision-label.is-accept { color: #059142; }
+  .decision-label.is-reject { color: #b91c1c; }
+  
+  /* Empty state */
+  .empty-row td { height: auto; }
+  .empty-state { color: #6b7280; padding: 28px 0; font-size: 14px; text-align: center; }
   
   @media (max-width: 1024px) {
-    .schedule-card {
-      padding: 18px;
-    }
+    .schedule-card { padding: 18px; }
   }

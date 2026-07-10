@@ -3,6 +3,7 @@ import "./App.css";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/Authcontext";
+import { InterviewerProfileProvider } from "./context/InterviewerProfileContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Landing
@@ -13,7 +14,6 @@ import Signup from "./pages/LoginSignup/Signup";
 import SignUpCompany from "./pages/LoginSignup/SignUpCompany";
 import Login from "./pages/LoginSignup/Login";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
-
 
 // Candidate pages
 import CandidateHome from "./pages/CPages/Home";
@@ -29,14 +29,14 @@ import CandidateJobApply from "./pages/CPages/JobApply";
 import InterviewerDashboard from "./pages/IPages/Dashboard";
 import InterviewerCalendar from "./pages/IPages/Calendar";
 import InterviewerProfile from "./pages/IPages/InterviewerProfile";
-import InterviewerSettings from "./pages/IPages/InterviewerSettings";
 import InterviewerPendingRequests from "./pages/IPages/PendingRequests";
 import InterviewerCompletedInterviews from "./pages/IPages/CompletedInterviews";
 import InterviewerScheduledInterviews from "./pages/IPages/ScheduledInterviews";
 import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
+import InterviewerCandidateProfile from "./pages/IPages/CandidateProfile";
+import InterviewerCandidateHistory from "./pages/IPages/CandidateHistory";
 
 // CompanyAdmin pages
-import CompanyShortlistedCandidates from "./components/CompanyPages/ShortlistedCandidates";
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
 import CompanyDashboard from "./pages/CApages/CompanyDashboard";
 import ApplicationManagement from "./pages/CApages/ApplicationManagement";
@@ -44,11 +44,12 @@ import CompanyAdminSettings from "./pages/CApages/CompanyAdminSettings";
 import JobManagement from "./pages/CApages/JobManagement";
 import CreateJob from "./pages/CApages/CreateJob";
 import EditJob from "./pages/CApages/EditJob";
-import InterviewScheduling from "./pages/CApages/InterviewScheduling";
-import InterviewConfirmation from "./pages/CApages/InterviewConfirmation";
 import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
+import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
+import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
+import InterviewerManagementPage from "./pages/CApages/InterviewerManagementPage";
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -98,46 +99,41 @@ const AnyAuthenticated = ({ children }) => (
 function App() {
   return (
     <AuthProvider>
-<Toaster
-  position="top-right"
-  toastOptions={{
-    duration: 5000,
-    style: {
-      borderRadius: "12px",
-      background: "#ffffff",
-      color: "#1f2937",
-      border: "1px solid #e5e7eb",
-      fontSize: "15px",
-      padding: "16px 20px",
-      minWidth: "260px",
-      fontWeight: "500",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    },
-    success: {
-      style: {
-        borderLeft: "5px solid #24698B",
-      },
-    },
-    error: {
-      style: {
-        borderLeft: "5px solid #dc2626",
-      },
-    },
-  }}
-/>
-  
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000,
+          style: {
+            borderRadius: "12px",
+            background: "#ffffff",
+            color: "#1f2937",
+            border: "1px solid #e5e7eb",
+            fontSize: "15px",
+            padding: "16px 20px",
+            minWidth: "260px",
+            fontWeight: "500",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          },
+          success: {
+            style: {
+              borderLeft: "5px solid #24698B",
+            },
+          },
+          error: {
+            style: {
+              borderLeft: "5px solid #dc2626",
+            },
+          },
+        }}
+      />
+
       <Routes>
-        {/* Landing */}
+        {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
-  
-        {/* Auth */}
         <Route path="/Login" element={<Login />} />
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SignUpCompany" element={<SignUpCompany />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-  
-        
-
 
         {/* Candidate */}
         <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
@@ -149,32 +145,41 @@ function App() {
         <Route path="/candidate/calendar" element={<Candidate><CandidateCalendar /></Candidate>} />
         <Route path="/candidate/jobapply/:id" element={<Candidate><CandidateJobApply /></Candidate>} />
 
-        {/* Interviewer */}
-        <Route path="/interviewer/dashboard" element={<InterviewerRole><InterviewerDashboard /></InterviewerRole>} />
-        <Route path="/interviewer/calendar" element={<InterviewerRole><InterviewerCalendar /></InterviewerRole>} />
-        <Route path="/interviewer/profile" element={<InterviewerRole><InterviewerProfile /></InterviewerRole>} />
-        <Route path="/interviewer/settings" element={<InterviewerRole><InterviewerSettings /></InterviewerRole>} />
-        <Route path="/interviewer/pending-requests" element={<InterviewerRole><InterviewerPendingRequests /></InterviewerRole>} />
-        <Route path="/interviewer/completed-interviews" element={<InterviewerRole><InterviewerCompletedInterviews /></InterviewerRole>} />
-        <Route path="/interviewer/scheduled-interviews" element={<InterviewerRole><InterviewerScheduledInterviews /></InterviewerRole>} />
-        <Route path="/interviewer/single-view/:interviewId" element={<InterviewerRole><InterviewerCandidateSingleView /></InterviewerRole>} />
-
-        {/* Company */}
-        <Route path="/company/shortlisted-candidates" element={<CompanyAdmin><CompanyShortlistedCandidates /></CompanyAdmin>} />
-        <Route path="/company/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
+        <Route
+          path="/interviewer/*"
+          element={
+            <InterviewerRole>
+              <InterviewerProfileProvider>
+                <Routes>
+                  <Route path="dashboard" element={<InterviewerDashboard />} />
+                  <Route path="calendar" element={<InterviewerCalendar />} />
+                  <Route path="profile" element={<InterviewerProfile />} />
+                  <Route path="pending-requests" element={<InterviewerPendingRequests />} />
+                  <Route path="completed-interviews" element={<InterviewerCompletedInterviews />} />
+                  <Route path="scheduled-interviews" element={<InterviewerScheduledInterviews />} />
+                  <Route path="single-view/:interviewId" element={<InterviewerCandidateSingleView />} />
+                  <Route path="candidate-profile/:requestId" element={<InterviewerCandidateProfile />} />
+                  <Route path="candidate-history/:requestId" element={<InterviewerCandidateHistory />} />
+                </Routes>
+              </InterviewerProfileProvider>
+            </InterviewerRole>
+          }
+        />
 
         {/* Company Admin routes */}
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
-        <Route path="/application-management" element={<CompanyAdmin><ApplicationManagement /></CompanyAdmin>} />
-        <Route path="/company-admin-settings" element={<CompanyAdmin><CompanyAdminSettings /></CompanyAdmin>} />
-        <Route path="/job-management" element={<CompanyAdmin><JobManagement /></CompanyAdmin>} />
-        <Route path="/create-job" element={<CompanyAdmin><CreateJob /></CompanyAdmin>} />
-        <Route path="/edit-job/:id" element={<CompanyAdmin><EditJob /></CompanyAdmin>} />
-        <Route path="/interview-scheduling" element={<CompanyAdmin><InterviewScheduling /></CompanyAdmin>} />
-        <Route path="/interview-confirmation" element={<CompanyAdmin><InterviewConfirmation /></CompanyAdmin>} />
-        <Route path="/candidate-history" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
-        <Route path="/shortlist" element={<CompanyAdmin><Shortlist /></CompanyAdmin>} />
-        <Route path="/candidate-profile" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
+        <Route path="/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
+        <Route path="/company/job-management" element={<CompanyAdmin><JobManagement /></CompanyAdmin>} />
+        <Route path="/company/create-job" element={<CompanyAdmin><CreateJob /></CompanyAdmin>} />
+        <Route path="/edit-job/:jobId" element={<CompanyAdmin><EditJob /></CompanyAdmin>} />
+        <Route path="/company/shortlist/:applicationId" element={<CompanyAdmin><Shortlist /></CompanyAdmin>} />
+        <Route path="/company/shortlisted" element={<CompanyAdmin><ShortlistedCandidates /></CompanyAdmin>} />
+        <Route path="/company/application-management" element={<CompanyAdmin><ApplicationManagement /></CompanyAdmin>} />
+        <Route path="/company/settings" element={<CompanyAdmin><CompanyAdminSettings /></CompanyAdmin>} />
+        <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
+        <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
+        <Route path="/company/interview-summary" element={<CompanyAdmin><InterviewSummaryPage /></CompanyAdmin>} />
+        <Route path="/company/interviewer-management" element={<InterviewerManagementPage />} />
 
         {/* All User Routes */}
         <Route path="/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
@@ -203,7 +208,6 @@ function App() {
         <Route path="*" element={<h1>NO ROUTE FOUND</h1>} />
       </Routes>
     </AuthProvider>
-    
   );
 }
 

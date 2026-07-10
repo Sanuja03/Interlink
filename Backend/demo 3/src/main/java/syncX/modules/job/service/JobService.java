@@ -34,6 +34,7 @@ public class JobService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    // ================= CREATE =================
     public Job createJob(JobRequestDto dto) throws Exception {
 
         String rawText = dto.getRequirementText();
@@ -68,7 +69,6 @@ public class JobService {
         String aiResponse = aiService.extractJobData(rawText);    //ai service call
         JobAiDto aiData = mapper.readValue(aiResponse, JobAiDto.class);
 
-        // Build Job entity
         Job job = new Job();
         job.setJobTitle(dto.getTitle());
         job.setDepartment(dto.getDepartment());
@@ -85,11 +85,7 @@ public class JobService {
         job.setEducationRequired(aiData.getEducationRequired());
 
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
-            try {
-                job.setCompanyId(UUID.fromString(dto.getCompanyId()));
-            } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid company ID format");
-            }
+            job.setCompanyId(UUID.fromString(dto.getCompanyId()));
         }
 
         Job saved = jobRepo.save(job);
@@ -106,6 +102,71 @@ public class JobService {
 
         List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
         saved.setRequirements(reqs);
+
         return saved;
+    }
+
+    // ================= READ =================
+    public List<Job> getJobsByCompany(String companyId) {
+        UUID uuid = UUID.fromString(companyId);
+        return jobRepo.findByCompanyId(uuid);
+    }
+
+    public Job getJobById(String jobId) {
+        Long id = Long.parseLong(jobId);
+        return jobRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+    }
+
+    // ================= UPDATE ( NEW) =================
+    public Job updateJob(Long jobId, JobRequestDto dto) throws Exception {
+
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Update fields (match create logic)
+        job.setJobTitle(dto.getTitle());
+        job.setDepartment(dto.getDepartment());
+        job.setEmploymentType(dto.getType());
+        job.setCategory(dto.getCategory());
+        job.setJobLocation(dto.getLocation());
+        job.setExperienceLevel(dto.getExperience());
+        job.setVacancies(dto.getVacancies());
+        job.setInterviewRounds(dto.getInterviewRounds());
+        job.setInterviewStages(dto.getInterviewStages());
+        job.setKeyRequirements(dto.getRequirementText());
+
+        // Optional: update company if provided
+        if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
+            job.setCompanyId(UUID.fromString(dto.getCompanyId()));
+        }
+
+        return jobRepo.save(job);
+    }
+
+    // ================= TOGGLE =================
+    public Job toggleJobStatus(String jobId) {
+        Long id = Long.parseLong(jobId);
+
+        Job job = jobRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if ("Open".equalsIgnoreCase(job.getStatus())) {
+            job.setStatus("Closed");
+        } else {
+            job.setStatus("Open");
+        }
+
+        return jobRepo.save(job);
+    }
+
+    // ================= DELETE =================
+    public void deleteJob(String jobId) {
+        Long id = Long.parseLong(jobId);
+
+        Job job = jobRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        jobRepo.delete(job);
     }
 }

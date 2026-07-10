@@ -1,29 +1,8 @@
-// ============================================================
-// FILE: src/components/ProtectedRoute.jsx
-// PURPOSE: Wrap routes to enforce authentication + role checks
-// ============================================================
+
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/Authcontext";
 
-/**
- * Usage:
- *   <Route path="/company/dashboard"
- *     element={
- *       <ProtectedRoute allowedRoles={["company_admin"]}>
- *         <CompanyDashboard />
- *       </ProtectedRoute>
- *     }
- *   />
- *
- *   // Any authenticated user:
- *   <Route path="/tickets"
- *     element={
- *       <ProtectedRoute>
- *         <MyTickets />
- *       </ProtectedRoute>
- *     }
- *   />
- */
+
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { isAuthenticated, loading, role } = useAuth();
   const location = useLocation();
@@ -44,12 +23,12 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     );
   }
 
-  // Not logged in → redirect to login, remember where they wanted to go
+  // Not logged - redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/Login" state={{ from: location }} replace />;
   }
 
-  // Logged in but wrong role → redirect to their own dashboard
+  // Logged in but wrong role - redirect to their own dashboard
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     const dashboardMap = {
       candidate: "/candidate/dashboard",
