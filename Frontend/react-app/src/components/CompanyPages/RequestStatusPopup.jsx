@@ -8,7 +8,7 @@ const RequestStatusPopup = ({
   onClose,
   candidate,
   onEditRequest,
-  onRequestFinalize,  
+  onRequestFinalize,
 }) => {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
@@ -70,6 +70,10 @@ const RequestStatusPopup = ({
 
   if (!open) return null;
 
+  // Backend vocabulary for an interviewer row:
+  //   pending | accepted | rejected | timed_out
+  // "timed_out" is written by InterviewLifecycleJob when the interview date
+  // passed before this person answered.
   const normalizeStatus = (raw) => {
     if (!raw) return "Pending";
     const s = String(raw).toLowerCase();
@@ -100,7 +104,14 @@ const RequestStatusPopup = ({
   const panelSize     = activeRequest?.panelSize || 0;
   const acceptedCount = interviewers.filter((p) => p.requestStatus === "Accepted").length;
   const canFinalize   = panelSize > 0 && acceptedCount >= panelSize;
-  const isFinalised   = activeRequest?.overallStatus === "finalized";
+
+  // Backend vocabulary for a request: pending | finalized | cancelled.
+  // Both non-pending states are terminal — the backend rejects every mutation
+  // on them, so hide the action buttons rather than let them 500.
+  const overallStatus = activeRequest?.overallStatus;
+  const isFinalised   = overallStatus === "finalized";
+  const isCancelled   = overallStatus === "cancelled";
+  const isClosed      = isFinalised || isCancelled;
 
   // Remove interviewer
   const handleRemove = async (interviewerUserId) => {
@@ -220,6 +231,24 @@ const RequestStatusPopup = ({
     return (
       <div className="ip-card">
 
+        {/* Lapsed request — the interview date passed before a panel was confirmed */}
+        {isCancelled && (
+          <div
+            className="ip-note-box"
+            style={{
+              marginTop: 0,
+              marginBottom: 16,
+              background: "#fef2f2",
+              borderColor: "#fecaca",
+              color: "#b91c1c",
+            }}
+          >
+            <b>Request cancelled.</b> The interview date passed before the panel
+            was confirmed. Interviewers who never responded are marked{" "}
+            <b>Timed Out</b>. Send a new request to reschedule.
+          </div>
+        )}
+
         <div className="ip-info-grid ip-info-grid-2">
           <div className="ip-info-box">
             <span className="ip-info-label">Interview ID</span>
@@ -273,14 +302,14 @@ const RequestStatusPopup = ({
                   // status badge for not admin removed ones
                   <span className={`ip-badge ${getStatusClass(person.requestStatus)}`}>{person.requestStatus}</span>
                 )}
-                {/* resend button for rejected ones*/}
-                {!person.adminRemoved && person.requestStatus === "Rejected" && !isFinalised && (
+                {/* resend button for rejected ones — hidden once the request is closed */}
+                {!person.adminRemoved && person.requestStatus === "Rejected" && !isClosed && (
                   <button className="ip-small-btn" disabled={resendingId === person.id} onClick={() => handleResend(person.id)}>
                     {resendingId === person.id ? "Resending…" : "Resend"}
                   </button>
                 )}
-                {/* remove button for not adminremoved ones*/}
-                {!person.adminRemoved && !isFinalised && (
+                {/* remove button for not adminremoved ones — hidden once the request is closed */}
+                {!person.adminRemoved && !isClosed && (
                   <button className="ip-remove-btn" disabled={removingId === person.id} onClick={() => handleRemove(person.id)}>
                     {removingId === person.id ? "Removing…" : "Remove"}
                   </button>
@@ -312,7 +341,7 @@ const RequestStatusPopup = ({
                 disabled={addSelected.length === 0 || submittingAdd} onClick={handleAddSubmit}>
                 {submittingAdd ? "Adding…" : `Add${addSelected.length > 0 ? ` (${addSelected.length})` : ""}`}
               </button>
-              
+
               <button className="ip-danger-btn" style={{ flex: 1, minHeight: 44, fontSize: 15 }}
                 onClick={() => { setShowAddPanel(false); setAddSelected([]); }}>
                 Cancel
@@ -323,7 +352,7 @@ const RequestStatusPopup = ({
 
         {removeError && <div className="ip-note-box" style={{ color: "crimson", marginTop: 12 }}>{removeError}</div>}
 
-        {!canFinalize && panelSize > 0 && !isFinalised && (
+        {!canFinalize && panelSize > 0 && !isClosed && (
           <div className="ip-note-box">
             Finalize button enabled when at least <b>{panelSize}</b> interviewer{panelSize > 1 ? "s have" : " has"} accepted.
           </div>
@@ -341,7 +370,7 @@ const RequestStatusPopup = ({
 
         <div className="ip-actions" style={{ flexWrap: "wrap", gap: 14 }}>
 
-          {activeRequest && !isFinalised && (
+          {activeRequest && !isClosed && (
             <button className="ip-small-btn"
               onClick={() => showAddPanel ? setShowAddPanel(false) : openAddPanel()}>
               {showAddPanel ? "Hide Add" : "Add Interviewers"}
@@ -349,7 +378,7 @@ const RequestStatusPopup = ({
           )}
 
 
-          {activeRequest && !isFinalised && typeof onEditRequest === "function" && (
+          {activeRequest && !isClosed && typeof onEditRequest === "function" && (
             <button className="ip-small-btn" style={{ background: "#6b7280" }}
               onClick={() => {
                 if (activeRequest?.requestId) {
@@ -364,7 +393,7 @@ const RequestStatusPopup = ({
           )}
 
 
-          {activeRequest && !isFinalised && (
+          {activeRequest && !isClosed && (
             <button className="ip-primary-btn" onClick={handleFinalizeClick}
               disabled={!canFinalize}>
               Finalize Panel
