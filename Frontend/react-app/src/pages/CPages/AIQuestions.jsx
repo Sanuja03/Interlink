@@ -306,175 +306,89 @@ const AIQuestions = () => {
                             </button>
                         </div>
 
-                        {/* Two Column Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            
-                            {/* Left Column: Scores & Rubrics */}
-                            <div className="lg:col-span-5 flex flex-col gap-6">
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-                                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-4">Overall Score</span>
-                                    <div className="relative w-36 h-36 flex items-center justify-center mb-4">
-                                        <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                            <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="8" fill="transparent" />
-                                            <circle 
-                                                cx="50" cy="50" r="42" stroke="#0d9488" strokeWidth="8" fill="transparent" 
-                                                strokeDasharray="263.89"
-                                                strokeDashoffset={263.89 - (263.89 * (finalScore || 0)) / 100}
-                                                strokeLinecap="round"
-                                                className="transition-all duration-1000 ease-out"
-                                            />
-                                        </svg>
-                                        <div className="text-4xl font-black text-slate-800">
-                                            {finalScore !== null ? `${finalScore}%` : '--'}
-                                        </div>
-                                    </div>
-                                    <div className="px-4 py-1.5 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold rounded-full">
-                                        {finalScore >= 85 ? 'Excellent Performance' : finalScore >= 65 ? 'Good Performance' : 'Session Completed'}
+                        {/* Centered Scores & Rubrics Layout */}
+                        <div className="max-w-2xl mx-auto w-full flex flex-col gap-6">
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-4">Overall Score</span>
+                                <div className="relative w-36 h-36 flex items-center justify-center mb-4">
+                                    <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="8" fill="transparent" />
+                                        <circle 
+                                            cx="50" cy="50" r="42" stroke="#0d9488" strokeWidth="8" fill="transparent" 
+                                            strokeDasharray="263.89"
+                                            strokeDashoffset={263.89 - (263.89 * (finalScore || 0)) / 100}
+                                            strokeLinecap="round"
+                                            className="transition-all duration-1000 ease-out"
+                                        />
+                                    </svg>
+                                    <div className="text-4xl font-black text-slate-800">
+                                        {finalScore !== null ? `${finalScore}%` : '--'}
                                     </div>
                                 </div>
-
-                                {/* Rubric Breakdown */}
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-5">
-                                    <h3 className="text-sm font-extrabold text-slate-800 border-b border-slate-50 pb-2">Rubric Breakdown</h3>
-                                    
-                                    <div className="flex flex-col gap-4">
-                                        {/* Technical Accuracy (40 marks) */}
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Technical Accuracy</span>
-                                                <span>{avgTechnical} / 40</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-sky-500 h-full rounded-full" style={{ width: `${(avgTechnical / 40) * 100}%` }}></div>
-                                            </div>
-                                        </div>
-
-                                        {/* Concept Coverage (25 marks) */}
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Required Concepts Coverage</span>
-                                                <span>{avgCoverage} / 25</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-teal-500 h-full rounded-full" style={{ width: `${(avgCoverage / 25) * 100}%` }}></div>
-                                            </div>
-                                        </div>
-
-                                        {/* Practical Understanding (15 marks) */}
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Practical Understanding</span>
-                                                <span>{avgPractical} / 15</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-violet-500 h-full rounded-full" style={{ width: `${(avgPractical / 15) * 100}%` }}></div>
-                                            </div>
-                                        </div>
-
-                                        {/* Communication (10 marks) */}
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Communication & Clarity</span>
-                                                <span>{avgCommunication} / 10</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-amber-500 h-full rounded-full" style={{ width: `${(avgCommunication / 10) * 100}%` }}></div>
-                                            </div>
-                                        </div>
-
-                                        {/* Best Practices (10 marks) */}
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Best Practices</span>
-                                                <span>{avgBestPractices} / 10</span>
-                                            </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-rose-500 h-full rounded-full" style={{ width: `${(avgBestPractices / 10) * 100}%` }}></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="px-4 py-1.5 bg-teal-50 border border-teal-100 text-teal-700 text-xs font-bold rounded-full">
+                                    {finalScore >= 85 ? 'Excellent Performance' : finalScore >= 65 ? 'Good Performance' : 'Session Completed'}
                                 </div>
                             </div>
 
-                            {/* Right Column: Detailed Qualitative Feedback */}
-                            <div className="lg:col-span-7 flex flex-col gap-6">
+                            {/* Rubric Breakdown */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-5">
+                                <h3 className="text-sm font-extrabold text-slate-800 border-b border-slate-50 pb-2">Rubric Breakdown</h3>
                                 
-                                {/* Strengths */}
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                    <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        <span>Candidate Strengths</span>
-                                    </div>
-                                    {allStrengths.length > 0 ? (
-                                        <ul className="flex flex-col gap-2.5 pl-0 list-none m-0">
-                                            {allStrengths.map((str, idx) => (
-                                                <li key={idx} className="text-xs text-slate-600 bg-emerald-50/40 border border-emerald-100/50 px-3.5 py-2.5 rounded-xl flex items-start gap-2.5 animate-fade-in">
-                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-[10px] text-emerald-700 font-black shrink-0">✓</span>
-                                                    <span className="leading-relaxed">{str}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <div className="text-xs text-slate-400 italic">No specific strengths recorded in evaluation.</div>
-                                    )}
-                                </div>
-
-                                {/* Weaknesses */}
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                    <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-                                        <XCircle className="w-4 h-4 text-rose-500" />
-                                        <span>Candidate Weaknesses</span>
-                                    </div>
-                                    {allWeaknesses.length > 0 ? (
-                                        <ul className="flex flex-col gap-2.5 pl-0 list-none m-0">
-                                            {allWeaknesses.map((weak, idx) => (
-                                                <li key={idx} className="text-xs text-slate-600 bg-rose-50/40 border border-rose-100/50 px-3.5 py-2.5 rounded-xl flex items-start gap-2.5 animate-fade-in">
-                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-[10px] text-rose-700 font-black shrink-0">✗</span>
-                                                    <span className="leading-relaxed">{weak}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <div className="text-xs text-slate-400 italic">No major weaknesses identified.</div>
-                                    )}
-                                </div>
-
-                                {/* Missing Topics */}
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                    <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-                                        <BookOpen className="w-4 h-4 text-indigo-500" />
-                                        <span>Missing Technical Topics</span>
-                                    </div>
-                                    {allMissingTopics.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2 animate-fade-in">
-                                            {allMissingTopics.map((topic, idx) => (
-                                                <span key={idx} className="text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-full font-semibold">
-                                                    {topic}
-                                                </span>
-                                            ))}
+                                <div className="flex flex-col gap-4">
+                                    {/* Technical Accuracy (40 marks) */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between text-xs font-bold text-slate-700">
+                                            <span>Technical Accuracy</span>
+                                            <span>{avgTechnical} / 40</span>
                                         </div>
-                                    ) : (
-                                        <div className="text-xs text-slate-400 italic">All expected context topics were successfully addressed.</div>
-                                    )}
-                                </div>
-
-                                {/* Recommendations */}
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                    <div className="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase tracking-wider mb-4 border-b border-slate-50 pb-2">
-                                        <Lightbulb className="w-4 h-4 text-amber-500" />
-                                        <span>Recommendations for Improvement</span>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-sky-500 h-full rounded-full" style={{ width: `${(avgTechnical / 40) * 100}%` }}></div>
+                                        </div>
                                     </div>
-                                    {allRecommendations.length > 0 ? (
-                                        <ul className="flex flex-col gap-2 pl-4 list-disc text-xs text-slate-600 leading-relaxed animate-fade-in">
-                                            {allRecommendations.map((rec, idx) => (
-                                                <li key={idx} className="pl-1">
-                                                    {rec}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <div className="text-xs text-slate-400 italic">No specific recommendations needed. Keep up the good work!</div>
-                                    )}
+
+                                    {/* Concept Coverage (25 marks) */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between text-xs font-bold text-slate-700">
+                                            <span>Required Concepts Coverage</span>
+                                            <span>{avgCoverage} / 25</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-teal-500 h-full rounded-full" style={{ width: `${(avgCoverage / 25) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Practical Understanding (15 marks) */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between text-xs font-bold text-slate-700">
+                                            <span>Practical Understanding</span>
+                                            <span>{avgPractical} / 15</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-violet-500 h-full rounded-full" style={{ width: `${(avgPractical / 15) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Communication (10 marks) */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between text-xs font-bold text-slate-700">
+                                            <span>Communication & Clarity</span>
+                                            <span>{avgCommunication} / 10</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-amber-500 h-full rounded-full" style={{ width: `${(avgCommunication / 10) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Best Practices (10 marks) */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between text-xs font-bold text-slate-700">
+                                            <span>Best Practices</span>
+                                            <span>{avgBestPractices} / 10</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-rose-500 h-full rounded-full" style={{ width: `${(avgBestPractices / 10) * 100}%` }}></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

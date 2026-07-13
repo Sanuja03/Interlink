@@ -140,7 +140,7 @@ public class PromptBuilder {
         %s
         
         CRITICAL RELEVANCE & QUALITY RULES:
-        - If the candidate's answer is completely irrelevant to the question, is empty/meaningless (e.g., "I don't know", "pass", "N/A", "test"), or contains only random letters/gibberish, you MUST award EXACTLY 0 marks for ALL rubric criteria. The final_score MUST be 0. Do not give any partial marks for communication or basic structure.
+        - If the candidate's answer is completely irrelevant to the question, is empty/meaningless (e.g., "I don't know", "pass", "N/A", "test"), or contains only random letters/gibberish, you MUST award EXACTLY 0 marks for ALL rubric criteria. Do not give any partial marks for communication or basic structure.
         - If the candidate answer states technically incorrect information or claims that contradict the expected answer or retrieved context, you MUST penalize heavily. Subtract marks for incorrect technical statements.
         
         EVALUATION RUBRIC (Total Max: 100 marks):
@@ -176,13 +176,7 @@ public class PromptBuilder {
             "coverage": [integer between 0 and 25],
             "practical_understanding": [integer between 0 and 15],
             "communication": [integer between 0 and 10],
-            "best_practices": [integer between 0 and 10],
-            "strengths": ["Strength point 1", "Strength point 2"],
-            "weaknesses": ["Weakness point 1", "Weakness point 2"],
-            "missing_topics": ["Missing Topic 1", "Missing Topic 2"],
-            "recommendations": ["Recommendation 1", "Recommendation 2"],
-            "feedback": "Short summary feedback text",
-            "final_score": [integer: sum of technical_accuracy, coverage, practical_understanding, communication, and best_practices]
+            "best_practices": [integer between 0 and 10]
         }
         """.formatted(question, chunksBuilder.toString(), expectedAnswer, answer);
     }

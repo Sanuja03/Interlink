@@ -175,8 +175,8 @@ public class QuestionGeneratorService {
 
         // 7. Parse the generated JSON response
         try {
-            // Remove markdown code blocks if OpenAI wrapped the response in ```json ... ```
-            String cleanJson = aiResponse.replaceAll("```json|```", "").trim();
+            // Robust JSON extraction
+            String cleanJson = extractJson(aiResponse, true);
             return objectMapper.readValue(cleanJson, new TypeReference<List<String>>() {});
         } catch (Exception e) {
             logger.error("JSON parsing failed for AI response: {}", aiResponse, e);
@@ -232,7 +232,8 @@ public class QuestionGeneratorService {
 
         EvaluationResultDTO resultDTO = new EvaluationResultDTO();
         try {
-            String cleanJson = aiResponse.replaceAll("```json|```", "").trim();
+            // Robust JSON extraction
+            String cleanJson = extractJson(aiResponse, false);
             Map<String, Object> result = objectMapper.readValue(cleanJson, new TypeReference<Map<String, Object>>() {});
             
             int technicalAccuracy = getInt(result.get("technical_accuracy"));
@@ -241,37 +242,23 @@ public class QuestionGeneratorService {
             int communication = getInt(result.get("communication"));
             int bestPractices = getInt(result.get("best_practices"));
             
-            @SuppressWarnings("unchecked")
-            List<String> strengths = (List<String>) result.get("strengths");
-            @SuppressWarnings("unchecked")
-            List<String> weaknesses = (List<String>) result.get("weaknesses");
-            @SuppressWarnings("unchecked")
-            List<String> missingTopics = (List<String>) result.get("missing_topics");
-            @SuppressWarnings("unchecked")
-            List<String> recommendations = (List<String>) result.get("recommendations");
-            
-            String feedback = (String) result.get("feedback");
-            int finalScore = getInt(result.get("final_score"));
-            
-            // Recalculate score sum to ensure deterministic math
-            int calculatedSum = technicalAccuracy + coverage + practicalUnderstanding + communication + bestPractices;
-            if (calculatedSum != finalScore) {
-                logger.warn("[RAG Evaluation] Sum mismatch in LLM response (JSON final_score: {}, sum of criteria: {}). Recalculating score sum.", finalScore, calculatedSum);
-                finalScore = calculatedSum;
-            }
+            // Calculate final score deterministically by summing the 5 rubric scores
+            int finalScore = technicalAccuracy + coverage + practicalUnderstanding + communication + bestPractices;
             
             resultDTO.setTechnicalAccuracy(technicalAccuracy);
             resultDTO.setCoverage(coverage);
             resultDTO.setPracticalUnderstanding(practicalUnderstanding);
             resultDTO.setCommunication(communication);
             resultDTO.setBestPractices(bestPractices);
-            resultDTO.setStrengths(strengths != null ? strengths : Collections.emptyList());
-            resultDTO.setWeaknesses(weaknesses != null ? weaknesses : Collections.emptyList());
-            resultDTO.setMissingTopics(missingTopics != null ? missingTopics : Collections.emptyList());
-            resultDTO.setRecommendations(recommendations != null ? recommendations : Collections.emptyList());
-            resultDTO.setFeedback(feedback);
             resultDTO.setFinalScore(finalScore);
             resultDTO.setScore(finalScore); // compatible field
+            
+            // Populate empty lists and strings for text details as requested
+            resultDTO.setStrengths(Collections.emptyList());
+            resultDTO.setWeaknesses(Collections.emptyList());
+            resultDTO.setMissingTopics(Collections.emptyList());
+            resultDTO.setRecommendations(Collections.emptyList());
+            resultDTO.setFeedback("");
             
             logger.info("[RAG Evaluation] Graded answer successfully. final_score: {}", finalScore);
             
@@ -279,17 +266,18 @@ public class QuestionGeneratorService {
             logger.error("[RAG Evaluation Exception] Parsing failed for response: {}", aiResponse, e);
             // Basic fallback scoring
             int accuracyFallback = Math.min(40, submission.getAnswer().length() / 10);
+            int finalScore = accuracyFallback + 40; // sum of fallbacks
             resultDTO.setTechnicalAccuracy(accuracyFallback);
             resultDTO.setCoverage(15);
             resultDTO.setPracticalUnderstanding(10);
             resultDTO.setCommunication(8);
             resultDTO.setBestPractices(7);
-            resultDTO.setFinalScore(accuracyFallback + 40);
-            resultDTO.setScore(accuracyFallback + 40);
-            resultDTO.setStrengths(List.of("Response submitted successfully"));
-            resultDTO.setWeaknesses(List.of("Grounded analysis parsing failed due to JSON payload format"));
+            resultDTO.setFinalScore(finalScore);
+            resultDTO.setScore(finalScore);
+            resultDTO.setStrengths(Collections.emptyList());
+            resultDTO.setWeaknesses(Collections.emptyList());
             resultDTO.setMissingTopics(Collections.emptyList());
-            resultDTO.setRecommendations(List.of("Review documentation for the concepts"));
+            resultDTO.setRecommendations(Collections.emptyList());
             resultDTO.setFeedback("Fallback scoring applied.");
         }
 
@@ -388,5 +376,18 @@ public class QuestionGeneratorService {
             logger.error("OpenAI chat request failed: {}", e.getMessage(), e);
             throw new QuestionGeneratorException("OpenAI request failed: " + e.getMessage(), e);
         }
+    }
+
+    private String extractJson(String rawResponse, boolean isArray) {
+        if (rawResponse == null) return isArray ? "[]" : "{}";
+        String trimmed = rawResponse.trim();
+        char openChar = isArray ? '[' : '{';
+        char closeChar = isArray ? ']' : '}';
+        int start = trimmed.indexOf(openChar);
+        int end = trimmed.lastIndexOf(closeChar);
+        if (start != -1 && end != -1 && end > start) {
+            return trimmed.substring(start, end + 1);
+        }
+        return trimmed.replaceAll("```json|```", "").trim();
     }
 }
