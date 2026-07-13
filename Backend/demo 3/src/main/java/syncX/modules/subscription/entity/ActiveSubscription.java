@@ -22,8 +22,22 @@ public class ActiveSubscription {
     @JoinColumn(name = "plan_id")
     private SubscriptionPlan plan;
 
+    @Column(name = "ai_cv_used")
+    private Integer aiCvUsed = 0;
+
+    @Column(name = "start_date")
     private LocalDate startDate;
+
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     private String status;
+
+    /**
+     * Set to true by admin when payment is received.
+     * The scheduler will auto-renew on end date if this is true.
+     * Resets to false after each renewal cycle.
+     */
+    @Column(name = "payment_confirmed")
+    private Boolean paymentConfirmed = false;
 }

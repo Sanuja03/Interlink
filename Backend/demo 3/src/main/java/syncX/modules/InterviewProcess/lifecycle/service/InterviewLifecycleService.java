@@ -18,6 +18,14 @@ import java.util.List;
  * Business logic for the interview-lifecycle transitions. Each pass runs in its
  * own transaction so it commits atomically.
  *
+ * Status vocabularies (enforced by DB check constraints — do not invent values):
+ *
+ *   interview_requests.status                pending | finalized | cancelled
+ *   interview_request_interviewers
+ *       .response_status                     pending | accepted | rejected | timed_out
+ *   interview_scheduled.status               scheduled | completed | expired
+ *                                            (no DB constraint, but keep to these)
+ *
  * "Evaluated" = at least one interviewer submitted their scores for that
  * scheduled interview (interviewer_score_submissions.is_submitted = true).
  * That table has no JPA entity, so the check is a native query on the repo.
@@ -29,16 +37,19 @@ public class InterviewLifecycleService {
     @Autowired private InterviewScheduledRepository scheduledRepo;
 
     /**
-     * Rule 1: PENDING requests whose interview date has passed → REJECTED.
-     * (No panelist responded in time; recorded as a decision.)
+     * Rule 1: PENDING requests whose interview date has passed → CANCELLED.
      *
-     * Any interviewer row on that request still sitting at "pending" is
-     * flipped to "timed_out" so the admin-facing status popup (which already
-     * has a "Timed Out" badge wired up) reflects reality instead of showing
-     * a stale "Pending" for interviewers who never got a chance to respond.
+     * Nobody confirmed a full panel before the date arrived, so the request
+     * lapses. "cancelled" is the terminal state the schema provides for this —
+     * there is deliberately no separate "rejected" state on a request.
+     *
+     * Any interviewer row on that request still sitting at "pending" is flipped
+     * to "timed_out" so the admin-facing status popup (which already has a
+     * "Timed Out" badge wired up) reflects reality instead of showing a stale
+     * "Pending" for interviewers who never got a chance to respond.
      */
     @Transactional
-    public int expirePendingPastDate() {
+    public int cancelPendingPastDate() {
         LocalDate today = LocalDate.now();
 
         List<InterviewRequest> stale =
@@ -46,7 +57,7 @@ public class InterviewLifecycleService {
 
         OffsetDateTime now = OffsetDateTime.now();
         for (InterviewRequest r : stale) {
-            r.setStatus("rejected");
+            r.setStatus("cancelled");
             // updatedAt is DB-managed (insertable/updatable = false on the entity),
             // so there is no setUpdatedAt(now) call here — it would be a silent no-op.
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/FilterPanel';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -104,7 +105,7 @@ const JobPosts = () => {
 
     const hasFilters = Object.values(filters).some(Boolean);
 
-    const filtered = allJobs.filter((job) => {
+    const filtered = sourceJobs.filter(job => {
         const kw = keyword.toLowerCase().trim();
         const matchesKeyword =
             !kw ||
@@ -130,54 +131,28 @@ const JobPosts = () => {
     return (
         <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
             <Sidebar />
-
             <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
 
 
 
-                {/* Filter toggle icon row */}
                 <div className="flex items-center gap-2 mb-4">
-                    <button
-                        onClick={() => setFilterExpanded((v) => !v)}
-                        title={filterExpanded ? 'Hide filters' : 'Show filters'}
+                    <button onClick={() => setFilterExpanded(v => !v)}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold transition-all duration-200"
-                        style={{
-                            borderColor: filterExpanded ? '#1a3f5c' : '#cbd5e1',
-                            background: filterExpanded ? '#1a3f5c' : '#fff',
-                            color: filterExpanded ? '#fff' : '#475569',
-                        }}
-                    >
+                        style={{ borderColor: filterExpanded ? '#1a3f5c' : '#cbd5e1', background: filterExpanded ? '#1a3f5c' : '#fff', color: filterExpanded ? '#fff' : '#475569' }}>
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
                         </svg>
                         Filters
-                        {hasFilters && (
-                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-xs font-bold" style={{ background: '#1a6a82', fontSize: '10px' }}>
-                                {Object.values(filters).filter(Boolean).length}
-                            </span>
-                        )}
+                        {hasFilters && <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-xs font-bold" style={{ background: '#1a6a82', fontSize: '10px' }}>{Object.values(filters).filter(Boolean).length}</span>}
                     </button>
                 </div>
 
-                {/* Content: Filter Panel + Job Cards */}
                 <div className="flex gap-5 items-start">
+                    <FilterPanel filters={filters} onChange={handleFilterChange} onReset={handleReset} expanded={filterExpanded} onToggle={() => setFilterExpanded(v => !v)} />
 
-                    {/* Filter Panel — controlled by icon button */}
-                    <FilterPanel
-                        filters={filters}
-                        onChange={handleFilterChange}
-                        onReset={handleReset}
-                        expanded={filterExpanded}
-                        onToggle={() => setFilterExpanded((v) => !v)}
-                    />
-
-                    {/* Job Cards column */}
                     <div className="flex-1 flex flex-col gap-4">
-
-                        {/* Results count */}
                         <p className="text-xs text-gray-400 font-medium">
-                            {filtered.length} job{filtered.length !== 1 ? 's' : ''} found
+                            {loadingJobs ? 'Loading jobs...' : `${filtered.length} job${filtered.length !== 1 ? 's' : ''} found`}
                         </p>
 
                         {visible.map((job) => (
@@ -190,8 +165,6 @@ const JobPosts = () => {
                                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
                                     <img src={job.logo} alt={job.company} className="w-12 h-12 object-contain" />
                                 </div>
-
-                                {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <h2 className="text-white font-bold text-lg leading-tight">{job.title}</h2>
                                     <p className="text-blue-100 text-sm font-medium">{job.company}</p>
@@ -218,19 +191,16 @@ const JobPosts = () => {
                                 </button>
 
                                 <div className="flex items-center gap-3 shrink-0">
-                                    <button
-                                        onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
-                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-                                        style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
-                                    >
+                                    <button onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
+                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full"
+                                        style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
                                         View Details
                                     </button>
                                     <button
                                         onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
                                         disabled={appliedJobIds.includes(job.id)}
-                                        className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 ${
-                                            appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
-                                        }`}
+                                        className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 ${appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
+                                            }`}
                                         style={{
                                             background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #0C3E56, #1a6a82)',
                                             outline: 'none',
@@ -245,29 +215,20 @@ const JobPosts = () => {
                             </div>
                         ))}
 
-                        {/* Load More */}
                         {visibleCount < filtered.length && (
                             <div className="flex justify-center mt-4">
-                                <button
-                                    onClick={() => setVisibleCount((v) => v + 5)}
-                                    className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md hover:opacity-90 transition-opacity"
-                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', outline: 'none', border: 'none' }}
-                                >
+                                <button onClick={() => setVisibleCount(v => v + 5)}
+                                    className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md"
+                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', border: 'none' }}>
                                     Load more..
                                 </button>
                             </div>
                         )}
 
-                        {filtered.length === 0 && (
+                        {!loadingJobs && filtered.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-16 text-center">
-                                <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
                                 <p className="text-gray-400 text-sm font-medium">No jobs found matching your filters.</p>
-                                <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">
-                                    Clear all filters
-                                </button>
+                                <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">Clear all filters</button>
                             </div>
                         )}
                     </div>

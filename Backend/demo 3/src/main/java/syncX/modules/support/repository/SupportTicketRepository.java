@@ -11,14 +11,14 @@ import java.util.UUID;
 
 public interface SupportTicketRepository extends JpaRepository<SupportTicket, Long> {
 
-    // ── Existing queries ──────────────────────────────────────────────────
+    // ── jpql - for entities ──────────────────────────────────────────────────
 
     List<SupportTicket> findByUserId(UUID userId);
 
     @Query("SELECT t FROM SupportTicket t LEFT JOIN FETCH t.responses WHERE t.id = :id")
     Optional<SupportTicket> findByIdWithResponses(@Param("id") Long id);
 
-    // ── NEW: look up the role for a given user directly from public.users ─
+    // ── look up the role for a given user directly from public.users ─
     // This avoids depending on the JWT role claim (which Supabase sets to
     // "authenticated" for everyone by default).
     @Query(value = "SELECT role FROM public.users WHERE user_id = :userId", nativeQuery = true)

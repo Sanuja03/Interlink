@@ -1,60 +1,80 @@
 import React from "react";
 import Sidebar from "./Sidebar";
-import defaultAvatar from "../../../assets/default-avatar.png"
+import { useNavigate } from "react-router-dom";
 import notificationicon from "../../../assets/notification.png";
 import Footer from "./Footer";
-
-const SIDEBAR_WIDTH = 240; // w-60
+import { useAuth } from "../../../context/Authcontext";
 
 const DashboardLayout = ({ children }) => {
-  return (
-    <div className="relative min-h-screen bg-gray-50">
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-      {/* SIDEBAR (fixed) */}
-      <aside
-        className="fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50"
-        style={{ width: SIDEBAR_WIDTH }}
-      >
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      navigate("/");
+    }
+  };
+
+  return (
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
+
+      {/* SIDEBAR */}
+      <aside className="bg-white border-r border-gray-200 h-full overflow-y-auto">
         <Sidebar />
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <div style={{ marginLeft: SIDEBAR_WIDTH }}>
-        
-        {/* TOP BAR (Notification + Profile) */}
-        <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
-  
-            {/* Notification */}
-            <img
-                src={notificationicon}
-                alt="Notifications"
-                className="w-9 h-9 cursor-pointer opacity-80 hover:opacity-100"
-            />
+      {/* MAIN AREA */}
+      <div className="flex flex-col flex-1 min-w-0 h-full">
 
-            {/* Profile block */}
-            <div className="flex items-center gap-3 cursor-pointer">
-                <img
-                src={defaultAvatar}
-                alt="Profile"
-                className="w-11 h-11 rounded-full object-cover border border-gray-300"
-                />
-                <span className="text-sm font-semibold text-gray-800">
-                K. Perera
-                </span>
-            </div>
+        {/* TOP BAR */}
+        <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 border-b shrink-0">
+
+          <img
+            src={notificationicon}
+            alt="Notifications"
+            className="w-9 h-9 cursor-pointer opacity-80 hover:opacity-100"
+          />
+
+          <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogout}>
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+                        bg-red-50 text-red-600 text-xs font-semibold
+                        hover:bg-red-100 transition duration-200
+                        cursor-pointer
+                        focus:outline-none focus:ring-0 active:outline-none
+                        outline-none border-none">
+
+              <svg xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7" />
+              </svg>
+
+              Logout
+            </button>
+          </div>
 
         </div>
 
-        {/* PAGE CONTENT */}
-        <div className="p-6 min-h-screen">
-          {children}
+        {/* CONTENT + FOOTER WRAPPER */}
+        <div className="flex flex-col flex-1 overflow-y-auto">
+
+          {/* PAGE CONTENT */}
+          <div className="flex-1 p-6">
+            {children}
+          </div>
+
+          {/* FOOTER */}
+          <Footer />
+
         </div>
 
-         {/* FOOTER (global, reused) */}
-         <div>
-            <Footer />
-         </div>
-        
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef } from "react";   //ui and inout handling for the search box
 
 export default function TicketSearch({ onSearch }) {
   const [query, setQuery] = useState("");

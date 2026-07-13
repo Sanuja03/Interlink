@@ -62,6 +62,10 @@ public class InterviewRequest {
     @Column(name = "interview_location", columnDefinition = "TEXT")
     private String interviewLocation;
 
+    /**
+     * DB check constraint: pending | finalized | cancelled.
+     * Nothing else will persist — see interview_requests_status_check.
+     */
     @Column(nullable = false, length = 10)
     private String status = "pending";
 
@@ -71,7 +75,12 @@ public class InterviewRequest {
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, insertable = false)
+    /**
+     * Maintained by the database (trigger / default). updatable = false keeps
+     * Hibernate from writing a stale loaded value back into the UPDATE
+     * statement — without it, updated_at was appearing in every generated SQL.
+     */
+    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
 
     @Column(name = "id", insertable = false, updatable = false)

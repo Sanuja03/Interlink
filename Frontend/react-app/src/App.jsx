@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
+import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/Authcontext";
 import { InterviewerProfileProvider } from "./context/InterviewerProfileContext";
@@ -13,7 +14,6 @@ import Signup from "./pages/LoginSignup/Signup";
 import SignUpCompany from "./pages/LoginSignup/SignUpCompany";
 import Login from "./pages/LoginSignup/Login";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
-
 
 // Candidate pages
 import CandidateHome from "./pages/CPages/Home";
@@ -37,7 +37,7 @@ import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 import InterviewerCandidateProfile from "./pages/IPages/CandidateProfile";
 import InterviewerCandidateHistory from "./pages/IPages/CandidateHistory";
 
-// CompanyAdmin pages (FIXED)
+// CompanyAdmin pages
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
 import CompanyDashboard from "./pages/CApages/CompanyDashboard";
 import ApplicationManagement from "./pages/CApages/ApplicationManagement";
@@ -100,6 +100,34 @@ const AnyAuthenticated = ({ children }) => (
 function App() {
   return (
     <AuthProvider>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000,
+          style: {
+            borderRadius: "12px",
+            background: "#ffffff",
+            color: "#1f2937",
+            border: "1px solid #e5e7eb",
+            fontSize: "15px",
+            padding: "16px 20px",
+            minWidth: "260px",
+            fontWeight: "500",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          },
+          success: {
+            style: {
+              borderLeft: "5px solid #24698B",
+            },
+          },
+          error: {
+            style: {
+              borderLeft: "5px solid #dc2626",
+            },
+          },
+        }}
+      />
+
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
@@ -109,7 +137,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/company/shortlisted-candidates" element={<ShortlistedCandidates />} />
         <Route path="/company/create-evaluation-template" element={<CreateEvaluationTemplate />} />
-
 
         {/* Candidate */}
         <Route path="/candidate/home" element={<Candidate><CandidateHome /></Candidate>} />
@@ -143,7 +170,6 @@ function App() {
           }
         />
 
-
         {/* Company Admin routes */}
         <Route path="/company/dashboard" element={<CompanyAdmin><CompanyDashboard /></CompanyAdmin>} />
         <Route path="/create-evaluation-template" element={<CompanyAdmin><CreateEvaluationTemplate /></CompanyAdmin>} />
@@ -160,14 +186,14 @@ function App() {
         <Route path="/company/interviewer-management" element={<InterviewerManagementPage />} />
 
         {/* All User Routes */}
-        <Route path="/candidate/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
-        <Route path="/admin/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
+        <Route path="/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
+        <Route path="/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
 
         {/* Super Admin routes */}
-        <Route path="/admin/tickets" element={<SuperAdmin><AdminTickets /></SuperAdmin>} />
-        <Route path="/admin/tickets/:id" element={<SuperAdmin><AdminTicketDetails /></SuperAdmin>} />
-        <Route path="/admin/subscription-plans" element={<SuperAdmin><SubscriptionPlans /></SuperAdmin>} />
-        <Route path="/admin/active-plans" element={<SuperAdmin><ActivePlans /></SuperAdmin>} />
+        <Route path="/admin/tickets" element={<SuperAdmin><DashboardLayout><AdminTickets /></DashboardLayout></SuperAdmin>} />
+        <Route path="/admin/tickets/:id" element={<SuperAdmin><DashboardLayout><AdminTicketDetails /></DashboardLayout></SuperAdmin>} />
+        <Route path="/admin/subscription-plans" element={<SuperAdmin><DashboardLayout><SubscriptionPlans /></DashboardLayout></SuperAdmin>} />
+        <Route path="/admin/active-plans" element={<SuperAdmin><DashboardLayout><ActivePlans /></DashboardLayout></SuperAdmin>} />
 
         <Route path="/admin/dashboard" element={<SuperAdmin><DashboardLayout><SuperAdminDashboard /></DashboardLayout></SuperAdmin>} />
         <Route path="/admin/AllActivities" element={<SuperAdmin><DashboardLayout><AllActivitiesPage /></DashboardLayout></SuperAdmin>} />

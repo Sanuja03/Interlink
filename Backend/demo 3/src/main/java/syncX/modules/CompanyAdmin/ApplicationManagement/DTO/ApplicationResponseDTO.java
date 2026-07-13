@@ -12,6 +12,7 @@ public class ApplicationResponseDTO {
     private Double aiScore;
     private String scoreDetails;
     private String status;
+    private String resumeUrl;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -36,4 +37,7 @@ public class ApplicationResponseDTO {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getResumeUrl() { return resumeUrl; }
+    public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }
 }

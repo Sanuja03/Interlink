@@ -3,11 +3,12 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import "./CreateJob.css";
 import api from "../../lib/api";
 import { supabase } from "../../lib/supabase";
-// Main component for creating a new job
+
 export default function CreateJob() {
-// Store logged-in user's company ID
+
   const [companyId, setCompanyId] = useState(null);
   const [sessionError, setSessionError] = useState(null);
+  const [limitError, setLimitError] = useState(null);
 
   useEffect(() => {
     const loadCompanyId = async () => {
@@ -25,12 +26,11 @@ export default function CreateJob() {
     };
     loadCompanyId();
   }, []);
- // Update interview stage value
+
   const [form, setForm] = useState({
     title: "", department: "", type: "", category: "",
     location: "", experience: "", vacancies: "", interview_rounds: "",
   });
-// Dynamic interview stages (based on rounds)
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
@@ -40,6 +40,7 @@ export default function CreateJob() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "interview_rounds") setInterviewStages(Array(Number(value)).fill(""));
+    setLimitError(null);
   };
 
   const handleStageChange = (index, value) => {
@@ -50,7 +51,7 @@ export default function CreateJob() {
   };
   const addRequirement = () => setReqs([...reqs, ""]);
   const removeRequirement = (index) => { if (reqs.length === 1) return; setReqs(reqs.filter((_, i) => i !== index)); };
-//validation
+
   const validate = () => {
     const newErrors = {};
     if (!form.title.trim()) newErrors.title = "Required";
@@ -68,7 +69,8 @@ export default function CreateJob() {
 
     setLoading(true);
     setErrors({});
-    // Prepare job data for backend
+    setLimitError(null);
+
     const jobData = {
       title:           form.title.trim(),
       department:      form.department,
@@ -82,33 +84,57 @@ export default function CreateJob() {
       requirementText: reqs.filter((r) => r.trim()).join(", "),
       companyId:       companyId,
     };
-    // Send POST request to backend
+
     try {
       const res = await api.post("/jobs", jobData);
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
       setInterviewStages([]); setReqs([""]);
     } catch (error) {
-      alert(error.response?.data || "Error saving job.");
+      const msg = error.response?.data;
+      if (typeof msg === "string" && msg.includes("limit reached")) {
+        setLimitError(msg);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert(msg || "Error saving job.");
+      }
     } finally {
       setLoading(false);
     }
   };
-// UI Rendering
+
   return (
     <DashboardLayout>
       <div className="cj-page">
         <div className="cj-container">
           <h2 className="cj-title">Create new job</h2>
-              {/* Show session error if exists */}
+
           {sessionError && (
             <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
             </div>
           )}
-            {/* Job form */}
+
+          {limitError && (
+            <div className="flex items-start justify-between gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+              <div className="flex items-start gap-2">
+                <span className="text-lg mt-0.5">⚠️</span>
+                <div>
+                  <p className="font-semibold text-sm">Job Limit Reached</p>
+                  <p className="text-sm mt-0.5 text-red-600">{limitError}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setLimitError(null)}
+                className="text-red-400 hover:text-red-600 text-lg leading-none mt-0.5"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <div className="cj-card">
-            {/* Job title input */}
+
             <div className="cj-field">
               <label className="cj-label">Job Title</label>
               <input name="title" value={form.title} className="cj-input" onChange={handleChange} placeholder="e.g. Frontend Developer" />
@@ -127,7 +153,6 @@ export default function CreateJob() {
               {errors.department && <p className="cj-error">{errors.department}</p>}
             </div>
 
-            {/* EmploymentType enum values */}
             <div className="cj-field">
               <label className="cj-label">Employment Type</label>
               <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
@@ -139,7 +164,6 @@ export default function CreateJob() {
               {errors.type && <p className="cj-error">{errors.type}</p>}
             </div>
 
-            {/*  Category enum values */}
             <div className="cj-field">
               <label className="cj-label">Category</label>
               <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
@@ -177,7 +201,6 @@ export default function CreateJob() {
               <input name="location" value={form.location} className="cj-input" onChange={handleChange} placeholder="e.g. Colombo, Remote" />
             </div>
 
-            {/* ExperienceLevel enum values */}
             <div className="cj-field">
               <label className="cj-label">Experience Level</label>
               <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>
@@ -217,17 +240,16 @@ export default function CreateJob() {
 
           </div>
 
-            <div className="cj-actions">
-              <button className="cj-post" onClick={handleSubmit} disabled={loading || !!sessionError}>
-                {loading ? "Posting..." : "Post"}
-              </button>
-              <button className="cj-cancel" onClick={() => window.history.back()} disabled={loading}>
-                Cancel
-              </button>
-            </div>
-
+          <div className="cj-actions">
+            <button className="cj-post" onClick={handleSubmit} disabled={loading || !!sessionError}>
+              {loading ? "Posting..." : "Post"}
+            </button>
+            <button className="cj-cancel" onClick={() => window.history.back()} disabled={loading}>
+              Cancel
+            </button>
           </div>
         </div>
+      </div>
     </DashboardLayout>
   );
 }

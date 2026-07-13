@@ -58,6 +58,7 @@ public class SecurityConfig {
                         // ── Shared endpoints (any loged in user)
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/chat/**").authenticated()
                         .requestMatchers("/api/auth/logout").authenticated()
 
                         // ── Everything else requires authentication(login) ──

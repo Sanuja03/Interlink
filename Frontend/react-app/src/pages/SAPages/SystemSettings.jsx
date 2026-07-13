@@ -14,11 +14,11 @@ export default function SystemSettings() {
   ];
 
   return (
-    <div className="space-y-6 font-outfit">
+    <div className="font-outfit"> {/*space-y-6 adds white bar on top so it was removed*/}
 
       <h1 className="text-xl font-semibold text-[#24698B]">
         System Settings
-      </h1>
+      </h1><br />
 
       <div className="space-y-4">
         {settings.map((item) => (

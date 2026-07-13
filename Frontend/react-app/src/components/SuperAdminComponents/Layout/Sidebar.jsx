@@ -8,18 +8,18 @@ import settingsIcon from "../../../assets/settings.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import RecentActivities from "../../../assets/RecentActivities.png";
 import ChatBot from "../../../assets/ChatBot.png";
+import SupportTickets from "../../../assets/SupportTickets.png";
+import { useAuth } from "../../../context/Authcontext";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { appUser } = useAuth();
 
   const [openDashboard, setOpenDashboard] = useState(true);
 
-  const profile = {
-    name: "Sanj Perera",
-    email: "senithi.perera@interlink.com",
-    avatar: null,
-  };
+  const displayName = appUser?.email?.split("@")[0] ?? "Admin";
+  const displayEmail = appUser?.email ?? "";
 
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -28,7 +28,9 @@ const Sidebar = () => {
       
       {/* Logo */}
       <div className="flex items-center px-5 py-6">
-        <img src={interlink} alt="logo" className="w-40 h-20 object-contain" />
+        <a href="/admin/dashboard">
+          <img src={interlink} alt="logo" className="w-40 h-20 object-contain" />
+        </a>
       </div>
 
       {/* NAVIGATION */}
@@ -94,7 +96,7 @@ const Sidebar = () => {
           icon={settingsIcon}
         />
 
-        {/* ACTIVITY LOGS (recommended add) */}
+        {/* ACTIVITY LOGS */}
         <SidebarItem
           label="Activity Logs"
           path="/admin/AllActivities"
@@ -106,6 +108,12 @@ const Sidebar = () => {
           icon={ChatBot}
         />
 
+<SidebarItem
+  label="Support tickets"
+  path="/admin/tickets"
+  icon={SupportTickets}
+/>
+
       </nav>
 
       {/* PROFILE */}
@@ -115,12 +123,12 @@ const Sidebar = () => {
           className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 w-full"
         >
           <img
-            src={profile.avatar || defaultAvatar}
+            src={appUser?.avatar || defaultAvatar}
             className="w-10 h-10 rounded-full object-cover"
           />
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">{profile.name}</p>
-            <p className="text-xs text-gray-500 truncate">{profile.email}</p>
+            <p className="text-sm font-semibold truncate">{displayName}</p>
+            <p className="text-xs text-gray-500 truncate">{displayEmail}</p>
           </div>
         </button>
       </div>
@@ -128,7 +136,7 @@ const Sidebar = () => {
   );
 };
 
-/* 🔹 Sidebar Item */
+/* Sidebar Item */
 function SidebarItem({ label, path, icon }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,7 +159,7 @@ function SidebarItem({ label, path, icon }) {
   );
 }
 
-/* 🔹 Sub Item */
+/* Sub Item */
 function SubItem({ label, path }) {
   const navigate = useNavigate();
   const location = useLocation();

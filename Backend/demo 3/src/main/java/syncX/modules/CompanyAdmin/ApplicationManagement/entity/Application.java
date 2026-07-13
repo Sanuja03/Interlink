@@ -35,6 +35,9 @@ public class Application {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "resume_url")
+    private String resumeUrl;
+
     // Getters & Setters
     public Long getId() { return id; }
 
@@ -61,4 +64,7 @@ public class Application {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getResumeUrl() { return resumeUrl; }
+    public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }
 }

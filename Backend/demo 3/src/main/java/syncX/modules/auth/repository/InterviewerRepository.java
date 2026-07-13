@@ -14,6 +14,8 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, UUID> 
 
     List<Interviewer> findByCompanyId(UUID companyId);
 
+    long countByCompanyId(UUID companyId);
+
     Optional<Interviewer> findByUserId(UUID userId);
 
     /**

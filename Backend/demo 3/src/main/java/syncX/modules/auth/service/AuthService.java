@@ -14,6 +14,11 @@ import syncX.modules.auth.repository.InterviewerRepository;
 import syncX.modules.auth.repository.UserRepository;
 import syncX.modules.auth.repository.CandidateRepository;
 import syncX.modules.auth.repository.CompanyRepository;
+// ── ADDED ──
+import syncX.modules.subscription.entity.ActiveSubscription;
+import syncX.modules.subscription.entity.SubscriptionPlan;
+import syncX.modules.subscription.repository.ActiveSubscriptionRepository;
+// ── END ADDED ──
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -45,6 +50,11 @@ public class AuthService {
     @Autowired
     private SupabaseAdminService supabaseAdminService;
 
+    // ── ADDED ──
+    @Autowired
+    private ActiveSubscriptionRepository activeSubscriptionRepository;
+    // ── END ADDED ──
+
     // clears isFirstLogin on first access & updates lastLoginAt
     public Object getCurrentUser(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -55,9 +65,8 @@ public class AuthService {
             throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
         }
 
-        OffsetDateTime now = OffsetDateTime.now(); //get current time
+        OffsetDateTime now = OffsetDateTime.now();
 
-        //if first time logging in set it to false
         if (Boolean.TRUE.equals(user.getIsFirstLogin())) {
             user.setIsFirstLogin(false);
         }
@@ -65,7 +74,7 @@ public class AuthService {
         user.setAccountStatus("active");
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
-        userRepository.save(user); //update teh database with the updated details such as lastlogin etc
+        userRepository.save(user);
 
         return user;
     }
@@ -99,7 +108,7 @@ public class AuthService {
         Candidate candidate = new Candidate();
         candidate.setCandidateId(UUID.randomUUID());
         candidate.setUserId(userId);
-        candidate.setFirstName(dto.getFirstName());//these are wat given by the frontend
+        candidate.setFirstName(dto.getFirstName());
         candidate.setLastName(dto.getLastName());
         candidate.setEmail(dto.getEmail());
         candidate.setCreatedAt(now);
@@ -111,7 +120,7 @@ public class AuthService {
         UUID userId = UUID.fromString(jwt.getSubject());
         OffsetDateTime now = OffsetDateTime.now();
 
-        User user = userRepository.findById(userId).orElseGet(User::new);//try to find the user by user id and if not found create a new user
+        User user = userRepository.findById(userId).orElseGet(User::new);
         user.setUserId(userId);
         user.setEmail(dto.getEmail());
         user.setRole("company_admin");
@@ -138,22 +147,41 @@ public class AuthService {
 
     //creates a new interviewer account and returns the details
     public InterviewerResponseDTO completeInterviewerSignup(Jwt jwt, InterviewerSignupDTO dto) {
-        //get the logged in user's(companyadmin) userid
         UUID adminUserId = UUID.fromString(jwt.getSubject());
-        OffsetDateTime now = OffsetDateTime.now();//Get current date and time
+        OffsetDateTime now = OffsetDateTime.now();
 
-        //find the logged in user(companyadmin) in database using user id
         User admin = userRepository.findById(adminUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
 
         if (!admin.getRole().equals("company_admin")) {
             throw new RuntimeException("Only company admins can create interviewers");
         }
 
-        //check whether  this userid has a companyid in company table
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        // ── ADDED: Backend interviewer limit check ──
+        UUID companyId = adminCompany.getCompanyId();
+
+        ActiveSubscription sub = activeSubscriptionRepository
+                .findByCompanyId(companyId)
+                .orElse(null);
+
+        if (sub != null) {
+            SubscriptionPlan plan = sub.getPlan();
+            Integer interviewerLimit = plan.getInterviewers();
+
+            if (interviewerLimit != null && interviewerLimit > 0) {
+                long currentCount = interviewerRepository.countByCompanyId(companyId);
+                if (currentCount >= interviewerLimit) {
+                    throw new RuntimeException(
+                            "Interviewer limit reached. Your " + plan.getName() +
+                                    " plan allows " + interviewerLimit + " interviewer accounts."
+                    );
+                }
+            }
+        }
+        // ── END ADDED ──
 
         // ── Employee ID must be present ──
         if (dto.getInterviewerId() == null || dto.getInterviewerId().isBlank()) {
@@ -162,9 +190,6 @@ public class AuthService {
         String employeeId = dto.getInterviewerId().trim();
 
         // ── Employee ID must be unique WITHIN this company (not globally) ──
-        // Two different companies may reuse the same ID; we only block a
-        // collision inside the admin's own company. Checked BEFORE creating the
-        // Supabase auth user so a duplicate never leaves an orphaned account.
         if (interviewerRepository.existsByCompanyIdAndInterviewerId(
                 adminCompany.getCompanyId(), employeeId)) {
             throw new RuntimeException(
@@ -172,12 +197,10 @@ public class AuthService {
                             + "' already exists in your company.");
         }
 
-        //Check email already exists give for the interviewer
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already exists in system");
         }
 
-        //create the supabase auth.user
         String supabaseUserId = supabaseAdminService.createUser(
                 dto.getEmail(),
                 dto.getPassword()
@@ -185,13 +208,6 @@ public class AuthService {
 
         UUID interviewerUserId = UUID.fromString(supabaseUserId);
 
-        // ── Consistency guard ──────────────────────────────────────────────
-        // Supabase auth user is created first (external system — @Transactional
-        // can't roll it back). The two DB writes run together inside
-        // interviewerPersistenceService.persist(...) which IS transactional, so
-        // they succeed or fail as one: never a users row without an interviewers
-        // row. If that DB unit fails for any reason, we delete the Supabase user
-        // so no orphaned auth account is left behind (the bug seen before).
         try {
             interviewerPersistenceService.persist(
                     dto, interviewerUserId, adminCompany, employeeId, now);
@@ -206,16 +222,13 @@ public class AuthService {
             throw ex;
         }
 
-        // Re-read the freshly committed rows for the response DTO.
         User user = userRepository.findById(interviewerUserId)
                 .orElseThrow(() -> new RuntimeException("User not found after creation"));
         Interviewer interviewer = interviewerRepository.findByUserId(interviewerUserId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found after creation"));
 
-        return mapToResponseDTO(interviewer, user);//Convert data into a clean response and send back to frontend
+        return mapToResponseDTO(interviewer, user);
     }
-
-
 
     public List<InterviewerResponseDTO> getInterviewersByCompany(Jwt jwt) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
@@ -232,7 +245,6 @@ public class AuthService {
 
         List<Interviewer> interviewers = interviewerRepository.findByCompanyId(adminCompany.getCompanyId());
 
-        //interviewer objects will be convert to a response dto and then returned as a list
         return interviewers.stream()
                 .map(interviewer -> {
                     User user = userRepository.findById(interviewer.getUserId()).orElse(null);
@@ -254,8 +266,6 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // Emp ID is unique only within a company, so resolve it together with
-        // the admin's company. This also inherently enforces ownership.
         Interviewer interviewer = interviewerRepository
                 .findByCompanyIdAndInterviewerId(adminCompany.getCompanyId(), interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found in your company"));
@@ -318,7 +328,6 @@ public class AuthService {
 
     // Interviewer self-profile methods
 
-
     public InterviewerResponseDTO getInterviewerOwnProfile(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -360,7 +369,6 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-
     //Updates only the interviewer's photo URL.
     public InterviewerResponseDTO updateInterviewerPhoto(Jwt jwt, String photoUrl) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -379,13 +387,12 @@ public class AuthService {
         return mapToResponseDTO(interviewer, user);
     }
 
-    //  map entity to response DTO - combines interviewer and user object and give oen to front end
     private InterviewerResponseDTO mapToResponseDTO(Interviewer interviewer, User user) {
         InterviewerResponseDTO response = new InterviewerResponseDTO();
         response.setInterviewerId(interviewer.getInterviewerId());
         response.setUserId(interviewer.getUserId());
         response.setCompanyId(interviewer.getCompanyId());
-        response.setFullName(interviewer.getFullName());//get full name from the interviewer object and put it into the response object
+        response.setFullName(interviewer.getFullName());
         response.setPhone(interviewer.getPhone());
         response.setInterviewerRole(interviewer.getInterviewerRole());
         response.setBranch(interviewer.getBranch());
@@ -396,7 +403,6 @@ public class AuthService {
         response.setUpdatedAt(interviewer.getUpdatedAt());
 
         if (user != null) {
-            //copy account/login-related details from the User object into the response.
             response.setEmail(user.getEmail());
             response.setAccountStatus(user.getAccountStatus());
             response.setFirstLogin(user.getIsFirstLogin());

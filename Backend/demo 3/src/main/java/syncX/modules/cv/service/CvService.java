@@ -26,16 +26,16 @@ public class CvService {
         String text;
 
         if (fileName.endsWith(".pdf")) {
-            text = CvExtractor.extractFromPDF(file);
+            text = CvExtractor.extractFromPDF(file);   //parsing and extraction functions in cv extractor
         } else if (fileName.endsWith(".docx")) {
             text = CvExtractor.extractFromDocx(file);
         } else {
             throw new Exception("Only PDF and DOCX supported");
         }
 
-        // ✅ Clean text
+        // Clean text
         String cleanedText = cleanText(text);
-       
+
 
         //  VALIDATION TO DETECT EMPTY CV 
         String lower = cleanedText.toLowerCase();
@@ -47,13 +47,13 @@ if (cleanedText.trim().length() < 30 ||
 
     throw new Exception("Invalid CV: insufficient meaningful content");
 }
-
-        // ✅ Send to AI
+        //  Send to AI and get the output
         String aiResponse = aiService.sendToAI(cleanedText);
 
-        // ✅ Convert JSON string → Java Map
+
         ObjectMapper mapper = new ObjectMapper();
 
+        //to convert the received JSON text to java objects
         Map<String, Object> parsedData =
                 mapper.readValue(aiResponse, Map.class);
 

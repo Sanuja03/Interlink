@@ -13,6 +13,52 @@ const DURATION_OPTIONS = [
 
 const MIN_LEAD_MINUTES = 60; // interviews must start at least 1 hour from now
 
+// ── Scheduling window ────────────────────────────────────────────────────────
+// Three independent bounds, all in minutes from midnight:
+//
+//   DAY_START_MIN   earliest an interview may START      08:00
+//   LAST_START_MIN  latest an interview may START        21:30
+//   DAY_END_MIN     latest an interview may END          23:00
+//
+// LAST_START_MIN is NOT derived from DAY_END_MIN — the gap between them is what
+// caps the duration at the tail of the day. At the 21:30 slot only durations up
+// to 90 minutes are offered (21:30 + 1.5h = 23:00 exactly); 2 hours and longer
+// disappear from the dropdown.
+//
+// The hard end matters because an interview must not spill into the next
+// calendar day:
+//   1. LocalTime.plusMinutes() wraps around at midnight on the backend, so
+//      23:30 + 3h silently becomes 02:30 and conflict detection ends up
+//      comparing a window whose end is BEFORE its start.
+//   2. InterviewLifecycleJob keys off interview_date only, so the tail of the
+//      interview would live on a date the row doesn't know about.
+//
+// Everything below derives from these three numbers — nothing else to change.
+const DAY_START_MIN  = 8  * 60;      // 08:00 — earliest start
+const LAST_START_MIN = 21 * 60 + 30; // 21:30 — latest start
+const DAY_END_MIN    = 23 * 60;      // 23:00 — hard end
+
+/** "14:30" → 870 */
+const toMinutes = (hhmm) => {
+  if (!hhmm) return null;
+  const [h, m] = String(hhmm).split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return null;
+  return h * 60 + m;
+};
+
+/** 870 → "2:30 PM" */
+const toLabel = (min) => {
+  const h    = Math.floor(min / 60);
+  const m    = min % 60;
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
+};
+
+/** 870 → "14:30" */
+const toValue = (min) =>
+  `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
 const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = false }) => {
   const [panelSize, setPanelSize]         = useState(2);
   const [mode, setMode]                   = useState("Online");
@@ -168,6 +214,49 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     return () => { cancelled = true; };
   }, [open, date, time, durationMinutes, isSent]);
 
+  // ── Date / time helpers ──
+  // Local calendar date (NOT toISOString, which is UTC — that lets "yesterday"
+  // stay selectable during the early-morning hours in UTC+offset timezones).
+  const _now = new Date();
+  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, "0")}-${String(_now.getDate()).padStart(2, "0")}`;
+  const isToday  = date === todayStr;
+
+  // Slots every 30 min from DAY_START_MIN through LAST_START_MIN inclusive,
+  // so 8:00 AM … 9:30 PM.
+  const timeSlots = (() => {
+    const slots = [];
+    for (let min = DAY_START_MIN; min <= LAST_START_MIN; min += 30) {
+      slots.push({ val: toValue(min), label: toLabel(min) });
+    }
+    if (!isToday) return slots;
+    const now = new Date();
+    const cutoffMin = now.getHours() * 60 + now.getMinutes() + MIN_LEAD_MINUTES;
+    return slots.filter((s) => toMinutes(s.val) >= cutoffMin);
+  })();
+
+  // Durations that actually FIT after the chosen start time. At 9:30 PM only
+  // 30 min / 1 hour / 1.5 hours remain (1.5h lands exactly on the 11:00 PM
+  // end); 2 hours and longer are never offered.
+  const startMin        = toMinutes(time);
+  const durationOptions = startMin === null
+    ? DURATION_OPTIONS
+    : DURATION_OPTIONS.filter((o) => startMin + o.value <= DAY_END_MIN);
+
+  const durationTrimmed = startMin !== null &&
+                          durationOptions.length < DURATION_OPTIONS.length;
+
+  // Changing the time can invalidate the duration already selected (9 AM + 3h
+  // is fine; switch to 5 PM and it is not). Snap to the longest option that
+  // still fits rather than silently submitting an out-of-window value.
+  useEffect(() => {
+    if (startMin === null || isSent) return;
+    if (durationOptions.length === 0) return;
+    if (!durationOptions.some((o) => o.value === durationMinutes)) {
+      setDurationMinutes(durationOptions[durationOptions.length - 1].value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [time, isSent]);
+
   if (!open || !candidate) return null;
 
   const isChecked = (pid) => selectedInterviewers.some((x) => x.id === pid);
@@ -188,6 +277,16 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     setSubmitError("");
     if (!date || !time) { setSubmitError("Please set date and time."); return; }
     if (!durationMinutes) { setSubmitError("Please select a duration."); return; }
+
+    // Last line of defence in the UI — the backend enforces this too.
+    if (startMin !== null && startMin + durationMinutes > DAY_END_MIN) {
+      setSubmitError(
+        `A ${durationMinutes}-minute interview starting at ${toLabel(startMin)} would end after ` +
+        `${toLabel(DAY_END_MIN)}. Shorten the duration or pick an earlier time.`
+      );
+      return;
+    }
+
     if (mode === "Physical" && !interviewLocation.trim()) {
       setSubmitError("Please enter the interview location for Physical interviews.");
       return;
@@ -231,36 +330,11 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
     }
   };
 
-  // ── Date / time helpers ──
-  // Local calendar date (NOT toISOString, which is UTC — that lets "yesterday"
-  // stay selectable during the early-morning hours in UTC+offset timezones).
-  const _now = new Date();
-  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, "0")}-${String(_now.getDate()).padStart(2, "0")}`;
-  const isToday  = date === todayStr;
+  const endMin  = startMin !== null ? startMin + durationMinutes : null;
+  const fitsDay = endMin === null || endMin <= DAY_END_MIN;
 
-  // Generate :00 and :30 slots; filter past slots when today is selected
-  const timeSlots = (() => {
-    const slots = [];
-    for (let h = 0; h < 24; h++) {
-      for (const m of [0, 30]) {
-        const hh   = String(h).padStart(2, "0");
-        const mm   = String(m).padStart(2, "0");
-        const val  = `${hh}:${mm}`;
-        const ampm = h >= 12 ? "PM" : "AM";
-        const h12  = h % 12 || 12;
-        slots.push({ val, label: `${h12}:${mm} ${ampm}` });
-      }
-    }
-    if (!isToday) return slots;
-    const now = new Date();
-    const cutoffMin = now.getHours() * 60 + now.getMinutes() + MIN_LEAD_MINUTES;
-    return slots.filter((s) => {
-      const [h, m] = s.val.split(":").map(Number);
-      return h * 60 + m >= cutoffMin;
-    });
-  })();
-
-  const canSend = selectedInterviewers.length >= panelSize && date && time && durationMinutes;
+  const canSend =
+    selectedInterviewers.length >= panelSize && date && time && durationMinutes && fitsDay;
 
   // ── Loading state ──
   if (loadingExisting) {
@@ -327,7 +401,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
             />
           </div>
 
-          {/* Time — :00/:30 dropdown */}
+          {/* Time — :00/:30 dropdown, bounded by the scheduling window */}
           <div className="ip-field">
             <label className="ip-label">Interview Time</label>
             <select
@@ -341,6 +415,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
                 <option key={slot.val} value={slot.val}>{slot.label}</option>
               ))}
             </select>
+
             {isToday && timeSlots.length === 0 && (
               <span style={{ fontSize: 11, color: "#dc2626", marginTop: 4, display: "block" }}>
                 Not enough time left today — please pick a future date.
@@ -348,27 +423,49 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
             )}
             {isToday && timeSlots.length > 0 && (
               <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
-                Showing slots at least 1 hour from now.
+                Showing slots at least 1 hour from now. Interviews run between{" "}
+                {toLabel(DAY_START_MIN)} and {toLabel(DAY_END_MIN)}.
+              </span>
+            )}
+            {!isToday && date && (
+              <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
+                Interviews run between {toLabel(DAY_START_MIN)} and {toLabel(DAY_END_MIN)}.
               </span>
             )}
           </div>
 
-          {/* Duration */}
+          {/* Duration — only the options that finish before the day ends */}
           <div className="ip-field">
             <label className="ip-label">Duration</label>
             <select
               className="ip-select"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              disabled={isSent}
+              disabled={isSent || !time}
             >
-              {DURATION_OPTIONS.map((opt) => (
+              {durationOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
-              Interviewers with a conflicting request in this window will be shown as Unavailable.
-            </span>
+
+            {!time && (
+              <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
+                Pick a time first — the available durations depend on it.
+              </span>
+            )}
+
+            {time && durationTrimmed && (
+              <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
+                Longer durations hidden — the interview must end by {toLabel(DAY_END_MIN)}.
+              </span>
+            )}
+
+            {time && endMin !== null && (
+              <span style={{ fontSize: 11, color: "#64748b", marginTop: 4, display: "block" }}>
+                Ends at <b>{toLabel(endMin)}</b>. Interviewers with a conflicting request in
+                this window will be shown as Unavailable.
+              </span>
+            )}
           </div>
 
           {/* Mode */}

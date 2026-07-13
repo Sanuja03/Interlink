@@ -51,10 +51,12 @@ public class ScoringService {
         }
         // ============================
 
+        //converts the job requirements to a stream
         List<String> required = reqs.stream()
                 .map(r -> r.getRequirement().toLowerCase())
                 .toList();
 
+        //matching logic
         int match = 0;
 
         for (String req : required) {
@@ -63,8 +65,8 @@ public class ScoringService {
 
             for (String cv : cvSkills) {
 
-                // ===== VALIDATION ADDED =====
-                if (cv == null || req == null) continue;
+                // ===== VALIDATION =====
+                if (cv == null || req == null) continue;   //if null found skip and continue
                 // ============================
 
                 // Direct match
@@ -74,7 +76,7 @@ public class ScoringService {
                 }
 
                 //  Group match
-                if (SKILL_GROUPS.containsKey(req)) {
+                if (SKILL_GROUPS.containsKey(req)) {   //Check if requirement has a group
                     List<String> group = SKILL_GROUPS.get(req);
 
                     if (group.contains(cv.toLowerCase())) {
@@ -87,7 +89,7 @@ public class ScoringService {
             if (found) match++;
         }
 
-        if (required.isEmpty()) return 1;
+        if (required.isEmpty()) return 1;  //if no requirements
 
         return (double) match / required.size();
     }
@@ -104,9 +106,9 @@ public class ScoringService {
         }
         // ============================
 
-        if (reqExp == 0) return 1;
+        if (reqExp == 0) return 1;  //everyone qualifies
 
-        return Math.min(cvExp / reqExp, 1);
+        return Math.min(cvExp / reqExp, 1);   //capped at 1
     }
 
     private int level(String edu) {

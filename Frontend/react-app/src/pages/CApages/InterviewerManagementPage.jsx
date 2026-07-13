@@ -1,19 +1,28 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import InterviewerManagementModal from "./InterviewerManagementModal";
+import { supabase } from "../../lib/supabase";
 import "./InterviewerManagementPage.css";
 
-// Reuses the existing InterviewerManagementModal component exactly as-is —
-// no logic duplicated here. It's just always "open" and there's nothing
-// to close back to, since this is a page, not a popup. The .im-embed
-// wrapper + InterviewerManagementPage.css turn off the fixed-overlay
-// look so it renders as normal page content instead of a full-screen
-// modal — without touching InterviewerManagementModal.css, which still
-// needs to work as a real modal wherever else it's used.
-//
-// The modal's own internal title (.interviewer-modal-header) is hidden
-// via the scoped CSS below, and this title floats outside the card
-// instead — same pattern as CompanyDashboard's cd-title.
 export default function InterviewerManagementPage() {
+  const [companyId, setCompanyId] = useState(null);
+
+  useEffect(() => {
+    const fetchCompanyId = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase
+        .from("companies")
+        .select("company_id")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!error && data) setCompanyId(data.company_id);
+    };
+    fetchCompanyId();
+  }, []);
+
   return (
     <DashboardLayout>
       <h1 className="im-title">Interviewer Management</h1>
@@ -23,7 +32,7 @@ export default function InterviewerManagementPage() {
       </p>
 
       <div className="im-embed">
-        <InterviewerManagementModal open={true} onClose={() => {}} />
+        <InterviewerManagementModal open={true} onClose={() => {}} companyId={companyId} />
       </div>
     </DashboardLayout>
   );

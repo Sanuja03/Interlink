@@ -1,4 +1,4 @@
-package syncX.modules.cv.controller;
+/*package syncX.modules.cv.controller;
 
 
 import syncX.modules.cv.service.CvService;
@@ -18,10 +18,10 @@ public class CvController {
     @PostMapping("/upload")
 public ResponseEntity<?> uploadCV(@RequestParam("file") MultipartFile file) {
     try {
-        Object response = cvService.processCV(file);
+        Object response = cvService.processCV(file);   //send to service for processing
         return ResponseEntity.ok(response);
     } catch (Exception e) {
         return ResponseEntity.status(500).body(e.getMessage());
     }
 }
-}
+}*/

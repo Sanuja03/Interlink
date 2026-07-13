@@ -2,8 +2,8 @@ import "./InterviewerManagementModal.css";
 
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../lib/api";
+import { supabase } from "../../lib/supabase";
 
-//pick a random character and make a 10 character pwd
 const generatePassword = () => {
     const chars =
         "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#";
@@ -32,7 +32,7 @@ const createEmptyRow = () => ({
     serverData: null,
 });
 
-export default function InterviewerManagementModal({ open, onClose }) {
+export default function InterviewerManagementModal({ open, onClose, companyId }) {
     const [rows, setRows] = useState([createEmptyRow()]);
     const [existingInterviewers, setExistingInterviewers] = useState([]);
     const [message, setMessage] = useState("");
@@ -43,6 +43,10 @@ export default function InterviewerManagementModal({ open, onClose }) {
     const [activeTab, setActiveTab] = useState("create");
     const [deactivatingId, setDeactivatingId] = useState(null);
     const [activatingId, setActivatingId] = useState(null);
+
+    // ── Subscription limit state ──
+    const [interviewerLimit, setInterviewerLimit] = useState(null); // null = not loaded yet
+    const [limitError, setLimitError] = useState("");
 
     // Active = not suspended (includes "active" and "inactive" statuses)
     const activeCount = useMemo(
@@ -69,11 +73,78 @@ export default function InterviewerManagementModal({ open, onClose }) {
     //calls the api to get interviewers only whenn model is open
     useEffect(() => {
         if (open) {
+            setLimitError("");
             fetchExistingInterviewers();
         }
     }, [open]);
 
+    // ── Fetch subscription interviewer limit whenever the modal opens with a known companyId ──
+    useEffect(() => {
+        if (open && companyId) {
+            fetchInterviewerLimit();
+        }
+    }, [open, companyId]);
+
     if (!open) return null;
+
+    // ── Fetch plan limit + current interviewer count from Supabase ──
+    const fetchInterviewerLimit = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("active_subscriptions")
+                .select("plan_id, subscription_plans(interviewers, name)")
+                .eq("company_id", companyId)
+                .single();
+
+            if (error || !data) return;
+            const plan = data.subscription_plans;
+            setInterviewerLimit({ limit: plan?.interviewers ?? null, planName: plan?.name ?? "Unknown" });
+        } catch (err) {
+            console.error("Failed to fetch interviewer limit:", err);
+        }
+    };
+
+    // ── Verify against subscription limit right before creating an account ──
+    const checkLimitBeforeCreate = async () => {
+        if (!companyId) {
+            setLimitError("Cannot verify subscription limit. Please reload and try again.");
+            return false;
+        }
+
+        const { data: subData, error: subError } = await supabase
+            .from("active_subscriptions")
+            .select("plan_id, subscription_plans(interviewers, name)")
+            .eq("company_id", companyId)
+            .single();
+
+        if (subError || !subData) {
+            setLimitError("Could not verify subscription limit. Please try again.");
+            return false;
+        }
+
+        const plan = subData.subscription_plans;
+        const limit = plan?.interviewers;
+
+        if (!limit || limit <= 0) return true; // unlimited gets immediate pass
+
+        const { count, error: countError } = await supabase
+            .from("interviewers")
+            .select("*", { count: "exact", head: true })
+            .eq("company_id", companyId);
+
+        if (countError || count === null) {
+            setLimitError("Could not verify interviewer count. Please try again.");
+            return false;
+        }
+
+        if (count >= limit) {
+            setLimitError(`Interviewer limit reached. Your ${plan.name} plan allows ${limit} interviewers. Please upgrade your plan.`);
+            return false;
+        }
+
+        setLimitError("");
+        return true;
+    };
 
     const fetchExistingInterviewers = async () => {
         try {
@@ -247,6 +318,9 @@ export default function InterviewerManagementModal({ open, onClose }) {
     After logging in, update your profile details if needed.`;
     };
 
+    const buildCopyTextFromServer = (interviewer) =>
+        `Hello ${interviewer.fullName || "Interviewer"},\n\nYour interviewer account details are below.\n\nEmployee ID: ${interviewer.interviewerId}\nFull Name: ${interviewer.fullName}\nEmail: ${interviewer.email}\nPhone Number: ${interviewer.phone || "—"}\nRole: ${interviewer.interviewerRole}\nBranch: ${interviewer.branch}\nStatus: ${interviewer.accountStatus === "active" ? "Active" : interviewer.accountStatus === "suspended" ? "Suspended" : "Inactive"}\n\nPlease log in using your email and the temporary password provided.`;
+
     const copyDetails = async (row) => {
         try {
             await navigator.clipboard.writeText(buildCopyText(row));
@@ -254,6 +328,17 @@ export default function InterviewerManagementModal({ open, onClose }) {
             showMessage("Login details copied successfully.", "success");
             setTimeout(() => setCopiedId(null), 1800);
         } catch (err) {
+            showMessage("Failed to copy details.", "error");
+        }
+    };
+
+    const copyExistingDetails = async (interviewer) => {
+        try {
+            await navigator.clipboard.writeText(buildCopyTextFromServer(interviewer));
+            setCopiedId(interviewer.interviewerId);
+            showMessage("Details copied successfully.", "success");
+            setTimeout(() => setCopiedId(null), 1800);
+        } catch {
             showMessage("Failed to copy details.", "error");
         }
     };
@@ -332,6 +417,16 @@ export default function InterviewerManagementModal({ open, onClose }) {
             showMessage("Please complete all required fields first.", "error");
             return;
         }
+
+        // Hard guard — should never happen but catches any race condition
+        if (!companyId) {
+            setLimitError("Company ID not loaded yet. Please close and reopen this panel.");
+            return;
+        }
+
+        // ── SUBSCRIPTION LIMIT CHECK ──
+        const allowed = await checkLimitBeforeCreate();
+        if (!allowed) return;
 
         try {
             setLoadingId(row.id);
@@ -412,6 +507,11 @@ export default function InterviewerManagementModal({ open, onClose }) {
         });
     };
 
+    // Limit display info
+    const limitInfo = interviewerLimit
+        ? `${totalCount} / ${interviewerLimit.limit ?? "∞"} interviewers used`
+        : null;
+
     return (
         <div className="interviewer-modal-overlay" onClick={onClose}>
             {/* stoppropagation is used to prevent the click inside the form getting as click outside  */}
@@ -431,9 +531,28 @@ export default function InterviewerManagementModal({ open, onClose }) {
 
                     <div className="interviewer-stat-card">
                         <span>Total Interviewers</span>
-                        <strong>{totalCount}</strong>
+                        <strong>
+                            {totalCount}
+                            {interviewerLimit?.limit ? (
+                                <span style={{ fontSize: 12, fontWeight: 400, color: "#888", marginLeft: 4 }}>
+                                    / {interviewerLimit.limit}
+                                </span>
+                            ) : null}
+                        </strong>
                     </div>
                 </div>
+
+                {/* LIMIT WARNING BANNER */}
+                {limitError && (
+                    <div style={{
+                        background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626",
+                        borderRadius: 10, padding: "12px 16px", margin: "0 0 12px 0",
+                        fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "flex-start"
+                    }}>
+                        <span>⚠️ {limitError}</span>
+                        <button onClick={() => setLimitError("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 16, lineHeight: 1 }}>✕</button>
+                    </div>
+                )}
 
                 {/* tab buttons */}
                 <div className="interviewer-tabs">
@@ -461,7 +580,7 @@ export default function InterviewerManagementModal({ open, onClose }) {
                 {activeTab === "create" && (
                     <>
                         {/* add interviewer button */}
-                        <div>
+                        <div className="interviewer-toolbar">
                             <button
                                 type="button"
                                 className="interviewer-add-btn"
@@ -469,6 +588,7 @@ export default function InterviewerManagementModal({ open, onClose }) {
                             >
                                 + Add Interviewer
                             </button>
+                            {limitInfo && <span style={{ fontSize: 12, color: "#888", marginLeft: 12 }}>{limitInfo}</span>}
                         </div>
 
                         {/* interviewer form */}
@@ -787,7 +907,7 @@ export default function InterviewerManagementModal({ open, onClose }) {
                                                     placeholder="Enter a short professional summary"
                                                 />
 
-                                                {/* error etxt and counter (for this if under 450 gray over 450 red) */}
+                                                {/* error text and counter (for this if under 450 gray over 450 red) */}
                                                 <div
                                                     style={{
                                                         display: "flex",
@@ -880,6 +1000,14 @@ export default function InterviewerManagementModal({ open, onClose }) {
                                     </div>
 
                                     <div className="interviewer-card-actions">
+
+                                        <button
+                                            type="button"
+                                            className="btn secondary"
+                                            onClick={() => copyExistingDetails(interviewer)}
+                                        >
+                                            {copiedId === interviewer.interviewerId ? "Copied" : "Copy Details"}
+                                        </button>
 
                                         {interviewer.accountStatus !== "suspended" && (
                                             <button
