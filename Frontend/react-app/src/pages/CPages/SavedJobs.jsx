@@ -47,8 +47,8 @@ const SavedJobs = () => {
         <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
             <Sidebar />
 
-            <main className="flex-1 w-full px-4 py-8 overflow-y-auto flex flex-col items-center">
-                <div className="w-full max-w-4xl">
+            <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
+                <div className="w-full">
                     <div className="mb-6">
                         <h1 className="text-3xl font-bold" style={{ color: '#1a3f5c' }}>Saved Jobs</h1>
                         <p className="text-gray-500 text-sm mt-1">Review and apply to jobs you've saved for later.</p>
