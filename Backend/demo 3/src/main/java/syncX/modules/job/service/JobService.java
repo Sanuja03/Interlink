@@ -37,6 +37,9 @@ public class JobService {
     @Autowired
     private ActiveSubscriptionRepository activeSubscriptionRepository;
 
+    @Autowired
+    private RetrievalService retrievalService;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     // ================= CREATE =================

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/FilterPanel';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,6 +9,7 @@ const JobPosts = () => {
     const [allJobs, setAllJobs] = useState([]);
     const [savedJobIds, setSavedJobIds] = useState([]);
     const [appliedJobIds, setAppliedJobIds] = useState([]);
+    const [loadingJobs, setLoadingJobs] = useState(true);
 
     useEffect(() => {
         api.get('/candidate/saved-jobs/ids')
@@ -39,6 +39,7 @@ const JobPosts = () => {
     };
 
     useEffect(() => {
+        setLoadingJobs(true);
         let url = '/cjobposts';
         const params = new URLSearchParams();
         if (filters.category) {
@@ -68,10 +69,12 @@ const JobPosts = () => {
                 } else {
                     setAllJobs([]);
                 }
+                setLoadingJobs(false);
             })
             .catch(err => {
                 console.error("Error fetching jobs:", err);
                 setAllJobs([]);
+                setLoadingJobs(false);
             });
     }, [filters.category, filters.experience, filters.mode]);
 
@@ -105,7 +108,7 @@ const JobPosts = () => {
 
     const hasFilters = Object.values(filters).some(Boolean);
 
-    const filtered = sourceJobs.filter(job => {
+    const filtered = allJobs.filter(job => {
         const kw = keyword.toLowerCase().trim();
         const matchesKeyword =
             !kw ||
