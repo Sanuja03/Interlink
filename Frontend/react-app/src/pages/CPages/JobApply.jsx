@@ -179,45 +179,10 @@ const JobApply = () => {
   const [autofilledResume, setAutofilledResume] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    const load = async () => {
-      // ALWAYS fetch job from DB to get real company_id
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('id, job_title, location, employment_type, category, experience_level, company_id')
-        .eq('id', Number(id))
-        .single();
-
-      if (!error && data) {
-        setJob({
-          id: data.id,
-          title: data.job_title || 'Untitled',
-          company: data.company_id || '',  // TEMP: teammate to resolve company name
-          location: data.location || '',
-          mode: data.employment_type || '',
-          category: data.category || '',
-          experience: data.experience_level || '',
-          logo: 'https://img.icons8.com/color/96/briefcase.png',
-          companyId: data.company_id,  // real UUID — used in job_applications insert
-        });
-      }
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
 
-      // Get real candidate_id from candidates table (user_id = auth UUID)
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: candidate } = await supabase
-          .from('candidates')
-          .select('candidate_id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (candidate) setCandidateId(candidate.candidate_id);
-      }
-    };
-    load();
-  }, [id]);
 
   const set = field => e => setForm(p => ({ ...p, [field]: e.target.value }));
 
@@ -236,6 +201,9 @@ const JobApply = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    setSubmitting(true);
+    setSubmitError('');
 
     try {
       const applicationRequest = {
@@ -270,7 +238,11 @@ const JobApply = () => {
       setSubmitted(true);
     } catch (err) {
       console.error("Error submitting application:", err);
-      alert("Failed to submit application: " + (err.response?.data?.message || err.message));
+      const errMsg = err.response?.data?.message || err.message;
+      setSubmitError(errMsg);
+      alert("Failed to submit application: " + errMsg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
