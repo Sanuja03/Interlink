@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-
- 
 @RestController
 @RequestMapping("/api/candidate/applications")
 public class JobApplicationController {
@@ -26,19 +24,10 @@ public class JobApplicationController {
     @Autowired
     private JobApplicationService service;
 
-    // ── Helper ────────────────────────────────────────────────────────────────────
-
-    /** Extracts the Supabase user_id from the JWT 'sub' claim. */
     private UUID extractUserId(Jwt jwt) {
         return UUID.fromString(jwt.getSubject());
     }
 
-    // ── GET /prefill ──────────────────────────────────────────────────────────────
-
-    /**
-     * Returns candidate data for pre-filling the application form.
-     * Fields that are null/blank in the response must be entered manually by the candidate.
-     */
     @GetMapping("/prefill")
     public ResponseEntity<?> getPrefill(@AuthenticationPrincipal Jwt jwt) {
         try {
@@ -51,16 +40,6 @@ public class JobApplicationController {
         }
     }
 
-    // ── POST / (multipart) ────────────────────────────────────────────────────────
-
-    /**
-     * Submits a job application.
-     * Accepts multipart/form-data:
-     *   - "application" (JSON part): JobApplicationRequest
-     *   - "resume"      (file part): PDF file (optional but strongly recommended)
-     *
-     * Returns 201 Created with the saved JobApplicationResponse.
-     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> apply(
             @AuthenticationPrincipal Jwt jwt,
@@ -80,11 +59,6 @@ public class JobApplicationController {
         }
     }
 
-    // ── GET / ─────────────────────────────────────────────────────────────────────
-
-    /**
-     * Returns all job applications submitted by the logged-in candidate.
-     */
     @GetMapping({"", "/me"})
     public ResponseEntity<?> getMyApplications(@AuthenticationPrincipal Jwt jwt) {
         try {
@@ -99,12 +73,6 @@ public class JobApplicationController {
         }
     }
 
-    // ── GET /{id} ─────────────────────────────────────────────────────────────────
-
-    /**
-     * Returns a single job application by ID.
-     * Returns 403 if the application does not belong to the logged-in candidate.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getApplicationById(
             @AuthenticationPrincipal Jwt jwt,

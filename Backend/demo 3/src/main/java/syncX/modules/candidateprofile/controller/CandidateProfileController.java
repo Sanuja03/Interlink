@@ -22,13 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * REST controller for candidate profile management.
- * All endpoints extract the candidate's UUID from the Supabase JWT ('sub' claim).
- * A candidate can only access and modify their own profile.
- *
- * Base path: /api/candidate/profile  (secured to ROLE_candidate in SecurityConfig)
- */
 @RestController("candidateSideProfileController")
 @RequestMapping("/api/candidate/profile")
 public class CandidateProfileController {
@@ -36,22 +29,10 @@ public class CandidateProfileController {
     @Autowired
     private CandidateProfileService service;
 
-    // ──────────────────────────── HELPER ────────────────────────────
-
-    /**
-     * Extracts the candidate's UUID from the JWT 'sub' claim.
-     * Supabase sets 'sub' to the Supabase auth user ID, which we store as candidate_id.
-     */
     private UUID extractCandidateId(Jwt jwt) {
         return UUID.fromString(jwt.getSubject());
     }
 
-    // ──────────────────────────── GET PROFILE ────────────────────────────
-
-    /**
-     * GET /api/candidate/profile/me
-     * Returns the full profile (personal info + skills + education + resumes).
-     */
     @GetMapping("/me")
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal Jwt jwt) {
         try {
@@ -68,20 +49,12 @@ public class CandidateProfileController {
         }
     }
 
-    // ──────────────────────────── UPDATE PERSONAL INFO ────────────────────────────
-
-    /**
-     * PUT /api/candidate/profile/me
-     * Updates personal info fields (firstName, lastName, phone, bio, location).
-     * Only non-null fields are applied (patch semantics).
-     */
     @PutMapping("/me")
     public ResponseEntity<?> updateProfile(@AuthenticationPrincipal Jwt jwt,
                                            @Valid @RequestBody UpdateProfileRequest req) {
         try {
             UUID candidateId = extractCandidateId(jwt);
             CandidateProfile updated = service.updateProfile(candidateId, req);
-            // Map to DTO so frontend gets consistent camelCase field names
             CandidateProfileDTO dto = new CandidateProfileDTO();
             dto.setId(updated.getId());
             dto.setFirstName(updated.getFirstName());
@@ -100,13 +73,6 @@ public class CandidateProfileController {
         }
     }
 
-    // ──────────────────────────── PROFILE PICTURE ────────────────────────────
-
-    /**
-     * POST /api/candidate/profile/me/picture  (multipart/form-data, field: "file")
-     * Uploads or replaces the profile picture. Old picture is deleted from storage.
-     * Allowed types: JPG, PNG, WebP. Max size: 2 MB.
-     */
     @PostMapping(value = "/me/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadProfilePicture(@AuthenticationPrincipal Jwt jwt,
                                                   @RequestParam("file") MultipartFile file) {
@@ -125,12 +91,6 @@ public class CandidateProfileController {
         }
     }
 
-    // ──────────────────────────── RESUME / CV ────────────────────────────
-
-    /**
-     * POST /api/candidate/profile/me/resume  (multipart/form-data, field: "file")
-     * Uploads a new CV. Allowed types: PDF, DOC, DOCX. Max size: 5 MB.
-     */
     @PostMapping(value = "/me/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadResume(@AuthenticationPrincipal Jwt jwt,
                                           @RequestParam("file") MultipartFile file) {
@@ -139,7 +99,6 @@ public class CandidateProfileController {
             CandidateResume saved = service.uploadResume(candidateId, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (Exception e) {
-            // Validation errors from service (file type, size) should be 400
             String msg = e.getMessage() != null ? e.getMessage() : "Resume upload failed";
             boolean isValidationError = msg.contains("allowed") || msg.contains("exceed") || msg.contains("empty");
             return ResponseEntity.status(isValidationError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR)
@@ -147,10 +106,6 @@ public class CandidateProfileController {
         }
     }
 
-    /**
-     * GET /api/candidate/profile/me/resumes
-     * Returns all CVs uploaded by this candidate, newest first.
-     */
     @GetMapping("/me/resumes")
     public ResponseEntity<?> getResumes(@AuthenticationPrincipal Jwt jwt) {
         try {
@@ -163,10 +118,6 @@ public class CandidateProfileController {
         }
     }
 
-    /**
-     * DELETE /api/candidate/profile/me/resume/{resumeId}
-     * Deletes a CV from the database and from Supabase storage.
-     */
     @DeleteMapping("/me/resume/{resumeId}")
     public ResponseEntity<?> deleteResume(@AuthenticationPrincipal Jwt jwt,
                                           @PathVariable Long resumeId) {
@@ -186,13 +137,6 @@ public class CandidateProfileController {
         }
     }
 
-    // ──────────────────────────── SKILLS ────────────────────────────
-
-    /**
-     * PUT /api/candidate/profile/me/skills
-     * Replaces all skills for this candidate.
-     * Body: { "skills": ["Java", "React", "SQL"] }
-     */
     @PutMapping("/me/skills")
     public ResponseEntity<?> replaceSkills(@AuthenticationPrincipal Jwt jwt,
                                            @RequestBody Map<String, List<String>> body) {
@@ -213,13 +157,6 @@ public class CandidateProfileController {
         }
     }
 
-    // ──────────────────────────── EDUCATION ────────────────────────────
-
-    /**
-     * POST /api/candidate/profile/me/education
-     * Adds an education entry. 'degree', 'institution', and 'startDate' are required.
-     * 'endDate' is optional (null = currently studying).
-     */
     @PostMapping("/me/education")
     public ResponseEntity<?> addEducation(@AuthenticationPrincipal Jwt jwt,
                                           @RequestBody CandidateEducation education) {
@@ -235,10 +172,6 @@ public class CandidateProfileController {
         }
     }
 
-    /**
-     * DELETE /api/candidate/profile/me/education/{educationId}
-     * Deletes an education entry belonging to this candidate.
-     */
     @DeleteMapping("/me/education/{educationId}")
     public ResponseEntity<?> deleteEducation(@AuthenticationPrincipal Jwt jwt,
                                              @PathVariable Long educationId) {
@@ -251,12 +184,7 @@ public class CandidateProfileController {
                     .body(Map.of("message", "Error deleting education: " + e.getMessage()));
         }
     }
-    // ──────────────────────────── EXPERIENCE ────────────────────────────
 
-    /**
-     * POST /api/candidate/profile/me/experience
-     * Adds an experience entry. 'ccompanyName' and 'startDate' are required.
-     */
     @PostMapping("/me/experience")
     public ResponseEntity<?> addExperience(@AuthenticationPrincipal Jwt jwt,
                                            @RequestBody CandidateExperience experience) {
@@ -272,10 +200,6 @@ public class CandidateProfileController {
         }
     }
 
-    /**
-     * DELETE /api/candidate/profile/me/experience/{experienceId}
-     * Deletes an experience entry belonging to this candidate.
-     */
     @DeleteMapping("/me/experience/{experienceId}")
     public ResponseEntity<?> deleteExperience(@AuthenticationPrincipal Jwt jwt,
                                               @PathVariable Long experienceId) {

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar';
 import FilterPanel from '../../components/CandidatePages/CandidateJobPosts/FilterPanel';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
 import api from '../../lib/api';
 
 const JobPosts = () => {
@@ -30,7 +29,6 @@ const JobPosts = () => {
     const [visibleCount, setVisibleCount] = useState(5);
     const [filterExpanded, setFilterExpanded] = useState(false);
 
-    // Read values directly from URL search parameters (single source of truth)
     const keyword = searchParams.get('keyword') || '';
     const filters = {
         category: searchParams.get('category') || '',
@@ -46,12 +44,10 @@ const JobPosts = () => {
             params.append('category', filters.category);
         }
         if (filters.experience) {
-            // "Entry Level" → "ENTRY_LEVEL", "Senior Level" → "SENIOR_LEVEL"
             const expParam = filters.experience.toUpperCase().replace(/\s+/g, '_');
             params.append('experienceLevel', expParam);
         }
         if (filters.mode) {
-            // "Remote" → "REMOTE", "Onsite" → "ONSITE", "Hybrid" → "HYBRID"
             params.append('employmentType', filters.mode.toUpperCase());
         }
 
@@ -124,19 +120,12 @@ const JobPosts = () => {
         return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     };
 
-    const formatMode = (mode) => {
-        if (!mode) return '';
-        return mode.charAt(0) + mode.slice(1).toLowerCase();
-    };
-
     const visible = filtered.slice(0, visibleCount);
 
     return (
         <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
             <Sidebar />
             <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
-
-
 
                 <div className="flex items-center gap-2 mb-4">
                     <button onClick={() => setFilterExpanded(v => !v)}
@@ -164,7 +153,6 @@ const JobPosts = () => {
                                 className="flex items-center gap-5 rounded-2xl px-6 py-5 shadow-md relative group"
                                 style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
                             >
-                                {/* Logo */}
                                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
                                     <img src={job.logo} alt={job.company} className="w-12 h-12 object-contain" />
                                 </div>

@@ -8,7 +8,6 @@ import ApplicationTracker from "../../components/CandidatePages/CandidateDashboa
 import Searchbar from "../../components/CandidatePages/CandidateJobPosts/Searchbar";
 import api from "../../lib/api";
 
-/* ── Static Data (Used for Icons) ──────────────────────────────────────── */
 const statsIcons = [
     {
         label: "Interviews",
@@ -48,7 +47,6 @@ const statsIcons = [
     },
 ];
 
-/* ── Styles ─────────────────────────────────────────────── */
 const dashStyles = `
   .db-root {
     display: flex;
@@ -83,7 +81,6 @@ const dashStyles = `
     flex-wrap: wrap;
   }
 
-  /* Stats grid — 2×2 on left */
   .db-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -98,18 +95,15 @@ const dashStyles = `
     box-shadow: 0 2px 8px rgba(26,63,92,0.07);
   }
 
-  /* Upcoming interviews panel — right */
   .db-interviews {
     flex: 1;
     min-width: 260px;
   }
 
-  /* Search bar area */
   .db-search-wrap {
     margin: 0 -24px;
   }
 
-  /* Loading State Area */
   .db-loading {
     display: flex;
     justify-content: center;
@@ -135,7 +129,6 @@ const dashStyles = `
   }
 `;
 
-/* ── Component ──────────────────────────────────────────── */
 const Dashboard = () => {
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState("");
@@ -170,7 +163,6 @@ const Dashboard = () => {
     const upcomingInterviews = dashboardData?.upcomingInterviews || dashboardData?.interviews || [];
     const applicationTracker = dashboardData?.applicationTracker || dashboardData?.applications || [];
 
-    // Safely map fetched statistics for StatCards
     const dynamicStats = [
         {
             label: "Interviews",
@@ -194,7 +186,6 @@ const Dashboard = () => {
         }
     ];
 
-    // Safely map backend "date" fields to frontend's expected properties
     const dynamicApplications = applicationTracker.map(app => ({
         ...app,
         jobId: app.jobId,
@@ -213,7 +204,6 @@ const Dashboard = () => {
                 <Sidebar />
 
                 <div className="db-main">
-                    {/* Searchbar replaces old top navbar */}
                     <div className="db-search-wrap">
                         <Searchbar
                             keyword={keyword}
@@ -230,22 +220,18 @@ const Dashboard = () => {
                     </div>
 
                     <div className="db-content">
-                        {/* Top row: Stats + Upcoming Interviews */}
                         <div className="db-top-row">
-                            {/* 2×2 stats */}
                             <div className="db-stats">
                                 {dynamicStats.map((s) => (
                                     <StatCard key={s.label} label={s.label} count={s.count} icon={s.icon} />
                                 ))}
                             </div>
 
-                            {/* Upcoming interviews */}
                             <div className="db-interviews">
                                 <UpcomingInterviews interviews={upcomingInterviews} />
                             </div>
                         </div>
 
-                        {/* Application Tracker */}
                         <ApplicationTracker applications={dynamicApplications} />
                     </div>
 

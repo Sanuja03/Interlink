@@ -23,7 +23,6 @@ const CalendarPage = () => {
   useEffect(() => {
     const fetchCalendarData = async () => {
       try {
-        // Fetching 1 year range around today
         const start = new Date();
         start.setMonth(start.getMonth() - 6);
         const end = new Date();
