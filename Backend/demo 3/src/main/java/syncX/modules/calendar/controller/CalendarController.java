@@ -36,6 +36,30 @@ public class CalendarController {
         }
     }
 
+    @GetMapping("/interviewer/me")
+    public ResponseEntity<?> getCurrentInterviewerCalendar(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            List<CalendarEventDTO> events = calendarService.getCurrentInterviewerEvents(startDate, endDate);
+            return ResponseEntity.ok(events);
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(java.util.Map.of("message", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message", "Error fetching interviewer calendar: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/company")
+    public ResponseEntity<List<CalendarEventDTO>> getCompanyCalendar(
+            @RequestParam UUID companyId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<CalendarEventDTO> events = calendarService.getInterviewerEvents(companyId, startDate, endDate);
+        return ResponseEntity.ok(events);
+    }
+
     @GetMapping("/interviewer")
     public ResponseEntity<List<CalendarEventDTO>> getInterviewerCalendar(
             @RequestParam UUID interviewerId, // Maps to companyId

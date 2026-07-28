@@ -18,8 +18,6 @@ const Calendar = () => {
   useEffect(() => {
     const fetchCalendarData = async () => {
       try {
-        // Mock UUID for company/interviewer (replace with actual auth context later)
-        const interviewerId = "0c97e983-ff86-48cb-95a4-96076da055c4";
         // Fetching 1 year range around today
         const start = new Date();
         start.setMonth(start.getMonth() - 6);
@@ -28,7 +26,7 @@ const Calendar = () => {
         const startDate = start.toISOString().split('T')[0];
         const endDate = end.toISOString().split('T')[0];
 
-        const response = await api.get(`/calendar/interviewer?interviewerId=${interviewerId}&startDate=${startDate}&endDate=${endDate}`);
+        const response = await api.get(`/calendar/interviewer/me?startDate=${startDate}&endDate=${endDate}`);
         if (response.status === 200) {
           const data = response.data;
           const map = {};
@@ -36,11 +34,12 @@ const Calendar = () => {
             if (!map[ev.date]) {
               map[ev.date] = [];
             }
+            const candidateDisplay = ev.candidateName || 'Candidate';
             map[ev.date].push({
-              title: `${ev.jobTitle} – Candidate`, // Mock candidate name since it's not in the DTO
+              title: `${ev.jobTitle} – ${candidateDisplay}`,
               time: `${ev.time} – ${ev.endTime}`,
               mode: ev.mode,
-              candidate: { name: 'Candidate', role: ev.jobTitle },
+              candidate: { name: candidateDisplay, role: ev.jobTitle },
               meetingLink: ev.meetingLink,
               ...ev
             });

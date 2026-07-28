@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import CalendarSection from "../../components/CompanyPages/layout/CalendarSection";
 import api from "../../lib/api";
 import { getCompanyId } from "../../lib/getCompanyId";
 import "./CompanyDashboard.css";
@@ -14,6 +15,7 @@ import interviewIcon from "../../assets/Interview.png";
 export default function CompanyDashboard() {
   const navigate = useNavigate();
 
+  const [companyId, setCompanyId] = useState(null);
   const [stats, setStats] = useState({
     totalJobPosts: 0,
     totalApplications: 0,
@@ -27,10 +29,11 @@ export default function CompanyDashboard() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const companyId = await getCompanyId();
-        if (!companyId) return;
+        const cid = await getCompanyId();
+        if (!cid) return;
+        setCompanyId(cid);
 
-        const res = await api.get(`/company/dashboard/stats/${companyId}`);
+        const res = await api.get(`/company/dashboard/stats/${cid}`);
         setStats(res.data);
       } catch (err) {
         console.error("Failed to load dashboard stats:", err);
@@ -122,6 +125,11 @@ export default function CompanyDashboard() {
             </button>
 
           </div>
+        </div>
+
+        {/* ===== INTERVIEW CALENDAR SECTION ===== */}
+        <div style={{ marginTop: "32px" }}>
+          <CalendarSection companyId={companyId} />
         </div>
 
       </div>

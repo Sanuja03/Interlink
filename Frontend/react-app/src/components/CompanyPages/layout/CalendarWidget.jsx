@@ -11,6 +11,8 @@ export default function CalendarWidget({
   interviews = {},
   onJoinInterview,
   onGenerateQuestions,
+  showGenerateButton = false,
+  showJoinButton = true,
   defaultView = "Month",
 }) {
   const today = new Date();
@@ -194,13 +196,15 @@ export default function CalendarWidget({
                     </button>
                   )}
 
-                  <button
-                    onClick={() =>
-                      onGenerateQuestions?.(selectedInterview)
-                    }
-                  >
-                    Generate Questions
-                  </button>
+                  {showGenerateButton && (
+                    <button
+                      onClick={() =>
+                        onGenerateQuestions?.(selectedInterview)
+                      }
+                    >
+                      Generate Questions
+                    </button>
+                  )}
                 </div>
               </div>
             );
