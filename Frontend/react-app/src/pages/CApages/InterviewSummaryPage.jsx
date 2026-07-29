@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import api from "../../lib/api";
 
-/* ─── Interlink Design Tokens ──────────────────────────────────────────────── */
+
 const brand = {
   primary:       "#24698B",
   primaryLight:  "rgba(36,105,139,0.10)",
@@ -27,7 +27,7 @@ const brand = {
   font:          "'Outfit', sans-serif",
 };
 
-/* ─── Google Font inject (Outfit) ───────────────────────────────────────────── */
+
 if (!document.getElementById("interlink-outfit-font")) {
   const link = document.createElement("link");
   link.id   = "interlink-outfit-font";
@@ -36,7 +36,7 @@ if (!document.getElementById("interlink-outfit-font")) {
   document.head.appendChild(link);
 }
 
-/* ─── Score chip ─────────────────────────────────────────────────────────────*/
+
 const ScoreCell = ({ score }) => {
   if (!score || !score.submitted) {
     return (
@@ -76,7 +76,7 @@ const ScoreCell = ({ score }) => {
   );
 };
 
-/* ─── Status badge ────────────────────────────────────────────────────────────*/
+
 const StatusBadge = ({ status }) => {
   const pass = status === "PASS";
   return (
@@ -99,7 +99,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-/* ─── Round pill ──────────────────────────────────────────────────────────────*/
+
 const RoundPill = ({ current, total }) => (
   <span style={{
     display: "inline-block",
@@ -116,7 +116,7 @@ const RoundPill = ({ current, total }) => (
   </span>
 );
 
-/* ─── Main Page ───────────────────────────────────────────────────────────────*/
+
 export default function InterviewSummaryPage() {
   const navigate = useNavigate();
   const [rows,     setRows]     = useState([]);
@@ -215,7 +215,7 @@ export default function InterviewSummaryPage() {
     </td>
   );
 
-  /* ─── Loading ─── */
+
   if (loading) return (
     <DashboardLayout>
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
@@ -239,7 +239,7 @@ export default function InterviewSummaryPage() {
     </DashboardLayout>
   );
 
-  /* ─── Error ─── */
+
   if (error) return (
     <DashboardLayout>
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
@@ -281,7 +281,7 @@ export default function InterviewSummaryPage() {
     </DashboardLayout>
   );
 
-  /* ─── Main ─── */
+
   return (
     <DashboardLayout>
 
@@ -310,7 +310,7 @@ export default function InterviewSummaryPage() {
 
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
 
-        {/* Page title — floats outside the white card, same as every other page */}
+
         <h1 style={{
           fontSize: 24,
           fontWeight: 700,
@@ -323,8 +323,7 @@ export default function InterviewSummaryPage() {
           Review scores and make pass / fail decisions for your company's interviews.
         </p>
 
-        {/* One white card wraps everything below the title, same pattern
-            as CompanyDashboard's .cd-card / the other pages' outer-card */}
+
         <div style={{
           background: "#ffffff",
           border: "1px solid #e5e7eb",
@@ -355,7 +354,7 @@ export default function InterviewSummaryPage() {
             </div>
           )}
 
-          {/* Empty state */}
+
           {rows.length === 0 ? (
             <div style={{
               padding: "60px 0",

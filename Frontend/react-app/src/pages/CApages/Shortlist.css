@@ -1,8 +1,4 @@
-/* ═══════════════════════════════════════════════════════
-   ShortlistPage.css — Shortlist Candidate Review Page
-   ═══════════════════════════════════════════════════════ */
 
-/* ── Page Layout ── */
 .sl-page {
   max-width: 960px;
   margin: 0 auto;
@@ -56,9 +52,7 @@
   font-size: 14px;
 }
 
-/* ═══════════════════════════════════════════════════════
-   Profile Card
-   ═══════════════════════════════════════════════════════ */
+
 .sl-profile-card {
   display: flex;
   align-items: center;
@@ -152,9 +146,7 @@
   margin-top: 2px;
 }
 
-/* ═══════════════════════════════════════════════════════
-   Two-Column: AI + Manual Boxes
-   ═══════════════════════════════════════════════════════ */
+
 .sl-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -356,9 +348,7 @@
   transform: translateY(-1px);
 }
 
-/* ═══════════════════════════════════════════════════════
-   Summary Bar
-   ═══════════════════════════════════════════════════════ */
+
 .sl-summary-bar {
   display: flex;
   justify-content: space-around;
@@ -414,9 +404,7 @@
   border: 2px solid #f1c40f;
 }
 
-/* ═══════════════════════════════════════════════════════
-   Action Buttons
-   ═══════════════════════════════════════════════════════ */
+
 .sl-actions {
   display: flex;
   justify-content: center;
@@ -467,9 +455,7 @@
   transform: none;
 }
 
-/* ═══════════════════════════════════════════════════════
-   Responsive
-   ═══════════════════════════════════════════════════════ */
+
 @media (max-width: 600px) {
   .sl-profile-card {
     flex-direction: column;

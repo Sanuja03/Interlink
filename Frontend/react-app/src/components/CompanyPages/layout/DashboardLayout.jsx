@@ -65,10 +65,7 @@ export default function DashboardLayout({ children }) {
           </button>
         </div>
 
-        {/* page specific content — pages should not render their own header.
-            No forced white-card wrapper here: pages decide their own
-            layout (title on the gray background, white card around
-            content), same as the interviewer Dashboard.jsx pattern. */}
+
         <div className="dl-content">
           {children}
         </div>

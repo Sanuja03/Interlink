@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./CalendarWidget.css"; // ✅ IMPORTANT
+import "./CalendarWidget.css"; //  IMPORTANT
 
 /* ─── Helpers ───────────────────────── */
 const pad = (n) => String(n).padStart(2, "0");

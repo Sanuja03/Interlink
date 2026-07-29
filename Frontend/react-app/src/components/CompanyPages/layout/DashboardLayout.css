@@ -1,6 +1,4 @@
-/* ==========================================
-   ROOT
-========================================== */
+
 
 .dl-root {
   display: flex;
@@ -9,9 +7,7 @@
   font-family: "Outfit", sans-serif;
 }
 
-/* ==========================================
-   SIDEBAR
-========================================== */
+
 
 .dl-sidebar {
   position: fixed;
@@ -27,9 +23,7 @@
   z-index: 100;
 }
 
-/* ==========================================
-   MAIN AREA
-========================================== */
+
 
 .dl-main {
   margin-left: 260px;
@@ -43,12 +37,7 @@
   background: #f5f6f8;
 }
 
-/* ==========================================
-   TOP BAR
-   (plain CSS — no Tailwind dependency, so this
-   renders correctly regardless of whether Tailwind
-   is wired up in this app)
-========================================== */
+
 
 .dl-topbar {
   display: flex;
@@ -118,9 +107,7 @@
   flex-shrink: 0;
 }
 
-/* ==========================================
-   CONTENT
-========================================== */
+
 
 .dl-content {
   flex: 1;
@@ -132,19 +119,13 @@
   box-sizing: border-box;
 }
 
-/* ==========================================
-   FOOTER
-   (Footer itself carries no sidebar-offset styling —
-   it's already inside .dl-main, which is offset)
-========================================== */
+
 
 .dl-main footer {
   margin-top: 30px;
 }
 
-/* ==========================================
-   RESPONSIVE
-========================================== */
+
 
 @media (max-width: 900px) {
 

@@ -4,10 +4,7 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import api from "../../lib/api";
 import CandidateProfileView from "./Candidateprofileview";
 
-/**
- * Company-admin Candidate Profile page.
- * Same behavior/UI as before — now renders the shared view with full actions.
- */
+
 export default function CandidateProfile() {
   const navigate = useNavigate();
   const { candidateId } = useParams();

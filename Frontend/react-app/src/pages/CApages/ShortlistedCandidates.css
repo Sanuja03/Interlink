@@ -1,10 +1,4 @@
-/* =============================================================
-   SHORTLISTED CANDIDATES — modern, tight, professional styling
-   Design system aligned with InterviewPopups.css:
-   - Brand blue: #24698b
-   - Slate neutrals: #f8fafc / #e2e8f0 / #64748b / #0f172a
-   - Soft shadows, 8–10px radii, 38–40px control height
-============================================================= */
+
 
 :root {
   --sc-brand: #24698b;
@@ -17,10 +11,7 @@
   --sc-row-hover: #f8fafc;
 }
 
-/* ============ PAGE LAYOUT ============
-   Nested content inside DashboardLayout now — no min-height: 100vh
-   here anymore (that was stacking two 100vh containers and causing
-   content to jump on resize). The layout owns page height/background. */
+
 
 .sc-page {
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -33,7 +24,7 @@
   padding: 8px 28px 40px;
 }
 
-/* ============ PAGE TITLE ============ */
+
 
 .sc-title {
   font-size: 22px;
@@ -43,9 +34,7 @@
   letter-spacing: -0.01em;
 }
 
-/* ============ OUTER WHITE CARD ============
-   Wraps job picker + selected-job info + table, same pattern as
-   CompanyDashboard's .cd-card */
+
 
 .sc-outer-card {
   background: var(--sc-card);
@@ -55,7 +44,7 @@
   box-sizing: border-box;
 }
 
-/* ============ JOB PICKER BAR ============ */
+
 
 .sc-job-picker {
   display: flex;
@@ -122,7 +111,7 @@
   font-weight: 500;
 }
 
-/* ============ SELECTED JOB CARD ============ */
+
 
 .sc-job-card {
   background: #f8fafc;
@@ -187,7 +176,7 @@
   color: var(--sc-text);
 }
 
-/* ============ MANAGE SCORECARDS BUTTON ============ */
+
 
 .sc-template-btn {
   display: inline-flex;
@@ -227,7 +216,7 @@
   text-align: center;
 }
 
-/* ============ TABLE ============ */
+
 
 .sc-table-wrap {
   overflow-x: auto;
@@ -284,7 +273,7 @@
   color: #334155;
 }
 
-/* ============ MOBILE ============ */
+
 
 @media (max-width: 768px) {
   .sc-container {

@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import "./Header.css";
 
 import logo from "../../assets/logo.png"; 
-// ✅ change path if your logo is elsewhere
+
 
 export default function Header() {
   const links = [

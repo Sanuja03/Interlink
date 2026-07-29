@@ -9,7 +9,7 @@ export default function NotificationPopup({ isOpen, onClose }) {
 
   const handleView = () => {
     onClose();
-    navigate("/interview-confirmation"); // ✅ go to your page
+    navigate("/interview-confirmation");
   };
 
   return (

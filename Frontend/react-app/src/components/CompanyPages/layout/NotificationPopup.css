@@ -1,4 +1,4 @@
-/* REMOVE FULL SCREEN DARK OVERLAY ❌ */
+/* REMOVE FULL SCREEN DARK OVERLAY  */
 .np-overlay {
   position: fixed;
   inset: 0;
@@ -13,7 +13,7 @@
   top: 70px;
   right: 20px;
 
-  width: 300px; /* 🔥 small size */
+  width: 300px; /*  small size */
   background: #eef2f4;
   border: 1.5px solid #7b7b7b;
   border-radius: 16px;

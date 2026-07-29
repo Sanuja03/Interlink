@@ -42,7 +42,7 @@ public class JobService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    // ================= CREATE =================
+
     public Job createJob(JobRequestDto dto) throws Exception {
 
         String rawText = dto.getRequirementText();
@@ -50,7 +50,7 @@ public class JobService {
             throw new Exception("Key requirements cannot be empty");
         }
 
-        // ── SUBSCRIPTION JOB LIMIT CHECK ──────────────────────────────────
+
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
             UUID companyId = UUID.fromString(dto.getCompanyId()); // convert to uuid
 
@@ -70,7 +70,7 @@ public class JobService {
                 }
             }
         }
-        // ─────────────────────────────────────────────────────────────────
+
 
         // AI extraction
         String aiResponse = aiService.extractJobData(rawText); // ai service call
@@ -121,7 +121,7 @@ public class JobService {
         return saved;
     }
 
-    // ================= READ =================
+
     public List<Job> getJobsByCompany(String companyId) {
         UUID uuid = UUID.fromString(companyId);
         return jobRepo.findByCompanyId(uuid);
@@ -133,7 +133,7 @@ public class JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
-    // ================= UPDATE ( NEW) =================
+
     public Job updateJob(Long jobId, JobRequestDto dto) throws Exception {
 
         Job job = jobRepo.findById(jobId)
@@ -168,7 +168,7 @@ public class JobService {
         return saved;
     }
 
-    // ================= TOGGLE =================
+
     public Job toggleJobStatus(String jobId) {
         Long id = Long.parseLong(jobId);
 
@@ -184,7 +184,7 @@ public class JobService {
         return jobRepo.save(job);
     }
 
-    // ================= DELETE =================
+
     public void deleteJob(String jobId) {
         Long id = Long.parseLong(jobId);
 

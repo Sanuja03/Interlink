@@ -20,7 +20,7 @@ public class InterviewSummaryService {
         this.repo = repo;
     }
 
-    // ── Get all interviews for the table ──────────────────────────────────────
+
     public List<InterviewSummaryRowDTO> getInterviewList(UUID companyId) {
 
         List<Map<String, Object>> rows = repo.fetchCompletedInterviews(companyId);
@@ -67,7 +67,7 @@ public class InterviewSummaryService {
         }).collect(Collectors.toList());
     }
 
-    // ── Apply Pass or Fail decision ───────────────────────────────────────────
+
     @Transactional
     public String applyDecision(UUID scheduledId, UUID companyId, String decision) {
 
@@ -108,7 +108,7 @@ public class InterviewSummaryService {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+
     private int toInt(Object v, int fallback) {
         if (v == null) return fallback;
         if (v instanceof Number n) return n.intValue();

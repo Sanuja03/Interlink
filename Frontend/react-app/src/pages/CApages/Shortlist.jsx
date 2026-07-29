@@ -36,7 +36,7 @@ export default function ShortlistPage() {
         );
         setCandidate(profileRes.data);
 
-        // Check if already shortlisted (Case 3)
+
         try {
           const statusRes = await api.get("/company/shortlist/status", {
             params: {
@@ -94,7 +94,7 @@ export default function ShortlistPage() {
     return "Rejected";
   };
 
-  // Handle Confirm
+
   const handleConfirm = async () => {
     try {
       setSubmitting(true);
@@ -102,12 +102,12 @@ export default function ShortlistPage() {
 
       if (manualDecision === "Recommended") {
         if (isAlreadyShortlisted) {
-          // Case 3: Already shortlisted, no change needed
+
           alert("Candidate is already shortlisted.");
           return;
         }
 
-        // Case 1: Recommended + Confirm → shortlist
+
         await api.post("/company/shortlist", {
           candidateId: application.candidateId,
           companyId,
@@ -119,9 +119,9 @@ export default function ShortlistPage() {
 
         alert("Candidate shortlisted successfully!");
       } else {
-        // manualDecision === "Not Recommended"
+
         if (isAlreadyShortlisted) {
-          // Case 4: Already shortlisted → changed to Not Recommended → remove & reject
+
           await api.post("/company/shortlist/remove-and-reject", {
             candidateId: application.candidateId,
             companyId,
@@ -133,7 +133,7 @@ export default function ShortlistPage() {
 
           alert("Candidate removed from shortlist and rejected.");
         } else {
-          // Case 2: Not Recommended + Confirm (new) → reject only
+
           await api.post("/company/shortlist/reject", {
             candidateId: application.candidateId,
             companyId,
@@ -190,7 +190,7 @@ export default function ShortlistPage() {
       <div className="sl-page">
         <h1 className="sl-page-title">Shortlist</h1>
 
-        {/* ═══ Candidate Profile Card ═══ */}
+
         <section className="sl-profile-card">
           <div className="sl-profile-left">
             <div className="sl-avatar-wrap">
@@ -232,9 +232,9 @@ export default function ShortlistPage() {
           </div>
         </section>
 
-        {/* ═══ Two-Column: AI Box + Manual Box ═══ */}
+
         <div className="sl-two-col">
-          {/* ── AI Shortlisting Box ── */}
+
           <section className="sl-box sl-ai-box">
             <h3 className="sl-box-title sl-ai-title">AI Shortlisting Box</h3>
 
@@ -286,7 +286,7 @@ export default function ShortlistPage() {
             </div>
           </section>
 
-          {/* ── Manual Shortlisting Box ── */}
+
           <section className="sl-box sl-manual-box">
             <h3 className="sl-box-title sl-manual-title">
               Manual Shortlisting Box
@@ -323,7 +323,7 @@ export default function ShortlistPage() {
           </section>
         </div>
 
-        {/* ═══ Summary Bar ═══ */}
+
         <section className="sl-summary-bar">
           <div className="sl-summary-item">
             <span className="sl-summary-heading">AI Suggestion</span>
@@ -365,7 +365,7 @@ export default function ShortlistPage() {
           </div>
         </section>
 
-        {/* ═══ Action Button ═══ */}
+
         <div className="sl-actions">
           <button
             className="sl-confirm-btn"

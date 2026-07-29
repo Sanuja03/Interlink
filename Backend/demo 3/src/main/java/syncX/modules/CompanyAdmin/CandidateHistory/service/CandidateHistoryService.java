@@ -15,25 +15,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Candidate History Service
- *
- * Derives stage progression from:
- *   1. job_applications.applied_date         → "Applied" stage
- *   2. candidate_history_stages table         → Shortlisted stage date
- *   3. interview_requests / interview_scheduled tables
- *      → one "Interview Round N Scheduled" + "Interview Round N" pair
- *        per round that has actually been requested
- *   4. jobs.interview_rounds                  → total rounds configured on
- *        the job, used to pad "Not Completed" placeholder rows for rounds
- *        that haven't been requested/started yet
- *
- * An interview round is considered COMPLETED when ANY of these is true:
- *   a) interview_scheduled.status = 'completed'
- *   b) At least one interviewer_score_submissions row exists with is_submitted = true
- *   c) shortlisted_candidates.manual_decision IS NOT NULL for this application
- *      (company admin gave Pass/Fail directly without waiting for interviewer scores)
- */
+
 @Service
 public class CandidateHistoryService {
 
@@ -51,9 +33,6 @@ public class CandidateHistoryService {
         this.jdbc = jdbc;
     }
 
-    // ─────────────────────────────────────────────────────────────────────
-    // Public API
-    // ─────────────────────────────────────────────────────────────────────
 
     public CandidateHistoryResponseDTO getHistoryByApplication(Long jobApplicationId) {
 
@@ -192,18 +171,7 @@ public class CandidateHistoryService {
     // DB helpers
     // ─────────────────────────────────────────────────────────────────────
 
-    /**
-     * Fetches all non-cancelled interview requests for this application,
-     * oldest-first (= Round 1, Round 2, …).
-     *
-     * An interview round is marked COMPLETED when ANY of these is true:
-     *   a) interview_scheduled.status = 'completed'
-     *   b) At least one interviewer submitted a score card (is_submitted=true)
-     *   c) The company admin gave a Pass/Fail decision via Interview Summary
-     *      — stored in shortlisted_candidates.manual_decision for this
-     *        job_application_id. This covers the case where the admin
-     *        decides without waiting for interviewer scores (e.g. IN5042).
-     */
+
     private List<InterviewRoundInfo> fetchInterviewRounds(Long jobApplicationId) {
         String sql =
                 "SELECT ir.request_id, " +
@@ -261,10 +229,7 @@ public class CandidateHistoryService {
         }
     }
 
-    /**
-     * Reads jobs.interview_rounds for the job this application is for.
-     * Returns fallback if the lookup fails or the column is null/zero.
-     */
+
     private int fetchTotalRounds(Long jobApplicationId, int fallback) {
         try {
             Integer rounds = jdbc.queryForObject(
@@ -279,10 +244,7 @@ public class CandidateHistoryService {
         }
     }
 
-    /**
-     * Reads applied_date from job_applications using raw SQL (safe —
-     * avoids the Company_Id JPA annotation issue on the Application entity).
-     */
+
     private LocalDateTime getAppliedDate(Long jobApplicationId) {
         try {
             List<Map<String, Object>> rows = jdbc.queryForList(

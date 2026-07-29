@@ -1,12 +1,7 @@
 import React from "react";
 import "./CandidateHistory.css";
 
-/* ============================================================================
-   Shared, presentational Candidate History view.
-   Rendered by both the company-admin and interviewer history pages, so any UI
-   change lives here once. Renders only inner .ch-page content; each role wraps
-   it in its own DashboardLayout. No data fetching — all via props.
-   ============================================================================ */
+
 
 export function resolveDisplayStatus(rawStatus, stages = []) {
   const upper = (rawStatus || "").toUpperCase();

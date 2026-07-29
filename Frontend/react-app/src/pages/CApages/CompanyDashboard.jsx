@@ -45,7 +45,7 @@ export default function CompanyDashboard() {
     loadStats();
   }, []);
 
-  // CARD CONFIG (clean reusable)
+
   const cards = [
     {
       title: "Total Job Posts",
@@ -75,7 +75,7 @@ export default function CompanyDashboard() {
         <h1 className="cd-title">Dashboard</h1>
 
         <div className="cd-card">
-          {/* ===== STATS ===== */}
+
           <div className="cd-stats-grid">
             {cards.map((card, index) => (
               <div key={index} className="cd-stat-card">
@@ -93,7 +93,7 @@ export default function CompanyDashboard() {
             ))}
           </div>
 
-          {/* ===== ACTION BUTTONS ===== */}
+
           <div className="cd-links-grid">
 
             <button
@@ -127,7 +127,7 @@ export default function CompanyDashboard() {
           </div>
         </div>
 
-        {/* ===== INTERVIEW CALENDAR SECTION ===== */}
+
         <div style={{ marginTop: "32px" }}>
           <CalendarSection companyId={companyId} />
         </div>

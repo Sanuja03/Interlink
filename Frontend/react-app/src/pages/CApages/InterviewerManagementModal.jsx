@@ -44,11 +44,11 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
     const [deactivatingId, setDeactivatingId] = useState(null);
     const [activatingId, setActivatingId] = useState(null);
 
-    // ── Subscription limit state ──
+
     const [interviewerLimit, setInterviewerLimit] = useState(null); // null = not loaded yet
     const [limitError, setLimitError] = useState("");
 
-    // Active = not suspended (includes "active" and "inactive" statuses)
+
     const activeCount = useMemo(
         () =>
             existingInterviewers.filter((i) => i.accountStatus !== "suspended")
@@ -56,13 +56,13 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
         [existingInterviewers]
     );
 
-    // Total count = only existing interviewers from the server
+
     const totalCount = useMemo(
         () => existingInterviewers.length,
         [existingInterviewers]
     );
 
-    // Suspended count
+
     const suspendedCount = useMemo(
         () =>
             existingInterviewers.filter((i) => i.accountStatus === "suspended")
@@ -70,7 +70,7 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
         [existingInterviewers]
     );
 
-    //calls the api to get interviewers only whenn model is open
+
     useEffect(() => {
         if (open) {
             setLimitError("");
@@ -78,7 +78,7 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
         }
     }, [open]);
 
-    // ── Fetch subscription interviewer limit whenever the modal opens with a known companyId ──
+
     useEffect(() => {
         if (open && companyId) {
             fetchInterviewerLimit();
@@ -87,7 +87,7 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
 
     if (!open) return null;
 
-    // ── Fetch plan limit + current interviewer count from Supabase ──
+
     const fetchInterviewerLimit = async () => {
         try {
             const { data, error } = await supabase

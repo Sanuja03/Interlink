@@ -5,10 +5,7 @@
   --dot3: rgba(217, 217, 217, 0.34);
 }
 
-/* Nested content inside DashboardLayout now — no min-height/
-   full-page background here anymore (that was stacking two
-   100vh containers and causing content to jump on resize).
-   The layout owns page height and background. */
+
 .cj-page {
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }

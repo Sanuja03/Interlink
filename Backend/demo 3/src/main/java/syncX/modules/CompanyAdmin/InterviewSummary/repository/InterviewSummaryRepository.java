@@ -17,8 +17,7 @@ public class InterviewSummaryRepository {
         this.jdbc = jdbc;
     }
 
-    // ── Fetch all completed interviews for a company ─────────────────────────
-    // Shows ALL interviews regardless of whether all scorecards submitted
+
     public List<Map<String, Object>> fetchCompletedInterviews(UUID companyId) {
         String sql = """
             SELECT
@@ -52,8 +51,8 @@ public class InterviewSummaryRepository {
                 new MapSqlParameterSource("companyId", companyId));
     }
 
-    // ── Fetch interviewer scores for a scheduled interview ───────────────────
-    // Returns one row per assigned interviewer; score is null if not submitted
+
+
     public List<Map<String, Object>> fetchInterviewerScores(UUID scheduledId) {
         String sql = """
             SELECT
@@ -87,7 +86,7 @@ public class InterviewSummaryRepository {
                 new MapSqlParameterSource("scheduledId", scheduledId));
     }
 
-    // ── Fetch current round from history ─────────────────────────────────────
+
     public int fetchCurrentRound(long jobApplicationId) {
         String sql = """
             SELECT COALESCE(MAX(
@@ -103,7 +102,7 @@ public class InterviewSummaryRepository {
         return result != null ? result : 1;
     }
 
-    // ── Apply PASS decision ───────────────────────────────────────────────────
+
     public void applyPass(UUID candidateId, UUID companyId,
                           long jobApplicationId, Long jobId,
                           int currentRound, int totalRounds) {
@@ -227,7 +226,6 @@ public class InterviewSummaryRepository {
         }
     }
 
-    // ── Helper: extract generated key from KeyHolder ──────────────────────────
     private Long extractKey(org.springframework.jdbc.support.GeneratedKeyHolder holder) {
         try {
             java.util.Map<String, Object> keys = holder.getKeys();
@@ -239,7 +237,7 @@ public class InterviewSummaryRepository {
         return null;
     }
 
-    // ── Apply FAIL decision ───────────────────────────────────────────────────
+
     public void applyFail(UUID candidateId, UUID companyId,
                           long jobApplicationId, Long jobId, int currentRound) {
 
@@ -265,7 +263,7 @@ public class InterviewSummaryRepository {
                         .addValue("jobId", jobId));
     }
 
-    // ── Mark scheduled interview status ──────────────────────────────────────
+
     public void updateScheduledStatus(UUID scheduledId, String status) {
         jdbc.update("""
             UPDATE interview_scheduled
@@ -277,7 +275,7 @@ public class InterviewSummaryRepository {
                         .addValue("status", status));
     }
 
-    // ── Fetch single row meta for decision processing ─────────────────────────
+
     public Map<String, Object> fetchInterviewMeta(UUID scheduledId) {
         String sql = """
             SELECT
@@ -296,7 +294,7 @@ public class InterviewSummaryRepository {
                 new MapSqlParameterSource("scheduledId", scheduledId));
     }
 
-    // ── Security check ────────────────────────────────────────────────────────
+
     public boolean verifyCompanyOwns(UUID scheduledId, UUID companyId) {
         String sql = """
             SELECT COUNT(1) > 0

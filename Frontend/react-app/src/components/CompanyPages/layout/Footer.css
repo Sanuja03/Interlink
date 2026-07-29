@@ -6,10 +6,7 @@
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   padding: 34px 0 18px;
 
-  /* No sidebar-width math here — this Footer is rendered inside
-     .dl-main, which is already margin-left/width offset for the
-     sidebar in DashboardLayout.css. Adding offset again here caused
-     it to sit partly under the sidebar. */
+
 }
 
 .il-footer__container {

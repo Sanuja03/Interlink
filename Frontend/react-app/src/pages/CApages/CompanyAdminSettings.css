@@ -100,15 +100,15 @@
   color: var(--footer);
 }
 
-/* ✅ cards list */
+
 .cas-list {
   display: grid;
   gap: 22px;
-  max-width: 920px;      /* ✅ prevents huge full-width look */
-  margin: 0 auto;        /* ✅ center like screenshot */
+  max-width: 920px;
+  margin: 0 auto;
 }
 
-/* ✅ card = flex (no grid stretching) */
+
 .cas-card {
   width: 100%;
   display: flex;
@@ -133,7 +133,7 @@
 /* left vertical bar */
 .cas-bar {
   width: 10px;
-  height: 64px;          /* ✅ short bar like screenshot */
+  height: 64px;
   border-radius: 999px;
   background: var(--heading);
   box-shadow: 0 12px 20px rgba(36,105,139,0.25);
@@ -158,7 +158,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1;               /* ✅ takes remaining space */
+  flex: 1;
   min-width: 0;
 }
 
@@ -189,7 +189,7 @@
   margin-bottom: 20px;
 }
 
-/* 🔥 FIX LOGO SIZE + MAKE IT CIRCLE */
+
 .cas-company-logo {
   width: 100px;        /* adjust size (try 80px–120px) */
   height: 100px;
@@ -199,7 +199,7 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* optional soft shadow */
 }
 
-/* Optional: improve title spacing */
+
 .cas-title {
   margin-top: 12px;
   font-size: 24px;

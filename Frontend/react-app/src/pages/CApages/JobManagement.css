@@ -7,11 +7,7 @@
   --dot3: rgba(217, 217, 217, 0.34);
 }
 
-/* ================= PAGE =================
-   Nested content inside DashboardLayout now — no min-height/
-   full-page background here anymore (that was stacking two
-   100vh containers and causing content to jump on resize).
-   The layout owns page height and background. */
+
 .jm-page {
   font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
@@ -34,7 +30,7 @@
   margin: 0 0 20px;
 }
 
-/* ================= TOP BAR ================= */
+
 .jm-top {
   display: flex;
   align-items: center;
@@ -69,8 +65,7 @@
   color: #0c3e56;
 }
 
-/* OUTER WHITE CARD — wraps search/filter + table + create button,
-   same pattern as CompanyDashboard's .cd-card */
+
 .jm-outer-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -79,7 +74,7 @@
   box-sizing: border-box;
 }
 
-/* ================= SEARCH + FILTER ================= */
+
 .jm-tools {
   display: flex;
   align-items: center;
@@ -171,7 +166,7 @@
   font-size: 16px;
 }
 
-/* ================= STATUS ================= */
+
 .jm-status {
   display: inline-flex;
   align-items: center;
@@ -194,7 +189,7 @@
   background: #ff3b3b;
 }
 
-/* ================= BUTTONS ================= */
+
 .jm-btns {
   display: flex;
   gap: 12px;
@@ -229,7 +224,7 @@
   opacity: 0.9;
 }
 
-/* ================= CREATE BUTTON ================= */
+
 .jm-createWrap {
   display: flex;
   justify-content: center;
@@ -253,7 +248,7 @@
   transform: translateY(-2px);
 }
 
-/* ================= RESPONSIVE ================= */
+
 @media (max-width: 900px) {
   .jm-tools {
     gap: 14px;

@@ -22,10 +22,7 @@ public class InterviewSummaryController {
         this.service = service;
     }
 
-    /**
-     * GET /api/interview-summary?companyId=xxx
-     * Returns the full list of interviews for the table.
-     */
+
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<InterviewSummaryRowDTO>> getList(
@@ -34,11 +31,7 @@ public class InterviewSummaryController {
         return ResponseEntity.ok(service.getInterviewList(companyId));
     }
 
-    /**
-     * POST /api/interview-summary/decide
-     * Body: { scheduledId, decision: "PASS" | "FAIL", companyId }
-     * Applies the decision and triggers automatic progression.
-     */
+
     @PostMapping("/decide")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<Map<String, String>> decide(

@@ -27,27 +27,19 @@ public class ApplicationController {
         this.applicationService = applicationService;
     }
 
-    /**
-     * GET /api/company/applications/{companyId}
-     * Kept for backward compatibility with frontend.
-     */
+
     @GetMapping("/{companyId}")
     public List<ApplicationResponseDTO> getApplications(@PathVariable UUID companyId) {
         return applicationService.getApplications(companyId);
     }
 
-    /**
-     * GET /api/company/applications/detail/{applicationId}
-     */
+
     @GetMapping("/detail/{applicationId}")
     public ApplicationResponseDTO getApplicationDetail(@PathVariable Long applicationId) {
         return applicationService.getApplicationDetail(applicationId);
     }
 
-    /**
-     * POST /api/company/applications/{applicationId}/reject
-     * Rejects an application using raw SQL (avoids Company_Id issue).
-     */
+
     @PostMapping("/{applicationId}/reject")
     public ResponseEntity<Map<String, String>> rejectApplication(
             @AuthenticationPrincipal Jwt jwt,

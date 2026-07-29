@@ -102,7 +102,7 @@
   font-weight: 500;
 }
 
-/* ── History box ─────────────────────────────────────────────── */
+
 .ch-historyBox {
   background: rgba(255, 255, 255, 0.6);
   border: 1.5px solid rgba(36, 105, 139, 0.2);
@@ -141,7 +141,7 @@
   color: #24698b;
 }
 
-/* ── Table ───────────────────────────────────────────────────── */
+
 .ch-tableWrap { overflow-x: auto; }
 
 .ch-table {
@@ -182,7 +182,7 @@
 .ch-statusDot.green { background: #19dc19; }
 .ch-statusDot.red   { background: #ff1e1e; }
 
-/* ── Job info & Current Status badge ────────────────────────── */
+
 .ch-jobInfo {
   margin-top: 28px;
   display: flex;
@@ -193,7 +193,7 @@
 
 .ch-jobInfo p { margin: 0; }
 
-/* Coloured pill badge for Current Status */
+
 .ch-badge {
   display: inline-block;
   padding: 3px 14px;
@@ -211,7 +211,7 @@
 .ch-badge--pending      { background: #f3f4f6; color: #374151; }
 .ch-badge--default      { background: #e5eaee; color: #374151; }
 
-/* ── Back button ─────────────────────────────────────────────── */
+
 .ch-backWrap {
   margin-top: 28px;
   display: flex;
@@ -238,7 +238,7 @@
 .ch-backBtn:hover  { opacity: 0.88; transform: translateY(-1px); }
 .ch-backBtn:active { opacity: 1;    transform: translateY(0);    }
 
-/* ── Misc ────────────────────────────────────────────────────── */
+
 .ch-notePill {
   min-height: 40px;
   border-radius: 999px;
@@ -251,7 +251,7 @@
   font-weight: 500;
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
+
 @media (max-width: 1100px) {
   .ch-profileCard {
     flex-direction: column;

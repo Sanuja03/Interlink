@@ -27,31 +27,21 @@ public class CompanyDetailsService {
         this.companyRepository = companyRepository;
     }
 
-    // ================================
-    // GET COMPANY ID FROM USER ID
-    // ================================
+
     public UUID getCompanyIdByUserId(UUID userId) {
         Company company = companyRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("No company found for user: " + userId));
         return company.getCompanyId();
     }
 
-    // ================================
-    // GET COMPANY DETAILS
-    // If company_details row doesn't exist yet,
-    // auto-create it from the companies table.
-    // ================================
+
     public CompanyDetails getCompanyDetails(UUID companyId) {
         return companyDetailsRepository
                 .findByCompanyId(companyId)
                 .orElseGet(() -> initFromCompany(companyId));
     }
 
-    // ================================
-    // AUTO-INIT company_details FROM companies
-    // Only copies fields that exist in auth.entity.Company:
-    // companyName, companyEmail, industry, companySize
-    // ================================
+
     private CompanyDetails initFromCompany(UUID companyId) {
         Company company = companyRepository.findByCompanyId(companyId)
                 .orElseThrow(() -> new RuntimeException(
@@ -68,10 +58,7 @@ public class CompanyDetailsService {
         return companyDetailsRepository.save(details);
     }
 
-    // ================================
-    // UPDATE COMPANY DETAILS
-    // Updates company_details AND syncs back to companies.
-    // ================================
+
     public CompanyDetails updateCompanyDetails(UUID companyId,
                                                CompanyDetailsUpdateRequest request,
                                                MultipartFile logoFile) {
@@ -116,11 +103,7 @@ public class CompanyDetailsService {
         return savedDetails;
     }
 
-    // ================================
-    // SYNC BACK TO companies TABLE
-    // Only syncs fields that exist in auth.entity.Company:
-    // companyName, companyEmail, industry, companySize
-    // ================================
+
     private void syncToCompaniesTable(UUID companyId, CompanyDetailsUpdateRequest request) {
         Company company = companyRepository.findByCompanyId(companyId)
                 .orElse(null);
@@ -154,9 +137,7 @@ public class CompanyDetailsService {
         }
     }
 
-    // ================================
-    //  UPDATE LOGO ONLY
-    // ================================
+
     public CompanyDetails updateLogo(UUID companyId, MultipartFile logoFile) {
 
         CompanyDetails details = companyDetailsRepository
@@ -173,9 +154,7 @@ public class CompanyDetailsService {
         return companyDetailsRepository.save(details);
     }
 
-    // ================================
-    //  LOGO UPLOAD (TEMP MOCK)
-    // ================================
+
     private String uploadLogo(MultipartFile file) {
         // TODO: Replace with Supabase / S3 / Cloudinary
         return "https://your-storage-url/" + file.getOriginalFilename();

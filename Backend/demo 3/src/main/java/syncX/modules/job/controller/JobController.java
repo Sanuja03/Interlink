@@ -14,7 +14,7 @@ public class JobController {
     @Autowired
     private JobService jobService;
 
-    // ================= CREATE =================
+
 
     @PostMapping
     public ResponseEntity<?> createWithAI(@RequestBody JobRequestDto dto) {
@@ -34,7 +34,7 @@ public class JobController {
         }
     }
 
-    // ================= READ =================
+
 
     @GetMapping("/company/{companyId}")
     public ResponseEntity<?> getJobsByCompany(@PathVariable String companyId) {
@@ -54,7 +54,7 @@ public class JobController {
         }
     }
 
-    // ================= UPDATE (NEW FIX) =================
+
 
     @PutMapping("/{jobId}")
     public ResponseEntity<?> updateJob(
@@ -68,7 +68,7 @@ public class JobController {
         }
     }
 
-    // ================= TOGGLE =================
+
 
     @PutMapping("/{jobId}/toggle")
     public ResponseEntity<?> toggleJobStatus(@PathVariable Long jobId) { //  FIXED
@@ -79,7 +79,7 @@ public class JobController {
         }
     }
 
-    // ================= DELETE =================
+
 
     @DeleteMapping("/{jobId}")
     public ResponseEntity<?> deleteJob(@PathVariable Long jobId) { //  FIXED

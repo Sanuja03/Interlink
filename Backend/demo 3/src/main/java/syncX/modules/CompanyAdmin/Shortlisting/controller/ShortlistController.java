@@ -31,9 +31,7 @@ public class ShortlistController {
         this.shortlistService = shortlistService;
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // Check shortlist status for a candidate
-    // ═════════════════════════════════════════════════════════════
+
 
     @GetMapping("/api/company/shortlist/status")
     @PreAuthorize("hasRole('company_admin')")
@@ -61,9 +59,7 @@ public class ShortlistController {
         return ResponseEntity.ok(result);
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // Case 1: Recommended + Confirm → shortlist
-    // ═════════════════════════════════════════════════════════════
+
 
     @PostMapping("/api/company/shortlist")
     @PreAuthorize("hasRole('company_admin')")
@@ -74,9 +70,7 @@ public class ShortlistController {
         return ResponseEntity.ok(shortlistService.shortlistCandidate(request));
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // Case 2: Not Recommended + Confirm (new candidate) → reject only
-    // ═════════════════════════════════════════════════════════════
+
 
     @PostMapping("/api/company/shortlist/reject")
     @PreAuthorize("hasRole('company_admin')")
@@ -87,10 +81,7 @@ public class ShortlistController {
         return ResponseEntity.ok(shortlistService.rejectCandidate(request));
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // Case 4: Already shortlisted → changed to Not Recommended
-    // Remove from shortlist + reject
-    // ═════════════════════════════════════════════════════════════
+
 
     @PostMapping("/api/company/shortlist/remove-and-reject")
     @PreAuthorize("hasRole('company_admin')")
@@ -101,9 +92,7 @@ public class ShortlistController {
         return ResponseEntity.ok(shortlistService.removeAndReject(request));
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // DTO-based reads
-    // ═════════════════════════════════════════════════════════════
+
 
     @GetMapping("/api/company/shortlist/me")
     @PreAuthorize("hasRole('company_admin')")
@@ -140,15 +129,7 @@ public class ShortlistController {
         return ResponseEntity.ok(shortlistService.getShortlistedByJob(companyId, jobId));
     }
 
-    // ═════════════════════════════════════════════════════════════
-    // Page-level reads — FAST single-query endpoints
-    // ═════════════════════════════════════════════════════════════
 
-    /**
-     * Returns the list of jobs that have shortlisted candidates.
-     * Only jobs/rounds where no finalized interview exists yet are shown
-     * as "actionable" — but we return all for the dropdown.
-     */
     @GetMapping("/api/company/shortlisted-candidates/jobs")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> listJobsWithShortlisted(
@@ -176,19 +157,7 @@ public class ShortlistController {
         return ResponseEntity.ok(rows);
     }
 
-    /**
-     * Returns shortlisted candidates for the page table.
-     *
-     * KEY FIXES vs old version:
-     * 1. Uses a single SQL query with subqueries — no N+1 per-candidate status checks.
-     * 2. Deduplicates: if a candidate has multiple shortlisted_candidates rows for the
-     *    same job_application_id (e.g. round 1 + round 2), only the LATEST one is shown.
-     * 3. Computes the correct round number from candidate_history_stages.
-     * 4. Returns isFinalized flag directly from interview_scheduled table so the
-     *    frontend doesn't need to make N extra API calls.
-     * 5. Returns the history_id from candidate_history_stages (the stage that corresponds
-     *    to the current round), not just the bare shortlisted_candidates.history_id.
-     */
+
     @GetMapping("/api/company/shortlisted-candidates")
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<List<Map<String, Object>>> listShortlisted(
@@ -197,17 +166,7 @@ public class ShortlistController {
 
         UUID companyId = resolveCompanyId(jwt);
 
-        // ── Single efficient query ──────────────────────────────────────────
-        // CTE latest_sc: picks only the most-recent shortlisted_candidates row
-        //   per (candidate_id, job_application_id, company_id) so duplicates from
-        //   round-progression inserts don't appear twice.
-        //
-        // CTE round_info: gets the current round number and history stage id
-        //   from candidate_history_stages.
-        //
-        // Main: joins everything together and checks for a finalized interview
-        //   in interview_scheduled in a single LEFT JOIN subquery.
-        // ───────────────────────────────────────────────────────────────────
+
 
         String sql =
                 "WITH latest_sc AS ( " +
@@ -295,7 +254,7 @@ public class ShortlistController {
         return ResponseEntity.ok(rows);
     }
 
-    // ═════════════════════════════════════════════════════════════
+
     private UUID resolveCompanyId(Jwt jwt) {
         UUID adminUserId = UUID.fromString(jwt.getSubject());
         Company company = companyRepository.findByUserId(adminUserId)

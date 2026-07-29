@@ -18,16 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Shortlisting business logic.
- *
- * KEY CHANGES:
- *  - shortlistCandidate() now also writes a ROUND_1 row into candidate_history_stages
- *    and sets history_id on the shortlisted_candidates row so the Shortlisted page
- *    can display it.
- *  - rejectCandidate() writes a REJECTED row into candidate_history_stages.
- *  - All writes are @Transactional.
- */
+
 @Service
 public class ShortlistService {
 
@@ -45,17 +36,13 @@ public class ShortlistService {
         this.jdbc = jdbc;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Check if candidate is already shortlisted
-    // ─────────────────────────────────────────────────────────────
+
     public boolean isAlreadyShortlisted(UUID candidateId, Long jobApplicationId, UUID companyId) {
         return shortlistRepo.existsByCandidateIdAndJobApplicationIdAndCompanyId(
                 candidateId, jobApplicationId, companyId);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Get existing shortlist entry for a candidate
-    // ─────────────────────────────────────────────────────────────
+
     public ShortlistedCandidate getExistingShortlist(UUID candidateId, Long jobApplicationId, UUID companyId) {
         String sql = "SELECT * FROM shortlisted_candidates " +
                 "WHERE candidate_id = ? AND job_application_id = ? AND company_id = ? " +
@@ -78,10 +65,7 @@ public class ShortlistService {
         return results.isEmpty() ? null : results.get(0);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Case 1: Recommended + Confirm → shortlist
-    // Also writes ROUND_1 history stage and links history_id
-    // ─────────────────────────────────────────────────────────────
+
     @Transactional
     public ShortlistResponseDTO shortlistCandidate(ShortlistRequestDTO request) {
 
@@ -129,9 +113,7 @@ public class ShortlistService {
         return toDTO(saved, app, resolveCandidateName(saved.getCandidateId(), app));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Case 2: Not Recommended + Confirm (new candidate) → reject
-    // ─────────────────────────────────────────────────────────────
+
     @Transactional
     public ShortlistResponseDTO rejectCandidate(ShortlistRequestDTO request) {
 
@@ -164,10 +146,7 @@ public class ShortlistService {
         return dto;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Case 4: Already shortlisted → changed to Not Recommended
-    // Remove from shortlisted_candidates + reject
-    // ─────────────────────────────────────────────────────────────
+
     @Transactional
     public ShortlistResponseDTO removeAndReject(ShortlistRequestDTO request) {
 
@@ -202,18 +181,13 @@ public class ShortlistService {
         return dto;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Update job_applications.status using raw SQL
-    // ─────────────────────────────────────────────────────────────
+
     private void updateApplicationStatus(Long applicationId, String status) {
         jdbc.update("UPDATE job_applications SET status = ?::application_status WHERE id = ?",
                 status, applicationId);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Insert a history stage only if one with that stage name
-    // doesn't already exist for the application
-    // ─────────────────────────────────────────────────────────────
+
     private void insertHistoryStageIfAbsent(UUID candidateId, UUID companyId,
                                             Long jobApplicationId, Long jobId, String stage) {
         Integer count = jdbc.queryForObject(
@@ -229,9 +203,7 @@ public class ShortlistService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Insert a history stage and return the generated id
-    // ─────────────────────────────────────────────────────────────
+
     private Long insertHistoryStageReturningId(UUID candidateId, UUID companyId,
                                                Long jobApplicationId, Long jobId, String stage) {
         // If a row already exists for this stage, return its id
@@ -264,9 +236,7 @@ public class ShortlistService {
         return null;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Read: all shortlisted for a company, grouped by job
-    // ─────────────────────────────────────────────────────────────
+
     public List<ShortlistedByJobDTO> getShortlistedByCompany(UUID companyId) {
 
         List<ShortlistedCandidate> all = shortlistRepo.findByCompanyIdOrderByIdAsc(companyId);
@@ -309,9 +279,7 @@ public class ShortlistService {
         return result;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Read: shortlisted for a company + a specific job
-    // ─────────────────────────────────────────────────────────────
+
     public List<ShortlistResponseDTO> getShortlistedByJob(UUID companyId, Long jobId) {
         List<ShortlistedCandidate> candidates = shortlistRepo.findByCompanyIdAndJobId(companyId, jobId);
         if (candidates.isEmpty()) return new ArrayList<>();
@@ -333,9 +301,7 @@ public class ShortlistService {
                 .collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────
+
     private Map<Long, Application> loadApplications(Set<Long> appIds) {
         if (appIds.isEmpty()) return Collections.emptyMap();
         Map<Long, Application> map = new HashMap<>();
