@@ -5,6 +5,8 @@ import { fetchDashboardData } from "../../api/SAdminDashboardApi";
 import GlobalSearch from "../../components/SuperAdminComponents/Layout/GlobalSearch";
 import api from "../../lib/api";
 
+
+
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
 
@@ -88,7 +90,7 @@ export default function SuperAdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-6 font-outfit">
+    <div className="tw-preflight space-y-6 font-outfit">
 
       {/* Search bar */}
       <div className="flex items-center gap-4">

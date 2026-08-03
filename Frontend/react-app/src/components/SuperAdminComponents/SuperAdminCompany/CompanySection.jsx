@@ -10,7 +10,7 @@ export default function CompanySection({
   const safeCompanies = Array.isArray(companies) ? companies : [];
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 space-y-4">
+    <div className="tw-preflight bg-white rounded-xl shadow p-6 space-y-4">
 
       {/* Header */}
       <div className="flex items-center gap-2">

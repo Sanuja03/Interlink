@@ -78,7 +78,7 @@ export default function SuperAdminCompanies() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="tw-preflight space-y-6">
 
       {/* Page title */}
       <h1 className="text-xl font-semibold text-[#24698B]">

@@ -57,7 +57,7 @@ export default function CompanyCard({ type, company, refresh }) {
 
   return (
     <div
-      className="flex items-center justify-between bg-[#24698B]/20
+      className="tw-preflight flex items-center justify-between bg-[#24698B]/20
                  rounded-xl p-4 border-l-4 border-[#24698B]
                  hover:shadow-md transition"
     >

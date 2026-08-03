@@ -24,7 +24,7 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname.startsWith(path);
 
   return (
-    <aside className="w-60 min-h-screen bg-white flex flex-col border-r border-gray-200">
+    <aside className="tw-preflight w-60 min-h-screen bg-white flex flex-col border-r border-gray-200">
       
       {/* Logo */}
       <div className="flex items-center px-5 py-6">
@@ -107,12 +107,12 @@ const Sidebar = () => {
           path="/admin/ChatBot"
           icon={ChatBot}
         />
+
         <SidebarItem
           label="Support tickets"
           path="/admin/tickets"
           icon={SupportTickets}
         />
-        
 
       </nav>
 

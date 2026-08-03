@@ -101,7 +101,7 @@ export default function SuperAdminViewCompany() {
   const isSuspended = company.companyActivityStatus === "suspended";
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen space-y-6">
+    <div className="tw-preflight p-6 bg-gray-100 min-h-screen space-y-6">
       <BackButton label="Back to Companies" to="/admin/Companies" />
 
       {/* HEADER */}

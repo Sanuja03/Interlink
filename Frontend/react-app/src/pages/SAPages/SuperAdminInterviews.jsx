@@ -214,7 +214,7 @@ function InterviewCard({ interview }) {
     : "?";
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+    <div className="tw-preflight bg-white rounded-2xl shadow p-6 space-y-4">
       <div className="grid grid-cols-2 gap-6">
 
         {/* LEFT */}

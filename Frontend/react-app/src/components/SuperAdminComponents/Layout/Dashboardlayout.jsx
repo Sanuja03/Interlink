@@ -21,7 +21,7 @@ const DashboardLayout = ({ children }) => {
     }
   };
   return (
-    <div className="h-screen flex bg-gray-50 overflow-hidden">
+    <div className="tw-preflight h-screen flex bg-gray-50 overflow-hidden">
 
       {/* SIDEBAR */}
       <aside
