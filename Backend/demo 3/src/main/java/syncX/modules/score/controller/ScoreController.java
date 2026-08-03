@@ -88,7 +88,7 @@ public class ScoreController {
             @SuppressWarnings("unchecked")
             Map<String, Object> cv = (Map<String, Object>) parsed;
 
-            // ✅ SAFE EXTRACTION (no logic change, just safer)
+            // SAFE EXTRACTION (no logic change, just safer)
             List<String> cvSkills = new ArrayList<>();
             if (cv.get("skills") instanceof List<?> list) {
                 for (Object s : list) {
@@ -109,13 +109,13 @@ public class ScoreController {
             Job job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new RuntimeException("Job not found: " + jobId));
 
-            // ✅ Read directly from job entity — no derivation needed
+            // Read directly from job entity — no derivation needed
             double skillScore = scoringService.skillScore(cvSkills, job.getRequirements());
             double expScore   = scoringService.experienceScore(expYears, job.getExperienceRequired());
             double eduScore   = scoringService.educationScore(education, job.getEducationRequired());
             double finalScore = scoringService.finalScore(skillScore, expScore, eduScore);
 
-            // ✅ RESPONSE (UNCHANGED)
+            // RESPONSE (UNCHANGED)
             return ResponseEntity.ok(Map.of(
                     "score",          finalScore,
                     "skillScore",     Math.round(skillScore * 100),
