@@ -151,7 +151,6 @@ const JobApply = () => {
           github: data.githubUrl || '',
           yearsExp: data.yearsOfExperience ? String(data.yearsOfExperience) : '',
           currentRole: data.currentRole || '',
-          currentRole: data.currentRole || '',
           currentCompany: data.currentCompany || '',
           salary: data.expectedSalary ? String(data.expectedSalary) : ''
         }));
