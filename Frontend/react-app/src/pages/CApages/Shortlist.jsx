@@ -16,6 +16,8 @@ export default function ShortlistPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isAlreadyShortlisted, setIsAlreadyShortlisted] = useState(false);
+  const [aiQuestionScores, setAiQuestionScores] = useState([]);
+  const [aiQuestionScoreLoading, setAiQuestionScoreLoading] = useState(false);
 
   useEffect(() => {
     if (!applicationId) return;
@@ -53,6 +55,24 @@ export default function ShortlistPage() {
           }
         } catch (statusErr) {
           console.error("Failed to check shortlist status:", statusErr);
+        }
+
+        if (appData.jobId) {
+          setAiQuestionScoreLoading(true);
+          try {
+            const qsRes = await api.get("/company/ai-question-score", {
+              params: {
+                candidateId: appData.candidateId,
+                jobId: appData.jobId,
+              },
+            });
+            setAiQuestionScores(qsRes.data || []);
+          } catch (qsErr) {
+            console.error("Failed to load AI question score history:", qsErr);
+            setAiQuestionScores([]);
+          } finally {
+            setAiQuestionScoreLoading(false);
+          }
         }
       }
     } catch (err) {
@@ -236,7 +256,7 @@ export default function ShortlistPage() {
         <div className="sl-two-col">
 
           <section className="sl-box sl-ai-box">
-            <h3 className="sl-box-title sl-ai-title">AI Shortlisting Box</h3>
+            <h3 className="sl-box-title sl-ai-title">AI CV Analysis</h3>
 
             <div className="sl-score-bar">
               <span className="sl-score-label">AI Score</span>
@@ -322,6 +342,61 @@ export default function ShortlistPage() {
             </div>
           </section>
         </div>
+
+
+        <section className="sl-box sl-qs-box">
+          <h3 className="sl-box-title sl-qs-title">AI Question Score</h3>
+
+          {aiQuestionScoreLoading ? (
+            <div className="sl-no-skills">Loading AI interview history...</div>
+          ) : aiQuestionScores.length === 0 ? (
+            <div className="sl-no-skills">
+              No AI interview question/answer history found for this candidate.
+            </div>
+          ) : (
+            aiQuestionScores.map((session, sIdx) => {
+              const sessionScore = session.score ?? 0;
+              const sessionRecommended = session.recommended;
+              return (
+                <div className="sl-qs-session" key={session.id || sIdx}>
+                  <div className="sl-score-bar">
+                    <span className="sl-score-label">
+                      AI Question Score{session.savedAt ? ` — ${session.savedAt}` : ""}
+                    </span>
+                    <span className="sl-score-value">{sessionScore}%</span>
+                    <span
+                      className={`sl-score-dot ${
+                        sessionRecommended ? "sl-dot-green" : "sl-dot-red"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="sl-qs-list">
+                    {(session.qaPairs || []).map((pair, qIdx) => (
+                      <div className="sl-qs-item" key={qIdx}>
+                        <div className="sl-qs-question">
+                          <span className="sl-skill-num">{qIdx + 1}.</span> {pair.question}
+                        </div>
+                        <div className="sl-qs-answer">{pair.answer}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="sl-suggestion-row">
+                    <span className="sl-suggestion-label">AI Suggestion</span>
+                    <span
+                      className={`sl-suggestion-badge ${
+                        sessionRecommended ? "sl-badge-green" : "sl-badge-red"
+                      }`}
+                    >
+                      {sessionRecommended ? "Recommended" : "Not Recommended"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </section>
 
 
         <section className="sl-summary-bar">

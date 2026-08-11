@@ -205,6 +205,70 @@
   font-size: 24px;
   font-weight: 600;
 }
+
+/* Company details summary */
+.cas-summary {
+  max-width: 920px;
+  margin: 0 auto 28px;
+  background: rgba(204, 236, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 18px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+  padding: 22px 26px;
+}
+
+.cas-summaryTitle {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--footer);
+}
+
+.cas-summaryEmpty {
+  margin: 0;
+  color: #33475b;
+  font-size: 14px;
+}
+
+.cas-summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 28px;
+}
+
+.cas-summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cas-summaryItem--full {
+  grid-column: 1 / -1;
+}
+
+.cas-summaryLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--footer);
+  opacity: 0.8;
+}
+
+.cas-summaryValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: #05202f;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 700px) {
+  .cas-summaryGrid { grid-template-columns: 1fr; }
+  .cas-summary { padding: 18px; }
+}
+
 @media (max-width: 700px) {
   .cas-companyName { font-size: 28px; }
   .cas-card { padding: 16px; }

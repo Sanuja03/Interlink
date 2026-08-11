@@ -71,6 +71,7 @@ public class CandidateHistoryService {
         CandidateHistoryResponseDTO response = new CandidateHistoryResponseDTO();
         response.setCandidateId(app.getCandidateId());
         response.setCandidateName(app.getCandidateName());
+        response.setJobId(app.getJobId());
         response.setJobTitle(app.getJobTitle());
         response.setJobApplicationId(jobApplicationId);
         response.setAiScore(app.getScore());

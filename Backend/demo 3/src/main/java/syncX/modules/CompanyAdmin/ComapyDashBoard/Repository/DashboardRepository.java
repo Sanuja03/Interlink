@@ -27,7 +27,25 @@ public class DashboardRepository {
     }
 
     public long countShortlistedByCompany(UUID companyId) {
-        String sql = "SELECT COUNT(*) FROM shortlisted_candidates WHERE company_id = ? AND status = 'SHORTLISTED'";
+        // Mirrors the Application Management page's "Shortlisted" stat, which is
+        // derived from job_applications.status (not the shortlisted_candidates
+        // table, which can hold multiple rows per candidate/application and
+        // therefore over-counts). A row counts as "Shortlisted" here only if:
+        //   - its status is SHORTLISTED or ACCEPTED
+        //   - it hasn't been rejected
+        //   - it hasn't already progressed to an active interview
+        //     (Application Management re-labels those as "Interview")
+        String sql =
+                "SELECT COUNT(*) " +
+                        "FROM job_applications ja " +
+                        "WHERE ja.\"Company_Id\" = ? " +
+                        "  AND UPPER(COALESCE(ja.status::text, '')) IN ('SHORTLISTED', 'ACCEPTED') " +
+                        "  AND UPPER(COALESCE(ja.status::text, '')) <> 'REJECTED' " +
+                        "  AND NOT EXISTS ( " +
+                        "        SELECT 1 FROM interview_requests ir " +
+                        "        WHERE ir.job_application_id = ja.id " +
+                        "          AND ir.status IN ('pending', 'finalized') " +
+                        "  )";
         Long count = jdbcTemplate.queryForObject(sql, Long.class, companyId);
         return count != null ? count : 0;
     }

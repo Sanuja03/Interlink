@@ -11,6 +11,8 @@ export default function CandidateHistory() {
   const [historyData, setHistoryData] = useState(null);
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiQuestionScores, setAiQuestionScores] = useState([]);
+  const [aiQuestionScoreLoading, setAiQuestionScoreLoading] = useState(false);
 
   useEffect(() => {
     if (!applicationId) return;
@@ -31,6 +33,24 @@ export default function CandidateHistory() {
           );
           if (!cancelled) setCandidate(profileRes.data);
         }
+
+        if (historyRes.data?.candidateId && historyRes.data?.jobId) {
+          setAiQuestionScoreLoading(true);
+          try {
+            const qsRes = await api.get("/company/ai-question-score", {
+              params: {
+                candidateId: historyRes.data.candidateId,
+                jobId: historyRes.data.jobId,
+              },
+            });
+            if (!cancelled) setAiQuestionScores(qsRes.data || []);
+          } catch (qsErr) {
+            console.error("Failed to load AI question score history:", qsErr);
+            if (!cancelled) setAiQuestionScores([]);
+          } finally {
+            if (!cancelled) setAiQuestionScoreLoading(false);
+          }
+        }
       } catch (err) {
         console.error("Failed to load history:", err);
       } finally {
@@ -49,6 +69,8 @@ export default function CandidateHistory() {
         candidate={candidate}
         loading={loading}
         onBack={() => navigate(-1)}
+        aiQuestionScores={aiQuestionScores}
+        aiQuestionScoreLoading={aiQuestionScoreLoading}
       />
     </DashboardLayout>
   );

@@ -349,6 +349,52 @@
 }
 
 
+/* ── AI Question Score Box ── */
+.sl-qs-box {
+  margin-bottom: 28px;
+}
+
+.sl-qs-title {
+  color: #1a6b8a;
+  font-style: italic;
+}
+
+.sl-qs-session {
+  margin-bottom: 20px;
+}
+
+.sl-qs-session:last-child {
+  margin-bottom: 0;
+}
+
+.sl-qs-list {
+  margin-bottom: 16px;
+}
+
+.sl-qs-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f5;
+}
+
+.sl-qs-item:last-child {
+  border-bottom: none;
+}
+
+.sl-qs-question {
+  font-weight: 600;
+  color: #1a3c5e;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.sl-qs-answer {
+  font-size: 14px;
+  color: #445a6c;
+  padding-left: 22px;
+  white-space: pre-wrap;
+}
+
+
 .sl-summary-bar {
   display: flex;
   justify-content: space-around;

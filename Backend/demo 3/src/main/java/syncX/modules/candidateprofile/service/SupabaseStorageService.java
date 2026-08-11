@@ -64,6 +64,19 @@ public class SupabaseStorageService {
         return upload(file, PICTURE_BUCKET, fileName);
     }
 
+    /**
+     * Validates and uploads a company logo. Reuses the same picture bucket/
+     * validation rules as candidate profile pictures since it's already
+     * configured and working in Supabase.
+     * Returns the public URL of the uploaded file.
+     */
+    public String uploadCompanyLogo(MultipartFile file, String fileName) throws Exception {
+        validateFile(file, ALLOWED_PICTURE_TYPES, MAX_PICTURE_BYTES,
+                "Only JPG, PNG, and WebP images are allowed for company logos",
+                "Company logo size must not exceed 2 MB");
+        return upload(file, PICTURE_BUCKET, fileName);
+    }
+
     // ─────────────────────────────────── DELETE
     // ────────────────────────────────────
 
@@ -95,10 +108,10 @@ public class SupabaseStorageService {
     // ──────────────────────────────────
 
     private void validateFile(MultipartFile file,
-            Set<String> allowedTypes,
-            long maxBytes,
-            String typeMessage,
-            String sizeMessage) throws Exception {
+                              Set<String> allowedTypes,
+                              long maxBytes,
+                              String typeMessage,
+                              String sizeMessage) throws Exception {
         if (file == null || file.isEmpty()) {
             throw new Exception("File must not be empty");
         }
