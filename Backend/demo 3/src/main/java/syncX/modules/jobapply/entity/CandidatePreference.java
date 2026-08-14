@@ -20,7 +20,7 @@ public class CandidatePreference {
     @Column(name = "years_of_experience")
     private Integer yearsOfExperience;
 
-    @Column(name = "current_role")
+    @Column(name = "\"current_role\"")
     private String currentRole;
 
     @Column(name = "current_company")
