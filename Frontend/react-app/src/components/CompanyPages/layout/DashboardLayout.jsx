@@ -1,6 +1,7 @@
 import "./DashboardLayout.css";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import NotificationBell from "../../shared/NotificationBell";
 
 import notificationicon from "../../../assets/icons/notificationicon.png";
 
@@ -38,12 +39,7 @@ export default function DashboardLayout({ children }) {
         <div className="dl-topbar">
 
           {/* notification */}
-          <img
-            src={notificationicon}
-            alt="Notifications"
-            className="dl-noti-icon"
-            onClick={() => setShowPopup(true)}
-          />
+            <NotificationBell />
 
           <button onClick={handleLogout} className="dl-logout-btn">
             <svg
@@ -73,14 +69,7 @@ export default function DashboardLayout({ children }) {
         {/* footer — sits inside the already-offset main column */}
         <Footer />
 
-        <NotificationPopup
-          isOpen={showPopup}
-          onClose={() => setShowPopup(false)}
-          onView={() => {
-            setShowPopup(false);
-            navigate("/company/candidate-history");
-          }}
-        />
+
       </main>
     </div>
   );

@@ -14,6 +14,7 @@ import syncX.modules.subscription.entity.ActiveSubscription;
 import syncX.modules.subscription.entity.SubscriptionPlan;
 import syncX.modules.subscription.repository.ActiveSubscriptionRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import syncX.modules.questiongenerator.service.RetrievalService;
@@ -89,7 +90,17 @@ public class JobService {
         job.setKeyRequirements(rawText);
         job.setStatus("Open");
         job.setExperienceRequired(aiData.getExperienceRequired());
-        job.setEducationRequired(aiData.getEducationRequired());
+
+        // Let the company admin's typed education requirement take precedence;
+        // fall back to what the AI extracted from the key requirements text.
+        job.setEducationRequired(
+                (dto.getEducationRequired() != null && !dto.getEducationRequired().isBlank())
+                        ? dto.getEducationRequired()
+                        : aiData.getEducationRequired()
+        );
+
+        job.setJobBenefits(dto.getJobBenefits());
+        job.setDeadline(parseDeadline(dto.getDeadline()));
 
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
             job.setCompanyId(UUID.fromString(dto.getCompanyId()));
@@ -150,6 +161,9 @@ public class JobService {
         job.setInterviewRounds(dto.getInterviewRounds());
         job.setInterviewStages(dto.getInterviewStages());
         job.setKeyRequirements(dto.getRequirementText());
+        job.setEducationRequired(dto.getEducationRequired());
+        job.setJobBenefits(dto.getJobBenefits());
+        job.setDeadline(parseDeadline(dto.getDeadline()));
 
         // Optional: update company if provided
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
@@ -191,6 +205,31 @@ public class JobService {
         Job job = jobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        jobRepo.delete(job);
+        try {
+            jobRepo.delete(job);
+            jobRepo.flush();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // This job already has candidate applications (or interviews,
+            // shortlisting records, etc.) pointing to it, so the database
+            // correctly refuses to delete it and leave orphaned rows behind.
+            throw new IllegalStateException(
+                    "This job can't be deleted because it already has candidate applications "
+                            + "linked to it. Close the job instead of deleting it, or remove its "
+                            + "applications first if you really need to delete it."
+            );
+        }
+    }
+
+
+    private LocalDate parseDeadline(String deadline) {
+        if (deadline == null || deadline.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(deadline.trim());
+        } catch (Exception e) {
+            logger.warn("Could not parse deadline '{}', saving as null", deadline);
+            return null;
+        }
     }
 }

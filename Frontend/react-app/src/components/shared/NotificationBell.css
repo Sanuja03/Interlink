@@ -1,0 +1,132 @@
+.nb-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.nb-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.nb-btn:hover {
+  opacity: 1;
+}
+
+.nb-icon-clip {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  max-width: 26px;
+  max-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.nb-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.nb-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.nb-dropdown {
+  position: fixed;
+  width: 320px;
+  max-height: 400px;
+  background: #eef2f4;
+  border: 1.5px solid #7b7b7b;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  font-family: "Outfit", sans-serif;
+  z-index: 9999;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.nb-header {
+  padding: 12px 16px;
+  font-weight: 700;
+  border-bottom: 1px solid #d8dde0;
+}
+
+.nb-list {
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+.nb-empty {
+  padding: 20px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.nb-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #e2e6e8;
+}
+.nb-item:last-child {
+  border-bottom: none;
+}
+
+.nb-unread {
+  background: #e3edfb;
+}
+
+.nb-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #111827;
+}
+
+.nb-message {
+  margin: 2px 0 4px;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.nb-time {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+.nb-showmore {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #d8dde0;
+  color: #1d4ed8;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+}
+.nb-showmore:hover {
+  background: #e3edfb;
+}

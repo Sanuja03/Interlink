@@ -55,6 +55,12 @@ public class Job {
     @Column(name = "education_required")
     private String educationRequired;
 
+    @Column(name = "job_benefits")
+    private String jobBenefits;
+
+    @Column(name = "deadline")
+    private java.time.LocalDate deadline;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -118,6 +124,12 @@ public class Job {
 
     public String getEducationRequired() { return educationRequired; }
     public void setEducationRequired(String educationRequired) { this.educationRequired = educationRequired; }
+
+    public String getJobBenefits() { return jobBenefits; }
+    public void setJobBenefits(String jobBenefits) { this.jobBenefits = jobBenefits; }
+
+    public java.time.LocalDate getDeadline() { return deadline; }
+    public void setDeadline(java.time.LocalDate deadline) { this.deadline = deadline; }
 
     public List<JobRequirement> getRequirements() { return requirements; }
     public void setRequirements(List<JobRequirement> requirements) { this.requirements = requirements; }

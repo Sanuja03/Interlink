@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import notificationicon from "../../../assets/notification.png";
 import Footer from "./Footer";
 import { useAuth } from "../../../context/Authcontext";
+import NotificationBell from "../../shared/NotificationBell";
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -33,11 +34,7 @@ const DashboardLayout = ({ children }) => {
         {/* TOP BAR */}
         <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 border-b shrink-0">
 
-          <img
-            src={notificationicon}
-            alt="Notifications"
-            className="w-9 h-9 cursor-pointer opacity-80 hover:opacity-100"
-          />
+         <NotificationBell />
 
           <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogout}>
             <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md

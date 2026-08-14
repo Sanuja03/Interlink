@@ -14,6 +14,10 @@ public class JobRequestDto {
     private String requirementText;
     private String companyId;   // UUID string from frontend/JWT
 
+    private String educationRequired;
+    private String jobBenefits;
+    private String deadline;    // "yyyy-MM-dd" string from the HTML date input
+
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
@@ -46,4 +50,13 @@ public class JobRequestDto {
 
     public String getCompanyId() { return companyId; }
     public void setCompanyId(String companyId) { this.companyId = companyId; }
+
+    public String getEducationRequired() { return educationRequired; }
+    public void setEducationRequired(String educationRequired) { this.educationRequired = educationRequired; }
+
+    public String getJobBenefits() { return jobBenefits; }
+    public void setJobBenefits(String jobBenefits) { this.jobBenefits = jobBenefits; }
+
+    public String getDeadline() { return deadline; }
+    public void setDeadline(String deadline) { this.deadline = deadline; }
 }

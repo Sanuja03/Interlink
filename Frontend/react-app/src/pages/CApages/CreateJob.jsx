@@ -30,6 +30,7 @@ export default function CreateJob() {
   const [form, setForm] = useState({
     title: "", department: "", type: "", category: "",
     location: "", experience: "", vacancies: "", interview_rounds: "",
+    education: "", benefits: "", deadline: "",
   });
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
@@ -83,12 +84,15 @@ export default function CreateJob() {
       interviewStages: interviewStages.join(", "),
       requirementText: reqs.filter((r) => r.trim()).join(", "),
       companyId:       companyId,
+      educationRequired: form.education.trim(),
+      jobBenefits:       form.benefits.trim(),
+      deadline:          form.deadline || null,
     };
 
     try {
       const res = await api.post("/jobs", jobData);
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
-      setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "" });
+      setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "", education: "", benefits: "", deadline: "" });
       setInterviewStages([]); setReqs([""]);
     } catch (error) {
       const msg = error.response?.data;
@@ -219,6 +223,40 @@ export default function CreateJob() {
                 <option value="">Select</option>
                 {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => <option key={n}>{n}</option>)}
               </select>
+            </div>
+
+            <div className="cj-field">
+              <label className="cj-label">Education Requirements</label>
+              <input
+                name="education"
+                value={form.education}
+                className="cj-input"
+                onChange={handleChange}
+                placeholder="e.g. Bachelor's Degree in Computer Science"
+              />
+            </div>
+
+            <div className="cj-field">
+              <label className="cj-label">Job Benefits</label>
+              <textarea
+                name="benefits"
+                value={form.benefits}
+                className="cj-input"
+                onChange={handleChange}
+                placeholder="e.g. Health insurance, remote work allowance, annual bonus"
+                rows={3}
+              />
+            </div>
+
+            <div className="cj-field">
+              <label className="cj-label">Application Deadline</label>
+              <input
+                type="date"
+                name="deadline"
+                value={form.deadline}
+                className="cj-input"
+                onChange={handleChange}
+              />
             </div>
 
             <div className="cj-field">
