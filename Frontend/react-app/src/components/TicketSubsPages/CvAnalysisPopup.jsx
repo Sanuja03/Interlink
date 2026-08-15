@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { API_BASE_URL } from "../../lib/api";
 
 export default function CvAnalysisPopup({ application, companyId, onClose, onScoreSaved }) {
     const [stage, setStage] = useState("idle");
@@ -47,7 +48,7 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
         formData.append("jobId", String(application.jobId));
         formData.append("companyId", companyId);
   
-        const res = await fetch("http://localhost:8080/api/score/analyze", {
+        const res = await fetch(`${API_BASE_URL}/api/score/analyze`, {
           method: "POST",
           headers: { Authorization: `Bearer ${session?.access_token}` },
           body: formData,

@@ -7,7 +7,7 @@ import billingIcon from "../../../assets/billing.png";
 import settingsIcon from "../../../assets/settings.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import RecentActivities from "../../../assets/RecentActivities.png";
-import ChatBot from "../../../assets/ChatBot.png";
+import ChatBot from "../../../assets/Chatbot.png";
 import SupportTickets from "../../../assets/SupportTickets.png";
 import { useAuth } from "../../../context/Authcontext";
 

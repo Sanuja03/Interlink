@@ -48,7 +48,7 @@ import EditJob from "./pages/CApages/EditJob";
 import CandidateHistory from "./pages/CApages/CandidateHistory";
 import Shortlist from "./pages/CApages/Shortlist";
 import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
-import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
+import ShortlistedCandidates from "./pages/CApages/ShortlistedCandidates";
 import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
 import InterviewerManagementPage from "./pages/CApages/InterviewerManagementPage";
 

@@ -4,6 +4,7 @@ import "./EditJob.css";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import { API_BASE_URL } from "../../lib/api";
 
 export default function EditJob() {
   const { jobId } = useParams();
@@ -39,7 +40,7 @@ export default function EditJob() {
     if (!jobId || !token) return;
 
     axios
-      .get(`http://localhost:8080/api/jobs/${jobId}`, {
+      .get(`${API_BASE_URL}/api/jobs/${jobId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -113,7 +114,7 @@ export default function EditJob() {
         deadline: form.deadline || null,
       };
 
-      await axios.put(`http://localhost:8080/api/jobs/${jobId}`, data, {
+      await axios.put(`${API_BASE_URL}/api/jobs/${jobId}`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -131,7 +132,7 @@ export default function EditJob() {
     }
     try {
       if (!token) return;
-      await axios.delete(`http://localhost:8080/api/jobs/${jobId}`, {
+      await axios.delete(`${API_BASE_URL}/api/jobs/${jobId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Deleted!");

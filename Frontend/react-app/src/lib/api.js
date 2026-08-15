@@ -3,9 +3,13 @@ import { supabase } from "./supabase";
 
 const LOGIN_FLAG = "interlink_logged_in";
 
+// backend origin - set VITE_API_BASE_URL at build time, falls back to local backend
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
 //creates a customized version of axios called api
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },

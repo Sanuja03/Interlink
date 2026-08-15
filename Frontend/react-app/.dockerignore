@@ -1,0 +1,11 @@
+node_modules
+dist
+.vite
+.git
+.gitignore
+.DS_Store
+*.log
+Dockerfile
+.dockerignore
+README.md
+package-lock.json

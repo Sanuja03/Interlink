@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import api from "../../lib/api";
 import CandidateHistoryView from "../CApages/Candidatehistoryview";
-import "./InterviewerCandidateHistory.css";
+import "./Interviewercandidatehistory.css";
 
 /** Interviewer Candidate History page — panel-gated endpoints by requestId. */
 export default function CandidateHistory() {

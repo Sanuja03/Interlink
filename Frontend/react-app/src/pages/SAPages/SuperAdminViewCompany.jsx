@@ -4,7 +4,7 @@ import BackButton from "../../components/SuperAdminComponents/Layout/Back";
 import { getCompanyById, suspendCompany, restoreCompany, flagCompany, unflagCompany } from "../../api/SAdminCompanyApi";
 import { showSuccess } from "../../components/SuperAdminComponents/SAToast";
 import { createActivityLog } from "../../api/ActivityLogsApi";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/Authcontext";
 import toast from "react-hot-toast";
 
 export default function SuperAdminViewCompany() {
