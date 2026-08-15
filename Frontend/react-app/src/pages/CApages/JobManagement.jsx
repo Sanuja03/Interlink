@@ -53,11 +53,19 @@ export default function JobManagement() {
 
   const rowsMemo = useMemo(() => rows, [rows]);
 
+  const jobTitleOptions = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.title).filter(Boolean))),
+    [rows]
+  );
+
   const filtered = rowsMemo.filter((r) => {
-    return (
+    const matchesSearch =
       r.title?.toLowerCase().includes(search.toLowerCase()) ||
-      r.dept?.toLowerCase().includes(search.toLowerCase())
-    );
+      r.dept?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesFilter = filter === "All" || r.title === filter;
+
+    return matchesSearch && matchesFilter;
   });
 
   return (
@@ -85,9 +93,9 @@ export default function JobManagement() {
                 onChange={(e) => setFilter(e.target.value)}
               >
                 <option value="All">Filter by Job Title</option>
-                {rows.map((r) => (
-                  <option key={r.id} value={r.title}>
-                    {r.title}
+                {jobTitleOptions.map((title) => (
+                  <option key={title} value={title}>
+                    {title}
                   </option>
                 ))}
               </select>

@@ -7,6 +7,7 @@ public class CandidateHistoryResponseDTO {
 
     private UUID candidateId;
     private String candidateName;
+    private Long jobId;
     private String jobTitle;
     private Long jobApplicationId;
     private Double aiScore;          // Single overall AI score shown at top
@@ -18,6 +19,9 @@ public class CandidateHistoryResponseDTO {
 
     public String getCandidateName() { return candidateName; }
     public void setCandidateName(String candidateName) { this.candidateName = candidateName; }
+
+    public Long getJobId() { return jobId; }
+    public void setJobId(Long jobId) { this.jobId = jobId; }
 
     public String getJobTitle() { return jobTitle; }
     public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }

@@ -54,6 +54,8 @@ export default function CandidateHistoryView({
   candidate,
   loading,
   onBack,
+  aiQuestionScores = [],
+  aiQuestionScoreLoading = false,
 }) {
   if (loading) {
     return (
@@ -172,6 +174,41 @@ export default function CandidateHistoryView({
             </p>
           )}
         </div>
+      </section>
+
+      {/* AI Question Score */}
+      <section className="ch-historyBox ch-qsBox">
+        <h2 className="ch-historyTitle">AI Question Score</h2>
+
+        {aiQuestionScoreLoading ? (
+          <p className="ch-qsEmpty">Loading AI interview history...</p>
+        ) : aiQuestionScores.length === 0 ? (
+          <p className="ch-qsEmpty">
+            No AI interview question/answer history found for this candidate.
+          </p>
+        ) : (
+          aiQuestionScores.map((session, sIdx) => (
+            <div className="ch-qsSession" key={session.id || sIdx}>
+              <div className="ch-qsScoreBar">
+                <span className="ch-qsScoreLabel">
+                  Score{session.savedAt ? ` — ${session.savedAt}` : ""}
+                </span>
+                <span className="ch-qsScoreValue">{session.score ?? 0}%</span>
+              </div>
+
+              <div className="ch-qsList">
+                {(session.qaPairs || []).map((pair, qIdx) => (
+                  <div className="ch-qsItem" key={qIdx}>
+                    <div className="ch-qsQuestion">
+                      {qIdx + 1}. {pair.question}
+                    </div>
+                    <div className="ch-qsAnswer">{pair.answer}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </section>
 
       {/* Back Button */}

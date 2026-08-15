@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/Authcontext";
 import api from "../../../lib/api";
 import logo from "../../../assets/logo.png";
+import NotificationBell from "../../shared/NotificationBell";
 
 const sidebarStyles = `
   .sidebar {
@@ -395,6 +396,7 @@ const Sidebar = () => {
         {/* Logo + Toggle */}
         <div className="sidebar-logo">
           <img src={logo} alt="InterLink logo" className="sidebar-logo-img" />
+          {expanded && <NotificationBell />}
           <button
             className="sidebar-toggle"
             onClick={() => setExpanded(!expanded)}

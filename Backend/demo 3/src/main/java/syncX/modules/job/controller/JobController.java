@@ -86,6 +86,8 @@ public class JobController {
         try {
             jobService.deleteJob(String.valueOf(jobId));
             return ResponseEntity.ok("Job deleted successfully");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.getMessage());
         }

@@ -9,6 +9,7 @@ import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import FloatingAvailabilityBtn from "./FloatingAvailabilityBtn";
 import notificationicon from "../../../assets/notificationicon.png";
+import NotificationBell from "../../shared/NotificationBell";
 
 const SIDEBAR_WIDTH = 240;
 
@@ -71,11 +72,7 @@ const DashboardLayout = ({ children }) => {
         <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
 
           {/* notification */}
-          <img
-            src={notificationicon}
-            alt="Notifications"
-            className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100"
-          />
+            <NotificationBell />
 
           <button
             onClick={handleLogout}

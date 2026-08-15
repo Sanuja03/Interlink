@@ -18,6 +18,9 @@ export default function EditJob() {
     experience: "",
     vacancies: 1,
     interviewRounds: 1,
+    education: "",
+    benefits: "",
+    deadline: "",
   });
 
   const [interviewStages, setInterviewStages] = useState([]);
@@ -50,6 +53,9 @@ export default function EditJob() {
           experience: job.experienceLevel || "",
           vacancies: job.vacancies || 1,
           interviewRounds: job.interviewRounds || 1,
+          education: job.educationRequired || "",
+          benefits: job.jobBenefits || "",
+          deadline: job.deadline ? job.deadline.slice(0, 10) : "",
         });
         setInterviewStages(
           job.interviewStages ? job.interviewStages.split(", ") : []
@@ -102,6 +108,9 @@ export default function EditJob() {
         interviewStages: interviewStages.filter(Boolean).join(", "),
         requirementText: reqs.filter(Boolean).join(", "),
         companyId,
+        educationRequired: form.education,
+        jobBenefits: form.benefits,
+        deadline: form.deadline || null,
       };
 
       await axios.put(`http://localhost:8080/api/jobs/${jobId}`, data, {
@@ -117,6 +126,9 @@ export default function EditJob() {
   };
 
   const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this job? This can't be undone.")) {
+      return;
+    }
     try {
       if (!token) return;
       await axios.delete(`http://localhost:8080/api/jobs/${jobId}`, {
@@ -126,6 +138,11 @@ export default function EditJob() {
       navigate("/company/job-management");
     } catch (err) {
       console.error("DELETE ERROR:", err);
+      const message =
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : "Failed to delete this job. Please try again.";
+      alert(message);
     }
   };
 
@@ -141,7 +158,7 @@ export default function EditJob() {
               <label className="ej-label">Job Title</label>
               <input
                 name="title"
-                value={form.title+1}
+                value={form.title}
                 className="ej-input"
                 onChange={handleChange}
                 placeholder="e.g. Frontend Developer"
@@ -269,6 +286,40 @@ export default function EditJob() {
                   <option key={n}>{n}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Education Requirements</label>
+              <input
+                name="education"
+                value={form.education}
+                className="ej-input"
+                onChange={handleChange}
+                placeholder="e.g. Bachelor's Degree in Computer Science"
+              />
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Job Benefits</label>
+              <textarea
+                name="benefits"
+                value={form.benefits}
+                className="ej-input"
+                onChange={handleChange}
+                placeholder="e.g. Health insurance, remote work allowance, annual bonus"
+                rows={3}
+              />
+            </div>
+
+            <div className="ej-field">
+              <label className="ej-label">Application Deadline</label>
+              <input
+                type="date"
+                name="deadline"
+                value={form.deadline}
+                className="ej-input"
+                onChange={handleChange}
+              />
             </div>
 
             <div className="ej-field">

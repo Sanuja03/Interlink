@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import CompanyDetailsModal from "./CompanyDetailsModal";
 import RolePermissionModal from "./RolePermissionModal";
-import InterviewerManagementModal from "./InterviewerManagementModal";
 import { supabase } from "../../lib/supabase";
 import api from "../../lib/api";
 import "./CompanyAdminSettings.css";
@@ -11,19 +10,24 @@ import defaultAvatar from "../../assets/images/default-avatar.png";
 export default function CompanyAdminSettings() {
   const [openCompanyDetails, setOpenCompanyDetails] = useState(false);
   const [openRolePerm, setOpenRolePerm] = useState(false);
-  const [openInterviewerManagement, setOpenInterviewerManagement] = useState(false);
   const [companyId, setCompanyId] = useState(null);
   const [companyName, setCompanyName] = useState("Company Admin Settings");
   const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyDetails, setCompanyDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(true);
 
   const fetchCompanyDetails = async (id) => {
     if (!id) return;
+    setDetailsLoading(true);
     try {
       const res = await api.get(`/company/${id}/details`);
       setCompanyName(res.data.companyName || "Company Admin Settings");
       setCompanyLogo(res.data.logoUrl || null);
+      setCompanyDetails(res.data);
     } catch (err) {
       console.error("Failed to load company info:", err);
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
@@ -53,12 +57,15 @@ export default function CompanyAdminSettings() {
       icon: "🏢",
       action: () => setOpenCompanyDetails(true),
     },
-    {
-      title: "Interviewer Management",
-      desc: "Manage interviewers available for scheduling interviews.",
-      icon: "🧑‍💼",
-      action: () => setOpenInterviewerManagement(true),
-    },
+  ];
+
+  const summaryFields = [
+    { label: "Company Name", value: companyDetails?.companyName },
+    { label: "Industry", value: companyDetails?.industry },
+    { label: "Company Size", value: companyDetails?.companySize },
+    { label: "Location", value: companyDetails?.companyLocation },
+    { label: "Company Email", value: companyDetails?.companyEmail },
+    { label: "Website", value: companyDetails?.website },
   ];
 
   return (
@@ -74,6 +81,31 @@ export default function CompanyAdminSettings() {
                 alt="Company"
               />
               <h1 className="cas-title">{companyName}</h1>
+            </div>
+
+            {/* Current Company Details Summary */}
+            <div className="cas-summary">
+              <h2 className="cas-summaryTitle">Company Details</h2>
+
+              {detailsLoading ? (
+                <p className="cas-summaryEmpty">Loading company details...</p>
+              ) : (
+                <div className="cas-summaryGrid">
+                  {summaryFields.map((f) => (
+                    <div className="cas-summaryItem" key={f.label}>
+                      <span className="cas-summaryLabel">{f.label}</span>
+                      <span className="cas-summaryValue">{f.value || "—"}</span>
+                    </div>
+                  ))}
+
+                  <div className="cas-summaryItem cas-summaryItem--full">
+                    <span className="cas-summaryLabel">About the Company</span>
+                    <span className="cas-summaryValue">
+                      {companyDetails?.about || "—"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="cas-list">
@@ -104,11 +136,6 @@ export default function CompanyAdminSettings() {
           setOpenCompanyDetails(false);
           fetchCompanyDetails(companyId);
         }}
-      />
-      <InterviewerManagementModal
-        open={openInterviewerManagement}
-        onClose={() => setOpenInterviewerManagement(false)}
-        companyId={companyId}
       />
       <RolePermissionModal
         open={openRolePerm}

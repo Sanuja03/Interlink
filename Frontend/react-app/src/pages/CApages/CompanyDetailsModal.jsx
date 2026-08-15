@@ -40,16 +40,25 @@ export default function CompanyDetailsModal({ open, onClose }) {
     e.preventDefault();
     setLoading(true);
 
+    const payload = {
+      companyName: name,
+      industry,
+      companySize,
+      companyLocation: location,
+      companyEmail: email,
+      website,
+      about,
+    };
+
+    // TEMP DEBUG — check the browser console (F12) to confirm what's
+    // actually being sent. Remove this line once the bug is confirmed fixed.
+    console.log("Saving company details, payload:", payload);
+
     try {
-      await api.put(`/company/${companyId}/details`, {
-        companyName: name,
-        industry,
-        companySize,
-        companyLocation: location,
-        companyEmail: email,
-        website,
-        about,
-      });
+      const res = await api.put(`/company/${companyId}/details`, payload);
+
+      // TEMP DEBUG — check what the backend echoed back after saving.
+      console.log("Save response from backend:", res.data);
 
       alert("Saved successfully!");
       onClose();
@@ -96,13 +105,21 @@ export default function CompanyDetailsModal({ open, onClose }) {
   const stop = (e) => e.stopPropagation();
 
   return (
-    <div className="cdm-overlay" onClick={onClose}>
+    <div className="cdm-overlay">
       <div className="cdm-modal" onClick={stop}>
         <div className="cdm-head">
           <div className="cdm-titleRow">
             <span className="cdm-square" />
             <h2 className="cdm-title">Company Details</h2>
           </div>
+          <button
+            type="button"
+            className="cdm-closeX"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
 
         <div className="cdm-uploadRow">
@@ -170,16 +187,13 @@ export default function CompanyDetailsModal({ open, onClose }) {
           </Field>
 
           <Field label="Location">
-            <select
+            <input
               className="cdm-input"
+              type="text"
+              placeholder="e.g. Colombo, Sri Lanka"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-            >
-              <option value="">Select Location</option>
-              <option value="Colombo">Colombo</option>
-              <option value="Galle">Galle</option>
-              <option value="Kandy">Kandy</option>
-            </select>
+            />
           </Field>
 
           <Field label="Company Email">
