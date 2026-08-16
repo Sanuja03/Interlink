@@ -6,23 +6,16 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "interview_request")
+@Table(name = "interview_requests")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class AdminUsersInterviewRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "request_id")
+    private UUID requestId;
 
     @Column(name = "candidate_id")
     private UUID candidateId;
-
-    @Column(name = "interviewer_id")
-    private UUID interviewerId;
-
-    @Column(name = "status")
-    private String status;
 }
