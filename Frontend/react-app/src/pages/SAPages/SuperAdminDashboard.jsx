@@ -88,7 +88,7 @@ export default function SuperAdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-6 font-outfit">
+    <div className="tw-preflight space-y-6 font-outfit">
 
       {/* Search bar */}
       <div className="flex items-center gap-4">
