@@ -42,6 +42,7 @@ import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluation
 import CompanyDashboard from "./pages/CApages/CompanyDashboard";
 import ApplicationManagement from "./pages/CApages/ApplicationManagement";
 import CompanyAdminSettings from "./pages/CApages/CompanyAdminSettings";
+import CompanySubscriptionPlansView from "./pages/CApages/CompanySubscriptionPlansView"; 
 import JobManagement from "./pages/CApages/JobManagement";
 import CreateJob from "./pages/CApages/CreateJob";
 import EditJob from "./pages/CApages/EditJob";
@@ -180,6 +181,7 @@ function App() {
         <Route path="/company/shortlisted" element={<CompanyAdmin><ShortlistedCandidates /></CompanyAdmin>} />
         <Route path="/company/application-management" element={<CompanyAdmin><ApplicationManagement /></CompanyAdmin>} />
         <Route path="/company/settings" element={<CompanyAdmin><CompanyAdminSettings /></CompanyAdmin>} />
+        <Route path="/company/subscription-plans" element={<CompanyAdmin><CompanySubscriptionPlansView /></CompanyAdmin>} /> 
         <Route path="/company/candidate-profile/:candidateId" element={<CompanyAdmin><CompanyCandidateProfile /></CompanyAdmin>} />
         <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
         <Route path="/company/interview-summary" element={<CompanyAdmin><InterviewSummaryPage /></CompanyAdmin>} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // ADDED
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import CompanyDetailsModal from "./CompanyDetailsModal";
 import RolePermissionModal from "./RolePermissionModal";
@@ -16,6 +17,11 @@ export default function CompanyAdminSettings() {
   const [companyDetails, setCompanyDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(true);
 
+  // ADDED
+  const [subscription, setSubscription] = useState(null);
+  const [subLoading, setSubLoading] = useState(true);
+  // END ADDED
+
   const fetchCompanyDetails = async (id) => {
     if (!id) return;
     setDetailsLoading(true);
@@ -31,6 +37,21 @@ export default function CompanyAdminSettings() {
     }
   };
 
+  // ADDED
+  const fetchSubscription = async (id) => {
+    if (!id) return;
+    setSubLoading(true);
+    try {
+      const res = await api.get(`/active-subscriptions/company/${id}`);
+      setSubscription(res.data);
+    } catch (err) {
+      console.error("Failed to load subscription info:", err);
+    } finally {
+      setSubLoading(false);
+    }
+  };
+  // END ADDED
+
   useEffect(() => {
     const fetchCompanyId = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -45,6 +66,7 @@ export default function CompanyAdminSettings() {
       if (!error && data) {
         setCompanyId(data.company_id);
         fetchCompanyDetails(data.company_id);
+        fetchSubscription(data.company_id); // ADDED
       }
     };
     fetchCompanyId();
@@ -107,6 +129,51 @@ export default function CompanyAdminSettings() {
                 </div>
               )}
             </div>
+
+            {/* ADDED: Subscription Summary */}
+            <div className="cas-summary">
+              <h2 className="cas-summaryTitle">Subscription</h2>
+
+              {subLoading ? (
+                <p className="cas-summaryEmpty">Loading subscription details...</p>
+              ) : subscription ? (
+                <div className="cas-summaryGrid">
+                  <div className="cas-summaryItem">
+                    <span className="cas-summaryLabel">Plan</span>
+                    <span className="cas-summaryValue">{subscription.planName}</span>
+                  </div>
+
+                  <div className="cas-summaryItem">
+                    <span className="cas-summaryLabel">Status</span>
+                    <span
+                      className={`cas-subStatus ${
+                        subscription.status === "Expired"
+                          ? "cas-subStatus--expired"
+                          : "cas-subStatus--active"
+                      }`}
+                    >
+                      ● {subscription.status}
+                    </span>
+                  </div>
+
+                  <div className="cas-summaryItem cas-summaryItem--full">
+                    <span className="cas-summaryLabel">Expires</span>
+                    <span className="cas-summaryValue">
+                      {subscription.planName === "Free" || !subscription.endDate
+                        ? "—"
+                        : subscription.endDate}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="cas-summaryEmpty">No subscription found.</p>
+              )}
+
+              <Link to="/company/subscription-plans" className="cas-subLink">
+                View plans & pricing →
+              </Link>
+            </div>
+            {/* END ADDED */}
 
             <div className="cas-list">
               {items.map((it) => (
