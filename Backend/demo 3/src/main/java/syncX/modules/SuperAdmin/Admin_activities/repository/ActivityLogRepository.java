@@ -21,38 +21,60 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
     // Custom query to filter logs by role, search text, and date range with pagination
     @Query(
             value = """
-            SELECT * FROM activity_logs
-            WHERE (
-                :userRole IS NULL OR :userRole = ''
-                OR LOWER(user_role) LIKE LOWER(CONCAT('%', :userRole, '%'))
+        SELECT * FROM activity_logs
+        WHERE (
+            :userRole IS NULL OR :userRole = ''
+            OR LOWER(user_role) = LOWER(:userRole)
+        )
+        AND (
+            :search IS NULL OR :search = '' OR (
+                LOWER(COALESCE(description, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(action, ''))      LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(entity_type, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(user_role, ''))   LIKE LOWER(CONCAT('%', :search, '%'))
             )
-            AND (
-                :search IS NULL OR :search = '' OR (
-                    LOWER(COALESCE(description, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-                    OR LOWER(COALESCE(action, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-                    OR LOWER(COALESCE(entity_type, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-                    OR LOWER(COALESCE(user_role, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-                )
+        )
+        AND (
+            CAST(:fromDate AS timestamp) IS NULL
+            OR created_at >= CAST(:fromDate AS timestamp)
+        )
+        AND (
+            CAST(:toDate AS timestamp) IS NULL
+            OR created_at <= CAST(:toDate AS timestamp)
+        )
+        ORDER BY created_at DESC
+    """,
+            countQuery = """
+        SELECT COUNT(*) FROM activity_logs
+        WHERE (
+            :userRole IS NULL OR :userRole = ''
+            OR LOWER(user_role) = LOWER(:userRole)
+        )
+        AND (
+            :search IS NULL OR :search = '' OR (
+                LOWER(COALESCE(description, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(action, ''))      LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(entity_type, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(COALESCE(user_role, ''))   LIKE LOWER(CONCAT('%', :search, '%'))
             )
-            AND (
-                CAST(:fromDate AS timestamp) IS NULL
-                OR created_at >= CAST(:fromDate AS timestamp)
-            )
-            AND (
-                CAST(:toDate AS timestamp) IS NULL
-                OR created_at <= CAST(:toDate AS timestamp)
-            )
-            ORDER BY created_at DESC
-        """,
-            countQuery = "SELECT COUNT(*) FROM activity_logs", // Count query for pagination
+        )
+        AND (
+            CAST(:fromDate AS timestamp) IS NULL
+            OR created_at >= CAST(:fromDate AS timestamp)
+        )
+        AND (
+            CAST(:toDate AS timestamp) IS NULL
+            OR created_at <= CAST(:toDate AS timestamp)
+        )
+    """,
             nativeQuery = true
     )
-    @Transactional(readOnly = true) // Ensures read-only transaction for performance
+    @Transactional(readOnly = true)
     Page<ActivityLog> searchLogs(
-            @Param("userRole") String userRole,     // Filter by user role
-            @Param("search") String search,         // General search across multiple fields
-            @Param("fromDate") LocalDateTime fromDate, // Start date filter
-            @Param("toDate") LocalDateTime toDate,     // End date filter
-            Pageable pageable                         // Pagination and sorting info
+            @Param("userRole")  String userRole,
+            @Param("search")    String search,
+            @Param("fromDate")  LocalDateTime fromDate,
+            @Param("toDate")    LocalDateTime toDate,
+            Pageable pageable
     );
 }

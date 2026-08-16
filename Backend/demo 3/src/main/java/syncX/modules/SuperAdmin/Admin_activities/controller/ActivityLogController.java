@@ -10,34 +10,36 @@ import syncX.modules.SuperAdmin.Admin_activities.dto.CreateActivityLogDto;
 import syncX.modules.SuperAdmin.Admin_activities.service.ActivityLogService;
 
 @RestController
-@RequestMapping("/api/admin/activity-logs")
 @CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class ActivityLogController {
 
     private final ActivityLogService service;
 
-    // GET LOGS (DTO)
-    @GetMapping
-    public Page<ActivityLogDto> getLogs(
-            @RequestParam(defaultValue = "") String userRole,
-            @RequestParam(defaultValue = "") String search,
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate,
-            @RequestParam(defaultValue = "0") int page,
+    // Admin only — read all logs with filters
+    @GetMapping("/api/admin/activity-logs")
+    public ResponseEntity<?> getLogs(
+            @RequestParam(defaultValue = "")  String userRole,
+            @RequestParam(defaultValue = "")  String search,
+            @RequestParam(defaultValue = "")  String fromDate,
+            @RequestParam(defaultValue = "")  String toDate,
+            @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return service.getLogs(userRole, search, fromDate, toDate, page, size);
+        try {
+            return ResponseEntity.ok(service.getLogs(userRole, search, fromDate, toDate, page, size));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // CREATE LOG (DTO)
-    @PostMapping
-    public ActivityLogDto createActivityLog(@RequestBody CreateActivityLogDto dto) {
-        return service.createLog(dto);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleError(Exception e) {
-        return ResponseEntity.status(500).body("Something went wrong");
+    // All authenticated users — create a log entry
+    @PostMapping("/api/activity-logs")
+    public ResponseEntity<?> createLog(@RequestBody CreateActivityLogDto dto) {
+        try {
+            return ResponseEntity.ok(service.createLog(dto));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
