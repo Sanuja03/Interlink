@@ -39,9 +39,13 @@ public class ScoringService {
         SKILL_GROUPS.put("problem solving", Arrays.asList("problem solving", "debugging"));
     }
 
-    public double skillScore(List<String> cvSkills, List<JobRequirement> reqs) {
+    // CHANGED — old skillScore() renamed/kept as fallback; new overload below uses AI matches.
+    /**
+     * Fallback skill scorer using only hardcoded SKILL_GROUPS + exact matching.
+     * Kept in case AI matching is unavailable.
+     */
+    public double skillScoreFallback(List<String> cvSkills, List<JobRequirement> reqs) {
 
-        // ===== VALIDATION ADDED =====
         if (cvSkills == null || cvSkills.isEmpty()) {
             return 0;
         }
@@ -49,14 +53,11 @@ public class ScoringService {
         if (reqs == null || reqs.isEmpty()) {
             return 0;
         }
-        // ============================
 
-        //converts the job requirements to a stream
         List<String> required = reqs.stream()
                 .map(r -> r.getRequirement().toLowerCase())
                 .toList();
 
-        //matching logic
         int match = 0;
 
         for (String req : required) {
@@ -65,18 +66,14 @@ public class ScoringService {
 
             for (String cv : cvSkills) {
 
-                // ===== VALIDATION =====
-                if (cv == null || req == null) continue;   //if null found skip and continue
-                // ============================
+                if (cv == null || req == null) continue;
 
-                // Direct match
                 if (cv.equalsIgnoreCase(req)) {
                     found = true;
                     break;
                 }
 
-                //  Group match
-                if (SKILL_GROUPS.containsKey(req)) {   //Check if requirement has a group
+                if (SKILL_GROUPS.containsKey(req)) {
                     List<String> group = SKILL_GROUPS.get(req);
 
                     if (group.contains(cv.toLowerCase())) {
@@ -89,9 +86,54 @@ public class ScoringService {
             if (found) match++;
         }
 
-        if (required.isEmpty()) return 1;  //if no requirements
+        if (required.isEmpty()) return 1;
 
         return (double) match / required.size();
+    }
+
+    /**
+     * ADDED — Skill scorer driven by AI's semantic matching judgment.
+     * AI decides WHICH required skills are satisfied (handles synonyms like
+     * Postgres/PostgreSQL, Next.js/React). This method just counts —
+     * the actual math stays deterministic and auditable.
+     *
+     * @param reqs            job's required skills (from DB)
+     * @param aiMatchedSkills required-skill strings the AI judged as satisfied
+     */
+    public double skillScore(List<JobRequirement> reqs, List<String> aiMatchedSkills) {
+
+        if (reqs == null || reqs.isEmpty()) {
+            System.out.println("[SCORING] No job requirements found — skillScore = 0");
+            return 0;
+        }
+
+        List<String> required = reqs.stream()
+                .map(r -> r.getRequirement().toLowerCase())
+                .toList();
+
+        if (required.isEmpty()) return 1;
+
+        if (aiMatchedSkills == null) aiMatchedSkills = List.of();
+
+        List<String> matchedLower = aiMatchedSkills.stream()
+                .filter(s -> s != null)
+                .map(String::toLowerCase)
+                .toList();
+
+        int match = 0;
+        for (String req : required) {
+            if (matchedLower.contains(req)) match++;
+        }
+
+        double score = (double) match / required.size();
+
+        // ADDED — terminal logging
+        System.out.println("[SCORING] Required skills:   " + required);
+        System.out.println("[SCORING] AI matched skills:  " + matchedLower);
+        System.out.println("[SCORING] Skill match count:  " + match + "/" + required.size());
+        System.out.println("[SCORING] Skill score:        " + (score * 100) + "%");
+
+        return score;
     }
 
     public double experienceScore(double cvExp, double reqExp) {
@@ -106,9 +148,19 @@ public class ScoringService {
         }
         // ============================
 
-        if (reqExp == 0) return 1;  //everyone qualifies
+        double score;
+        if (reqExp == 0) {
+            score = 1;  //everyone qualifies
+        } else {
+            score = Math.min(cvExp / reqExp, 1);   //capped at 1
+        }
 
-        return Math.min(cvExp / reqExp, 1);   //capped at 1
+        // ADDED — terminal logging
+        System.out.println("[SCORING] CV experience:      " + cvExp + " years");
+        System.out.println("[SCORING] Required experience: " + reqExp + " years");
+        System.out.println("[SCORING] Experience score:    " + (score * 100) + "%");
+
+        return score;
     }
 
     private int level(String edu) {
@@ -121,10 +173,13 @@ public class ScoringService {
 
         edu = edu.toLowerCase();
 
-        if (edu.contains("phd")) return 4;
-        if (edu.contains("master")) return 3;
-        if (edu.contains("degree")) return 2;
-        if (edu.contains("diploma")) return 1;
+        // CHANGED — recognizes bachelor's/bsc/b.tech/b.eng in addition to the original terms
+        if (edu.contains("phd") || edu.contains("doctorate")) return 4;
+        if (edu.contains("master") || edu.contains("msc") || edu.contains("m.sc")) return 3;
+        if (edu.contains("bachelor") || edu.contains("bsc") || edu.contains("b.sc")
+                || edu.contains("degree") || edu.contains("b.eng") || edu.contains("beng")
+                || edu.contains("b.tech")) return 2;
+        if (edu.contains("diploma") || edu.contains("hnd")) return 1;
 
         return 0;
     }
@@ -139,9 +194,19 @@ public class ScoringService {
         int c = level(cvEdu);
         int r = level(reqEdu);
 
-        if (r == 0) return 1;
+        double score;
+        if (r == 0) {
+            score = 1;
+        } else {
+            score = Math.min((double) c / r, 1);
+        }
 
-        return Math.min((double) c / r, 1);
+        // ADDED — terminal logging
+        System.out.println("[SCORING] CV education:       \"" + cvEdu + "\" -> level " + c);
+        System.out.println("[SCORING] Required education:  \"" + reqEdu + "\" -> level " + r);
+        System.out.println("[SCORING] Education score:     " + (score * 100) + "%");
+
+        return score;
     }
 
     public double finalScore(double skill, double exp, double edu) {
@@ -152,6 +217,15 @@ public class ScoringService {
         }
         // ============================
 
-        return (skill * 50) + (exp * 30) + (edu * 20);
+        double result = (skill * 50) + (exp * 30) + (edu * 20);
+
+        // ADDED — terminal logging
+        System.out.println("[SCORING] ---------------------------------------------");
+        System.out.println("[SCORING] Final Score = (Skill×50) + (Exp×30) + (Edu×20)");
+        System.out.println("[SCORING]            = (" + (skill*100) + "%×0.5) + (" + (exp*100) + "%×0.3) + (" + (edu*100) + "%×0.2)");
+        System.out.println("[SCORING]            = " + result);
+        System.out.println("[SCORING] ---------------------------------------------\n");
+
+        return result;
     }
 }

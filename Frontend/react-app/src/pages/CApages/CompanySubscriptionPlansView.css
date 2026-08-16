@@ -1,0 +1,188 @@
+.csp-page {
+    font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+  }
+  
+  .csp-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  
+  .csp-heading {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    color: #05202f;
+  }
+  
+  .csp-sub {
+    margin: 8px 0 40px;
+    font-size: 15px;
+    color: #6b7d8a;
+    text-align: center;
+  }
+  
+  .csp-empty,
+  .csp-error {
+    text-align: center;
+    font-size: 14px;
+    color: #33475b;
+  }
+  
+  .csp-error {
+    color: #ef4444;
+  }
+  
+  .csp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 26px;
+    max-width: 980px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  
+  .csp-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    box-shadow: 0 10px 24px rgba(12, 62, 86, 0.06);
+    padding: 32px 28px;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  
+  .csp-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(12, 62, 86, 0.10);
+  }
+  
+  .csp-card--highlight {
+    border: 2px solid #24698b;
+    box-shadow: 0 16px 36px rgba(36, 105, 139, 0.18);
+    transform: scale(1.03);
+  }
+  
+  .csp-card--highlight:hover {
+    transform: scale(1.03) translateY(-4px);
+  }
+  
+  .csp-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #24698b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    box-shadow: 0 6px 14px rgba(36, 105, 139, 0.35);
+  }
+  
+  .csp-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .csp-name {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0c3e56;
+  }
+  
+  .csp-tagline {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #8a99a6;
+  }
+  
+  .csp-price {
+    margin: 0 0 20px;
+  }
+  
+  .csp-priceNum {
+    font-size: 30px;
+    font-weight: 800;
+    color: #24698b;
+  }
+  
+  .csp-pricePeriod {
+    font-size: 14px;
+    font-weight: 500;
+    color: #8a99a6;
+  }
+  
+  .csp-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 0 0 20px;
+  }
+  
+  .csp-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 14px;
+    color: #33475b;
+    display: grid;
+    gap: 13px;
+  }
+  
+  .csp-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  
+  .csp-checkmark {
+    color: #24698b;
+    font-weight: 800;
+    flex: 0 0 auto;
+  }
+  
+  .csp-list strong {
+    color: #05202f;
+  }
+  
+  .csp-paymentNotice {
+    max-width: 620px;
+    margin: 40px auto 0;
+    background: #eef5f9;
+    border: 1px dashed #24698b;
+    border-radius: 16px;
+    padding: 22px 28px;
+    text-align: center;
+  }
+  
+  .csp-paymentText {
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    color: #33475b;
+    line-height: 1.5;
+  }
+  
+  .csp-paymentContact {
+    margin: 0;
+    font-size: 14px;
+    color: #0c3e56;
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 700px) {
+    .csp-card--highlight {
+      transform: none;
+    }
+    .csp-card--highlight:hover {
+      transform: translateY(-4px);
+    }
+  }

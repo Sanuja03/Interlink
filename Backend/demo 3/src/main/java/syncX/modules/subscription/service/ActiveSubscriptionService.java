@@ -87,6 +87,36 @@ public class ActiveSubscriptionService {
             return toDTO(sub, companyNameMap);
         }).toList();
     }
+    // ── ADDED: company admin fetches their own active subscription ──
+    public ActiveSubscriptionDTO getByCompanyId(UUID companyId) {
+        ActiveSubscription sub = repository.findByCompanyId(companyId)
+                .orElseThrow(() -> new RuntimeException("No subscription found for this company"));
+
+        // Sync status if expired
+        if (sub.getEndDate() != null
+                && sub.getEndDate().isBefore(LocalDate.now())
+                && !"Free".equalsIgnoreCase(sub.getPlan().getName())
+                && "Active".equals(sub.getStatus())) {
+            sub.setStatus("Expired");
+            repository.save(sub);
+        }
+
+        ActiveSubscriptionDTO dto = new ActiveSubscriptionDTO();
+        dto.setId(sub.getId());
+        dto.setCompanyId(sub.getCompanyId());
+        dto.setPlanName(sub.getPlan().getName());
+        dto.setStartDate(sub.getStartDate());
+        dto.setEndDate(sub.getEndDate());
+        dto.setStatus(sub.getStatus());
+        dto.setPaymentConfirmed(sub.getPaymentConfirmed() != null && sub.getPaymentConfirmed());
+        dto.setAiCvUsed(sub.getAiCvUsed() != null ? sub.getAiCvUsed() : 0);
+        dto.setAiCvLimit(sub.getPlan().getAiCvLimit());
+        dto.setActiveJobsLimit(sub.getPlan().getActiveJobs() != null ? sub.getPlan().getActiveJobs() : 0);
+        dto.setInterviewersLimit(sub.getPlan().getInterviewers() != null ? sub.getPlan().getInterviewers() : 0);
+
+        return dto;
+    }
+    // ── END ADDED ──
 
     // ─────────────────────────────────────────────
     //  CONFIRM PAYMENT

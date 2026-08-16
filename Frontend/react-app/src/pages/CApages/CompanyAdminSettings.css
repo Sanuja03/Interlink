@@ -264,6 +264,30 @@
   white-space: pre-wrap;
 }
 
+/* ADDED: subscription status + link */
+.cas-subStatus {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cas-subStatus--active {
+  color: #16a34a;
+}
+
+.cas-subStatus--expired {
+  color: #ef4444;
+}
+
+.cas-subLink {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--heading);
+  text-decoration: underline;
+}
+/* END ADDED */
+
 @media (max-width: 700px) {
   .cas-summaryGrid { grid-template-columns: 1fr; }
   .cas-summary { padding: 18px; }
