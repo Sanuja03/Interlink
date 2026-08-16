@@ -123,9 +123,9 @@ export default function JobDetails() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Applications", value: job.totalApplications ?? 0 },
-          { label: "Under Review", value: "—" },
-          { label: "Interviews",   value: "—" },
-          { label: "Engagements",  value: "—" },
+          { label: "Under Review", value: job.underReview       ?? 0 },
+          { label: "Interviews",   value: job.interviews        ?? 0 },
+          { label: "Engagements",  value: job.engagements       ?? 0 },
         ].map((item, i) => (
           <div key={i} className="bg-[#24698B]/10 p-4 rounded-xl text-center">
             <p className="text-lg font-semibold text-[#24698B]">{item.value}</p>
