@@ -1,12 +1,16 @@
 package syncX.modules.score.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import syncX.modules.cv.service.AiService; // ADDED
 import syncX.modules.cv.service.CvService;
 import syncX.modules.job.repository.JobRepository;
 import syncX.modules.score.service.ScoringService;
 import syncX.modules.job.entity.Job;
+import syncX.modules.job.entity.JobRequirement; // ADDED
 // ── ADDED ──
 import syncX.modules.subscription.service.ActiveSubscriptionService;
 import java.util.UUID;
@@ -24,6 +28,7 @@ public class ScoreController {
     private final CvService cvService;
     private final JobRepository jobRepository;
     private final ScoringService scoringService;
+    private final AiService aiService; // ADDED
     // ── ADDED ──
     private final ActiveSubscriptionService activeSubscriptionService;
     // ── END ADDED ──
@@ -31,6 +36,7 @@ public class ScoreController {
     public ScoreController(CvService cvService,
                            JobRepository jobRepository,
                            ScoringService scoringService,
+                           AiService aiService, // ADDED
 
                            ActiveSubscriptionService activeSubscriptionService
 
@@ -38,6 +44,7 @@ public class ScoreController {
         this.cvService = cvService;
         this.jobRepository = jobRepository;
         this.scoringService = scoringService;
+        this.aiService = aiService; // ADDED
 
         this.activeSubscriptionService = activeSubscriptionService;
 
@@ -109,11 +116,37 @@ public class ScoreController {
             Job job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new RuntimeException("Job not found: " + jobId));
 
-            // Read directly from job entity — no derivation needed
-            double skillScore = scoringService.skillScore(cvSkills, job.getRequirements());
+            // ADDED — terminal logging of raw inputs before scoring begins
+            System.out.println("\n#################### CV ANALYSIS START ####################");
+            System.out.println("Job: " + job.getJobTitle() + " (ID: " + jobId + ")");
+            System.out.println("CV skills extracted:      " + cvSkills);
+            System.out.println("CV experience (years):    " + expYears);
+            System.out.println("CV education:             " + education);
+
+            // ADDED — build required skill strings and call AI matching
+            List<String> requiredSkillStrings = job.getRequirements() != null
+                    ? job.getRequirements().stream().map(JobRequirement::getRequirement).toList()
+                    : List.of();
+
+            List<String> aiMatchedSkills;
+            try {
+                String matchJson = aiService.matchSkills(cvSkills, requiredSkillStrings);
+                ObjectMapper mapper = new ObjectMapper();
+                aiMatchedSkills = mapper.readValue(matchJson, new TypeReference<List<String>>() {});
+            } catch (Exception e) {
+                // fail-safe: fall back to no matches rather than crashing the whole analysis
+                System.out.println("[WARNING] AI skill matching failed, falling back to no matches: " + e.getMessage());
+                aiMatchedSkills = List.of();
+            }
+
+            // CHANGED — skillScore now uses AI-matched skills instead of hardcoded SKILL_GROUPS only
+            double skillScore = scoringService.skillScore(job.getRequirements(), aiMatchedSkills);
             double expScore   = scoringService.experienceScore(expYears, job.getExperienceRequired());
             double eduScore   = scoringService.educationScore(education, job.getEducationRequired());
             double finalScore = scoringService.finalScore(skillScore, expScore, eduScore);
+
+            System.out.println("FINAL SCORE: " + finalScore + " / 100");
+            System.out.println("#################### CV ANALYSIS END ####################\n");
 
             // RESPONSE (UNCHANGED)
             return ResponseEntity.ok(Map.of(
