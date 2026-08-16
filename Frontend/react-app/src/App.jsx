@@ -25,6 +25,7 @@ import CandidateAIQuestions from "./pages/CPages/AIQuestions";
 import CandidateCalendar from "./pages/CPages/Calendar";
 import CandidateJobApply from "./pages/CPages/JobApply";
 import CandidateSavedJobs from "./pages/CPages/SavedJobs";
+import CandidateChatBot from "./pages/CPages/CandidateChatbot";
 
 // Interviewer pages
 import InterviewerDashboard from "./pages/IPages/Dashboard";
@@ -36,6 +37,7 @@ import InterviewerScheduledInterviews from "./pages/IPages/ScheduledInterviews";
 import InterviewerCandidateSingleView from "./pages/IPages/SingleView";
 import InterviewerCandidateProfile from "./pages/IPages/CandidateProfile";
 import InterviewerCandidateHistory from "./pages/IPages/CandidateHistory";
+import InterviewerChatBot from "./pages/IPages/InterviewerChatbot";
 
 // CompanyAdmin pages
 import CreateEvaluationTemplate from "./components/CompanyPages/CreateEvaluationTemplate";
@@ -51,6 +53,8 @@ import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 import ShortlistedCandidates from "./pages/CAPages/ShortlistedCandidates";
 import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
 import InterviewerManagementPage from "./pages/CApages/InterviewerManagementPage";
+import CompanyChatBot from "./pages/CAPages/CompanyChatBot";
+
 
 // Super Admin pages
 import AdminTicketDetails from "./pages/Apages/AdminTicketDetails";
@@ -148,6 +152,7 @@ function App() {
         <Route path="/candidate/calendar" element={<Candidate><CandidateCalendar /></Candidate>} />
         <Route path="/candidate/jobapply/:id" element={<Candidate><CandidateJobApply /></Candidate>} />
         <Route path="/candidate/saved-jobs" element={<Candidate><CandidateSavedJobs /></Candidate>} />
+        <Route path="/candidate/chatbot" element={<Candidate><CandidateChatBot /></Candidate>} />
 
         <Route
           path="/interviewer/*"
@@ -164,6 +169,7 @@ function App() {
                   <Route path="single-view/:interviewId" element={<InterviewerCandidateSingleView />} />
                   <Route path="candidate-profile/:requestId" element={<InterviewerCandidateProfile />} />
                   <Route path="candidate-history/:requestId" element={<InterviewerCandidateHistory />} />
+                  <Route path="chatbot" element={<InterviewerChatBot />} />
                 </Routes>
               </InterviewerProfileProvider>
             </InterviewerRole>
@@ -184,7 +190,7 @@ function App() {
         <Route path="/company/candidate-history/:applicationId" element={<CompanyAdmin><CandidateHistory /></CompanyAdmin>} />
         <Route path="/company/interview-summary" element={<CompanyAdmin><InterviewSummaryPage /></CompanyAdmin>} />
         <Route path="/company/interviewer-management" element={<InterviewerManagementPage />} />
-
+        <Route path="/company/chatbot" element={<CompanyChatBot />} />
         {/* All User Routes */}
         <Route path="/tickets" element={<AnyAuthenticated><MyTickets /></AnyAuthenticated>} />
         <Route path="/tickets/:id" element={<AnyAuthenticated><TicketDetails /></AnyAuthenticated>} />
