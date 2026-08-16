@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import api from "../lib/api";
+import { createActivityLog } from "../api/ActivityLogsApi";
 
 const AuthContext = createContext(null);
 const LOGIN_FLAG = "interlink_logged_in";
@@ -23,153 +24,149 @@ function clearSupabaseLocalStorage() {
 }
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [appUser, setAppUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [suspendedMessage, setSuspendedMessage] = useState(""); 
-    const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
+  const [user,             setUser]             = useState(null);
+  const [appUser,          setAppUser]          = useState(null);
+  const [loading,          setLoading]          = useState(true);
+  const [suspendedMessage, setSuspendedMessage] = useState("");
+  const loggedInRef = useRef(sessionStorage.getItem(LOGIN_FLAG) === "true");
 
-    const fetchAppUser = useCallback(async () => {
-      try {
-        const response = await api.get("/auth/me");
-        setSuspendedMessage(""); 
-        setAppUser(response.data);
-        return response.data;
-      } catch (err) {
-        console.error("[AuthContext] fetchAppUser failed:", err);
-        setAppUser(null);
+  const fetchAppUser = useCallback(async () => {
+    try {
+      const response = await api.get("/auth/me");
+      setSuspendedMessage("");
+      setAppUser(response.data);
+      return response.data;
+    } catch (err) {
+      console.error("[AuthContext] fetchAppUser failed:", err);
+      setAppUser(null);
 
-        // Handle suspended account — force full logout
-        if (err?.response?.status === 403) {
-          const message = err?.response?.data?.message
-            || "Your account has been suspended. Please contact support.";
-          setSuspendedMessage(message);
+      // Handle suspended account — force full logout
+      if (err?.response?.status === 403) {
+        const message = err?.response?.data?.message
+          || "Your account has been suspended. Please contact support.";
+        setSuspendedMessage(message);
 
-          loggedInRef.current = false;
-          sessionStorage.removeItem(LOGIN_FLAG);
-          setUser(null);
-          clearSupabaseLocalStorage();
-          try { await supabase.auth.signOut(); } catch (_) {}
-        }
-
-        return null;
+        loggedInRef.current = false;
+        sessionStorage.removeItem(LOGIN_FLAG);
+        setUser(null);
+        clearSupabaseLocalStorage();
+        try { await supabase.auth.signOut(); } catch (_) {}
       }
-    }, []);
 
-    //run once when app first loads 
-    useEffect(() => {
-      let mounted = true;
+      return null;
+    }
+  }, []);
 
-      const initAuth = async () => {
-        try {
-          console.log("[AuthContext] initAuth — flag:", loggedInRef.current);
+  //run once when app first loads 
+  useEffect(() => {
+    let mounted = true;
 
-          //if logged in flag is false
-          if (!loggedInRef.current) {
-            if (mounted) {
-              setUser(null);
-              setAppUser(null);
-            }
-            return;
+    const initAuth = async () => {
+      try {
+        console.log("[AuthContext] initAuth — flag:", loggedInRef.current);
+
+        //if logged in flag is false
+        if (!loggedInRef.current) {
+          if (mounted) {
+           setUser(null); 
+           setAppUser(null); 
           }
-
-          //if logged in flag is true
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!mounted) return;
-
-          if (session?.user) {
-            console.log("[AuthContext] restoring session for", session.user.email);
-            setUser(session.user);
-          } else {
-            console.log("[AuthContext] no valid session — clearing flag");
-            setUser(null);
-            setAppUser(null);
-            sessionStorage.removeItem(LOGIN_FLAG);
-            loggedInRef.current = false;
-          }
-        } catch (err) {
-          console.error("[AuthContext] initAuth error:", err);
-          if (mounted) { setUser(null); setAppUser(null); }
-        } finally {
-          if (mounted) setLoading(false);
+          return;
         }
-      };
 
-      initAuth();
+        //if logged in flag is true
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
 
-      // The auth state listener — runs whenever Supabase's session changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-          if (!mounted) return;
+        if (session?.user) {
+          console.log("[AuthContext] restoring session for", session.user.email);
+          setUser(session.user);
+        } else {
+          console.log("[AuthContext] no valid session — clearing flag");
+          setUser(null);
+          setAppUser(null);
+          sessionStorage.removeItem(LOGIN_FLAG);
+          loggedInRef.current = false;
+        }
+      } catch (err) {
+        console.error("[AuthContext] initAuth error:", err);
+        if (mounted) { setUser(null); setAppUser(null); }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
 
-          console.log("[AuthContext] onAuthStateChange:", event, "flag:", loggedInRef.current);
+    initAuth();
 
-          //if user logouts clears frontend and backend user,remove loginflag,markuser as not logged in 
-          if (event === "SIGNED_OUT") {
-            setUser(null);
-            setAppUser(null);
-            sessionStorage.removeItem(LOGIN_FLAG);
-            loggedInRef.current = false;
-            return;
-          }
+    // The auth state listener — runs whenever Supabase's session changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+      if (!mounted) return;
 
-  
-          if (!loggedInRef.current) {
+      console.log("[AuthContext] onAuthStateChange:", event, "flag:", loggedInRef.current);
+
+      //if user logouts clears frontend and backend user,remove loginflag,markuser as not logged in 
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setAppUser(null);
+        sessionStorage.removeItem(LOGIN_FLAG);
+        loggedInRef.current = false;
+        return;
+      }
+
+
+      if (!loggedInRef.current) {
               console.log("[AuthContext] provider check:", session?.user?.app_metadata?.provider, "identities:", session?.user?.app_metadata?.providers);
               //Check if it's Google login return
-              const isOAuthReturn = event === "SIGNED_IN" && session?.user?.app_metadata?.providers?.includes("google");
+        const isOAuthReturn = event === "SIGNED_IN" && session?.user?.app_metadata?.providers?.includes("google");
 
-              //If NOT Google login - ignore
-              if (!isOAuthReturn) {
-                console.log("[AuthContext] ignoring event (not logged in):", event);
-                return;
-              }
-
-            // If it IS Google login - accept it
-            console.log("[AuthContext] Google OAuth sign-in detected, setting login flag");
-            loggedInRef.current = true;
-            sessionStorage.setItem(LOGIN_FLAG, "true");
-          }
-          
-          // Ignore logging in  during signup process 
-          if (event === "SIGNED_IN") {
-            if (sessionStorage.getItem("is_signing_up") === "true") {
-              console.log("[AuthContext] ignoring SIGNED_IN during signup flow");
-              return;
-            }
-          }
-          //Set user when valid auth event happens
-          if (
-            (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") &&
-            session?.user
-          ) {
-            setUser(session.user);
-          }
+        //If NOT Google login - ignore
+        if (!isOAuthReturn) {
+          console.log("[AuthContext] ignoring event (not logged in):", event);
+          return;
         }
-      );
 
-      return () => {
-        mounted = false;
-        subscription.unsubscribe();
-      };
-    }, []);
-
-    // call backends Fetch /auth/me when user changes 
-    useEffect(() => {
-      if (user && loggedInRef.current) {
-        fetchAppUser().finally(() => setLoading(false));
-      } else {
-        setAppUser(null);
-        setLoading(false);
+        // If it IS Google login - accept it
+        console.log("[AuthContext] Google OAuth sign-in detected, setting login flag");
+        loggedInRef.current = true;
+        sessionStorage.setItem(LOGIN_FLAG, "true");
       }
-    }, [user, fetchAppUser]);
 
+      // Ignore logging in  during signup process 
+      if (event === "SIGNED_IN") {
+        if (sessionStorage.getItem("is_signing_up") === "true") {
+          console.log("[AuthContext] ignoring SIGNED_IN during signup flow");
+          return;
+        }
+      }
+      //Set user when valid auth event happens
+      if (
+        (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")&&
+        session?.user
+      ) {
+        setUser(session.user);
+      }
+    }
+  );
 
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
-  //-------LOG IN
-    const login = async (email, password) => {
+  // Fetch /auth/me whenever the Supabase user changes
+  useEffect(() => {
+    if (user && loggedInRef.current) {
+      fetchAppUser().finally(() => setLoading(false));
+    } else {
+      setAppUser(null);
+      setLoading(false);
+    }
+  }, [user, fetchAppUser]);
 
-
+  // LOGIN — activity log is non-fatal and will never block authentication
+  const login = async (email, password) => {
     loggedInRef.current = true;
     sessionStorage.setItem(LOGIN_FLAG, "true");
 
@@ -181,22 +178,49 @@ export function AuthProvider({ children }) {
       throw error;
     }
 
+    // Fetch app user to get the correct userId and role for the log
+    try {
+      const response = await api.get("/auth/me");
+      await createActivityLog({
+        userId:      response.data?.userId ?? null,
+        userRole:    response.data?.role   ?? "UNKNOWN",
+        action:      "LOGIN",
+        entityType:  "AUTH",
+        description: `${response.data?.email ?? email} logged in`,
+      });
+    } catch (err) {
+      // Non-fatal — login already succeeded, log failure must not block the user
+      console.error("[AuthContext] Failed to create login activity log:", err);
+    }
+
     return true;
   };
 
-
-  //------LOG OUT 
+  // LOGOUT — log before clearing state so appUser is still available
   const logout = async () => {
     console.log("[AuthContext] logout called");
 
-    
+    // Log first while appUser is still populated
     try {
-        await api.post("/auth/logout");
+      await createActivityLog({
+        userId:      appUser?.userId ?? null,
+        userRole:    appUser?.role   ?? "UNKNOWN",
+        action:      "LOGOUT",
+        entityType:  "AUTH",
+        description: `${appUser?.email ?? "Unknown"} logged out`,
+      });
     } catch (err) {
-        console.error("[AuthContext] backend logout failed (non-fatal):", err);
+      // Non-fatal — logout must always complete regardless of log failure
+      console.error("[AuthContext] Failed to create logout activity log:", err);
     }
 
-    
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("[AuthContext] backend logout failed (non-fatal):", err);
+    }
+
+
     loggedInRef.current = false;
     sessionStorage.removeItem(LOGIN_FLAG);
     setUser(null);
@@ -204,33 +228,33 @@ export function AuthProvider({ children }) {
     clearSupabaseLocalStorage();
 
     try {
-        await supabase.auth.signOut({ scope: "global" });
+      await supabase.auth.signOut({ scope: "global" });
     } catch (err) {
-        console.error("[AuthContext] signOut error (non-fatal):", err);
+      console.error("[AuthContext] signOut error (non-fatal):", err);
     }
 
     clearSupabaseLocalStorage();
     console.log("[AuthContext] logout complete");
   };
 
-  const hasRole = (role) => appUser?.role === role;
-  const hasAnyRole = (...roles) => roles.includes(appUser?.role);
+  const hasRole    = (role)      => appUser?.role === role;
+  const hasAnyRole = (...roles)  => roles.includes(appUser?.role);
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        appUser,
-        loading,
-        login,
-        logout,
-        hasRole,
-        hasAnyRole,
-        isAuthenticated: !!user && !!appUser,
-        role: appUser?.role || null,
-        suspendedMessage,        // expose it
-        setSuspendedMessage,     // so Login.jsx can clear it
-      }}
+    value={{
+      user,
+      appUser,
+      loading,
+      login,
+      logout,
+      hasRole,
+      hasAnyRole,
+      isAuthenticated: !!user && !!appUser,
+      role: appUser?.role || null,
+      suspendedMessage,        // expose it
+      setSuspendedMessage,     // so Login.jsx can clear it
+    }}
     >
       {children}
     </AuthContext.Provider>

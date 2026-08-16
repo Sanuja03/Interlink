@@ -14,5 +14,5 @@ export const fetchActivityLogs = ({
 };
 
 export const createActivityLog = (data) => {
-  return api.post("/admin/activity-logs", data);
+  return api.post("/activity-logs", data);
 };

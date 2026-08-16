@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./EditJob.css";
 import axios from "axios";
+import { createActivityLog } from "../../api/ActivityLogsApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
@@ -26,11 +27,13 @@ export default function EditJob() {
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const getToken = async () => {
       const { data } = await supabase.auth.getSession();
       setToken(data.session?.access_token);
+      setUserId(data.session?.user?.id ?? null);
     };
     getToken();
   }, []);
@@ -117,6 +120,18 @@ export default function EditJob() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      try {
+        await createActivityLog({
+          userId:      userId,
+          userRole:    "company_admin",
+          action:      "UPDATE",
+          entityType:  "JOB",
+          description: `Updated job: ${form.title}`,
+        });
+      } catch (err) {
+        console.error("[EditJob] Failed to create activity log:", err);
+      }
+
       alert("Updated!");
       navigate("/company/job-management");
     } catch (err) {
@@ -134,6 +149,17 @@ export default function EditJob() {
       await axios.delete(`http://localhost:8080/api/jobs/${jobId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      try {
+        await createActivityLog({
+          userId:      userId,
+          userRole:    "company_admin",
+          action:      "DELETE",
+          entityType:  "JOB",
+          description: `Deleted job ID: ${jobId}`,
+        });
+      } catch (err) {
+        console.error("[EditJob] Failed to create activity log:", err);
+      }
       alert("Deleted!");
       navigate("/company/job-management");
     } catch (err) {

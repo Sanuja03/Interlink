@@ -70,7 +70,22 @@ const SignUpCompany = () => {
         email,
       }, {
         headers: { Authorization: `Bearer ${session.access_token}` }
-      })
+      });
+
+      // Log company registration — non-fatal, wrapped in try/catch so it never breaks signup
+      try {
+        await api.post("/activity-logs", {
+          userId:      session.user?.id ?? null,
+          userRole:    "company",
+          action:      "CREATE",
+          entityType:  "COMPANY",
+          description: `New company registered: ${formData.companyName.trim()} (${email})`,
+        }, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+      } catch (err) {
+        console.error("[SignUpCompany] Failed to create registration activity log:", err);
+      }
 
       sessionStorage.removeItem("is_signing_up")
       await supabase.auth.signOut()
