@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 28px 32px 48px;
   min-height: 100%;
-  background: #dadee0;
+  background: transparent;
   font-family: "Outfit", sans-serif;
   color: #000000;
   box-sizing: border-box;
@@ -19,7 +19,7 @@
 
 /* ── Profile card ────────────────────────────────────────────── */
 .ch-profileCard {
-  background: rgba(255, 255, 255, 0.62);
+  background: #ffffff;
   border-radius: 22px;
   padding: 26px 34px;
   display: flex;
@@ -104,7 +104,7 @@
 
 
 .ch-historyBox {
-  background: rgba(255, 255, 255, 0.6);
+  background: #ffffff;
   border: 1.5px solid rgba(36, 105, 139, 0.2);
   border-radius: 24px;
   padding: 22px 28px 30px;

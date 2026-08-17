@@ -35,7 +35,18 @@ public class InterviewSummaryRepository {
                 COALESCE(j.job_title, j.title) AS job_title,
                 j.interview_rounds,
 
-                isc.company_id
+                isc.company_id,
+
+                -- Round number for THIS specific interview: how many ROUND_n
+                -- history stages already existed when its request was created.
+                -- (Robust against the cancel-on-reschedule request behaviour.)
+                GREATEST((
+                    SELECT COUNT(*)
+                    FROM candidate_history_stages chs
+                    WHERE chs.job_application_id = isc.job_application_id
+                      AND chs.stage LIKE 'ROUND%'
+                      AND chs.created_at <= ir.created_at
+                ), 1) AS round_number
 
             FROM interview_scheduled isc
             JOIN interview_requests  ir  ON ir.request_id  = isc.request_id
