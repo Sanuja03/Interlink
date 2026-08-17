@@ -14,6 +14,10 @@ import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequestIn
 import syncX.modules.InterviewProcess.InterviewRequest.repository.AssignableInterviewerRepository;
 import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewRequestRepository;
 
+import syncX.modules.CompanyAdmin.AiQuestionScore.dto.AiQuestionScoreDTO;
+import syncX.modules.CompanyAdmin.AiQuestionScore.service.AiQuestionScoreService;
+import syncX.modules.CompanyAdmin.ApplicationManagement.entity.Application;
+import syncX.modules.CompanyAdmin.ApplicationManagement.repository.ApplicationRepository;
 import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
 import syncX.modules.CompanyAdmin.CandidateHistory.service.CandidateHistoryService;
 import syncX.modules.CompanyAdmin.CandidateProfile.dto.CandidateProfileResponseDTO;
@@ -44,6 +48,8 @@ public class InterviewRequestService {
     @Autowired private JobRepository                    jobRepository;
     @Autowired private CandidateHistoryService          candidateHistoryService;
     @Autowired private CandidateProfileService          candidateProfileService;
+    @Autowired private AiQuestionScoreService           aiQuestionScoreService;
+    @Autowired private ApplicationRepository            applicationRepository;
 
     // ─────────────────────────────────────────────────────────────────────────
     // GET /assignable?date=&time=&durationMinutes=
@@ -450,8 +456,55 @@ public class InterviewRequestService {
         if (candidateId == null)
             throw new RuntimeException("This request has no linked candidate");
 
-        // jobApplicationId only drives the AI-score lookup; may be null
-        return candidateProfileService.getCandidateProfile(candidateId, ir.getJobApplicationId());
+        // The application only drives the AI-score lookup, and
+        // CandidateProfileService leaves aiScore null without complaint when the
+        // id it is handed doesn't resolve. The company-admin view passes an id
+        // taken straight from the application the admin clicked; here it comes
+        // off the request row, so resolve it defensively rather than trusting it.
+        Long applicationId = resolveApplication(ir).map(Application::getId).orElse(null);
+
+        return candidateProfileService.getCandidateProfile(candidateId, applicationId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /{requestId}/ai-question-score — the candidate's AI interview
+    // question/answer history for this request. Panel-gated mirror of the
+    // company-admin /api/company/ai-question-score endpoint, which interviewers
+    // cannot call (it is restricted to ROLE_company_admin).
+    // ─────────────────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<AiQuestionScoreDTO> getAiQuestionScoresForInterviewer(Jwt jwt, UUID requestId) {
+        InterviewRequest ir = requireInvitedRequest(jwt, requestId);
+
+        // Read candidate + job off the application row, exactly like the company
+        // admin page does, so both sides key the lookup off the same values.
+        Application app = resolveApplication(ir)
+                .orElseThrow(() -> new RuntimeException("This request has no linked application"));
+
+        if (app.getCandidateId() == null || app.getJobId() == null)
+            return List.of();
+
+        return aiQuestionScoreService.getHistory(app.getCandidateId(), app.getJobId());
+    }
+
+    /**
+     * Resolves the job application behind an interview request.
+     * Falls back to the candidate's application for the request's job when
+     * job_application_id is absent or no longer points at a real row.
+     */
+    private Optional<Application> resolveApplication(InterviewRequest ir) {
+        Long appId = ir.getJobApplicationId();
+        if (appId != null && appId > 0) {
+            Optional<Application> byId = applicationRepository.findById(appId);
+            if (byId.isPresent()) return byId;
+        }
+
+        if (ir.getCandidateId() != null && ir.getJobId() != null) {
+            return applicationRepository
+                    .findLatestByCandidateAndJob(ir.getCandidateId(), ir.getJobId());
+        }
+
+        return Optional.empty();
     }
 
     /**
