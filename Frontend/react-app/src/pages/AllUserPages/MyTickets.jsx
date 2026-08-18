@@ -171,7 +171,7 @@ export default function MyTickets() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="tw-preflight flex min-h-screen">
       <Sidebar />
 
       <div className="flex-1 flex flex-col bg-gray-50">
