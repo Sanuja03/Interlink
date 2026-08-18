@@ -36,11 +36,9 @@ const SingleView = () => {
 
     // Show what we already know from the card immediately
     setCandidate({
-      image:       PLACEHOLDER_IMG,
-      id:          interview.candidateId || "—",
-      name:        interview.candidateName || "—",
-      cvName:      "Loading...",
-      profileLink: "#",
+      image: PLACEHOLDER_IMG,
+      id:    interview.candidateId || "—",
+      name:  interview.candidateName || "—",
     });
 
     // Kick off all data fetches
@@ -63,12 +61,12 @@ const SingleView = () => {
         else console.warn("[SingleView] candidates:", error.message);
       }
 
-      // Fetch only what's needed for: cvName, profileLink, name (fallback)
+      // Fallback display name from the application row
       let appData = null;
       if (jobApplicationId) {
         const { data, error } = await supabase
           .from("job_applications")
-          .select("resume_url, linkedin_url, candidate_name")
+          .select("candidate_name")
           .eq("id", jobApplicationId)
           .single();
         if (!error) appData = data;
@@ -85,25 +83,17 @@ const SingleView = () => {
         interview?.candidateName ||
         "—";
 
-      // Build CV name (just the filename)
-      const cvName = appData?.resume_url
-        ? decodeURIComponent(appData.resume_url.split("/").pop().split("?")[0]) || "Resume.pdf"
-        : "No resume uploaded";
-
-      // Set only the 5 fields CandidateCard now displays
       setCandidate({
-        image:       candData?.profile_picture_url || PLACEHOLDER_IMG,
-        id:          candidateId || "—",
-        name:        displayName,
-        cvName,
-        profileLink: appData?.linkedin_url || "#",
+        image: candData?.profile_picture_url || PLACEHOLDER_IMG,
+        id:    candidateId || "—",
+        name:  displayName,
       });
     } catch (err) {
       console.error("[SingleView] fetchCandidateData error:", err);
     }
   };
 
-  // Evaluation card  data fetching 
+  // Evaluation card data fetching
   const fetchEvaluationData = async (scheduledId) => {
     try {
       setEvalLoading(true);
@@ -165,7 +155,7 @@ const SingleView = () => {
       if (existing) {
         setExistingSubmission(existing);
 
-        //  Load saved field scores
+        // Load saved field scores
         const { data: valueRows } = await supabase
           .from("interviewer_score_field_values")
           .select("scorecard_field_id, score_given")
@@ -186,11 +176,9 @@ const SingleView = () => {
 
   // display candidate data if there is or show default
   const displayCandidate = candidate || {
-    image:       PLACEHOLDER_IMG,
-    id:          interview?.candidateId || "—",
-    name:        interview?.candidateName || "—",
-    cvName:      "—",
-    profileLink: "#",
+    image: PLACEHOLDER_IMG,
+    id:    interview?.candidateId || "—",
+    name:  interview?.candidateName || "—",
   };
 
   return (
@@ -213,72 +201,79 @@ const SingleView = () => {
             </p>
           </div>
         ) : (
-          <>
-            <div className="singleview-main-layout">
+          <div className="singleview-content-grid">
 
-              {/* ── Left panel: interview details ── */}
-              <div className="singleview-left-panel">
-                <div className="singleview-info-box">
-                  <span className="singleview-box-label">Interview ID</span>
-                  <span className="singleview-box-value">{interview.interviewId}</span>
-                </div>
+            {/* ── Left column: interview facts (sticky while scoring) ── */}
+            <aside className="singleview-left-panel">
+              <div className="singleview-info-box">
+                <span className="singleview-box-label">Interview ID</span>
+                <span className="singleview-box-value">{interview.interviewId}</span>
+              </div>
 
-                <div className="singleview-info-box">
-                  <span className="singleview-box-label">Date — Time</span>
-                  <span className="singleview-box-value">
-                    {interview.date} — {interview.time}
-                  </span>
-                </div>
+              <div className="singleview-info-box">
+                <span className="singleview-box-label">Date — Time</span>
+                <span className="singleview-box-value">
+                  {interview.date} — {interview.time}
+                </span>
+              </div>
 
-                <div className="singleview-info-box">
-                  <span className="singleview-box-label">Job Applied</span>
-                  <span className="singleview-box-value">{interview.jobTitle}</span>
-                </div>
+              <div className="singleview-info-box">
+                <span className="singleview-box-label">Job Applied</span>
+                <span className="singleview-box-value">{interview.jobTitle}</span>
+              </div>
 
-                <div className="singleview-info-box">
-                  <span className="singleview-box-label">Mode</span>
-                  <span className="singleview-box-value">{interview.mode}</span>
-                </div>
+              <div className="singleview-info-box">
+                <span className="singleview-box-label">Mode</span>
+                <span className="singleview-box-value">{interview.mode}</span>
+              </div>
 
-                {interview.mode?.toLowerCase() === "online" && interview.meetingLink && (
-                  <a
-                    href={interview.meetingLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="singleview-meeting-link"
-                  >
-                    Meeting Link
-                  </a>
-                )}
-
-                {interview.mode?.toLowerCase() === "physical" && interview.interviewLocation && (
+              {interview.mode?.toLowerCase() === "physical" &&
+                interview.interviewLocation && (
                   <div className="singleview-info-box">
                     <span className="singleview-box-label">📍 Interview Location</span>
-                    <span className="singleview-box-value">{interview.interviewLocation}</span>
+                    <span className="singleview-box-value">
+                      {interview.interviewLocation}
+                    </span>
                   </div>
                 )}
 
-                <div className="singleview-info-box">
-                  <span className="singleview-box-label">Meeting Status</span>
-                  <span
-                    className={`singleview-status-badge ${
-                      interview.meetingStatus === "ONGOING"
-                        ? "singleview-status-ongoing"
-                        : interview.meetingStatus === "COMPLETED"
-                        ? "singleview-status-completed"
-                        : "singleview-status-scheduled"
-                    }`}
-                  >
-                    {interview.meetingStatus}
-                  </span>
-                </div>
+              <div className="singleview-info-box">
+                <span className="singleview-box-label">Meeting Status</span>
+                <span
+                  className={`singleview-status-badge ${
+                    interview.meetingStatus === "ONGOING"
+                      ? "singleview-status-ongoing"
+                      : interview.meetingStatus === "COMPLETED"
+                      ? "singleview-status-completed"
+                      : "singleview-status-scheduled"
+                  }`}
+                >
+                  {interview.meetingStatus}
+                </span>
+              </div>
+            </aside>
+
+            {/* ── Right column: candidate strip + evaluation form ── */}
+            <div className="singleview-right-column">
+              <CandidateCard candidate={displayCandidate}>
+                {interview.mode?.toLowerCase() === "online" &&
+                  interview.meetingLink && (
+                    <a
+                      href={interview.meetingLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="candidatecard-action candidatecard-action-primary"
+                    >
+                      Join Meeting
+                    </a>
+                  )}
 
                 {/* Candidate History → read-only profile page (has the
                     Candidate History Tracker button + CV inside). Gated by
                     requestId; interviewer is on this scheduled panel so it passes. */}
                 <button
-                  className="singleview-history-btn"
                   type="button"
+                  className="candidatecard-action"
                   onClick={() =>
                     interview.requestId &&
                     navigate(`/interviewer/candidate-profile/${interview.requestId}`)
@@ -287,24 +282,20 @@ const SingleView = () => {
                 >
                   Candidate History
                 </button>
-              </div>
+              </CandidateCard>
 
-              {/* Right panel: candidate card */}
-              <CandidateCard candidate={displayCandidate} />
+              <EvaluationForm
+                scheduledId={interview.scheduledId}
+                scorecardId={scorecardId}
+                scorecardName={scorecardName}
+                fields={scorecardFields}
+                initialSubmission={existingSubmission}
+                initialScores={existingScores}
+                loading={evalLoading}
+                onSubmitSuccess={() => navigate("/interviewer/completed-interviews")}
+              />
             </div>
-
-            {/* Evaluation form (receives fetched data as props) */}
-            <EvaluationForm
-              scheduledId={interview.scheduledId}
-              scorecardId={scorecardId}
-              scorecardName={scorecardName}
-              fields={scorecardFields}
-              initialSubmission={existingSubmission}
-              initialScores={existingScores}
-              loading={evalLoading}
-              onSubmitSuccess={() => navigate("/interviewer/completed-interviews")}
-            />
-          </>
+          </div>
         )}
       </div>
     </DashboardLayout>

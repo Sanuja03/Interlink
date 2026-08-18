@@ -85,9 +85,7 @@ const NextInterviewCard = ({ interview }) => {
 
               <div className="candidate-info">
                 <p className="candidate-name">{interview.candidate.name}</p>
-                <p className="candidate-id">
-                  Candidate ID: {interview.candidate.id}
-                </p>
+                
 
                 {interview.candidate.note && (
                   <p className="admin-note">{interview.candidate.note}</p>
