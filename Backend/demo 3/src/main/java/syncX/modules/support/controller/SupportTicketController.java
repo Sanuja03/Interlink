@@ -36,7 +36,7 @@ public class SupportTicketController {
     public SupportTicketController(SupportTicketService service) {
         this.service = service;
     }
-    
+
 
     // ─── CREATE ──────────────────────────────────────────────────────────────
 
@@ -96,6 +96,7 @@ public class SupportTicketController {
     /**
      * Returns a single ticket with its full conversation history.
      * Non-admins can only view tickets they submitted.
+     * Marks the ticket as read for whichever side is viewing it.
      */
     @GetMapping("/{id}")
     public ResponseEntity<SupportTicketDTO> getById(
@@ -108,6 +109,8 @@ public class SupportTicketController {
         if (!service.isSuperAdmin(userId) && !userId.equals(dto.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
+        service.markRead(id, userId); // ADDED — mark read now that access is confirmed
 
         return ResponseEntity.ok(dto);
     }

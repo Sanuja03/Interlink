@@ -27,14 +27,13 @@ const categoryColors = {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Returns true if there is an unread reply for the current viewer.
- * Admin sees dot when last message is from REQUESTER (and vice versa).
- * No DB reads needed — purely derived from the responses array.
+ * Returns true if the current viewer hasn't read the ticket yet.
+ * Backed by real requesterRead / adminRead flags set by the server —
+ * flips true whenever the other side replies, flips false when the
+ * viewer opens GET /tickets/:id.
  */
 function hasUnread(ticket, isAdmin) {
-  if (!ticket.responses || ticket.responses.length === 0) return false;
-  const lastSender = ticket.responses[ticket.responses.length - 1].sender;
-  return isAdmin ? lastSender === "REQUESTER" : lastSender === "ADMIN";
+  return isAdmin ? ticket.adminRead === false : ticket.requesterRead === false;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────

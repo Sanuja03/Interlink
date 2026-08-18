@@ -60,9 +60,19 @@ public class SupportTicket {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    // ADDED — real read/unread tracking, per side.
+    // Requester created the ticket, so it's "read" for them by default.
+    // Admin hasn't seen it yet, so it starts unread for them.
+    @Column(name = "requester_read")
+    private Boolean requesterRead = true;
+
+    @Column(name = "admin_read")
+    private Boolean adminRead = false;
+    // END ADDED
+
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Response> responses;  //List is used here instead of arrays here because of lists flexible size - we are not sure how many response we will get
+    private List<Response> responses;  //List is used here instead of arrays here because of lists flexible size
 
     public SupportTicket() {}
 
@@ -100,4 +110,12 @@ public class SupportTicket {
 
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }
+
+    // ADDED
+    public Boolean getRequesterRead() { return requesterRead; }
+    public void setRequesterRead(Boolean requesterRead) { this.requesterRead = requesterRead; }
+
+    public Boolean getAdminRead() { return adminRead; }
+    public void setAdminRead(Boolean adminRead) { this.adminRead = adminRead; }
+    // END ADDED
 }

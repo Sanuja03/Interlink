@@ -25,12 +25,17 @@ public class SupportTicketDTO {
     private LocalDateTime   createdAt;
     private UUID            userId;
     private List<ResponseDTO> responses;
+    // ADDED
+    private Boolean         requesterRead;
+    private Boolean         adminRead;
+    // END ADDED
 
     public SupportTicketDTO(Long id, String title, String description,
                             TicketStatus status, TicketPriority priority,
                             TicketCategory category, String email,
                             String submittedBy, LocalDateTime createdAt,
-                            UUID userId, List<ResponseDTO> responses) {
+                            UUID userId, List<ResponseDTO> responses,
+                            Boolean requesterRead, Boolean adminRead) { // ADDED params
         this.id          = id;
         this.title       = title;
         this.description = description;
@@ -42,6 +47,8 @@ public class SupportTicketDTO {
         this.createdAt   = createdAt;
         this.userId      = userId;
         this.responses   = responses;
+        this.requesterRead = requesterRead; // ADDED
+        this.adminRead      = adminRead;     // ADDED
     }
 
     public Long              getId()          { return id;          }
@@ -55,4 +62,8 @@ public class SupportTicketDTO {
     public LocalDateTime     getCreatedAt()   { return createdAt;   }
     public UUID              getUserId()      { return userId;      }
     public List<ResponseDTO> getResponses()   { return responses;   }
+    // ADDED
+    public Boolean getRequesterRead() { return requesterRead; }
+    public Boolean getAdminRead()     { return adminRead;     }
+    // END ADDED
 }
