@@ -177,8 +177,18 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
       setLoadingInterviewers(true);
       setFetchError("");
       try {
+        // candidateId + jobApplicationId let the backend ignore the request this
+        // form replaces on send, so on Cancel & Redo its own pending and accepted
+        // interviewers stay available at the same date and time instead of
+        // clashing with the request that is about to be cancelled.
         const res = await api.get("/company/interview-requests/assignable", {
-          params: { date, time, durationMinutes },
+          params: {
+            date,
+            time,
+            durationMinutes,
+            candidateId:      candidate?.candidateId,
+            jobApplicationId: candidate?.jobApplicationId,
+          },
         });
         if (cancelled) return;
 
