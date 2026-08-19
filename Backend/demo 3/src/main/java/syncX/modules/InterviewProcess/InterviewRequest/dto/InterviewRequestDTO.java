@@ -105,6 +105,36 @@ public class InterviewRequestDTO {
         private Long   historyId;
     }
 
+    /**
+     * RESPONSE: a request this interviewer was on but no longer holds.
+     *
+     * outcome is one of:
+     *   removed      — the request is still live, but their seat on the panel is gone
+     *   cancelled    — the whole request was cancelled
+     *   rescheduled  — cancelled and replaced by a newer request for the same
+     *                  candidate + application ("Cancel & Redo")
+     *
+     * The new* fields carry the replacement slot and are null unless the
+     * outcome is "rescheduled".
+     */
+    @Getter
+    @AllArgsConstructor
+    public static class WithdrawnRequestForInterviewer {
+        private String  interviewId;
+        private String  requestId;
+        private String  candidateName;
+        private String  jobTitle;
+        private String  interviewDate;
+        private String  interviewTime;
+        private String  mode;
+        private String  outcome;
+        private String  withdrawnAt;        // when their row was flipped; may be null
+        private String  newInterviewId;
+        private String  newInterviewDate;
+        private String  newInterviewTime;
+        private boolean invitedAgain;       // re-invited onto the replacement panel?
+    }
+
     // REQUEST: interviewer responds (accept/decline)
     @Getter
     @Setter

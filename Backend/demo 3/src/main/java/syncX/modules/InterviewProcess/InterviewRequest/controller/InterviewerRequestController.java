@@ -41,6 +41,28 @@ public class InterviewerRequestController {
     }
 
     /**
+     * GET /api/interviewer/interview-requests/withdrawn
+     * Requests this interviewer was invited onto but no longer holds — removed
+     * from the panel, cancelled, or cancelled and rescheduled. Feeds the notice
+     * panel above the pending list.
+     */
+    @GetMapping("/withdrawn")
+    @PreAuthorize("hasRole('interviewer')")
+    public ResponseEntity<?> getMyWithdrawn(
+            @AuthenticationPrincipal Jwt jwt) {
+        try {
+            List<InterviewRequestDTO.WithdrawnRequestForInterviewer> result =
+                    service.getWithdrawnForInterviewer(jwt);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
+    }
+
+    /**
      * PUT /api/interviewer/interview-requests/{requestId}/respond?response=accepted
      */
     @PutMapping("/{requestId}/respond")

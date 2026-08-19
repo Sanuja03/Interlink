@@ -70,6 +70,38 @@ public interface InterviewRequestRepository
             "AND LOWER(iri.interviewRequest.status) = 'pending'")
     long countPendingForInterviewer(@Param("interviewerUserId") UUID interviewerUserId);
 
+    /**
+     * Requests this interviewer no longer holds: their row was flipped to
+     * "rejected". Three writers produce that value — the interviewer declining,
+     * the admin removing them from the panel, and a cancel (including the
+     * "Cancel & Redo" that cancels the old request before creating the new one).
+     * The row itself cannot say which, so the caller classifies from the request
+     * status and labels accordingly.
+     *
+     * "timed_out" rows are deliberately excluded: those interviewers never
+     * responded at all, so nothing was taken away from them.
+     *
+     * Finalized requests are excluded for the same reason — finalizing flips
+     * every still-pending row to "rejected" (see InterviewSchedulingService), so
+     * including them would report "you were removed" to everyone who simply
+     * never answered. An admin removal always happens while the request is
+     * pending, so that case is still covered.
+     *
+     * Bounded by interviewDate so the feed stays a recent-activity list rather
+     * than growing without limit.
+     */
+    @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
+            "WHERE ir.interviewDate >= :fromDate " +
+            "AND LOWER(ir.status) IN ('pending', 'cancelled') " +
+            "AND ir.requestId IN (" +
+            "  SELECT iri.interviewRequest.requestId FROM InterviewRequestInterviewer iri " +
+            "  WHERE iri.interviewerUserId = :userId " +
+            "  AND LOWER(iri.responseStatus) = 'rejected'" +
+            ") ORDER BY ir.interviewDate DESC, ir.interviewTime DESC")
+    List<InterviewRequest> findWithdrawnForInterviewer(
+            @Param("userId") UUID userId,
+            @Param("fromDate") LocalDate fromDate);
+
     @Query("SELECT ir FROM InterviewRequest ir LEFT JOIN FETCH ir.interviewers " +
             "WHERE ir.requestId = :requestId")
     Optional<InterviewRequest> findByIdWithInterviewers(@Param("requestId") UUID requestId);

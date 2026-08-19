@@ -435,6 +435,120 @@ public class InterviewRequestService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // GET /withdrawn — for interviewer side.
+    //
+    // Requests this interviewer was invited onto and no longer holds, so the
+    // pending page can tell them what happened instead of silently dropping the
+    // row. Three shapes, all of which leave their row at "rejected":
+    //
+    //   removed      request still live — the admin took them off the panel
+    //   cancelled    the whole request was cancelled
+    //   rescheduled  cancelled and replaced by a newer request for the same
+    //                candidate + application ("Cancel & Redo")
+    //
+    // The stored row cannot distinguish an admin removal from the interviewer's
+    // own decline — both write "rejected" (see findWithdrawnForInterviewer).
+    // The classification here is therefore about what happened to the *request*;
+    // the page decides how confidently to word each item, filtering out the
+    // requests it remembers this interviewer declining.
+    // ─────────────────────────────────────────────────────────────────────────
+    private static final int WITHDRAWN_WINDOW_DAYS = 30;
+
+    @Transactional(readOnly = true)
+    public List<InterviewRequestDTO.WithdrawnRequestForInterviewer> getWithdrawnForInterviewer(Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        List<InterviewRequest> requests = new ArrayList<>(requestRepo.findWithdrawnForInterviewer(
+                userId, LocalDate.now().minusDays(WITHDRAWN_WINDOW_DAYS)));
+
+        // Most recently withdrawn first. The query's interview-date order is
+        // about when the interview *was*, not when the news broke.
+        requests.sort(Comparator.comparing(
+                (InterviewRequest ir) -> respondedAtFor(ir, userId),
+                Comparator.nullsLast(Comparator.reverseOrder())));
+
+        Set<UUID> candidateIds = requests.stream()
+                .map(InterviewRequest::getCandidateId).collect(Collectors.toSet());
+        Set<Long> jobIds = requests.stream()
+                .map(InterviewRequest::getJobId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        Map<UUID, String> candidateNames = new HashMap<>();
+        for (UUID cid : candidateIds) {
+            try {
+                candidateRepository.findById(cid).ifPresent(c ->
+                        candidateNames.put(cid, c.getFirstName() + " " + c.getLastName()));
+            } catch (Exception e) { candidateNames.put(cid, "Unknown"); }
+        }
+
+        Map<Long, String> jobTitles = new HashMap<>();
+        for (Long jid : jobIds) {
+            try {
+                jobRepository.findById(jid).ifPresent(j -> {
+                    String t = j.getJobTitle();
+                    if (t == null || t.isBlank()) t = "N/A";
+                    jobTitles.put(jid, t);
+                });
+            } catch (Exception e) { jobTitles.put(jid, "N/A"); }
+        }
+
+        List<InterviewRequestDTO.WithdrawnRequestForInterviewer> out = new ArrayList<>();
+
+        for (InterviewRequest ir : requests) {
+            boolean cancelled = "cancelled".equalsIgnoreCase(ir.getStatus());
+
+            // A redo leaves the old request cancelled and a newer one active for
+            // the same candidate + application. Anything created at or before the
+            // cancelled request is not its replacement.
+            InterviewRequest replacement = cancelled
+                    ? requestRepo.findFirstActiveByCandidateAndApplication(
+                                ir.getCompanyId(), ir.getCandidateId(), ir.getJobApplicationId())
+                            .filter(r -> !r.getRequestId().equals(ir.getRequestId()))
+                            .filter(r -> r.getCreatedAt() != null && ir.getCreatedAt() != null
+                                    && r.getCreatedAt().isAfter(ir.getCreatedAt()))
+                            .orElse(null)
+                    : null;
+
+            String outcome = cancelled
+                    ? (replacement != null ? "rescheduled" : "cancelled")
+                    : "removed";
+
+            OffsetDateTime withdrawnAt = respondedAtFor(ir, userId);
+
+            boolean invitedAgain = replacement != null && replacement.getInterviewers().stream()
+                    .anyMatch(iri -> iri.getInterviewerUserId().equals(userId)
+                            && !"rejected".equalsIgnoreCase(iri.getResponseStatus()));
+
+            out.add(new InterviewRequestDTO.WithdrawnRequestForInterviewer(
+                    ir.getInterviewId() != null ? ir.getInterviewId() : "",
+                    ir.getRequestId().toString(),
+                    candidateNames.getOrDefault(ir.getCandidateId(), "Unknown"),
+                    ir.getJobId() != null ? jobTitles.getOrDefault(ir.getJobId(), "N/A") : "N/A",
+                    ir.getInterviewDate() != null ? ir.getInterviewDate().toString() : "",
+                    safeTime(ir.getInterviewTime()),
+                    ir.getMode(),
+                    outcome,
+                    withdrawnAt != null ? withdrawnAt.toString() : null,
+                    replacement != null ? replacement.getInterviewId() : null,
+                    replacement != null && replacement.getInterviewDate() != null
+                            ? replacement.getInterviewDate().toString() : null,
+                    replacement != null ? safeTime(replacement.getInterviewTime()) : null,
+                    invitedAgain));
+        }
+
+        return out;
+    }
+
+    /** When this interviewer's row on the request was last written, or null. */
+    private OffsetDateTime respondedAtFor(InterviewRequest ir, UUID userId) {
+        return ir.getInterviewers().stream()
+                .filter(iri -> iri.getInterviewerUserId().equals(userId))
+                .map(InterviewRequestInterviewer::getRespondedAt)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // PUT /{requestId}/respond
     // ─────────────────────────────────────────────────────────────────────────
     @Transactional
