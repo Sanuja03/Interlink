@@ -52,19 +52,30 @@ public class InterviewRequestService {
     @Autowired private ApplicationRepository            applicationRepository;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // GET /assignable?date=&time=&durationMinutes=
+    // GET /assignable?date=&time=&durationMinutes=&candidateId=&jobApplicationId=
     // Returns three groups: available, other, unavailable (conflict).
     // Conflict rule: an interviewer is UNAVAILABLE if they have an existing
     // interview_request row where their response_status is 'pending' OR 'accepted'
     // (i.e. not 'rejected') AND the time window overlaps the requested slot.
+    //
+    // candidateId + jobApplicationId are optional. When supplied they identify a
+    // "Cancel & Redo" — the still-pending request for that candidate+application
+    // is the one this form is about to replace, so it must not block its own
+    // panel. Without the skip, every interviewer already sitting at pending or
+    // accepted on that request would come back as a schedule conflict when the
+    // admin redoes the interview at the same date and time.
     // ─────────────────────────────────────────────────────────────────────────
     public InterviewRequestDTO.AssignableInterviewersResponse getAssignable(
-            Jwt jwt, String dateStr, String timeStr, int durationMinutes) {
+            Jwt jwt, String dateStr, String timeStr, int durationMinutes,
+            UUID candidateId, Long jobApplicationId) {
 
         UUID companyId = resolveCompanyId(jwt);
         LocalDate date = LocalDate.parse(dateStr);
         LocalTime startTime = LocalTime.parse(timeStr);
         LocalTime endTime   = startTime.plusMinutes(durationMinutes);
+
+        UUID replacedRequestId =
+                findReplaceableRequestId(companyId, candidateId, jobApplicationId);
 
         List<Interviewer> all = interviewerRepo.findAssignableByCompany(companyId);
 
@@ -87,6 +98,9 @@ public class InterviewRequestService {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("h:mm a");
 
         for (InterviewRequest ir : requestsOnDate) {
+            // The request being redone is about to be cancelled — its panel is free.
+            if (replacedRequestId != null && replacedRequestId.equals(ir.getRequestId())) continue;
+
             LocalTime irStart = ir.getInterviewTime();
             LocalTime irEnd   = irStart.plusMinutes(ir.getDurationMinutes());
 
@@ -266,12 +280,22 @@ public class InterviewRequestService {
                         "Interviewer " + id + " is not assignable to this company");
         }
 
+        // The still-pending request for this candidate+application is the one this
+        // create replaces ("Cancel & Redo"), so it cannot conflict with itself —
+        // otherwise re-inviting its own pending/accepted panel at the same slot
+        // would be rejected as a clash. Resolved before the conflict scan, but
+        // only cancelled after every validation passes.
+        UUID replacedRequestId = findReplaceableRequestId(
+                companyId, req.getCandidateId(), req.getJobApplicationId());
+
         // Conflict check — reject if any selected interviewer is already booked in this window
         LocalTime newEnd = interviewTime.plusMinutes(req.getDurationMinutes());
         List<InterviewRequest> requestsOnDate =
                 requestRepo.findActiveRequestsOnDate(companyId, interviewDate);
 
         for (InterviewRequest existing : requestsOnDate) {
+            if (replacedRequestId != null && replacedRequestId.equals(existing.getRequestId())) continue;
+
             LocalTime exStart = existing.getInterviewTime();
             LocalTime exEnd   = exStart.plusMinutes(existing.getDurationMinutes());
             boolean overlaps  = interviewTime.isBefore(exEnd) && newEnd.isAfter(exStart);
@@ -297,8 +321,15 @@ public class InterviewRequestService {
         if (existing.isPresent()) {
             InterviewRequest old = existing.get();
             old.setStatus("cancelled");
+            // Release the whole panel, not just the people who never answered.
+            // A pending row has to go so the request disappears from that
+            // interviewer's pending list; an accepted row has to go too, or the
+            // interviewer stays booked for a slot whose interview no longer
+            // exists. "rejected" is the vocabulary the schema allows for
+            // "no longer holds this request" (see InterviewLifecycleService).
             for (InterviewRequestInterviewer iri : old.getInterviewers()) {
-                if ("pending".equalsIgnoreCase(iri.getResponseStatus())) {
+                String rs = iri.getResponseStatus();
+                if ("pending".equalsIgnoreCase(rs) || "accepted".equalsIgnoreCase(rs)) {
                     iri.setResponseStatus("rejected");
                     iri.setRespondedAt(OffsetDateTime.now());
                 }
@@ -574,6 +605,21 @@ public class InterviewRequestService {
                 ir.getInterviewLocation(),
                 ir.getHistoryId(),
                 invited);
+    }
+
+    /**
+     * The request a new one for this candidate+application would replace, or null
+     * when there is none. Only a still-"pending" request qualifies: that is the
+     * one "Cancel & Redo" cancels, so its panel must not be treated as booked.
+     * A finalized request keeps blocking — its interview is really happening.
+     */
+    private UUID findReplaceableRequestId(UUID companyId, UUID candidateId, Long jobApplicationId) {
+        if (candidateId == null || jobApplicationId == null) return null;
+        return requestRepo
+                .findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId)
+                .filter(ir -> "pending".equalsIgnoreCase(ir.getStatus()))
+                .map(InterviewRequest::getRequestId)
+                .orElse(null);
     }
 
     private String safeTime(LocalTime t) {
