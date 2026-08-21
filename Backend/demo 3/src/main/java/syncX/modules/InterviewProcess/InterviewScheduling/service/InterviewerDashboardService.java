@@ -114,21 +114,36 @@ public class InterviewerDashboardService {
 
     /**
      * Build the candidate sub-block for the "Next Interview" card.
-     * Only name comes from the Candidate entity. Image / CV / profile
-     * link aren't stored on Candidate — left null so the frontend
-     * falls back to the default avatar and hides missing pieces.
+     * Name and profile picture come from the Candidate entity — the picture
+     * is null when the candidate never uploaded one, so the frontend falls
+     * back to the default avatar. CV / profile link aren't stored yet.
      */
     private InterviewerDashboardDTO.Candidate buildCandidate(UUID candidateId, String adminNote) {
-        String name = candidateName(candidateId);
+        Candidate c = candidate(candidateId);
+
+        String image = c != null && c.getProfilePictureUrl() != null
+                && !c.getProfilePictureUrl().isBlank()
+                ? c.getProfilePictureUrl()
+                : null;
 
         return new InterviewerDashboardDTO.Candidate(
-                null,                                          // image  — not stored yet
+                image,                                         // null → default avatar on the card
                 candidateId != null ? candidateId.toString() : "",
-                name,
+                c != null ? fullName(c) : "Unknown",
                 null,                                          // cvName — not stored yet
                 null,                                          // profileLink — not stored yet
                 adminNote                                      // note from admin on the request
         );
+    }
+
+    /** Best-effort candidate lookup — null when missing or on any lookup failure. */
+    private Candidate candidate(UUID candidateId) {
+        if (candidateId == null) return null;
+        try {
+            return candidateRepo.findById(candidateId).orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /** Combine firstName + lastName from the Candidate entity. */
