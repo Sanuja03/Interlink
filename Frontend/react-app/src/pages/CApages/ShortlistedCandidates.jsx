@@ -72,6 +72,11 @@ const ShortlistedCandidates = () => {
   const [pendingFinalizeMap, setPendingFinalizeMap] = useState({});
 
 
+  // Bumped after a cancel so the candidate list reloads and the row drops its
+  // finalized flag (the backend stops reporting cancelled schedules as finalized).
+  const [refreshTick, setRefreshTick] = useState(0);
+
+
   useEffect(() => {
     let cancelled = false;
     setLoadingJobs(true);
@@ -137,7 +142,7 @@ const ShortlistedCandidates = () => {
       .finally(() => { if (!cancelled) setLoadingCandidates(false); });
 
     return () => { cancelled = true; };
-  }, [selectedJobId]);
+  }, [selectedJobId, refreshTick]);
 
 
   const selectedJob = jobs.find((j) => j.jobId === selectedJobId) || {};
@@ -252,6 +257,13 @@ const ShortlistedCandidates = () => {
     setSelectedCandidate(null);
     candidateRef.current = null;
     setEditMode(false);
+  };
+
+  // After a cancel the schedule and its request are both cancelled, so the row is
+  // no longer finalized — reloading drops it back to the Interview Request popup.
+  const handleInterviewCancelled = () => {
+    closeAllPopups();
+    setRefreshTick((t) => t + 1);
   };
 
   const handleEditFromStatus = () => {
@@ -529,6 +541,7 @@ const ShortlistedCandidates = () => {
           scorecards={scorecards}
           viewOnly={true}
           requestId={finalizedRequestId}
+          onCancelled={handleInterviewCancelled}
         />
       )}
     </DashboardLayout>

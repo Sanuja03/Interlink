@@ -11,6 +11,10 @@ import syncX.modules.InterviewProcess.lifecycle.service.InterviewLifecycleServic
  * scheduler runs it automatically, so the DB stays the single source of truth
  * even when no one is using the app.
  *
+ * Scope is deliberately limited to interview REQUESTS that lapsed before a panel
+ * was confirmed. Interviews that were successfully scheduled are never touched by
+ * a timer, whatever their date: only the company admin ends one, by cancelling it.
+ *
  * Requires @EnableScheduling on the main @SpringBootApplication class.
  */
 @Component
@@ -25,10 +29,8 @@ public class InterviewLifecycleJob {
     public void run() {
         try {
             int cancelled = lifecycleService.cancelPendingPastDate();
-            int changed = lifecycleService.completeOrExpireScheduledPastDate();
-            if (cancelled > 0 || changed > 0) {
-                System.out.println("[InterviewLifecycleJob] pending→cancelled: "
-                        + cancelled + ", scheduled transitioned: " + changed);
+            if (cancelled > 0) {
+                System.out.println("[InterviewLifecycleJob] pending→cancelled: " + cancelled);
             }
         } catch (Exception e) {
             // Print the stack trace too — a bare getMessage() on a Hibernate
