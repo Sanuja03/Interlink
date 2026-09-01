@@ -11,6 +11,7 @@ import defaultAvatar from "../../../assets/images/default-avatar.png";
 import dashboardIcon from "../../../assets/icons/dashboard.png";
 import fileIcon from "../../../assets/icons/file.png";
 import ChatBot from "../../../assets/ChatBot.png";
+import supportIcon from "../../../assets/SupportTickets.png";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -137,6 +138,15 @@ const Sidebar = () => {
           )}
         </div>
         <NavLink
+  to="/tickets"
+  className={({ isActive }) =>
+    `sidebar-item ${isActive ? "active" : ""}`
+  }
+>
+  <img src={supportIcon} alt="Support icon" />
+  <span>Support</span>
+</NavLink>
+        <NavLink
           to="/company/chatbot"
           className={({ isActive }) =>
             `sidebar-item ${isActive ? "active" : ""}`
@@ -145,6 +155,7 @@ const Sidebar = () => {
           <img src={ChatBot} alt="Chatbot icon" />
           <span>Chatbot</span>
         </NavLink>
+
       </nav>
 
       <div className="sidebar-profile">
