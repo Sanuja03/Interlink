@@ -12,6 +12,8 @@ export default function CandidateHistory() {
   const [historyData, setHistoryData] = useState(null);
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiQuestionScores, setAiQuestionScores] = useState([]);
+  const [aiQuestionScoreLoading, setAiQuestionScoreLoading] = useState(true);
 
   useEffect(() => {
     if (!requestId) return;
@@ -20,9 +22,13 @@ export default function CandidateHistory() {
     const load = async () => {
       try {
         setLoading(true);
-        const [historyRes, profileRes] = await Promise.allSettled([
+        setAiQuestionScoreLoading(true);
+        // Panel-gated interviewer endpoints — the company-admin
+        // /company/ai-question-score route is closed to interviewers.
+        const [historyRes, profileRes, qsRes] = await Promise.allSettled([
           api.get(`/interviewer/interview-requests/${requestId}/history`),
           api.get(`/interviewer/interview-requests/${requestId}/candidate-profile`),
+          api.get(`/interviewer/interview-requests/${requestId}/ai-question-score`),
         ]);
         if (cancelled) return;
 
@@ -31,8 +37,17 @@ export default function CandidateHistory() {
 
         if (profileRes.status === "fulfilled") setCandidate(profileRes.value.data);
         else console.error("Failed to load profile:", profileRes.reason);
+
+        if (qsRes.status === "fulfilled") setAiQuestionScores(qsRes.value.data || []);
+        else {
+          console.error("Failed to load AI question score history:", qsRes.reason);
+          setAiQuestionScores([]);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setAiQuestionScoreLoading(false);
+        }
       }
     };
 
@@ -58,6 +73,8 @@ export default function CandidateHistory() {
             candidate={candidate}
             loading={loading}
             onBack={goBack}
+            aiQuestionScores={aiQuestionScores}
+            aiQuestionScoreLoading={aiQuestionScoreLoading}
           />
         </div>
       </div>

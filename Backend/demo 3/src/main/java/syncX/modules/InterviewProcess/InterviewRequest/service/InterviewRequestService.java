@@ -14,6 +14,10 @@ import syncX.modules.InterviewProcess.InterviewRequest.entity.InterviewRequestIn
 import syncX.modules.InterviewProcess.InterviewRequest.repository.AssignableInterviewerRepository;
 import syncX.modules.InterviewProcess.InterviewRequest.repository.InterviewRequestRepository;
 
+import syncX.modules.CompanyAdmin.AiQuestionScore.dto.AiQuestionScoreDTO;
+import syncX.modules.CompanyAdmin.AiQuestionScore.service.AiQuestionScoreService;
+import syncX.modules.CompanyAdmin.ApplicationManagement.entity.Application;
+import syncX.modules.CompanyAdmin.ApplicationManagement.repository.ApplicationRepository;
 import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
 import syncX.modules.CompanyAdmin.CandidateHistory.service.CandidateHistoryService;
 import syncX.modules.CompanyAdmin.CandidateProfile.dto.CandidateProfileResponseDTO;
@@ -44,21 +48,34 @@ public class InterviewRequestService {
     @Autowired private JobRepository                    jobRepository;
     @Autowired private CandidateHistoryService          candidateHistoryService;
     @Autowired private CandidateProfileService          candidateProfileService;
+    @Autowired private AiQuestionScoreService           aiQuestionScoreService;
+    @Autowired private ApplicationRepository            applicationRepository;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // GET /assignable?date=&time=&durationMinutes=
+    // GET /assignable?date=&time=&durationMinutes=&candidateId=&jobApplicationId=
     // Returns three groups: available, other, unavailable (conflict).
     // Conflict rule: an interviewer is UNAVAILABLE if they have an existing
     // interview_request row where their response_status is 'pending' OR 'accepted'
     // (i.e. not 'rejected') AND the time window overlaps the requested slot.
+    //
+    // candidateId + jobApplicationId are optional. When supplied they identify a
+    // "Cancel & Redo" — the still-pending request for that candidate+application
+    // is the one this form is about to replace, so it must not block its own
+    // panel. Without the skip, every interviewer already sitting at pending or
+    // accepted on that request would come back as a schedule conflict when the
+    // admin redoes the interview at the same date and time.
     // ─────────────────────────────────────────────────────────────────────────
     public InterviewRequestDTO.AssignableInterviewersResponse getAssignable(
-            Jwt jwt, String dateStr, String timeStr, int durationMinutes) {
+            Jwt jwt, String dateStr, String timeStr, int durationMinutes,
+            UUID candidateId, Long jobApplicationId) {
 
         UUID companyId = resolveCompanyId(jwt);
         LocalDate date = LocalDate.parse(dateStr);
         LocalTime startTime = LocalTime.parse(timeStr);
         LocalTime endTime   = startTime.plusMinutes(durationMinutes);
+
+        UUID replacedRequestId =
+                findReplaceableRequestId(companyId, candidateId, jobApplicationId);
 
         List<Interviewer> all = interviewerRepo.findAssignableByCompany(companyId);
 
@@ -81,6 +98,9 @@ public class InterviewRequestService {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("h:mm a");
 
         for (InterviewRequest ir : requestsOnDate) {
+            // The request being redone is about to be cancelled — its panel is free.
+            if (replacedRequestId != null && replacedRequestId.equals(ir.getRequestId())) continue;
+
             LocalTime irStart = ir.getInterviewTime();
             LocalTime irEnd   = irStart.plusMinutes(ir.getDurationMinutes());
 
@@ -260,12 +280,22 @@ public class InterviewRequestService {
                         "Interviewer " + id + " is not assignable to this company");
         }
 
+        // The still-pending request for this candidate+application is the one this
+        // create replaces ("Cancel & Redo"), so it cannot conflict with itself —
+        // otherwise re-inviting its own pending/accepted panel at the same slot
+        // would be rejected as a clash. Resolved before the conflict scan, but
+        // only cancelled after every validation passes.
+        UUID replacedRequestId = findReplaceableRequestId(
+                companyId, req.getCandidateId(), req.getJobApplicationId());
+
         // Conflict check — reject if any selected interviewer is already booked in this window
         LocalTime newEnd = interviewTime.plusMinutes(req.getDurationMinutes());
         List<InterviewRequest> requestsOnDate =
                 requestRepo.findActiveRequestsOnDate(companyId, interviewDate);
 
         for (InterviewRequest existing : requestsOnDate) {
+            if (replacedRequestId != null && replacedRequestId.equals(existing.getRequestId())) continue;
+
             LocalTime exStart = existing.getInterviewTime();
             LocalTime exEnd   = exStart.plusMinutes(existing.getDurationMinutes());
             boolean overlaps  = interviewTime.isBefore(exEnd) && newEnd.isAfter(exStart);
@@ -291,8 +321,15 @@ public class InterviewRequestService {
         if (existing.isPresent()) {
             InterviewRequest old = existing.get();
             old.setStatus("cancelled");
+            // Release the whole panel, not just the people who never answered.
+            // A pending row has to go so the request disappears from that
+            // interviewer's pending list; an accepted row has to go too, or the
+            // interviewer stays booked for a slot whose interview no longer
+            // exists. "rejected" is the vocabulary the schema allows for
+            // "no longer holds this request" (see InterviewLifecycleService).
             for (InterviewRequestInterviewer iri : old.getInterviewers()) {
-                if ("pending".equalsIgnoreCase(iri.getResponseStatus())) {
+                String rs = iri.getResponseStatus();
+                if ("pending".equalsIgnoreCase(rs) || "accepted".equalsIgnoreCase(rs)) {
                     iri.setResponseStatus("rejected");
                     iri.setRespondedAt(OffsetDateTime.now());
                 }
@@ -398,6 +435,120 @@ public class InterviewRequestService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // GET /withdrawn — for interviewer side.
+    //
+    // Requests this interviewer was invited onto and no longer holds, so the
+    // pending page can tell them what happened instead of silently dropping the
+    // row. Three shapes, all of which leave their row at "rejected":
+    //
+    //   removed      request still live — the admin took them off the panel
+    //   cancelled    the whole request was cancelled
+    //   rescheduled  cancelled and replaced by a newer request for the same
+    //                candidate + application ("Cancel & Redo")
+    //
+    // The stored row cannot distinguish an admin removal from the interviewer's
+    // own decline — both write "rejected" (see findWithdrawnForInterviewer).
+    // The classification here is therefore about what happened to the *request*;
+    // the page decides how confidently to word each item, filtering out the
+    // requests it remembers this interviewer declining.
+    // ─────────────────────────────────────────────────────────────────────────
+    private static final int WITHDRAWN_WINDOW_DAYS = 30;
+
+    @Transactional(readOnly = true)
+    public List<InterviewRequestDTO.WithdrawnRequestForInterviewer> getWithdrawnForInterviewer(Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        List<InterviewRequest> requests = new ArrayList<>(requestRepo.findWithdrawnForInterviewer(
+                userId, LocalDate.now().minusDays(WITHDRAWN_WINDOW_DAYS)));
+
+        // Most recently withdrawn first. The query's interview-date order is
+        // about when the interview *was*, not when the news broke.
+        requests.sort(Comparator.comparing(
+                (InterviewRequest ir) -> respondedAtFor(ir, userId),
+                Comparator.nullsLast(Comparator.reverseOrder())));
+
+        Set<UUID> candidateIds = requests.stream()
+                .map(InterviewRequest::getCandidateId).collect(Collectors.toSet());
+        Set<Long> jobIds = requests.stream()
+                .map(InterviewRequest::getJobId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        Map<UUID, String> candidateNames = new HashMap<>();
+        for (UUID cid : candidateIds) {
+            try {
+                candidateRepository.findById(cid).ifPresent(c ->
+                        candidateNames.put(cid, c.getFirstName() + " " + c.getLastName()));
+            } catch (Exception e) { candidateNames.put(cid, "Unknown"); }
+        }
+
+        Map<Long, String> jobTitles = new HashMap<>();
+        for (Long jid : jobIds) {
+            try {
+                jobRepository.findById(jid).ifPresent(j -> {
+                    String t = j.getJobTitle();
+                    if (t == null || t.isBlank()) t = "N/A";
+                    jobTitles.put(jid, t);
+                });
+            } catch (Exception e) { jobTitles.put(jid, "N/A"); }
+        }
+
+        List<InterviewRequestDTO.WithdrawnRequestForInterviewer> out = new ArrayList<>();
+
+        for (InterviewRequest ir : requests) {
+            boolean cancelled = "cancelled".equalsIgnoreCase(ir.getStatus());
+
+            // A redo leaves the old request cancelled and a newer one active for
+            // the same candidate + application. Anything created at or before the
+            // cancelled request is not its replacement.
+            InterviewRequest replacement = cancelled
+                    ? requestRepo.findFirstActiveByCandidateAndApplication(
+                                ir.getCompanyId(), ir.getCandidateId(), ir.getJobApplicationId())
+                            .filter(r -> !r.getRequestId().equals(ir.getRequestId()))
+                            .filter(r -> r.getCreatedAt() != null && ir.getCreatedAt() != null
+                                    && r.getCreatedAt().isAfter(ir.getCreatedAt()))
+                            .orElse(null)
+                    : null;
+
+            String outcome = cancelled
+                    ? (replacement != null ? "rescheduled" : "cancelled")
+                    : "removed";
+
+            OffsetDateTime withdrawnAt = respondedAtFor(ir, userId);
+
+            boolean invitedAgain = replacement != null && replacement.getInterviewers().stream()
+                    .anyMatch(iri -> iri.getInterviewerUserId().equals(userId)
+                            && !"rejected".equalsIgnoreCase(iri.getResponseStatus()));
+
+            out.add(new InterviewRequestDTO.WithdrawnRequestForInterviewer(
+                    ir.getInterviewId() != null ? ir.getInterviewId() : "",
+                    ir.getRequestId().toString(),
+                    candidateNames.getOrDefault(ir.getCandidateId(), "Unknown"),
+                    ir.getJobId() != null ? jobTitles.getOrDefault(ir.getJobId(), "N/A") : "N/A",
+                    ir.getInterviewDate() != null ? ir.getInterviewDate().toString() : "",
+                    safeTime(ir.getInterviewTime()),
+                    ir.getMode(),
+                    outcome,
+                    withdrawnAt != null ? withdrawnAt.toString() : null,
+                    replacement != null ? replacement.getInterviewId() : null,
+                    replacement != null && replacement.getInterviewDate() != null
+                            ? replacement.getInterviewDate().toString() : null,
+                    replacement != null ? safeTime(replacement.getInterviewTime()) : null,
+                    invitedAgain));
+        }
+
+        return out;
+    }
+
+    /** When this interviewer's row on the request was last written, or null. */
+    private OffsetDateTime respondedAtFor(InterviewRequest ir, UUID userId) {
+        return ir.getInterviewers().stream()
+                .filter(iri -> iri.getInterviewerUserId().equals(userId))
+                .map(InterviewRequestInterviewer::getRespondedAt)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // PUT /{requestId}/respond
     // ─────────────────────────────────────────────────────────────────────────
     @Transactional
@@ -450,8 +601,55 @@ public class InterviewRequestService {
         if (candidateId == null)
             throw new RuntimeException("This request has no linked candidate");
 
-        // jobApplicationId only drives the AI-score lookup; may be null
-        return candidateProfileService.getCandidateProfile(candidateId, ir.getJobApplicationId());
+        // The application only drives the AI-score lookup, and
+        // CandidateProfileService leaves aiScore null without complaint when the
+        // id it is handed doesn't resolve. The company-admin view passes an id
+        // taken straight from the application the admin clicked; here it comes
+        // off the request row, so resolve it defensively rather than trusting it.
+        Long applicationId = resolveApplication(ir).map(Application::getId).orElse(null);
+
+        return candidateProfileService.getCandidateProfile(candidateId, applicationId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /{requestId}/ai-question-score — the candidate's AI interview
+    // question/answer history for this request. Panel-gated mirror of the
+    // company-admin /api/company/ai-question-score endpoint, which interviewers
+    // cannot call (it is restricted to ROLE_company_admin).
+    // ─────────────────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<AiQuestionScoreDTO> getAiQuestionScoresForInterviewer(Jwt jwt, UUID requestId) {
+        InterviewRequest ir = requireInvitedRequest(jwt, requestId);
+
+        // Read candidate + job off the application row, exactly like the company
+        // admin page does, so both sides key the lookup off the same values.
+        Application app = resolveApplication(ir)
+                .orElseThrow(() -> new RuntimeException("This request has no linked application"));
+
+        if (app.getCandidateId() == null || app.getJobId() == null)
+            return List.of();
+
+        return aiQuestionScoreService.getHistory(app.getCandidateId(), app.getJobId());
+    }
+
+    /**
+     * Resolves the job application behind an interview request.
+     * Falls back to the candidate's application for the request's job when
+     * job_application_id is absent or no longer points at a real row.
+     */
+    private Optional<Application> resolveApplication(InterviewRequest ir) {
+        Long appId = ir.getJobApplicationId();
+        if (appId != null && appId > 0) {
+            Optional<Application> byId = applicationRepository.findById(appId);
+            if (byId.isPresent()) return byId;
+        }
+
+        if (ir.getCandidateId() != null && ir.getJobId() != null) {
+            return applicationRepository
+                    .findLatestByCandidateAndJob(ir.getCandidateId(), ir.getJobId());
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -521,6 +719,21 @@ public class InterviewRequestService {
                 ir.getInterviewLocation(),
                 ir.getHistoryId(),
                 invited);
+    }
+
+    /**
+     * The request a new one for this candidate+application would replace, or null
+     * when there is none. Only a still-"pending" request qualifies: that is the
+     * one "Cancel & Redo" cancels, so its panel must not be treated as booked.
+     * A finalized request keeps blocking — its interview is really happening.
+     */
+    private UUID findReplaceableRequestId(UUID companyId, UUID candidateId, Long jobApplicationId) {
+        if (candidateId == null || jobApplicationId == null) return null;
+        return requestRepo
+                .findFirstActiveByCandidateAndApplication(companyId, candidateId, jobApplicationId)
+                .filter(ir -> "pending".equalsIgnoreCase(ir.getStatus()))
+                .map(InterviewRequest::getRequestId)
+                .orElse(null);
     }
 
     private String safeTime(LocalTime t) {

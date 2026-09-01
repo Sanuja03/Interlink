@@ -78,6 +78,22 @@ const Signup = () => {
       headers: { Authorization: `Bearer ${session.access_token}` }
     })
 
+    // Log registration — non-fatal, wrapped in try/catch so it never breaks signup
+    try {
+      await api.post("/activity-logs", {
+        userId:      session.user?.id ?? null,
+        userRole:    "candidate",
+        action:      "CREATE",
+        entityType:  "USER",
+        description: `New candidate registered: ${email}`,
+      }, {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+    } catch (err) {
+      console.error("[Signup] Failed to create registration activity log:", err);
+    }
+
+
     //log out user
     sessionStorage.removeItem("is_signing_up")
     await supabase.auth.signOut()

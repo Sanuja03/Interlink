@@ -4,8 +4,36 @@ import api from "../../lib/api";
 
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import PendingRequestsList from "../../components/InterviewerPages/PendingRequestsLayout/PendingRequestsList";
+import WithdrawnRequestsPanel from "../../components/InterviewerPages/PendingRequestsLayout/WithdrawnRequestsPanel";
 import SearchBar from "../../components/InterviewerPages/Layout/SearchBar";
 import "./PendingRequests.css";
+
+/* ── Local record of what this interviewer answered ──────────────────────────
+   The server stores an admin removal and a self-decline as the same "rejected"
+   row, so it can't tell the withdrawn panel which requests were actually
+   accepted. Remembering the answer at the moment it's sent fills that gap —
+   the same localStorage approach the company-admin status popup uses for its
+   "Removed" badges. Decisions made in another browser are simply unknown, and
+   the panel words those items neutrally rather than claiming an acceptance. */
+const DECISIONS_KEY = "interviewer_request_decisions";
+const DISMISSED_KEY = "interviewer_dismissed_withdrawn";
+
+const readStored = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeStored = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage full or blocked — the panel just falls back to neutral wording */
+  }
+};
 
 const PendingRequests = () => {
   const navigate = useNavigate();
@@ -13,6 +41,9 @@ const PendingRequests = () => {
   const [filteredRows, setFilteredRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
+  const [withdrawn, setWithdrawn] = useState([]);
+  const [decisions, setDecisions] = useState(() => readStored(DECISIONS_KEY, {}));
+  const [dismissed, setDismissed] = useState(() => readStored(DISMISSED_KEY, []));
 
   useEffect(() => {
     let cancelled = false;
@@ -43,11 +74,43 @@ const PendingRequests = () => {
       }
     };
 
+    // Requests that were taken away — removed from the panel, cancelled, or
+    // cancelled and rescheduled. A failure here must not break the page.
+    const fetchWithdrawn = async () => {
+      try {
+        const res = await api.get("/interviewer/interview-requests/withdrawn");
+        if (!cancelled) setWithdrawn(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch withdrawn requests:", err);
+      }
+    };
+
     fetchPending();
+    fetchWithdrawn();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const rememberDecision = (requestId, decision) => {
+    setDecisions((prev) => {
+      const next = { ...prev, [requestId]: decision };
+      writeStored(DECISIONS_KEY, next);
+      return next;
+    });
+  };
+
+  const handleDismissWithdrawn = (requestId) => {
+    setDismissed((prev) => {
+      const next = prev.includes(requestId) ? prev : [...prev, requestId];
+      writeStored(DISMISSED_KEY, next);
+      return next;
+    });
+  };
+
+  const visibleWithdrawn = withdrawn.filter(
+    (w) => !dismissed.includes(w.requestId)
+  );
 
   const handleSearch = (value) => {
     setSearchValue(value);
@@ -88,6 +151,7 @@ const PendingRequests = () => {
         null,
         { params: { response } }
       );
+      rememberDecision(row.requestId, response);
       setRows((prev) => prev.filter((r) => r.requestId !== row.requestId));
       setFilteredRows((prev) => prev.filter((r) => r.requestId !== row.requestId));
     } catch (err) {
@@ -114,6 +178,12 @@ const PendingRequests = () => {
         <SearchBar
           onChange={handleSearch}
           onSearch={() => handleSearch(searchValue)}
+        />
+
+        <WithdrawnRequestsPanel
+          items={visibleWithdrawn}
+          decisions={decisions}
+          onDismiss={handleDismissWithdrawn}
         />
 
         {loading ? (

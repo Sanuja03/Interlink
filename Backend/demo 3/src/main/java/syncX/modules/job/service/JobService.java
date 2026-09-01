@@ -161,9 +161,53 @@ public class JobService {
         job.setInterviewRounds(dto.getInterviewRounds());
         job.setInterviewStages(dto.getInterviewStages());
         job.setKeyRequirements(dto.getRequirementText());
-        job.setEducationRequired(dto.getEducationRequired());
         job.setJobBenefits(dto.getJobBenefits());
         job.setDeadline(parseDeadline(dto.getDeadline()));
+
+        // ADDED — re-run AI extraction so skills/experience/education stay in
+        // sync whenever the requirement text is edited, instead of silently
+        // scoring future applicants against stale, outdated requirements.
+        String rawText = dto.getRequirementText();
+        if (rawText != null && !rawText.isBlank()) {
+
+            String aiResponse = aiService.extractJobData(rawText);
+            JobAiDto aiData = mapper.readValue(aiResponse, JobAiDto.class);
+
+            job.setExperienceRequired(aiData.getExperienceRequired());
+
+            // Same precedence as createJob(): user's explicit education field wins
+            job.setEducationRequired(
+                    (dto.getEducationRequired() != null && !dto.getEducationRequired().isBlank())
+                            ? dto.getEducationRequired()
+                            : aiData.getEducationRequired()
+            );
+
+            // ADDED — clear out the old requirement rows before inserting the new ones
+            List<JobRequirement> oldReqs = reqRepo.findByJobId(jobId);
+            if (!oldReqs.isEmpty()) {
+                reqRepo.deleteAll(oldReqs);
+            }
+
+            if (aiData.getSkills() != null) {
+                for (String skill : aiData.getSkills()) {
+                    if (skill == null || skill.trim().isEmpty())
+                        continue;
+                    JobRequirement r = new JobRequirement();
+                    r.setJob(job);
+                    r.setRequirement(skill.trim().toLowerCase());
+                    reqRepo.save(r);
+                }
+            }
+
+        } else {
+            // ADDED — requirement text wasn't touched on this edit; still allow
+            // the education field to be updated independently if it was changed
+            job.setEducationRequired(
+                    (dto.getEducationRequired() != null && !dto.getEducationRequired().isBlank())
+                            ? dto.getEducationRequired()
+                            : job.getEducationRequired()
+            );
+        }
 
         // Optional: update company if provided
         if (dto.getCompanyId() != null && !dto.getCompanyId().isBlank()) {
@@ -171,6 +215,11 @@ public class JobService {
         }
 
         Job saved = jobRepo.save(job);
+
+        // ADDED — refresh the requirements list on the returned object so the
+        // response reflects the newly-saved skills, not the stale in-memory list
+        List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
+        saved.setRequirements(reqs);
 
         // Auto-generate embeddings for the updated job
         try {

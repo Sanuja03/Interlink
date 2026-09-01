@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/chat/**").authenticated()
                         .requestMatchers("/api/auth/logout").authenticated()
+                        .requestMatchers("/api/activity-logs").authenticated()
 
                         // ── Everything else requires authentication(login) ──
                         .anyRequest().authenticated()

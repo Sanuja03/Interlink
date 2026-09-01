@@ -83,6 +83,8 @@ public class SupportTicketService {
         ticket.setUserId(userId);
         ticket.setEmail(email);
         ticket.setSubmittedBy(name);
+        ticket.setRequesterRead(true);  // ADDED — they just wrote it
+        ticket.setAdminRead(false);     // ADDED — admin hasn't seen it
 
         return repository.save(ticket);
     }
@@ -124,9 +126,32 @@ public class SupportTicketService {
                 ticket.getSubmittedBy(),
                 ticket.getCreatedAt(),
                 ticket.getUserId(),
-                responses               //setting the dto response sent to the frontend
+                responses,               //setting the dto response sent to the frontend
+                ticket.getRequesterRead(), // ADDED
+                ticket.getAdminRead()      // ADDED
         );
     }
+
+    // ADDED — marks the ticket as read for whichever side is viewing it.
+    // Called from the controller right after the permission check passes.
+    public void markRead(Long id, UUID requestingUserId) {
+        SupportTicket ticket = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
+
+        if (isSuperAdmin(requestingUserId)) {
+            if (Boolean.FALSE.equals(ticket.getAdminRead())) {
+                ticket.setAdminRead(true);
+                repository.save(ticket);
+            }
+        } else if (ticket.getUserId().equals(requestingUserId)) {
+            if (Boolean.FALSE.equals(ticket.getRequesterRead())) {
+                ticket.setRequesterRead(true);
+                repository.save(ticket);
+            }
+        }
+    }
+    // END ADDED
 
     // ─── UPDATE ───────────────────────────────────────────────────────────────
 
@@ -222,6 +247,18 @@ public class SupportTicketService {
         response.setSender(isSuperAdmin(requestingUserId) ? "ADMIN" : "REQUESTER");
         response.setTicket(ticket);
         response.setSentAt(LocalDateTime.now());
+
+        // ADDED — whoever just replied has obviously seen the ticket;
+        // the other side now has something new to read.
+        if ("ADMIN".equals(response.getSender())) {
+            ticket.setAdminRead(true);
+            ticket.setRequesterRead(false);
+        } else {
+            ticket.setRequesterRead(true);
+            ticket.setAdminRead(false);
+        }
+        repository.save(ticket);
+        // END ADDED
 
         Response saved = responseRepository.save(response);
         return new ResponseDTO(saved.getId(), saved.getSender(),

@@ -63,6 +63,29 @@ public class InterviewSchedulingController {
         }
     }
 
+    // Cancel a scheduled interview. company_admin only — no other role or module
+    // may cancel one.
+    @PostMapping("/{requestId}/cancel")
+    @PreAuthorize("hasRole('company_admin')")
+    public ResponseEntity<?> cancelScheduled(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId) {
+
+        try {
+            return ResponseEntity.ok(
+                    schedulingService.cancelScheduled(jwt, requestId));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(
+                    java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(
+                    java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(
+                    java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
     //for a scheduled interview saving a score card
     @PatchMapping("/{requestId}/scorecard")
     @PreAuthorize("hasRole('company_admin')")

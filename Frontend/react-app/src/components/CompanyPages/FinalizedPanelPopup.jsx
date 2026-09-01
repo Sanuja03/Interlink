@@ -14,6 +14,7 @@ const FinalizedPanelPopup = ({
   onSent,
   viewOnly = false,
   requestId = null,
+  onCancelled = null,          // called after a successful cancel so the page can refresh
 }) => {
   const [meetingLink, setMeetingLink]                 = useState("");
   const [interviewLocation, setInterviewLocation]     = useState("");
@@ -25,6 +26,9 @@ const FinalizedPanelPopup = ({
   const [loadedData, setLoadedData] = useState(null);
   const [loadError, setLoadError]   = useState("");
   const [loading, setLoading]       = useState(false);
+
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   //only runs in view only mode
   useEffect(() => {
@@ -68,6 +72,7 @@ const FinalizedPanelPopup = ({
       setSent(false);
       setLoadedData(null);
       setLoadError("");
+      setCancelError("");
     }
   }, [open]);
 
@@ -98,8 +103,40 @@ const FinalizedPanelPopup = ({
   const selectedCard = finalizedCards.find((c) => c.id === selectedScorecardId) || null;
   const isLocked     = sent || viewOnly;
 
-  // Show Back button only in action mode 
+  // Show Back button only in action mode
   const showBackBtn = !viewOnly && !sent && typeof onBack === "function";
+
+  // Cancelling only applies once a scheduled interview exists (view-only mode) and
+  // while the round is still undecided. Backend rejects the rest anyway; this keeps
+  // the button off screen when it could never succeed.
+  const scheduledStatus = (details.status || "").toLowerCase();
+  const showCancelBtn =
+    viewOnly &&
+    !!loadedData?.scheduledId &&
+    !["cancelled", "pass_completed", "fail_completed"].includes(scheduledStatus);
+
+  const handleCancelInterview = async () => {
+    if (!requestId) return;
+    const confirmed = window.confirm(
+      "Cancel this scheduled interview? The panel will be freed for that date and " +
+      "time, and you will need to raise a new interview request for this candidate."
+    );
+    if (!confirmed) return;
+
+    setCancelling(true);
+    setCancelError("");
+    try {
+      await api.post(`/company/interview-scheduling/${requestId}/cancel`);
+      if (typeof onCancelled === "function") onCancelled();
+      else onClose();
+    } catch (err) {
+      setCancelError(
+        err?.response?.data?.error || err?.message || "Failed to cancel the interview."
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const handleSend = async () => {
     setSendError("");
@@ -341,6 +378,10 @@ const FinalizedPanelPopup = ({
           {sendError && (
             <div className="ip-note-box" style={{ color: "crimson", marginTop: 12 }}>{sendError}</div>
           )}
+
+          {cancelError && (
+            <div className="ip-note-box" style={{ color: "crimson", marginTop: 12 }}>{cancelError}</div>
+          )}
         </div>
 
         {/* Actions */}
@@ -368,6 +409,18 @@ const FinalizedPanelPopup = ({
               {sending ? "Saving…" : "Send Scheduled Interview Details"}
             </button>
           )}
+          {/* Cancel the scheduled interview — only path in the app that can do this */}
+          {showCancelBtn && (
+            <button
+              className="ip-danger-btn"
+              style={{ background: "#ffffff", color: "#dc2626", border: "1px solid #fca5a5" }}
+              disabled={cancelling}
+              onClick={handleCancelInterview}
+            >
+              {cancelling ? "Cancelling…" : "Cancel Interview"}
+            </button>
+          )}
+
           <button className="ip-danger-btn" onClick={onClose}>Close</button>
         </div>
       </div>

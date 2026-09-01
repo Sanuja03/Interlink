@@ -85,26 +85,15 @@ const ScheduledInterviews = () => {
         return;
       }
 
-      // Nearest upcoming interview first (left). Sort on RAW date+time
+      // Nearest interview first (left). Sort on RAW date+time
       // (formatted "hh:mm AM/PM" would sort lexically wrong).
-      const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local
-      scheduledRows = scheduledRows
-        // Safety net: hide interviews whose date is already past. The backend
-        // job is the source of truth (expires / completes them); this only
-        // covers the few minutes before the next job run. Same-day rows stay
-        // visible (could still be ongoing).
-        .filter((r) => !r.interview_date || r.interview_date >= todayStr)
-        .sort((a, b) => {
-          const d = (a.interview_date || "").localeCompare(b.interview_date || "");
-          if (d !== 0) return d;
-          return (a.interview_time || "").localeCompare(b.interview_time || "");
-        });
-
-      if (scheduledRows.length === 0) {
-        setScheduledInterviews([]);
-        setFilteredInterviews([]);
-        return;
-      }
+      // Past-date rows are NOT hidden: a scheduled interview stays here until its
+      // evaluations are in or the company admin cancels it. Nothing expires it.
+      scheduledRows = [...scheduledRows].sort((a, b) => {
+        const d = (a.interview_date || "").localeCompare(b.interview_date || "");
+        if (d !== 0) return d;
+        return (a.interview_time || "").localeCompare(b.interview_time || "");
+      });
 
       // 4. Fetch candidateid,candidate names for all candidate_ids in this batch
       const candidateIds = [...new Set(

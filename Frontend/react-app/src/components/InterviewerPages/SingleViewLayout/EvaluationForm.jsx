@@ -61,6 +61,20 @@ const EvaluationForm = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setError("Not authenticated."); return; }
 
+      // A cancelled interview is closed for good — writing here would also let the
+      // submit path below flip its status back to "completed" and undo the admin's
+      // cancel, so refuse before touching anything.
+      const { data: statusRow } = await supabase
+        .from("interview_scheduled")
+        .select("status")
+        .eq("scheduled_id", scheduledId)
+        .single();
+
+      if (statusRow?.status?.toLowerCase() === "cancelled") {
+        setError("This interview was cancelled by the company admin and can no longer be evaluated.");
+        return;
+      }
+
       const autoRecommendation = scoreResult.grade.label;
       let currentSubmissionId = submissionId;
 

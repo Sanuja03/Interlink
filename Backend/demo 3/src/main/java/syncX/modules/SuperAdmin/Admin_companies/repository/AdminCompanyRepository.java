@@ -36,4 +36,11 @@ public interface AdminCompanyRepository extends JpaRepository<AdminCompany, UUID
             @Param("search") String search, // Search keyword
             @Param("status") String status  // Filter by company status
     );
+
+    @Query(value = """
+    SELECT cd.logo_url 
+    FROM company_details cd 
+    WHERE cd.company_id = :companyId
+    """, nativeQuery = true)
+    Optional<String> findLogoUrlByCompanyId(@Param("companyId") UUID companyId);
 }

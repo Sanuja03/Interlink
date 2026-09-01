@@ -3,15 +3,17 @@ import SearchFilterBar from "../../components/SuperAdminComponents/Layout/Search
 import { fetchActivityLogs } from "../../api/ActivityLogsApi";
 
 const ROLE_OPTS = [
-  { label: "Super Admin",   value: "ADMIN"         },
-  { label: "Company Admin", value: "COMPANY_ADMIN" },
-  { label: "Candidate",     value: "Candidate"     },
-  { label: "Interviewer",   value: "Interviewer"   },
+  { label: "Super Admin",   value: "super_admin"   },
+  { label: "Company Admin", value: "company_admin" },
+  { label: "Candidate",     value: "candidate"     },
+  { label: "Interviewer",   value: "interviewer"   },
 ];
 
 // Badge color per action type
 const ACTION_COLOR = {
   LOGIN:   "bg-blue-100 text-blue-700",
+  LOGOUT:  "bg-purple-100 text-purple-700",
+  CREATE:  "bg-green-100 text-green-700",
   UPDATE:  "bg-yellow-100 text-yellow-700",
   SUSPEND: "bg-red-100 text-red-700",
   RESTORE: "bg-green-100 text-green-700",
@@ -19,6 +21,7 @@ const ACTION_COLOR = {
   UNFLAG:  "bg-gray-100 text-gray-600",
   APPROVE: "bg-teal-100 text-teal-700",
   REJECT:  "bg-red-100 text-red-700",
+  DELETE:  "bg-red-200 text-red-800",
 };
 
 export default function AllActivitiesPage() {
@@ -41,35 +44,38 @@ export default function AllActivitiesPage() {
   // Fetch logs whenever filters or page change
   useEffect(() => {
     setLoading(true);
+    setTotalPages(1); 
     fetchActivityLogs({
-      userRole: roleFilter        || "",
-      fromDate: fromDate          || null,
-      toDate:   toDate            || null,
-      search:   debouncedSearch   || "",
+      userRole: roleFilter      || "",
+      fromDate: fromDate        || null,
+      toDate:   toDate          || null,
+      search:   debouncedSearch || "",
       page:     currentPage,
       size:     10,
     })
       .then((res) => {
-        setActivities(res.data.content  ?? []);
+        setActivities(res.data.content   ?? []);
         setTotalPages(res.data.totalPages ?? 1);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [roleFilter, fromDate, toDate, debouncedSearch, currentPage]);
 
+  // Reset to page 0 on any filter change so results always start from the beginning
+const handleRoleChange   = (v) => { setRoleFilter(v); setCurrentPage(0); setTotalPages(1); };
+const handleFromChange   = (v) => { setFromDate(v);   setCurrentPage(0); setTotalPages(1); };
+const handleToChange     = (v) => { setToDate(v);     setCurrentPage(0); setTotalPages(1); };
+const handleSearchChange = (v) => { setSearch(v);     setCurrentPage(0); setTotalPages(1); };
+
   const handleClear = () => {
     setSearch("");
+    setDebouncedSearch(""); // clear immediately so fetch fires without debounce delay
     setRoleFilter("");
     setFromDate("");
     setToDate("");
-    setCurrentPage(0); // reset to first page on filter clear
+    setCurrentPage(0);
+    setTotalPages(1);
   };
-
-  // Reset to first page when any filter changes to ensure user sees results from the beginning
-  const handleRoleChange  = (v) => { setRoleFilter(v);  setCurrentPage(0); };
-  const handleFromChange  = (v) => { setFromDate(v);    setCurrentPage(0); };
-  const handleToChange    = (v) => { setToDate(v);      setCurrentPage(0); };
-  const handleSearchChange = (v) => { setSearch(v);     setCurrentPage(0); };
 
   return (
     <div className="space-y-5">
@@ -140,10 +146,13 @@ export default function AllActivitiesPage() {
                   className="border-b border-[#DADEE0] hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-4 py-3 text-sm text-gray-600 capitalize">
-                    {a.userRole?.toLowerCase().replace("_", " ") || "—"}
+                    {a.userRole?.toLowerCase().replace(/_/g, " ") || "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ACTION_COLOR[a.action] || "bg-gray-100 text-gray-600"}`}>
+                    <span
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                        ${ACTION_COLOR[a.action] || "bg-gray-100 text-gray-600"}`}
+                    >
                       {a.action}
                     </span>
                   </td>

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import syncX.modules.InterviewProcess.InterviewRequest.dto.InterviewRequestDTO;
 import syncX.modules.InterviewProcess.InterviewRequest.service.InterviewRequestService;
+import syncX.modules.CompanyAdmin.AiQuestionScore.dto.AiQuestionScoreDTO;
 import syncX.modules.CompanyAdmin.CandidateHistory.dto.CandidateHistoryResponseDTO;
 import syncX.modules.CompanyAdmin.CandidateProfile.dto.CandidateProfileResponseDTO;
 
@@ -30,6 +31,28 @@ public class InterviewerRequestController {
         try {
             List<InterviewRequestDTO.PendingRequestForInterviewer> result =
                     service.getPendingForInterviewer(jwt);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * GET /api/interviewer/interview-requests/withdrawn
+     * Requests this interviewer was invited onto but no longer holds — removed
+     * from the panel, cancelled, or cancelled and rescheduled. Feeds the notice
+     * panel above the pending list.
+     */
+    @GetMapping("/withdrawn")
+    @PreAuthorize("hasRole('interviewer')")
+    public ResponseEntity<?> getMyWithdrawn(
+            @AuthenticationPrincipal Jwt jwt) {
+        try {
+            List<InterviewRequestDTO.WithdrawnRequestForInterviewer> result =
+                    service.getWithdrawnForInterviewer(jwt);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,6 +120,31 @@ public class InterviewerRequestController {
         try {
             CandidateProfileResponseDTO result =
                     service.getCandidateProfileForInterviewer(jwt, requestId);
+            return ResponseEntity.ok(result);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage() != null
+                            ? e.getMessage() : e.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * GET /api/interviewer/interview-requests/{requestId}/ai-question-score
+     * Returns the candidate's AI interview question/answer history for this
+     * request. Panel-gated equivalent of /api/company/ai-question-score, which
+     * is restricted to company admins.
+     */
+    @GetMapping("/{requestId}/ai-question-score")
+    @PreAuthorize("hasRole('interviewer')")
+    public ResponseEntity<?> getAiQuestionScores(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID requestId) {
+        try {
+            List<AiQuestionScoreDTO> result =
+                    service.getAiQuestionScoresForInterviewer(jwt, requestId);
             return ResponseEntity.ok(result);
         } catch (SecurityException e) {
             return ResponseEntity.status(403)

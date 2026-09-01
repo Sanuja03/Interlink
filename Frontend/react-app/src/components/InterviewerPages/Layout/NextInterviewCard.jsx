@@ -1,3 +1,4 @@
+import defaultAvatar from "../../../assets/default-avatar.png";
 import "./NextInterviewCard.css";
 
 const NextInterviewCard = ({ interview }) => {
@@ -77,19 +78,19 @@ const NextInterviewCard = ({ interview }) => {
 
             {/* candidate data */}
             <div className="candidate">
+              {/* candidate's own picture if they uploaded one, default avatar otherwise */}
               <img
-                src={interview.candidate.image}
+                src={interview.candidate?.image || defaultAvatar}
                 alt="candidate"
                 className="candidate-avatar"
+                onError={(e) => { e.target.src = defaultAvatar; }}
               />
 
               <div className="candidate-info">
-                <p className="candidate-name">{interview.candidate.name}</p>
-                <p className="candidate-id">
-                  Candidate ID: {interview.candidate.id}
-                </p>
+                <p className="candidate-name">{interview.candidate?.name}</p>
 
-                {interview.candidate.note && (
+
+                {interview.candidate?.note && (
                   <p className="admin-note">{interview.candidate.note}</p>
                 )}
               </div>

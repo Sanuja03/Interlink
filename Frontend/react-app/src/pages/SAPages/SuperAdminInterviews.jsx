@@ -76,10 +76,8 @@ export default function SuperAdminInterviews() {
                 setPage(0);
               },
               options: [
-                { label: "Scheduled", value: "scheduled" },
                 { label: "Completed", value: "completed" },
-                { label: "Cancelled", value: "cancelled" },
-                { label: "Finalized", value: "finalized" },
+                { label: "Expired", value: "expired" },
               ],
             },
           ]}
@@ -189,10 +187,10 @@ function InterviewCard({ interview }) {
   }, [candidateId]);
 
   const statusColor = {
-    scheduled: "bg-blue-100 text-blue-700",
     completed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-    finalized: "bg-purple-100 text-purple-700",
+    pass_completed: "bg-green-100 text-green-700",
+    scheduled: "bg-blue-100 text-blue-700",
+    expired: "bg-red-100 text-red-700",
   }[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
 
   const modeColor =
@@ -214,7 +212,7 @@ function InterviewCard({ interview }) {
     : "?";
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+    <div className="tw-preflight bg-white rounded-2xl shadow p-6 space-y-4">
       <div className="grid grid-cols-2 gap-6">
 
         {/* LEFT */}

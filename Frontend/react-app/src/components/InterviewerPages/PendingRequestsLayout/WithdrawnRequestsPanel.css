@@ -1,0 +1,257 @@
+/* ============================================================
+   WithdrawnRequestsPanel — notice card above the pending list.
+   One row per interview the interviewer no longer holds, colour-
+   coded by outcome: removed (amber), cancelled (red),
+   rescheduled (indigo).
+   ============================================================ */
+
+.wrp-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* ── Header ── */
+
+.wrp-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, #fbfcfe 0%, #f6f8fc 100%);
+  border-bottom: 1px solid #eef2f7;
+}
+.wrp-card.is-collapsed .wrp-head { border-bottom: none; }
+
+/* Small pulsing dot — draws the eye without shouting */
+.wrp-head-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: #f59e0b;
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+  animation: wrp-pulse 2.4s ease-out infinite;
+}
+@keyframes wrp-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wrp-head-dot { animation: none; }
+}
+
+.wrp-head-text { flex: 1 1 auto; min-width: 0; }
+
+.wrp-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.wrp-sub {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+.wrp-collapse {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.2s ease, color 0.15s ease;
+}
+.wrp-collapse:hover { background: #f3f4f6; color: #334155; }
+.wrp-collapse:focus-visible { outline: 2px solid #3d5ccb; outline-offset: 2px; }
+.wrp-card.is-collapsed .wrp-collapse { transform: rotate(-90deg); }
+
+/* Visually hidden label for the collapse toggle */
+.wrp-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── List ── */
+
+.wrp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.wrp-list::-webkit-scrollbar { width: 8px; }
+.wrp-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.wrp-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.wrp-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px 14px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s ease;
+}
+.wrp-item:last-child { border-bottom: none; }
+.wrp-item:hover { background: #fafbfc; }
+
+/* Colour accent down the left edge */
+.wrp-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--wrp-accent);
+}
+
+.wrp-item.is-removed     { --wrp-accent: #f59e0b; --wrp-soft: #fff7e6; --wrp-ink: #92400e; }
+.wrp-item.is-cancelled   { --wrp-accent: #dc2626; --wrp-soft: #fdeeee; --wrp-ink: #991b1b; }
+.wrp-item.is-rescheduled { --wrp-accent: #3d5ccb; --wrp-soft: #eef2ff; --wrp-ink: #2f3f9e; }
+
+.wrp-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  background: var(--wrp-soft);
+  color: var(--wrp-ink);
+  margin-top: 1px;
+}
+
+.wrp-body { flex: 1 1 auto; min-width: 0; }
+
+/* Badge line */
+.wrp-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.wrp-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--wrp-soft);
+  color: var(--wrp-ink);
+}
+
+.wrp-id {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.wrp-accepted {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #059142;
+  background: #eaf7ef;
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+.wrp-accepted::before { content: "✓"; font-size: 10px; }
+
+.wrp-when {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* Candidate + job */
+.wrp-who {
+  margin: 0;
+  font-size: 13.5px;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wrp-who strong { color: #111827; font-weight: 600; }
+.wrp-sep { margin: 0 7px; color: #cbd5e1; }
+
+/* Old slot → new slot */
+.wrp-slot {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.wrp-struck { color: #9ca3af; text-decoration: line-through; }
+.wrp-arrow { color: #94a3b8; }
+.wrp-new { color: #2f3f9e; font-weight: 600; }
+
+.wrp-detail {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+/* Dismiss */
+.wrp-dismiss {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.wrp-item:hover .wrp-dismiss,
+.wrp-dismiss:focus-visible { opacity: 1; }
+.wrp-dismiss:hover { background: #f1f5f9; color: #374151; }
+.wrp-dismiss:focus-visible { outline: 2px solid #3d5ccb; outline-offset: 1px; }
+
+@media (max-width: 640px) {
+  .wrp-item { padding: 12px 12px 12px 16px; }
+  .wrp-when { margin-left: 0; }
+  .wrp-dismiss { opacity: 1; }
+}

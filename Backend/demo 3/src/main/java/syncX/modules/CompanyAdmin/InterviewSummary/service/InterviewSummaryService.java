@@ -27,9 +27,11 @@ public class InterviewSummaryService {
 
         return rows.stream().map(row -> {
             UUID scheduledId = UUID.fromString(row.get("scheduled_id").toString());
-            long jobAppId    = toLong(row.get("job_application_id"));
             int totalRounds  = toInt(row.get("interview_rounds"), 1);
-            int currentRound = repo.fetchCurrentRound(jobAppId);
+            // Round shown per interview row = the round THIS interview belonged
+            // to (from the query), not the application's latest round. This is
+            // why round 1's interview shows 1/2 and round 2's shows 2/2.
+            int currentRound = toInt(row.get("round_number"), 1);
             String status    = (String) row.get("scheduled_status");
 
             // Fetch interviewer scores for this interview

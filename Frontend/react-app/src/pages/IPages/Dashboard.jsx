@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import interviewscheduled from "../../assets/interviewscheduled.png";
 import pendingrequests from "../../assets/pendingrequests.png";
 import completedinterviews from "../../assets/completedinterviews.png";
-import defaultAvatar from "../../assets/default-avatar.png";
 
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import Card from "../../components/InterviewerPages/Layout/Card";
@@ -77,7 +76,7 @@ const Dashboard = () => {
             meetingLink:   n.meetingLink,
             meetingStatus: n.meetingStatus,
             candidate: {
-              image:       n.candidate?.image || defaultAvatar,
+              image:       n.candidate?.image || null,   // card falls back to the default avatar
               id:          n.candidate?.id,
               name:        n.candidate?.name,
               cvName:      n.candidate?.cvName,

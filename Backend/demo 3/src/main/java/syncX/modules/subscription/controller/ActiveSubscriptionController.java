@@ -24,6 +24,17 @@ public class ActiveSubscriptionController {
         return service.getAll();
     }
 
+    // ── ADDED: company admin fetches their own active subscription ──
+    @GetMapping("/company/{companyId}")
+    public ResponseEntity<?> getMySubscription(@PathVariable UUID companyId) {
+        try {
+            return ResponseEntity.ok(service.getByCompanyId(companyId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    // ── END ADDED ──
+
     /**
      * Admin marks that payment has been received.
      * If already expired, renews immediately.

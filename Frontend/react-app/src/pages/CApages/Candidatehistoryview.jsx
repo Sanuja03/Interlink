@@ -3,49 +3,63 @@ import "./CandidateHistory.css";
 
 
 
+// Find the last stage in pipeline order that is Completed. The pipeline list
+// itself is the source of truth, so the "Current Status" is just a friendly
+// label for whichever stage the candidate has most recently cleared.
+function lastCompletedStage(stages = []) {
+  let last = null;
+  for (const s of stages) {
+    if (s.status === "Completed") last = s;
+  }
+  return last;
+}
+
 export function resolveDisplayStatus(rawStatus, stages = []) {
   const upper = (rawStatus || "").toUpperCase();
 
-  const feedback = stages.find((s) => s.stage === "Feedback Received");
-  if (feedback?.status === "Completed") return "Completed";
+  // A rejection anywhere overrides the pipeline position.
+  if (upper === "REJECTED") return "Rejected";
 
-  const completedInterviews = stages.filter(
-    (s) =>
-      s.stage.startsWith("Interview") &&
-      !s.stage.includes("Scheduled") &&
-      s.status === "Completed"
-  );
-  if (completedInterviews.length > 0) {
-    const last = completedInterviews[completedInterviews.length - 1];
-    return `${last.stage} In Progress`;
+  const last = lastCompletedStage(stages);
+
+  if (!last) {
+    // Nothing cleared yet — still awaiting the shortlist decision.
+    return "Pending Review";
   }
 
-  const scheduledDone = stages.some(
-    (s) => s.stage.includes("Scheduled") && s.status === "Completed"
-  );
-  if (scheduledDone) return "Interview Scheduled";
+  const label = last.stage;
 
-  if (upper === "REJECTED") return "Rejected";
-  if (upper === "PENDING") return "Pending Review";
-  if (upper === "SHORTLISTED") return "Shortlisted";
-  if (upper === "INTERVIEW") return "Interview In Progress";
+  // Whole process finished.
+  if (label === "Feedback Received") return "Process Completed";
 
-  return rawStatus
-    ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase()
-    : "—";
+  // A round that has been PASSED (e.g. "Interview Round 1" / "Interview").
+  if (label.startsWith("Interview") && !label.includes("Scheduled")) {
+    return `${label} Completed`;
+  }
+
+  // The furthest thing done is a scheduling step — interview booked, not held.
+  if (label.includes("Scheduled")) {
+    return label; // e.g. "Interview Round 2 Scheduled" / "Interview Scheduled"
+  }
+
+  if (label === "Shortlisted") return "Shortlisted";
+  if (label === "Applied") return "Pending Review";
+
+  return label;
 }
 
 export function statusBadgeClass(rawStatus, stages = []) {
   const upper = (rawStatus || "").toUpperCase();
-  const feedback = stages.find((s) => s.stage === "Feedback Received");
-  if (feedback?.status === "Completed") return "ch-badge ch-badge--completed";
-  if (stages.some((s) => s.stage.includes("Interview") && s.status === "Completed"))
-    return "ch-badge ch-badge--interview";
-  if (stages.some((s) => s.stage.includes("Scheduled") && s.status === "Completed"))
-    return "ch-badge ch-badge--interview";
   if (upper === "REJECTED") return "ch-badge ch-badge--rejected";
-  if (upper === "PENDING") return "ch-badge ch-badge--pending";
-  if (upper === "SHORTLISTED") return "ch-badge ch-badge--shortlisted";
+
+  const last = lastCompletedStage(stages);
+  if (!last) return "ch-badge ch-badge--pending";
+
+  const label = last.stage;
+  if (label === "Feedback Received") return "ch-badge ch-badge--completed";
+  if (label.startsWith("Interview")) return "ch-badge ch-badge--interview";
+  if (label === "Shortlisted") return "ch-badge ch-badge--shortlisted";
+  if (label === "Applied") return "ch-badge ch-badge--pending";
   return "ch-badge ch-badge--default";
 }
 

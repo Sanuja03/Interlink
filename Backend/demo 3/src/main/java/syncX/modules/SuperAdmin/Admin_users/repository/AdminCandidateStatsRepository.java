@@ -11,6 +11,14 @@ public interface AdminCandidateStatsRepository extends JpaRepository<JobApplicat
     @Query(value = "SELECT COUNT(*) FROM job_applications WHERE candidate_id = :userId", nativeQuery = true)
     long countByCandidateId(@Param("userId") UUID userId);
 
-    @Query(value = "SELECT COUNT(*) FROM job_applications WHERE candidate_id = :userId AND status = :status", nativeQuery = true)
-    long countByCandidateIdAndStatus(@Param("userId") UUID userId, @Param("status") String status);
+    @Query(value = """
+    SELECT COUNT(*)
+    FROM job_applications
+    WHERE candidate_id = :userId
+    AND status = CAST(:status AS application_status)
+    """, nativeQuery = true)
+    long countByCandidateIdAndStatus(
+            @Param("userId") UUID userId,
+            @Param("status") String status
+    );
 }

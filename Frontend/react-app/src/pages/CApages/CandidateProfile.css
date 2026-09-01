@@ -1,7 +1,7 @@
 .cp-page {
   max-width: 1240px;
   margin: 0 auto;
-  background: #dadee0;
+  background: #ffffff;
   padding: 28px 32px 36px;
   min-height: 100%;
   font-family: "Outfit", sans-serif;
@@ -19,7 +19,7 @@
 }
 
 .cp-profileCard {
-  background: rgba(255, 255, 255, 0.82);
+  background: #ffffff;
   border-radius: 20px;
   padding: 26px 28px;
   display: flex;
@@ -124,7 +124,7 @@
 }
 
 .cp-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: #ffffff;
   border-radius: 18px;
   padding: 26px 28px;
   box-shadow: 0 8px 20px rgba(12, 62, 86, 0.08);

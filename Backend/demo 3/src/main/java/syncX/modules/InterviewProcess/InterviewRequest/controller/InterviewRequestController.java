@@ -22,7 +22,13 @@ public class InterviewRequestController {
 
     /**
      * GET /api/company/interview-requests/assignable?date=&time=&durationMinutes=
+     *     [&candidateId=&jobApplicationId=]
      * Returns three groups: available, other, unavailable (schedule conflict).
+     *
+     * candidateId + jobApplicationId are optional and identify the request this
+     * form would replace ("Cancel & Redo"); its own panel is then not counted as
+     * a conflict, so its pending and accepted interviewers stay selectable at the
+     * same date and time.
      */
     @GetMapping("/assignable")
     @PreAuthorize("hasRole('company_admin')")
@@ -30,9 +36,12 @@ public class InterviewRequestController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam String date,
             @RequestParam(required = false, defaultValue = "00:00") String time,
-            @RequestParam(required = false, defaultValue = "60") int durationMinutes) {
+            @RequestParam(required = false, defaultValue = "60") int durationMinutes,
+            @RequestParam(required = false) UUID candidateId,
+            @RequestParam(required = false) Long jobApplicationId) {
 
-        return ResponseEntity.ok(service.getAssignable(jwt, date, time, durationMinutes));
+        return ResponseEntity.ok(service.getAssignable(
+                jwt, date, time, durationMinutes, candidateId, jobApplicationId));
     }
 
     /**

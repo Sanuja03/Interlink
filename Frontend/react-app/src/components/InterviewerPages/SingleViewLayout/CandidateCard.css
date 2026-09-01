@@ -1,100 +1,111 @@
-.candidatecard-right-panel {
-    flex: 1;
-    min-width: 320px;
-    background: #ffffff;
-    border: 1px solid #d6e4ea;
-    border-radius: 10px;
-    padding: 24px;
-  }
-  
-  .candidatecard-top {
-    display: flex;
+.candidatecard-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: #ffffff;
+  border: 1px solid #d6e4ea;
+  border-left: 4px solid #24698b;
+  border-radius: 12px;
+  padding: 18px 24px;
+}
+
+.candidatecard-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.candidatecard-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #24698b;
+  flex-shrink: 0;
+}
+
+.candidatecard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.candidatecard-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0c3e56;
+  line-height: 1.2;
+}
+
+.candidatecard-id {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+}
+
+.candidatecard-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.candidatecard-action {
+  border: 1px solid #24698b;
+  background: #ffffff;
+  color: #24698b;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.candidatecard-action:hover:not(:disabled) {
+  background: #24698b;
+  color: #ffffff;
+}
+
+.candidatecard-action:focus-visible {
+  outline: 2px solid #0c3e56;
+  outline-offset: 2px;
+}
+
+.candidatecard-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.candidatecard-action-primary {
+  background: #24698b;
+  color: #ffffff;
+}
+
+.candidatecard-action-primary:hover {
+  background: #0c3e56;
+  color: #ffffff;
+}
+
+@media (max-width: 700px) {
+  .candidatecard-panel {
     align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
+    padding: 16px 18px;
   }
-  
-  .candidatecard-image-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+  .candidatecard-actions {
+    width: 100%;
   }
-  
-  .candidatecard-image {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #24698b;
+
+  .candidatecard-action {
+    flex: 1;
+    text-align: center;
   }
-  
-  .candidatecard-basic {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .candidatecard-small-box {
-    background: #ffffff;
-    border: 1px solid #d6e4ea;
-    border-left: 4px solid #24698b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    min-width: 180px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .candidatecard-small-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #6b7280;
-  }
-  
-  .candidatecard-small-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0c3e56;
-  }
-  
-  .candidatecard-details-box {
-    background: #ffffff;
-    border: 1px solid #d6e4ea;
-    border-radius: 8px;
-    padding: 18px 20px;
-  }
-  
-  .candidatecard-detail-line {
-    margin: 0 0 12px;
-    font-size: 15px;
-    color: #111827;
-    line-height: 1.5;
-  }
-  
-  .candidatecard-detail-line:last-child {
-    margin-bottom: 0;
-  }
-  
-  .candidatecard-profile-link {
-    color: #24698b;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  
-  .candidatecard-profile-link:hover {
-    text-decoration: underline;
-  }
-  
-  @media (max-width: 700px) {
-    .candidatecard-top {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .candidatecard-small-box {
-      width: 100%;
-      min-width: unset;
-    }
-  }
+}

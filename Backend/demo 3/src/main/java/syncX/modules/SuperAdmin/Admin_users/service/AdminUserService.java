@@ -87,7 +87,7 @@ public class AdminUserService {
                 .map(AdminCandidateSkill::getSkillId)
                 .collect(Collectors.toList());
 
-        AdminUserStatsDto stats = buildCandidateStats(user.getUserId());
+        AdminUserStatsDto stats = buildCandidateStats(candidateId);
         List<AdminUsersActivityLogDto> logs = getActivityLogs(user.getUserId(), 5);
 
         return new AdminCandidateProfileDto(
@@ -145,7 +145,7 @@ public class AdminUserService {
         try {
             long applications = candidateStatsRepo.countByCandidateId(candidateId);
             long interviews   = candidateInterviewRequestRepo.countByCandidateId(candidateId);
-            long offers       = candidateStatsRepo.countByCandidateIdAndStatus(candidateId, "accepted");
+            long offers       = candidateStatsRepo.countByCandidateIdAndStatus(candidateId, "ACCEPTED");
             return new AdminUserStatsDto(applications, interviews, offers);
         } catch (Exception e) {
             System.out.println("Stats load failed for candidateId " + candidateId + ": " + e.getMessage());
@@ -170,7 +170,7 @@ public class AdminUserService {
                 "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
         );
 
-        Map<String, Boolean> dbMap = availabilityRepo.findByintavailabilityId(userId)
+        Map<String, Boolean> dbMap = availabilityRepo.findByUserId(userId)
                 .stream()
                 .collect(Collectors.toMap(
                         d -> d.getDayName().trim(),

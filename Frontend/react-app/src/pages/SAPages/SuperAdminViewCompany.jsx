@@ -101,15 +101,28 @@ export default function SuperAdminViewCompany() {
   const isSuspended = company.companyActivityStatus === "suspended";
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen space-y-6">
+    <div className="tw-preflight p-6 bg-gray-100 min-h-screen space-y-6">
       <BackButton label="Back to Companies" to="/admin/Companies" />
 
       {/* HEADER */}
       <div className="bg-[#24698B] p-6 rounded-xl shadow">
         <div className="bg-white rounded-xl p-4 flex justify-between items-center">
           <div className="flex gap-4 items-center">
-            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-              LOGO
+            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+              {company.logoUrl ? (
+                <img
+                  src={company.logoUrl}
+                  alt={company.companyName}
+                  className="w-full h-full object-cover rounded-lg"
+                  onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                />
+              ) : null}
+              <span
+                className="text-xs font-bold text-gray-500 flex items-center justify-center w-full h-full"
+                style={{ display: company.logoUrl ? "none" : "flex" }}
+              >
+                LOGO
+              </span>
             </div>
             <div>
               <h2 className="font-semibold text-lg">{company.companyName}</h2>
@@ -173,7 +186,7 @@ export default function SuperAdminViewCompany() {
                       </p>
                     </div>
                     <span className={`text-xs px-3 py-1 rounded-full ${
-                      job.status === "OPEN" ? "bg-green-100 text-green-600" : "bg-gray-200 text-gray-600"
+                      job.status === "OPEN" || job.status === "Open" ? "bg-green-100 text-green-600": "bg-gray-200 text-gray-600"
                     }`}>
                       {job.status}
                     </span>

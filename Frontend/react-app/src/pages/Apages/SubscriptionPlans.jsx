@@ -55,14 +55,21 @@ export default function SubscriptionPlans() {
           ))}
         </div>
 
-        <div className="mt-10 text-center">
+        {/* ADDED — replaced plain underlined link with a proper button */}
+        <div className="mt-10 flex justify-center">
           <Link
             to="/admin/active-plans"
-            className="text-[#24698B] font-semibold underline hover:text-[#1c516a] text-sm"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl
+              bg-[#0C3E56] text-white text-sm font-semibold
+              hover:bg-[#14597A] active:scale-[0.98]
+              shadow-sm hover:shadow-md
+              transition-all duration-200"
           >
-            View Active Subscription Plans →
+            View Active Subscription Plans
+            <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
           </Link>
         </div>
+        {/* END ADDED */}
       </div>
 
       {selectedPlan && (

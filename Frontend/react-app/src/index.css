@@ -1,18 +1,214 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  font-family: 'Outfit', sans-serif;
-  background-color: #f5f7fa;
-  color: #213547;
+html {
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
 }
 
-#root {
-  min-height: 100vh;
+body {
+  margin: 0;
+  line-height: 1.5;
+  font-family: "Outfit", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ------------------------------------------------------------------
+   SCOPED PREFLIGHT
+
+   Every selector is wrapped in :where(.tw-preflight) so it adds ZERO
+   specificity. That keeps these rules at the same weight as real
+   preflight (0,0,1) — so Tailwind utility classes still override them.
+
+   DO NOT rewrite these as `.tw-preflight button { }` — that has higher
+   specificity than `bg-[#24698B]` and will wipe out your utilities.
+   ------------------------------------------------------------------ */
+@layer base {
+
+  :where(.tw-preflight),
+  :where(.tw-preflight) *,
+  :where(.tw-preflight) ::before,
+  :where(.tw-preflight) ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+  }
+
+  :where(.tw-preflight) {
+    margin: 0;
+    line-height: 1.5;
+    font-family: "Outfit", ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings */
+  :where(.tw-preflight) h1,
+  :where(.tw-preflight) h2,
+  :where(.tw-preflight) h3,
+  :where(.tw-preflight) h4,
+  :where(.tw-preflight) h5,
+  :where(.tw-preflight) h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+
+  /* Blocks */
+  :where(.tw-preflight) p,
+  :where(.tw-preflight) blockquote,
+  :where(.tw-preflight) figure,
+  :where(.tw-preflight) pre,
+  :where(.tw-preflight) dl,
+  :where(.tw-preflight) dd,
+  :where(.tw-preflight) hr {
+    margin: 0;
+  }
+
+  /* Lists */
+  :where(.tw-preflight) ol,
+  :where(.tw-preflight) ul,
+  :where(.tw-preflight) menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Links */
+  :where(.tw-preflight) a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  :where(.tw-preflight) b,
+  :where(.tw-preflight) strong {
+    font-weight: bolder;
+  }
+
+  :where(.tw-preflight) code,
+  :where(.tw-preflight) kbd,
+  :where(.tw-preflight) samp,
+  :where(.tw-preflight) pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    font-size: 1em;
+  }
+
+  :where(.tw-preflight) small { font-size: 80%; }
+
+  :where(.tw-preflight) sub,
+  :where(.tw-preflight) sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  :where(.tw-preflight) sub { bottom: -0.25em; }
+  :where(.tw-preflight) sup { top: -0.5em; }
+
+  /* ---------- Form elements ---------- */
+  /* Both descendant AND self, so <Button className="tw-preflight">
+     works as well as buttons nested inside a wrapper. */
+
+  :where(.tw-preflight) button,
+  :where(.tw-preflight) input,
+  :where(.tw-preflight) optgroup,
+  :where(.tw-preflight) select,
+  :where(.tw-preflight) textarea,
+  :where(button, input, select, textarea).tw-preflight {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+
+  :where(.tw-preflight) button,
+  :where(.tw-preflight) select,
+  :where(button, select).tw-preflight {
+    text-transform: none;
+  }
+
+  :where(.tw-preflight) button,
+  :where(.tw-preflight) input[type='button'],
+  :where(.tw-preflight) input[type='reset'],
+  :where(.tw-preflight) input[type='submit'],
+  :where(button).tw-preflight {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+  }
+
+  :where(.tw-preflight) button,
+  :where(.tw-preflight) [role='button'],
+  :where(button).tw-preflight {
+    cursor: pointer;
+  }
+
+  :where(.tw-preflight) :disabled { cursor: default; }
+
+  :where(.tw-preflight) input::placeholder,
+  :where(.tw-preflight) textarea::placeholder {
+    opacity: 1;
+    color: #9ca3af;
+  }
+
+  :where(.tw-preflight) textarea { resize: vertical; }
+
+  :where(.tw-preflight) ::-webkit-search-decoration { -webkit-appearance: none; }
+
+  :where(.tw-preflight) ::-webkit-inner-spin-button,
+  :where(.tw-preflight) ::-webkit-outer-spin-button { height: auto; }
+
+  /* Media */
+  :where(.tw-preflight) img,
+  :where(.tw-preflight) svg,
+  :where(.tw-preflight) video,
+  :where(.tw-preflight) canvas,
+  :where(.tw-preflight) audio,
+  :where(.tw-preflight) iframe,
+  :where(.tw-preflight) embed,
+  :where(.tw-preflight) object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  :where(.tw-preflight) img,
+  :where(.tw-preflight) video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Tables */
+  :where(.tw-preflight) table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+
+  /* Misc */
+  :where(.tw-preflight) hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+
+  :where(.tw-preflight) abbr:where([title]) {
+    text-decoration: underline dotted;
+  }
+
+  :where(.tw-preflight) [hidden] { display: none; }
 }

@@ -20,14 +20,8 @@ public class AdminJobService {
     private final AdminJobRepository JobRepo;
     private final AdminCompanyRepository companyRepo;
 
-    // GET ALL JOBS
     public Page<AdminJobListDto> getJobs(
-            String search,
-            String status,
-            String type,
-            String category,
-            int page,
-            int size
+            String search, String status, String type, String category, int page, int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -38,19 +32,17 @@ public class AdminJobService {
 
         return JobRepo.searchJobsWithCompany(search, status, type, category, pageable)
                 .map(row -> new AdminJobListDto(
-                        ((Number) row[0]).longValue(),  // id
-                        (String)  row[1],               // title
-                        (String)  row[2],               // location
-                        (String)  row[3],               // employmentType
-                        (String)  row[4],               // category
-                        (String)  row[5],               // status
-                        (String)  row[8]                // companyName
+                        ((Number) row[0]).longValue(),
+                        (String) row[1],
+                        (String) row[2],
+                        (String) row[3],
+                        (String) row[4],
+                        (String) row[5],
+                        (String) row[8]
                 ));
     }
 
-    // GET JOB DETAILS (FIXED)
     public AdminJobDetailsDto getJobDetails(Long id) {
-
         List<Object[]> results = JobRepo.findJobWithCompany(id);
 
         if (results.isEmpty()) {
@@ -59,17 +51,17 @@ public class AdminJobService {
 
         Object[] row = results.get(0);
 
+        // Fetch all four stat counts for the stats cards
         long applications = JobRepo.countApplications(id);
+        long underReview  = JobRepo.countUnderReview(id);
+        long interviews   = JobRepo.countInterviews(id);
+        long engagements  = JobRepo.countEngagements(id);
 
-        // companyId (UUID)
         UUID companyId = null;
         if (row[7] != null) {
-            try {
-                companyId = UUID.fromString(row[7].toString());
-            } catch (Exception ignored) {}
+            try { companyId = UUID.fromString(row[7].toString()); } catch (Exception ignored) {}
         }
 
-        // createdAt
         OffsetDateTime createdAt = null;
         if (row[6] instanceof OffsetDateTime odt) {
             createdAt = odt;
@@ -78,20 +70,22 @@ public class AdminJobService {
         }
 
         return new AdminJobDetailsDto(
-                ((Number) row[0]).longValue(),  // id
-                (String)  row[1],               // title
-                (String)  row[2],               // location
-                (String)  row[3],               // employmentType
-                (String)  row[4],               // category
-                (String)  row[5],               // status
+                ((Number) row[0]).longValue(),
+                (String) row[1],
+                (String) row[2],
+                (String) row[3],
+                (String) row[4],
+                (String) row[5],
                 createdAt,
                 companyId,
-                (String)  row[8],               // companyName
-                applications
+                (String) row[8],
+                applications,
+                underReview,
+                interviews,
+                engagements
         );
     }
 
-    // FLAG JOB
     public void flagJob(Long id) {
         var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
@@ -99,7 +93,6 @@ public class AdminJobService {
         JobRepo.save(job);
     }
 
-    // UNFLAG JOB
     public void unflagJob(Long id) {
         var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
@@ -107,7 +100,6 @@ public class AdminJobService {
         JobRepo.save(job);
     }
 
-    // SUSPEND JOB
     public void suspendJob(Long id) {
         var job = JobRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found: " + id));
@@ -115,7 +107,6 @@ public class AdminJobService {
         JobRepo.save(job);
     }
 
-    // RESTORE JOB
     public void restoreJob(Long jobId) {
         AdminJob job = JobRepo.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));

@@ -17,4 +17,5 @@ public class AdminCompanyListDto {
     private String companySize;
     private String companyStatus;
     private String companyActivity;
+    private String logoUrl;
 }

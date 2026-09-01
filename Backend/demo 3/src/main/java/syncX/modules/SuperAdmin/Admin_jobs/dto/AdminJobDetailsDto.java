@@ -13,5 +13,8 @@ public record AdminJobDetailsDto(
         OffsetDateTime createdAt,
         UUID companyId,
         String companyName,
-        long totalApplications
+        long totalApplications,
+        long underReview,   // applications with status PENDING
+        long interviews,    // finalized interview_requests for this job
+        long engagements    // accepted applications as engagement proxy
 ) {}

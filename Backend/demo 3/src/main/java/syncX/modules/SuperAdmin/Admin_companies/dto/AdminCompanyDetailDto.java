@@ -21,4 +21,5 @@ public class AdminCompanyDetailDto {
     private String companyActivityStatus;
 
     private List<AdminCompanyDetailJobsDto> jobs; // ONLY for approved
+    private String logoUrl;
 }

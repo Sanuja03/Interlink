@@ -1,41 +1,87 @@
 {
   "name": "Interlink",
-  "type": "AI-powered Recruitment Management System",
-  "description": "Interlink is a web-based, multi-tenant recruitment management platform designed to streamline and automate hiring processes. It centralizes candidate data, reduces manual workload, and improves decision-making through AI-driven features.",
-  
-  "core_features": [
-    "Job posting and vacancy management",
-    "Candidate profile and application tracking",
-    "AI-powered CV screening and candidate ranking",
-    "Automated pre-screening question generation",
-    "Interview scheduling and management",
-    "Structured feedback collection",
-    "Real-time notifications and updates",
-    "Candidate history tracking"
-  ],
+  "tagline": "Sri Lanka's #1 AI-Powered Recruitment Management Platform",
+  "type": "Multi-tenant web-based recruitment management system",
+  "description": "Interlink streamlines and automates the end-to-end hiring process for companies of all sizes. It connects companies, interviewers, and job seekers on a single platform with AI-driven tools to reduce manual effort and improve hiring quality.",
 
-  "users": [
-    "Companies",
-    "Recruiters",
-    "Interviewers",
-    "Job seekers",
-    "System administrators"
-  ],
+  "user_roles": {
+    "super_admin": "Manages the entire platform — approves companies, monitors activity, manages subscriptions and system settings.",
+    "company_admin": "Registers a company, posts jobs, manages applications, creates interviewer accounts, and tracks the hiring pipeline.",
+    "interviewer": "Reviews assigned candidates, conducts interviews, submits feedback, and manages their availability schedule.",
+    "candidate": "Creates a profile, applies for jobs, tracks application status, schedules interviews, and receives AI-matched recommendations."
+  },
 
-  "benefits": [
-    "Reduces hiring time and manual effort",
-    "Improves accuracy of candidate selection",
-    "Enhances transparency in recruitment",
-    "Provides data-driven hiring decisions",
-    "Improves candidate experience"
-  ],
+  "core_features": {
+    "job_management": "Company admins can create, edit, and manage job postings with details like employment type, category, experience level, vacancies, interview rounds, and application deadlines.",
+    "candidate_management": "Candidates build profiles with skills, work preferences, education, and experience. The system tracks their full application history.",
+    "ai_cv_screening": "AI automatically screens and ranks candidates based on CV content matched against job requirements, reducing manual review time.",
+    "ai_question_generation": "AI generates pre-screening questions tailored to each job posting to help evaluate candidates before interviews.",
+    "interview_scheduling": "Interviewers and candidates coordinate interview slots. The system supports online and onsite modes with meeting links.",
+    "feedback_and_scoring": "Structured feedback forms are provided post-interview. Scores are aggregated to support data-driven hiring decisions.",
+    "shortlisting": "Company admins can shortlist top candidates from the applicant pool for further evaluation.",
+    "notifications": "Real-time notifications keep all users updated on application status changes, interview schedules, and platform activity.",
+    "support_tickets": "All users can raise support tickets for issues. Admins can respond, update status, and close tickets.",
+    "activity_logs": "Super admins have full visibility into platform activity — logins, approvals, moderation actions, and content changes.",
+    "chatbot": "An AI assistant embedded in the platform to help users navigate features, understand their data, and get recruitment-related guidance."
+  },
+
+  "subscription_tiers": {
+    "overview": "Interlink offers three subscription plans for companies. Higher tiers unlock greater limits for AI features, job postings, and interviewer accounts.",
+    "tier_1": {
+      "name": "Starter",
+      "suitable_for": "Small companies or those just beginning to use the platform.",
+      "limits": "Basic job posting limit, limited AI screening credits, limited interviewer accounts."
+    },
+    "tier_2": {
+      "name": "Professional",
+      "suitable_for": "Growing companies with active hiring needs.",
+      "limits": "Higher job posting limit, more AI screening credits, more interviewer accounts than Starter."
+    },
+    "tier_3": {
+      "name": "Enterprise",
+      "suitable_for": "Large companies with high-volume hiring and multiple departments.",
+      "limits": "Highest job posting limit, maximum AI screening credits, unlimited or high-cap interviewer accounts."
+    }
+  },
+
+  "how_to_use": {
+    "for_companies": [
+      "Register your company and wait for super admin approval.",
+      "Once approved, log in and complete your company profile.",
+      "Create interviewer accounts for your hiring team.",
+      "Post job vacancies with detailed requirements.",
+      "Review AI-ranked candidates and shortlist the best fits.",
+      "Schedule interviews and collect structured feedback.",
+      "Track your full hiring pipeline from the dashboard."
+    ],
+    "for_candidates": [
+      "Sign up and complete your profile with skills, experience, and preferences.",
+      "Browse and apply for jobs that match your background.",
+      "Track your application status in real time.",
+      "Attend scheduled interviews and check feedback outcomes.",
+      "Use the calendar to manage your interview schedule."
+    ],
+    "for_interviewers": [
+      "Log in with the account created by your company admin.",
+      "Set your weekly availability so candidates can be scheduled.",
+      "Review your assigned interviews and candidate profiles.",
+      "Use AI-generated questions during the interview process.",
+      "Submit structured feedback and scores after each interview."
+    ]
+  },
+
+  "platform_rules": {
+    "company_approval": "All companies must be approved by a super admin before they can post jobs or access platform features.",
+    "suspension": "Companies, users, and job postings can be suspended by super admins for policy violations. Suspended entities cannot perform platform actions until restored.",
+    "job_limits": "The number of active job postings is determined by the company's subscription tier.",
+    "ai_limits": "AI screening and question generation credits are allocated based on subscription tier and reset periodically.",
+    "support": "Users experiencing issues should raise a support ticket. Super admins review and respond to all tickets."
+  },
 
   "technology": {
     "frontend": "React.js",
     "backend": "Spring Boot",
-    "database": "PostgreSQL",
-    "ai": "AI APIs for CV analysis and evaluation"
-  },
-
-  "goal": "To provide an intelligent, scalable, and user-friendly recruitment platform that improves hiring efficiency and decision quality."
+    "database": "PostgreSQL (Supabase)",
+    "ai": "OpenAI APIs for CV analysis, candidate ranking, and question generation"
+  }
 }

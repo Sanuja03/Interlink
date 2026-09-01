@@ -139,6 +139,61 @@ public class InterviewSchedulingService {
 
 
 
+    /**
+     * POST: cancel a scheduled interview. Company-admin only — this is the sole
+     * writer of interview_scheduled.status = 'cancelled' in the codebase.
+     *
+     * Allowed while the round is still undecided, regardless of the interview date
+     * and of how many panelists have submitted their evaluation. Nothing expires a
+     * scheduled interview on a timer, so a past-date one is still cancellable here.
+     * Once the admin has recorded PASS or FAIL in Interview Summary the round is
+     * settled, so the cancel is refused.
+     *
+     * Cancelling the parent request as well is what frees the panel: the conflict
+     * check in getAssignable() reads findActiveRequestsOnDate(), which skips
+     * cancelled requests, so every interviewer on this panel becomes bookable for
+     * that date and time again. It is also what reverts the admin's popup — the
+     * "current request" lookup ignores cancelled requests, so the row falls back
+     * to the Interview Request popup.
+     *
+     * Interviewer rows are deliberately left at "accepted": that record is what
+     * puts the cancelled card on their Completed Interviews page.
+     */
+    @Transactional
+    public InterviewSchedulingDTO.ScheduledResponse cancelScheduled(Jwt jwt, UUID requestId) {
+
+        UUID companyId = resolveCompanyId(jwt);
+
+        InterviewScheduled scheduled = scheduledRepo.findByRequestId(requestId)
+                .orElseThrow(() -> new RuntimeException("No schedule found for this request"));
+
+        if (!scheduled.getCompanyId().equals(companyId))
+            throw new SecurityException("You do not own this scheduled interview");
+
+        String status = scheduled.getStatus() != null
+                ? scheduled.getStatus().toLowerCase()
+                : "";
+
+        if ("cancelled".equals(status))
+            throw new IllegalStateException("This interview is already cancelled");
+
+        if ("pass_completed".equals(status) || "fail_completed".equals(status))
+            throw new IllegalStateException(
+                    "This round already has a pass/fail decision and can no longer be cancelled");
+
+        scheduled.setStatus("cancelled");
+        scheduledRepo.save(scheduled);
+
+        InterviewRequest ir = requestRepo.findByIdWithInterviewers(requestId)
+                .orElseThrow(() -> new RuntimeException("Interview request not found"));
+
+        ir.setStatus("cancelled");
+        requestRepo.save(ir);
+
+        return buildResponse(scheduled, ir);
+    }
+
+
     @Transactional
     public InterviewSchedulingDTO.ScheduledResponse saveScorecard(
             Jwt jwt, UUID requestId, InterviewSchedulingDTO.SaveScorecardRequest req) {

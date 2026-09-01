@@ -50,8 +50,12 @@ const ScheduledInterviewCard = ({ interview }) => {
     }
   };
 
+  const statusLower = meetingStatus?.toLowerCase();
+
   const statusClass =
-    meetingStatus?.toLowerCase() === "completed"
+    statusLower === "cancelled"
+      ? "status-cancelled"
+      : statusLower === "completed"
       ? "status-completed"
       : "status-scheduled";
 

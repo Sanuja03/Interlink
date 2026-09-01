@@ -64,17 +64,37 @@ const CompletedInterviews = () => {
         return;
       }
 
-      if (!mySubmissions || mySubmissions.length === 0) {
+      const mySubmittedScheduledIds = (mySubmissions || []).map((s) => s.scheduled_id);
+
+      // Interviews the company admin cancelled also belong here, whether or not this
+      // interviewer ever submitted an evaluation — they show with a CANCELLED badge.
+      const { data: cancelledRows, error: cancelledError } = await supabase
+        .from("interview_scheduled")
+        .select("scheduled_id")
+        .in("request_id", requestIds)
+        .eq("status", "cancelled");
+
+      if (cancelledError) {
+        setError("Failed to load cancelled interviews.");
+        console.error("[CompletedInterviews] cancelledError:", cancelledError);
+        return;
+      }
+
+      const relevantScheduledIds = [...new Set([
+        ...mySubmittedScheduledIds,
+        ...(cancelledRows || []).map((r) => r.scheduled_id),
+      ])];
+
+      if (relevantScheduledIds.length === 0) {
         setCompletedInterviews([]);
         setFilteredInterviews([]);
         return;
       }
 
-      const mySubmittedScheduledIds = mySubmissions.map((s) => s.scheduled_id);
-
-      // Fetch the interview_scheduled rows for every interview this user submitted.
-      // No status filter — the row may still be "scheduled" if other panelists
-      // haven't submitted yet, but this interviewer is personally done with it.
+      // Fetch the interview_scheduled rows for every interview this user submitted,
+      // plus the cancelled ones. No status filter — the row may still be "scheduled"
+      // if other panelists haven't submitted yet, but this interviewer is personally
+      // done with it.
       const { data: scheduledRows, error: scheduledError } = await supabase
         .from("interview_scheduled")
         .select(`
@@ -92,7 +112,7 @@ const CompletedInterviews = () => {
           job_application_id,
           job_id
         `)
-        .in("scheduled_id", mySubmittedScheduledIds);
+        .in("scheduled_id", relevantScheduledIds);
 
       if (scheduledError) {
         setError("Failed to load completed interviews.");
@@ -114,7 +134,8 @@ const CompletedInterviews = () => {
         return b.interview_time.localeCompare(a.interview_time);
       });
 
-      // All rows confirmed — this user personally submitted for each of them.
+      // Every row here is either one this user personally submitted, or one the
+      // company admin cancelled.
       const confirmedRows = scheduledRows;
 
       // Fetch job titles
@@ -203,7 +224,9 @@ const CompletedInterviews = () => {
           date:             item.interview_date,
           time:             formatTime(item.interview_time),
           jobTitle:         jobMap[item.job_id] || "—",
-          meetingStatus:    "COMPLETED",
+          meetingStatus:    item.status?.toLowerCase() === "cancelled"
+                              ? "CANCELLED"
+                              : "COMPLETED",
           mode:             item.mode,
           meetingLink:      item.meeting_link || "",
           interviewLocation: item.interview_location || "",

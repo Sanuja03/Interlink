@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import "./CreateJob.css";
 import api from "../../lib/api";
+import { createActivityLog } from "../../api/ActivityLogsApi";
 import { supabase } from "../../lib/supabase";
 
 export default function CreateJob() {
 
   const [companyId, setCompanyId] = useState(null);
+  const [userId,    setUserId]    = useState(null);
   const [sessionError, setSessionError] = useState(null);
   const [limitError, setLimitError] = useState(null);
 
@@ -14,6 +16,7 @@ export default function CreateJob() {
     const loadCompanyId = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setSessionError("Not logged in"); return; }
+      setUserId(session.user.id);
 
       const { data, error } = await supabase
         .from("companies")
@@ -91,6 +94,19 @@ export default function CreateJob() {
 
     try {
       const res = await api.post("/jobs", jobData);
+      // Log job creation — non-fatal, never blocks the post flow
+      try {
+      await createActivityLog({
+        userId:      userId,
+        userRole:    "company_admin",
+        action:      "CREATE",
+        entityType:  "JOB",
+        description: `Created job: ${jobData.title}`,
+      });
+    } catch (err) {
+      console.error("[CreateJob] Failed to create activity log:", err);
+    }
+
       alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "", education: "", benefits: "", deadline: "" });
       setInterviewStages([]); setReqs([""]);
