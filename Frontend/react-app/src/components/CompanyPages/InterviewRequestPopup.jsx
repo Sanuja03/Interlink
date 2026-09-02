@@ -13,27 +13,7 @@ const DURATION_OPTIONS = [
 
 const MIN_LEAD_MINUTES = 60; // interviews must start at least 1 hour from now
 
-// ── Scheduling window ────────────────────────────────────────────────────────
-// Three independent bounds, all in minutes from midnight:
-//
-//   DAY_START_MIN   earliest an interview may START      08:00
-//   LAST_START_MIN  latest an interview may START        21:30
-//   DAY_END_MIN     latest an interview may END          23:00
-//
-// LAST_START_MIN is NOT derived from DAY_END_MIN — the gap between them is what
-// caps the duration at the tail of the day. At the 21:30 slot only durations up
-// to 90 minutes are offered (21:30 + 1.5h = 23:00 exactly); 2 hours and longer
-// disappear from the dropdown.
-//
-// The hard end matters because an interview must not spill into the next
-// calendar day:
-//   1. LocalTime.plusMinutes() wraps around at midnight on the backend, so
-//      23:30 + 3h silently becomes 02:30 and conflict detection ends up
-//      comparing a window whose end is BEFORE its start.
-//   2. InterviewLifecycleJob keys off interview_date only, so the tail of the
-//      interview would live on a date the row doesn't know about.
-//
-// Everything below derives from these three numbers — nothing else to change.
+
 const DAY_START_MIN  = 8  * 60;      // 08:00 — earliest start
 const LAST_START_MIN = 21 * 60 + 30; // 21:30 — latest start
 const DAY_END_MIN    = 23 * 60;      // 23:00 — hard end
@@ -119,13 +99,7 @@ const InterviewRequestPopup = ({ open, onClose, candidate, startInEditMode = fal
 
         const data = res.data;
 
-        // Round-mismatch guard: the /current endpoint is not round-aware —
-        // it returns whatever request exists for the jobApplicationId. When a
-        // candidate moves to a new round, this would return the previous
-        // round's (finalized) request, prefilling all fields and setting
-        // isSent=true. Guard against both cases:
-        //   1. historyId returned and doesn't match → different round's request
-        //   2. overallStatus is "finalized" → belongs to a completed round
+        
         if (candidate.historyId != null && data.historyId != null &&
             String(data.historyId) !== String(candidate.historyId)) {
           setLoadingExisting(false);

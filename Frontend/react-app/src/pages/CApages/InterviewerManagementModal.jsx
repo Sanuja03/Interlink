@@ -197,7 +197,7 @@ export default function InterviewerManagementModal({ open, onClose, companyId })
         setRows((prev) => prev.filter((row) => row.id !== id));
     };
 
-    // VALIDATION
+    // VALIDATION-----------
     const validateRow = (row) => {
         const errors = {};
 

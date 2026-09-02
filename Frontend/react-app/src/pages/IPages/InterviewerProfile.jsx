@@ -121,12 +121,14 @@ const InterviewerProfile = () => {
 
       if (uploadError) throw new Error(uploadError.message);
 
+      //public URL created for the uploaded photo to supabase
       const { data: urlData } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
 
       const publicUrl = urlData.publicUrl;
 
+      //sends the generated URL to your Spring Boot backend.  
       await api.put("/auth/interviewer/profile/photo", { photoUrl: publicUrl });
 
       setProfile((prev) => ({

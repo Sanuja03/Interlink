@@ -70,10 +70,7 @@ const RequestStatusPopup = ({
 
   if (!open) return null;
 
-  // Backend vocabulary for an interviewer row:
-  //   pending | accepted | rejected | timed_out
-  // "timed_out" is written by InterviewLifecycleJob when the interview date
-  // passed before this person answered.
+  
   const normalizeStatus = (raw) => {
     if (!raw) return "Pending";
     const s = String(raw).toLowerCase();
@@ -105,9 +102,7 @@ const RequestStatusPopup = ({
   const acceptedCount = interviewers.filter((p) => p.requestStatus === "Accepted").length;
   const canFinalize   = panelSize > 0 && acceptedCount >= panelSize;
 
-  // Backend vocabulary for a request: pending | finalized | cancelled.
-  // Both non-pending states are terminal — the backend rejects every mutation
-  // on them, so hide the action buttons rather than let them 500.
+  
   const overallStatus = activeRequest?.overallStatus;
   const isFinalised   = overallStatus === "finalized";
   const isCancelled   = overallStatus === "cancelled";
@@ -204,8 +199,7 @@ const RequestStatusPopup = ({
     }
   };
 
-  // When user clicks "Finalize Panel" — hand off to parent so this popup
-  // can close and FinalizedPanelPopup opens fresh in its place.
+  
   const handleFinalizeClick = () => {
     if (!activeRequest) return;
     if (typeof onRequestFinalize === "function") {
