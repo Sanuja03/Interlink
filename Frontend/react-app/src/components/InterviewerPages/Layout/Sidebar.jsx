@@ -6,7 +6,7 @@ import interviewIcon from "../../../assets/interviews.png";
 import calendarIcon from "../../../assets/calendar.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
 import ChatBot from "../../../assets/ChatBot.png";
-import supportIcon from "../../../assets/SupportTickets.png";
+
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -38,7 +38,6 @@ const Sidebar = () => {
     { label: "Dashboard", href: "/interviewer/dashboard", icon: dashboardIcon },
     { label: "Interview Management", href: "/interviews", icon: interviewIcon },
     { label: "Calendar", href: "/interviewer/calendar", icon: calendarIcon },
-    { label: "Support", href: "/tickets", icon: supportIcon },
     { label: "Chatbot", href: "/interviewer/chatbot", icon: ChatBot }
   ];
 

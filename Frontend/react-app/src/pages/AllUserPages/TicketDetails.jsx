@@ -4,6 +4,8 @@ import api from "../../lib/api";
 import Footer from "../../components/TicketSubsPages/Footer";
 import ConfirmModal from "../../components/TicketSubsPages/ConfirmModal";
 import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
+import { useAuth } from "../../context/Authcontext";
+import CompanySidebar from "../../components/CompanyPages/layout/Sidebar";
 import toast from "react-hot-toast";
 import { formatDate } from "../../utils/subscriptionUtils";
 
@@ -23,6 +25,14 @@ const CATEGORY_LABELS = {
 export default function TicketDetails() {
   const { id }   = useParams();
   const navigate = useNavigate();
+
+  // Only company admins get their own sidebar here (it manages its own data
+  // fetching independently, so it's safe to reuse on this route). Interviewer
+  // is intentionally left alone for now, its sidebar depends on a Context
+  // Provider that isn't available here and needs a separate fix. Computed
+  // once and reused in every return branch below.
+  const { role } = useAuth();
+  const SidebarComponent = role === "company_admin" ? CompanySidebar : Sidebar;
 
   const [ticket,          setTicket]          = useState(null);
   const [reply,           setReply]           = useState("");
@@ -77,7 +87,7 @@ export default function TicketDetails() {
   if (error && !ticket) {
     return (
       <div className="flex min-h-screen">
-        <Sidebar />
+        <SidebarComponent />
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="text-center">
             <p className="text-red-500 font-medium mb-4">{error}</p>
@@ -94,7 +104,7 @@ export default function TicketDetails() {
   if (!ticket) {
     return (
       <div className="flex min-h-screen">
-        <Sidebar />
+        <SidebarComponent />
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="flex items-center gap-3 text-gray-400">
             <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -113,7 +123,7 @@ export default function TicketDetails() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <SidebarComponent />
 
       <div className="flex-1 flex flex-col bg-gray-50">
         <div className="flex-grow px-8 py-8">

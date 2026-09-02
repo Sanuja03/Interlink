@@ -5,6 +5,8 @@ import TicketModal from "../../components/TicketSubsPages/TicketModal";
 import Footer from "../../components/TicketSubsPages/Footer";
 import TicketSearch from "../../components/TicketSubsPages/TicketSearch";
 import Sidebar from "../../components/CandidatePages/CandidateDashboard/Sidebar";
+import { useAuth } from "../../context/Authcontext";
+import CompanySidebar from "../../components/CompanyPages/layout/Sidebar";
 
 // ── Filter options — values MUST match what the DB stores ─────────────────
 const STATUS_OPTS = [
@@ -45,7 +47,7 @@ function FilterPill({ label, options, value, onChange, icon }) {
           border-[1.5px] text-[13px] font-medium
           transition-all duration-150 whitespace-nowrap
           ${selectedOpt
-            ? "border-[#14597A] bg-[#EAF5FB] text-[#0C3E56]"     //selected option inside the box with different styling 
+            ? "border-[#14597A] bg-[#EAF5FB] text-[#0C3E56]"     //selected option inside the box with different styling
             : "border-[#D6E6F2] bg-white text-[#1C3A4A] hover:border-[#14597A] hover:bg-[#EAF5FB]"  //hover
           }
         `}
@@ -55,7 +57,7 @@ function FilterPill({ label, options, value, onChange, icon }) {
         {selectedOpt && ( // show count badge if there's a selected option
           <span className="ml-1 inline-flex items-center justify-center bg-[#EAF3F8]
             text-[#14597A] text-[11px] font-semibold rounded-[8px] px-1.5 h-[18px]">
-            1   
+            1
           </span>
         )}
         <svg
@@ -66,7 +68,7 @@ function FilterPill({ label, options, value, onChange, icon }) {
         </svg>
       </button>
 
-     
+
       {open && (     // dropdown menu
         <div className="
           absolute top-[calc(100%+6px)] left-0 z-50
@@ -113,6 +115,13 @@ function FilterPill({ label, options, value, onChange, icon }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MyTickets() {
+  // Only company admins get their own sidebar here (it manages its own data
+  // fetching independently, so it's safe to reuse on this route). Interviewer
+  // is intentionally left alone for now, its sidebar depends on a Context
+  // Provider that isn't available here and needs a separate fix.
+  const { role } = useAuth();
+  const SidebarComponent = role === "company_admin" ? CompanySidebar : Sidebar;
+
   const [tickets,         setTickets]         = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [editingTicket,   setEditingTicket]   = useState(null);
@@ -172,7 +181,7 @@ export default function MyTickets() {
 
   return (
     <div className="tw-preflight flex min-h-screen">
-      <Sidebar />
+      <SidebarComponent />
 
       <div className="flex-1 flex flex-col bg-gray-50">
         <div className="flex-grow px-8 py-8">
