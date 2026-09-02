@@ -20,6 +20,7 @@ import syncX.modules.RagChatbot.dto.AIChatMessageDto;
 import syncX.modules.RagChatbot.dto.AIChatResponseDto;
 import syncX.modules.RagChatbot.entity.AIChatMessage;
 import syncX.modules.RagChatbot.entity.AIChatSession;
+import syncX.modules.RagChatbot.exception.InvalidInputException;
 import syncX.modules.RagChatbot.exception.MessageLimitException;
 import syncX.modules.RagChatbot.repository.AIChatMessageRepository;
 import syncX.modules.RagChatbot.repository.AIChatSessionRepository;
@@ -40,6 +41,12 @@ public class AIChatMessageService {
     private int getWarningThreshold(int dailyLimit) {
         // Read from DB, fall back to 85% of daily limit if not configured
         return getChatbotSetting("warningThreshold", (int) Math.floor(dailyLimit * 0.85));
+    }
+
+    // NEW: max characters allowed per user message. DB-configurable via CHATBOT
+    // settings (key: "maxMessageLength"), defaults to 1000 if not configured.
+    private int getMaxMessageLength() {
+        return getChatbotSetting("maxMessageLength", 1000);
     }
 
     // Reusable helper to avoid repeating the same DB lookup logic
@@ -76,8 +83,9 @@ public class AIChatMessageService {
 
     /**
      * Process a user message within their daily session.
-     * Enforces the daily message limit, builds conversation history,
-     * selects relevant knowledge base sections, and calls OpenAI.
+     * Validates the message (non-blank, within max length), enforces the daily
+     * message limit, builds conversation history, selects relevant knowledge base
+     * sections, and calls OpenAI.
      *
      * @param userId    UUID of the authenticated user
      * @param userInput The message text from the user
@@ -87,6 +95,32 @@ public class AIChatMessageService {
 
         int dailyLimit       = getDailyLimit();
         int warningThreshold = getWarningThreshold(dailyLimit);
+        int maxMessageLength = getMaxMessageLength();
+
+        // --- NEW: input validation (blank + max length) ---
+        // Runs before we touch the session/DB/OpenAI, so invalid input never
+        // consumes a daily message slot or reaches the model.
+        String trimmedInput = userInput == null ? "" : userInput.trim();
+
+        if (trimmedInput.isEmpty()) {
+            throw new InvalidInputException(
+                    "Message cannot be empty.",
+                    InvalidInputException.Reason.BLANK,
+                    maxMessageLength
+            );
+        }
+
+        if (trimmedInput.length() > maxMessageLength) {
+            throw new InvalidInputException(
+                    "Message exceeds the maximum length of " + maxMessageLength + " characters.",
+                    InvalidInputException.Reason.TOO_LONG,
+                    maxMessageLength
+            );
+        }
+
+        userInput = trimmedInput;
+        // --- end validation ---
+
         // Get or create today's session for this user
         AIChatSession session = chatSessionRepository
                 .findByUserIdAndSessionDate(userId, LocalDate.now())
@@ -116,6 +150,7 @@ public class AIChatMessageService {
                 - Answer in clear, professional language
                 - Do not return raw JSON
                 - Be concise and accurate
+                - Keep responses reasonably brief; do not pad answers unnecessarily
 
                 INTERLINK KNOWLEDGE BASE:
                 %s
@@ -149,9 +184,14 @@ public class AIChatMessageService {
         session.setMessageCount(session.getMessageCount() + 1);
         chatSessionRepository.save(session);
 
+        // NEW: cap the AI's own reply length so it can't run past what the UI
+        // reasonably displays, and — more importantly — fixes a pre-existing bug
+        // where no max_tokens was set at all, causing OpenAI to apply its own
+        // default and cut long answers off mid-sentence.
         Map<String, Object> requestBody = Map.of(
                 "model", "gpt-4.1-mini",
-                "messages", messages
+                "messages", messages,
+                "max_tokens", 600
         );
 
         try {
@@ -180,6 +220,7 @@ public class AIChatMessageService {
                     .warning(session.getMessageCount() >= warningThreshold
                             ? "You have " + remaining + " messages remaining today."
                             : null)
+                    .maxMessageLength(maxMessageLength)
                     .build();
 
         } catch (WebClientResponseException e) {
@@ -192,10 +233,12 @@ public class AIChatMessageService {
     }
 
     /**
-     * Returns the message history and current daily limits for the user's session.
+     * Returns the message history and current daily/character limits for the
+     * user's session.
      */
     public AIChatHistoryWrapperDto getTodayHistory(UUID userId) {
         int dailyLimit = getDailyLimit();
+        int maxMessageLength = getMaxMessageLength();
         Optional<AIChatSession> sessionOpt = chatSessionRepository
                 .findByUserIdAndSessionDate(userId, LocalDate.now());
 
@@ -218,6 +261,7 @@ public class AIChatMessageService {
                 .history(history)
                 .remaining(remaining)
                 .limit(dailyLimit)
+                .maxMessageLength(maxMessageLength)
                 .build();
     }
 
@@ -226,6 +270,11 @@ public class AIChatMessageService {
      * in the user's message. Always includes name and description for grounding.
      * Falls back to the full context if no keyword match is found.
      * This reduces token usage without requiring a vector database.
+     *
+     * Updated for the new interlink.json structure: company-related queries now
+     * also pull in "core_features" (where company_management/company_registration
+     * workflows live), and notification/support/dashboard queries have their own
+     * keyword group instead of always falling back to the full KB.
      */
     private String selectRelevantContext(String userInput, String fullContext) {
         try {
@@ -235,21 +284,23 @@ public class AIChatMessageService {
             Map<?, ?> data = mapper.readValue(fullContext, Map.class);
 
             // Keyword patterns mapped to relevant JSON section keys
-            Map<String, List<String>> keywordSections = Map.of(
-                    "subscription|plan|tier|limit|pricing|upgrade",
-                    List.of("subscription_tiers", "platform_rules"),
-                    "job|post|vacancy|create job|edit job|employment",
-                    List.of("core_features", "how_to_use"),
-                    "candidate|apply|application|cv|screening|rank",
-                    List.of("core_features", "how_to_use", "user_roles"),
-                    "interview|schedule|feedback|score|availability",
-                    List.of("core_features", "how_to_use"),
-                    "company|register|approval|suspend|flag",
-                    List.of("user_roles", "platform_rules", "how_to_use"),
-                    "admin|super admin|settings|activity|log",
-                    List.of("user_roles", "platform_rules"),
-                    "interviewer|panel|round",
-                    List.of("user_roles", "how_to_use", "core_features")
+            Map<String, List<String>> keywordSections = Map.ofEntries(
+                    Map.entry("subscription|plan|tier|limit|pricing|upgrade",
+                            List.of("subscription_tiers", "platform_rules", "core_features")),
+                    Map.entry("job|post|vacancy|create job|edit job|employment",
+                            List.of("core_features", "how_to_use")),
+                    Map.entry("candidate|apply|application|cv|screening|rank",
+                            List.of("core_features", "how_to_use", "user_roles")),
+                    Map.entry("interview|schedule|feedback|score|availability",
+                            List.of("core_features", "how_to_use")),
+                    Map.entry("company|register|approval|suspend|flag",
+                            List.of("core_features", "user_roles", "platform_rules", "how_to_use")),
+                    Map.entry("admin|super admin|settings|activity|log|dashboard",
+                            List.of("user_roles", "platform_rules", "core_features")),
+                    Map.entry("interviewer|panel|round",
+                            List.of("user_roles", "how_to_use", "core_features")),
+                    Map.entry("notification|support|ticket|help",
+                            List.of("core_features", "how_to_use"))
             );
 
             Set<String> matchedKeys = new LinkedHashSet<>();
@@ -289,13 +340,25 @@ public class AIChatMessageService {
 
     /**
      * Extracts the reply text from an OpenAI chat/completions response.
+     * NEW: also checks finish_reason so a mid-sentence cutoff (finish_reason
+     * == "length") gets logged instead of silently shipping a truncated reply.
      */
     private String extractChatText(Map<String, Object> response) {
         try {
             List<?> choices = (List<?>) response.get("choices");
             if (choices == null || choices.isEmpty()) return "No response received.";
-            Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
-            return (String) message.get("content");
+
+            Map<?, ?> choice = (Map<?, ?>) choices.get(0);
+            Map<?, ?> message = (Map<?, ?>) choice.get("message");
+            String content = (String) message.get("content");
+
+            Object finishReason = choice.get("finish_reason");
+            if ("length".equals(finishReason)) {
+                logger.warn("OpenAI response was truncated by max_tokens (finish_reason=length). "
+                        + "Consider raising max_tokens or shortening the system prompt/context.");
+            }
+
+            return content;
         } catch (Exception e) {
             logger.error("Failed to parse OpenAI response", e);
             return "Error parsing AI response.";

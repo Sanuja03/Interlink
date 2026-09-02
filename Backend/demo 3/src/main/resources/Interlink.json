@@ -1,87 +1,568 @@
 {
   "name": "Interlink",
-  "tagline": "Sri Lanka's #1 AI-Powered Recruitment Management Platform",
+  "tagline": "AI-Powered Recruitment Management Platform",
   "type": "Multi-tenant web-based recruitment management system",
-  "description": "Interlink streamlines and automates the end-to-end hiring process for companies of all sizes. It connects companies, interviewers, and job seekers on a single platform with AI-driven tools to reduce manual effort and improve hiring quality.",
+  "description": "Interlink is a multi-role recruitment management platform that connects candidates, company administrators, interviewers, and Super Admins. It supports the recruitment lifecycle from company and candidate management through job applications, candidate evaluation, interviews, feedback, subscriptions, support, and platform administration.",
 
   "user_roles": {
-    "super_admin": "Manages the entire platform — approves companies, monitors activity, manages subscriptions and system settings.",
-    "company_admin": "Registers a company, posts jobs, manages applications, creates interviewer accounts, and tracks the hiring pipeline.",
-    "interviewer": "Reviews assigned candidates, conducts interviews, submits feedback, and manages their availability schedule.",
-    "candidate": "Creates a profile, applies for jobs, tracks application status, schedules interviews, and receives AI-matched recommendations."
-  },
-
-  "core_features": {
-    "job_management": "Company admins can create, edit, and manage job postings with details like employment type, category, experience level, vacancies, interview rounds, and application deadlines.",
-    "candidate_management": "Candidates build profiles with skills, work preferences, education, and experience. The system tracks their full application history.",
-    "ai_cv_screening": "AI automatically screens and ranks candidates based on CV content matched against job requirements, reducing manual review time.",
-    "ai_question_generation": "AI generates pre-screening questions tailored to each job posting to help evaluate candidates before interviews.",
-    "interview_scheduling": "Interviewers and candidates coordinate interview slots. The system supports online and onsite modes with meeting links.",
-    "feedback_and_scoring": "Structured feedback forms are provided post-interview. Scores are aggregated to support data-driven hiring decisions.",
-    "shortlisting": "Company admins can shortlist top candidates from the applicant pool for further evaluation.",
-    "notifications": "Real-time notifications keep all users updated on application status changes, interview schedules, and platform activity.",
-    "support_tickets": "All users can raise support tickets for issues. Admins can respond, update status, and close tickets.",
-    "activity_logs": "Super admins have full visibility into platform activity — logins, approvals, moderation actions, and content changes.",
-    "chatbot": "An AI assistant embedded in the platform to help users navigate features, understand their data, and get recruitment-related guidance."
-  },
-
-  "subscription_tiers": {
-    "overview": "Interlink offers three subscription plans for companies. Higher tiers unlock greater limits for AI features, job postings, and interviewer accounts.",
-    "tier_1": {
-      "name": "Starter",
-      "suitable_for": "Small companies or those just beginning to use the platform.",
-      "limits": "Basic job posting limit, limited AI screening credits, limited interviewer accounts."
+    "super_admin": {
+      "description": "Manages and monitors the overall Interlink platform.",
+      "capabilities": [
+        "View platform dashboard statistics.",
+        "Manage companies including approval, rejection, suspension, restoration, flagging, unflagging, and soft deletion.",
+        "Manage users including searching, role-based filtering, suspension, restoration, flagging, and unflagging.",
+        "View role-specific user information for candidates, interviewers, and company administrators.",
+        "Monitor and manage job postings including flagging, unflagging, suspension, and restoration.",
+        "Monitor scheduled interviews and related candidate information.",
+        "View and filter recorded activity logs.",
+        "Manage subscription plans and active subscriptions.",
+        "Manage chatbot settings.",
+        "View and manage support tickets."
+      ]
     },
-    "tier_2": {
-      "name": "Professional",
-      "suitable_for": "Growing companies with active hiring needs.",
-      "limits": "Higher job posting limit, more AI screening credits, more interviewer accounts than Starter."
+    "company_admin": {
+      "description": "Manages a company's recruitment activities and hiring pipeline.",
+      "capabilities": [
+        "Complete company registration and manage company information.",
+        "Create, edit, activate, deactivate, and delete job postings.",
+        "View applications and candidate profiles.",
+        "Review candidate application history.",
+        "Run AI-assisted CV analysis against job requirements.",
+        "Shortlist candidates and remove or reject shortlisted candidates.",
+        "Create interview requests and select interviewers.",
+        "Finalize and cancel interview schedules.",
+        "Create, edit, finalize, and manage interview scorecard templates.",
+        "Review interview information and hiring-related results.",
+        "Manage company subscription information.",
+        "Use notifications, support tickets, and the chatbot."
+      ]
     },
-    "tier_3": {
-      "name": "Enterprise",
-      "suitable_for": "Large companies with high-volume hiring and multiple departments.",
-      "limits": "Highest job posting limit, maximum AI screening credits, unlimited or high-cap interviewer accounts."
+    "interviewer": {
+      "description": "Participates in interviews and evaluates assigned candidates.",
+      "capabilities": [
+        "Manage their interviewer profile.",
+        "Set and submit weekly availability.",
+        "View pending, withdrawn, and scheduled interview requests.",
+        "Accept or reject interview requests.",
+        "View assigned candidate profiles and candidate history.",
+        "View relevant AI question scores.",
+        "Complete structured interview scorecards.",
+        "Submit interview scores and feedback.",
+        "Use calendar, notifications, support tickets, and the chatbot."
+      ]
+    },
+    "candidate": {
+      "description": "Uses Interlink to manage their recruitment profile and participate in job applications and interviews.",
+      "capabilities": [
+        "Complete and maintain their candidate profile.",
+        "Upload and manage profile pictures and resumes.",
+        "Add and manage education, experience, and skills.",
+        "Browse available jobs and view job details.",
+        "Save and unsave jobs.",
+        "Apply for jobs and view application history and status.",
+        "Use AI-generated questions and submit answers for evaluation.",
+        "View relevant calendar and interview information.",
+        "Receive notifications.",
+        "Create and manage support tickets.",
+        "Use the chatbot."
+      ]
     }
   },
 
+  "core_features": {
+    "candidate_profiles": {
+      "description": "Candidates can maintain their recruitment profile with personal information, skills, education, experience, profile pictures, and resumes.",
+      "workflow": [
+        "Complete candidate signup.",
+        "Open the candidate profile.",
+        "View or update profile information.",
+        "Upload or remove a resume.",
+        "Upload or update a profile picture.",
+        "Add or remove education and experience.",
+        "Add or update skills."
+      ]
+    },
+
+    "job_browsing_and_applications": {
+      "description": "Candidates can browse job postings, view detailed job information, save jobs, and submit applications.",
+      "workflow": [
+        "Browse available jobs.",
+        "Open a job to view its details.",
+        "Save the job if desired.",
+        "Open the application form.",
+        "Review or provide application information.",
+        "Submit the application.",
+        "View the submitted application and track its status."
+      ]
+    },
+
+    "saved_jobs": {
+      "description": "Candidates can save jobs for later and remove jobs from their saved list.",
+      "workflow": [
+        "Save a job from the job interface.",
+        "View saved jobs.",
+        "Remove a job from the saved list when no longer needed."
+      ]
+    },
+
+    "job_management": {
+      "description": "Company administrators can manage job postings for their company.",
+      "workflow": [
+        "Create a job with the required job information.",
+        "Save the job associated with the company.",
+        "Edit job information when necessary.",
+        "Toggle the job's availability or status.",
+        "Delete the job when it is no longer required."
+      ],
+      "super_admin_management": "Super Admins can independently view, search, filter, flag, unflag, suspend, and restore job postings."
+    },
+
+    "candidate_management": {
+      "description": "Company administrators can review candidates who have applied to their jobs.",
+      "workflow": [
+        "View applications for company jobs.",
+        "Open application details.",
+        "View the candidate profile.",
+        "Review candidate history and recruitment information.",
+        "Use available AI-assisted CV analysis.",
+        "Shortlist, reject, or otherwise progress candidates through the hiring process."
+      ]
+    },
+
+    "ai_cv_screening": {
+      "description": "Company administrators can use AI-assisted CV analysis to evaluate a candidate's CV against job requirements.",
+      "workflow": [
+        "Open a candidate/application.",
+        "Select the CV analysis functionality.",
+        "The system analyzes the candidate CV against relevant job requirements.",
+        "The result provides an overall score and category-based analysis.",
+        "The company administrator can use the result as part of candidate evaluation."
+      ],
+      "note": "The implemented flow verifies AI-assisted CV analysis and scoring. It should not be interpreted as automatically screening every candidate immediately after application."
+    },
+
+    "ai_question_generation": {
+      "description": "Interlink can generate AI-assisted questions related to a job and evaluate candidate answers.",
+      "workflow": [
+        "Select the relevant job.",
+        "Generate questions.",
+        "Answer the generated questions.",
+        "Submit the answers for evaluation.",
+        "Save and view the resulting question scores."
+      ]
+    },
+
+    "shortlisting": {
+      "description": "Company administrators can shortlist candidates for further evaluation.",
+      "workflow": [
+        "Review an application.",
+        "Check the candidate's shortlist status.",
+        "Shortlist the candidate.",
+        "The system prevents duplicate shortlisting.",
+        "The shortlist record is stored.",
+        "The candidate/application is marked as SHORTLISTED.",
+        "The company can later remove or reject the shortlisted candidate."
+      ]
+    },
+
+    "interviewer_management": {
+      "description": "Company administrators can create and manage interviewer accounts for their recruitment team.",
+      "workflow": [
+        "Create an interviewer account.",
+        "View interviewer information.",
+        "Deactivate an interviewer when necessary.",
+        "Reactivate an interviewer when permitted."
+      ]
+    },
+
+    "interviewer_availability": {
+      "description": "Interviewers can maintain their weekly availability so interview scheduling can take their available time into account.",
+      "workflow": [
+        "Open weekly availability.",
+        "View existing availability.",
+        "Select available days and time slots.",
+        "Submit the weekly availability."
+      ]
+    },
+
+    "interview_requests": {
+      "description": "Company administrators can create interview requests and assign interviewers. Interviewers can review and respond to requests.",
+      "company_workflow": [
+        "Create an interview request for a candidate.",
+        "Select or assign appropriate interviewers.",
+        "View the current request and its information.",
+        "Monitor interviewer responses."
+      ],
+      "interviewer_workflow": [
+        "View pending interview requests.",
+        "Open a request.",
+        "Accept or reject the request.",
+        "View withdrawn requests and request history where applicable."
+      ]
+    },
+
+    "interview_scheduling": {
+      "description": "Company administrators coordinate and finalize interview schedules using candidate and interviewer information.",
+      "workflow": [
+        "Coordinate an interview using the interview request.",
+        "Select an appropriate schedule.",
+        "Finalize the interview schedule.",
+        "Store interview date and time.",
+        "Specify the interview mode and meeting link where applicable.",
+        "View the scheduled interview.",
+        "Cancel the scheduled interview when necessary."
+      ],
+      "note": "The implemented workflow shows company administrators coordinating and finalizing interviews, while candidates and interviewers view relevant scheduling information."
+    },
+
+    "interview_feedback_and_scorecards": {
+      "description": "Interlink provides structured scorecards for evaluating candidates after interviews.",
+      "company_workflow": [
+        "Create a scorecard template.",
+        "Define the required evaluation fields.",
+        "Edit or finalize the scorecard template.",
+        "Review interview evaluation information."
+      ],
+      "interviewer_workflow": [
+        "Open the assigned interview evaluation.",
+        "View the scorecard and evaluation fields.",
+        "Enter scores for the relevant criteria.",
+        "Submit structured feedback and scores."
+      ]
+    },
+
+    "calendars": {
+      "description": "Candidates and interviewers can access calendar-related interview information, while interviewer availability supports scheduling."
+    },
+
+    "notifications": {
+      "description": "Users can access platform notifications and manage their read status.",
+      "capabilities": [
+        "View notifications.",
+        "View the unread notification count.",
+        "Mark an individual notification as read.",
+        "Mark all notifications as read."
+      ]
+    },
+
+    "support_tickets": {
+      "description": "Users can create support tickets and communicate with administrators about platform issues.",
+      "user_workflow": [
+        "Create a support ticket.",
+        "View existing tickets.",
+        "Search or filter tickets.",
+        "Edit ticket information where permitted.",
+        "Reply to a ticket.",
+        "Delete a ticket where permitted."
+      ],
+      "admin_workflow": [
+        "View support tickets.",
+        "Update ticket information such as priority, category, and status.",
+        "Reply as an administrator.",
+        "Manage tickets."
+      ],
+      "rule": "Closed tickets cannot receive further replies."
+    },
+
+    "activity_logs": {
+      "description": "Interlink maintains recorded activity logs that Super Admins can inspect for platform administration and monitoring.",
+      "capabilities": [
+        "View recorded activity logs.",
+        "Search logs by description, action, entity type, or role.",
+        "Filter logs by user role.",
+        "Filter logs by date range.",
+        "View results with newest activities first."
+      ],
+      "note": "The implementation verifies recorded activity logging and administrative filtering. It should not be assumed that every action in the entire platform is automatically logged."
+    },
+
+    "super_admin_dashboard": {
+      "description": "The Super Admin dashboard provides an overview of platform activity and statistics.",
+      "information": [
+        "Company statistics.",
+        "Approved and pending companies.",
+        "Job statistics.",
+        "Application statistics.",
+        "User statistics.",
+        "Candidate statistics.",
+        "Interviewer statistics.",
+        "Company administrator statistics.",
+        "Recent activities.",
+        "Recent support tickets."
+      ]
+    },
+
+    "company_management": {
+      "description": "Super Admins manage the lifecycle and moderation status of companies.",
+      "workflow": [
+        "View pending or approved companies.",
+        "Approve or reject companies.",
+        "Suspend or restore companies.",
+        "Flag or unflag companies.",
+        "Soft-delete companies where required."
+      ],
+      "suspension_behavior": "When a company is suspended, associated company users are deactivated and associated jobs are changed to SUSPENDED. When restored, the company returns to normal activity, associated users are activated, and associated jobs are restored to OPEN where the implementation permits restoration."
+    },
+
+    "user_management": {
+      "description": "Super Admins can search and manage users across the platform.",
+      "capabilities": [
+        "Search users.",
+        "Filter users by role.",
+        "View role-specific user information.",
+        "Suspend users.",
+        "Restore users.",
+        "Flag users.",
+        "Unflag users."
+      ],
+      "rule": "Restoration or unflagging of company administrators or interviewers can be restricted while their associated company remains suspended."
+    },
+
+    "job_moderation": {
+      "description": "Super Admins can monitor and moderate job postings.",
+      "capabilities": [
+        "Search and filter jobs.",
+        "View job details.",
+        "View aggregate application and interview information.",
+        "Flag jobs.",
+        "Unflag jobs.",
+        "Suspend jobs.",
+        "Restore jobs."
+      ],
+      "rule": "Job restoration is subject to the status of the associated company."
+    },
+
+    "interview_monitoring": {
+      "description": "Super Admins can monitor scheduled interviews and view relevant candidate information."
+    },
+
+    "subscription_management": {
+      "description": "Companies use subscription plans that control access and usage levels for selected platform capabilities. Super Admins can manage subscription plans and active subscriptions."
+    },
+
+    "chatbot": {
+      "description": "Interlink includes an AI assistant that provides contextual assistance about Interlink features, workflows, platform rules, subscriptions, and recruitment-related processes.",
+      "scope": "The chatbot is intended for Interlink and recruitment-related questions.",
+      "knowledge_source": "The chatbot uses the Interlink knowledge base as contextual information when generating responses.",
+      "context": "Recent conversation history can be included to maintain conversational context.",
+      "limitation": "The current chatbot implementation does not directly retrieve the user's live candidate, company, job, application, or interview records as chatbot context."
+    }
+  },
+
+  "subscription_tiers": {
+    "overview": "Interlink provides subscription plans for companies. Subscription information is used to control selected platform and AI usage capabilities.",
+    "plans": {
+      "Free": {
+        "description": "Entry-level subscription plan with lower usage limits."
+      },
+      "Growth": {
+        "description": "Subscription plan intended for companies with greater hiring and platform usage needs."
+      },
+      "Enterprise": {
+        "description": "Higher-capacity subscription plan intended for larger-scale recruitment operations."
+      }
+    },
+    "managed_features": [
+      "AI CV usage",
+      "AI screening limits",
+      "Job posting limits where configured",
+      "Interviewer account limits where configured",
+      "Active subscription status",
+      "Plan changes",
+      "Subscription extensions",
+      "Payment confirmation"
+    ],
+    "note": "Exact numeric plan limits should be taken from the current subscription configuration rather than assumed from the plan names."
+  },
+
   "how_to_use": {
-    "for_companies": [
-      "Register your company and wait for super admin approval.",
-      "Once approved, log in and complete your company profile.",
-      "Create interviewer accounts for your hiring team.",
-      "Post job vacancies with detailed requirements.",
-      "Review AI-ranked candidates and shortlist the best fits.",
-      "Schedule interviews and collect structured feedback.",
-      "Track your full hiring pipeline from the dashboard."
-    ],
-    "for_candidates": [
-      "Sign up and complete your profile with skills, experience, and preferences.",
-      "Browse and apply for jobs that match your background.",
-      "Track your application status in real time.",
-      "Attend scheduled interviews and check feedback outcomes.",
-      "Use the calendar to manage your interview schedule."
-    ],
-    "for_interviewers": [
-      "Log in with the account created by your company admin.",
-      "Set your weekly availability so candidates can be scheduled.",
-      "Review your assigned interviews and candidate profiles.",
-      "Use AI-generated questions during the interview process.",
-      "Submit structured feedback and scores after each interview."
-    ]
+    "for_candidates": {
+      "profile": [
+        "Complete your candidate profile.",
+        "Add your skills, education, and experience.",
+        "Upload your resume and profile picture where required.",
+        "Keep your profile information up to date."
+      ],
+      "jobs": [
+        "Browse available jobs.",
+        "Open a job to review its details.",
+        "Save jobs you want to revisit.",
+        "Open the application form.",
+        "Complete and submit the application.",
+        "View your applications and track their status."
+      ],
+      "ai_questions": [
+        "Select the relevant job.",
+        "Generate the available AI-assisted questions.",
+        "Answer the questions.",
+        "Submit your answers for evaluation.",
+        "Review the resulting scores."
+      ],
+      "interviews": [
+        "Check interview-related calendar information.",
+        "Attend interviews according to the provided schedule.",
+        "Use the platform to view relevant interview information."
+      ],
+      "support": [
+        "Create a support ticket when assistance is required.",
+        "View and reply to tickets where permitted."
+      ]
+    },
+
+    "for_company_admins": {
+      "registration": [
+        "Complete company registration.",
+        "Wait for Super Admin approval.",
+        "After approval, access the company functionality available to the account."
+      ],
+      "company_management": [
+        "Complete and maintain company information.",
+        "Upload or update the company logo where available."
+      ],
+      "interviewers": [
+        "Create interviewer accounts for the recruitment team.",
+        "Manage interviewer accounts.",
+        "Review interviewer availability when coordinating interviews."
+      ],
+      "jobs": [
+        "Create a job with the required recruitment information.",
+        "Save the job.",
+        "Edit or manage the job as recruitment requirements change.",
+        "Activate, deactivate, or delete the job where permitted."
+      ],
+      "candidate_evaluation": [
+        "Review applications.",
+        "Open candidate profiles and application history.",
+        "Use AI-assisted CV analysis when available.",
+        "Shortlist suitable candidates.",
+        "Reject or remove candidates from the shortlist where appropriate."
+      ],
+      "interviews": [
+        "Create an interview request.",
+        "Select or assign interviewers.",
+        "Monitor responses.",
+        "Finalize the interview schedule.",
+        "Review interview evaluation information.",
+        "Cancel a scheduled interview when necessary."
+      ],
+      "scorecards": [
+        "Create a scorecard template.",
+        "Define evaluation criteria.",
+        "Edit or finalize the template.",
+        "Use structured evaluation information when reviewing interview results."
+      ],
+      "subscriptions": [
+        "View available subscription plans.",
+        "View active subscription information.",
+        "Monitor applicable usage."
+      ]
+    },
+
+    "for_interviewers": {
+      "profile": [
+        "Complete and maintain the interviewer profile."
+      ],
+      "availability": [
+        "Open weekly availability.",
+        "Select available days and time slots.",
+        "Submit the availability.",
+        "Keep availability updated for scheduling."
+      ],
+      "interviews": [
+        "View pending interview requests.",
+        "Review request details.",
+        "Accept or reject requests.",
+        "View scheduled and completed interviews.",
+        "Review assigned candidate information."
+      ],
+      "evaluation": [
+        "Open the assigned interview evaluation.",
+        "Review the scorecard criteria.",
+        "Enter scores.",
+        "Submit structured feedback."
+      ]
+    },
+
+    "for_super_admins": {
+      "dashboard": [
+        "Open the Super Admin dashboard.",
+        "Review platform statistics and recent activity."
+      ],
+      "companies": [
+        "View pending or approved companies.",
+        "Approve or reject companies.",
+        "Suspend, restore, flag, unflag, or soft-delete companies where required."
+      ],
+      "users": [
+        "Search users.",
+        "Filter users by role.",
+        "Open role-specific user information.",
+        "Suspend, restore, flag, or unflag users where permitted."
+      ],
+      "jobs": [
+        "Search and filter jobs.",
+        "View job details and aggregate information.",
+        "Flag, unflag, suspend, or restore jobs."
+      ],
+      "interviews": [
+        "Monitor scheduled interviews.",
+        "View relevant candidate information."
+      ],
+      "activity_logs": [
+        "Open activity logs.",
+        "Search by relevant text or action information.",
+        "Filter by role and date range."
+      ],
+      "subscriptions": [
+        "Manage subscription plans.",
+        "Review active subscriptions.",
+        "Confirm payments and manage subscription lifecycle operations where available."
+      ],
+      "support": [
+        "View support tickets.",
+        "Manage ticket status and related information.",
+        "Respond to users."
+      ],
+      "chatbot": [
+        "Use the chatbot for Interlink and recruitment-related assistance."
+      ]
+    }
   },
 
   "platform_rules": {
-    "company_approval": "All companies must be approved by a super admin before they can post jobs or access platform features.",
-    "suspension": "Companies, users, and job postings can be suspended by super admins for policy violations. Suspended entities cannot perform platform actions until restored.",
-    "job_limits": "The number of active job postings is determined by the company's subscription tier.",
-    "ai_limits": "AI screening and question generation credits are allocated based on subscription tier and reset periodically.",
-    "support": "Users experiencing issues should raise a support ticket. Super admins review and respond to all tickets."
+    "company_approval": "Companies go through an approval process managed by Super Admins. Company administrators use company functionality subject to the company's status and platform authorization.",
+    "company_status": {
+      "description": "Company approval/lifecycle status and operational activity status are separate concepts.",
+      "approval_states": [
+        "pending",
+        "approved",
+        "rejected",
+        "deleted"
+      ]
+    },
+    "company_moderation": {
+      "normal": "A company in normal operational status can use available platform functionality subject to other restrictions.",
+      "suspended": "Suspended companies cannot perform normal platform operations. Associated company users are deactivated and associated jobs are suspended.",
+      "flagged": "A flagged company is marked for administrative attention.",
+      "restoration": "Restoring a company returns its operational status to normal and can reactivate associated users and restore associated jobs according to the implemented rules."
+    },
+    "user_moderation": "Super Admins can suspend, restore, flag, and unflag users. Certain company-linked user restoration actions are restricted while the associated company remains suspended.",
+    "job_limits": "Job availability and applicable limits can depend on the company's subscription configuration.",
+    "ai_limits": "AI CV usage is subject to applicable subscription usage limits.",
+    "shortlisting": "The system prevents duplicate shortlist records for the same candidate/application where the shortlist already exists.",
+    "support": "Closed support tickets cannot receive further replies.",
+    "authorization": "Protected platform operations require authentication and appropriate role-based authorization.",
+    "multi_tenancy": "Company-related operations are associated with the relevant company, and backend authorization and company ownership checks are used for protected company functionality.",
+    "activity_logs": "Super Admins can view and filter recorded activity logs. Not every platform action should be assumed to be automatically logged unless the relevant functionality records it.",
+    "chatbot_scope": "The chatbot is intended to answer Interlink and recruitment-related questions and should not be treated as a general-purpose assistant.",
+    "chatbot_knowledge": "The chatbot uses the configured Interlink knowledge base and recent conversation context to generate responses.",
+    "chatbot_data_access": "The current chatbot does not directly query live user-specific recruitment records as part of its knowledge retrieval."
   },
 
   "technology": {
     "frontend": "React.js",
     "backend": "Spring Boot",
-    "database": "PostgreSQL (Supabase)",
-    "ai": "OpenAI APIs for CV analysis, candidate ranking, and question generation"
+    "database": "PostgreSQL with Supabase",
+    "ai": "OpenAI APIs are used by multiple AI-assisted platform features including CV analysis, candidate evaluation, question generation, and the RAG chatbot."
   }
 }

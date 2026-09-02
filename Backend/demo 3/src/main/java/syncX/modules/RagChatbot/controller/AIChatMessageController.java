@@ -17,6 +17,7 @@ import syncX.modules.RagChatbot.dto.AIChatHistoryWrapperDto;
 import syncX.modules.RagChatbot.dto.AIChatMessageDto;
 import syncX.modules.RagChatbot.dto.AIChatRequestDto;
 import syncX.modules.RagChatbot.dto.AIChatResponseDto;
+import syncX.modules.RagChatbot.exception.InvalidInputException;
 import syncX.modules.RagChatbot.exception.MessageLimitException;
 import syncX.modules.RagChatbot.service.AIChatMessageService;
 
@@ -42,6 +43,17 @@ public class AIChatMessageController {
 
             // Return successful response
             return ResponseEntity.ok(result);
+
+        } catch (InvalidInputException e) {
+            // NEW: Handle blank / over-length messages.
+            // Must be caught before the generic Exception block below, since
+            // InvalidInputException is itself a RuntimeException.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "error", e.getMessage(),
+                            "reason", e.getReason().name(),      // "BLANK" or "TOO_LONG"
+                            "maxLength", e.getMaxLength()
+                    ));
 
         } catch (MessageLimitException e) {
             // Handle case when user exceeds message limit

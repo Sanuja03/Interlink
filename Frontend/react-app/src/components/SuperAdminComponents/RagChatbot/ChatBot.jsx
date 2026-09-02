@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { sendMessage, getHistory } from "../../../api/RagChatbotApi";
 
+// Fallback used only until the backend value loads on mount (or if that
+// call fails). Kept in sync as closely as possible with the backend default
+// in AIChatMessageService.getMaxMessageLength().
+const DEFAULT_MAX_CHARS = 1000;
+
 export default function ChatBot() {
   const [input,        setInput]        = useState("");
   const [messages,     setMessages]     = useState([]);
@@ -9,6 +14,9 @@ export default function ChatBot() {
   const [limit,        setLimit]        = useState(null); // read from backend, not hardcoded
   const [warning,      setWarning]      = useState(null);
   const [limitReached, setLimitReached] = useState(false);
+  // NEW: max chars is now driven by the backend (Super Admin configurable),
+  // not hardcoded. Starts at the fallback until getHistory resolves.
+  const [maxChars,     setMaxChars]     = useState(DEFAULT_MAX_CHARS);
 
   const textareaRef    = useRef(null);
   const messageAreaRef = useRef(null);
@@ -25,7 +33,7 @@ export default function ChatBot() {
     const fetchHistory = async () => {
       try {
         const res = await getHistory();
-        const { history = [], remaining: rem, limit: lim } = res.data;
+        const { history = [], remaining: rem, limit: lim, maxMessageLength: maxLen } = res.data;
 
         const normalized = history.map((m) => ({
           role: m.role === "assistant" ? "ai" : "user",
@@ -36,6 +44,10 @@ export default function ChatBot() {
         setMessages(normalized);
         if (rem !== undefined) { setRemaining(rem); setLimitReached(rem <= 0); }
         if (lim !== undefined)   setLimit(lim);
+        // NEW: sync the character cap with whatever the Super Admin has
+        // configured, falling back to the default only if the backend
+        // hasn't set it yet.
+        if (maxLen !== undefined && maxLen > 0) setMaxChars(maxLen);
 
       } catch (err) {
         console.error("Error loading chat history:", err);
@@ -49,12 +61,41 @@ export default function ChatBot() {
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const handleInputChange = (e) => {
-    setInput(e.target.value);
+    // Hard cap: never allow more than maxChars characters into state,
+    // even if pasted in one go.
+    const value = e.target.value.slice(0, maxChars);
+    setInput(value);
     const el = textareaRef.current;
     if (el) {
       el.style.height = "auto";
       el.style.height = Math.min(el.scrollHeight, 120) + "px";
     }
+  };
+
+  // NEW: explicit paste handler. Relying on onChange + maxLength alone can be
+  // unreliable for large pastes in controlled inputs (the native DOM value can
+  // briefly exceed the cap before React reconciles it). This intercepts the
+  // paste directly, merges it with the current selection, and truncates
+  // up front so overlong pastes can never slip through.
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text");
+    const el = textareaRef.current;
+    const selectionStart = el?.selectionStart ?? input.length;
+    const selectionEnd = el?.selectionEnd ?? input.length;
+
+    const merged =
+      input.slice(0, selectionStart) + pasted + input.slice(selectionEnd);
+
+    setInput(merged.slice(0, maxChars));
+
+    // Restore textarea height after the paste
+    requestAnimationFrame(() => {
+      if (el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 120) + "px";
+      }
+    });
   };
 
   const handleKeyDown = (e) => {
@@ -65,11 +106,12 @@ export default function ChatBot() {
   };
 
   const handleSend = useCallback(async () => {
-    if (!input.trim() || loading || limitReached) return;
+    const trimmed = input.trim();
+    if (!trimmed || trimmed.length > maxChars || loading || limitReached) return;
 
     const userMessage = {
       role: "user",
-      text: input.trim(),
+      text: trimmed,
       time: formatTime(new Date()),
     };
 
@@ -82,7 +124,7 @@ export default function ChatBot() {
 
     try {
       const res = await sendMessage(userMessage.text);
-      const { reply, remaining: rem, warning: warn, limitReached: limited, limit: lim } = res.data;
+      const { reply, remaining: rem, warning: warn, limitReached: limited, limit: lim, maxMessageLength: maxLen } = res.data;
 
       setMessages((prev) => [
         ...prev,
@@ -93,6 +135,14 @@ export default function ChatBot() {
       if (lim !== undefined) setLimit(lim);
       if (warn)              setWarning(warn);
       if (limited)           setLimitReached(true);
+      // NEW: keep the character cap in sync even mid-session, in case a
+      // Super Admin changes it while this user already has the chat open.
+      if (maxLen !== undefined && maxLen > 0) {
+        setMaxChars(maxLen);
+        // If the new cap is lower than whatever's currently typed, trim it
+        // so the input never sits in a state that exceeds its own maxLength.
+        setInput((prev) => (prev.length > maxLen ? prev.slice(0, maxLen) : prev));
+      }
 
     } catch (err) {
       if (err.response?.status === 429) {
@@ -102,6 +152,19 @@ export default function ChatBot() {
           {
             role: "ai",
             text: err.response.data?.error ?? "Daily message limit reached.",
+            time: formatTime(new Date()),
+            isError: true,
+          },
+        ]);
+      } else if (err.response?.status === 400) {
+        // NEW: backend input validation errors (blank / too long)
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            text: err.response.data?.error
+              ?? err.response.data?.message
+              ?? "Your message couldn't be sent — please check its length and try again.",
             time: formatTime(new Date()),
             isError: true,
           },
@@ -119,12 +182,16 @@ export default function ChatBot() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, limitReached]);
+  }, [input, loading, limitReached, maxChars]);
 
   // Calculate usage percent from backend-supplied values
   const usagePercent = limit && remaining !== null
     ? Math.round(((limit - remaining) / limit) * 100)
     : 0;
+
+  const charCount = input.length;
+  const nearCharLimit = charCount >= maxChars * 0.9;
+  const atCharLimit = charCount >= maxChars;
 
   return (
     <div style={styles.page}>
@@ -188,16 +255,29 @@ export default function ChatBot() {
 
       {/* Input area */}
       <div style={styles.inputBar}>
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder={limitReached ? "Daily limit reached." : "Ask about Interlink or recruitment..."}
-          rows={1}
-          style={{ ...styles.textarea, opacity: limitReached ? 0.5 : 1 }}
-          disabled={loading || limitReached}
-        />
+        <div style={styles.inputColumn}>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={handleInputChange}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+            placeholder={limitReached ? "Daily limit reached." : "Ask about Interlink or recruitment..."}
+            rows={1}
+            maxLength={maxChars}
+            style={{ ...styles.textarea, opacity: limitReached ? 0.5 : 1 }}
+            disabled={loading || limitReached}
+          />
+          {/* NEW: live character counter */}
+          <div
+            style={{
+              ...styles.charCounter,
+              color: atCharLimit ? "#dc2626" : nearCharLimit ? "#d97706" : "#a0aab4",
+            }}
+          >
+            {charCount} / {maxChars}
+          </div>
+        </div>
         <button
           onClick={handleSend}
           disabled={loading || !input.trim() || limitReached}
@@ -424,8 +504,15 @@ const styles = {
     background: "#fff",
     alignItems: "flex-end",
   },
-  textarea: {
+  inputColumn: {
     flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  textarea: {
+    width: "100%",
+    boxSizing: "border-box",
     padding: "10px 14px",
     fontSize: 14,
     fontFamily: "inherit",
@@ -439,6 +526,11 @@ const styles = {
     background: "#f9fafb",
     color: "#1a1a1a",
     transition: "border-color 0.15s",
+  },
+  charCounter: {
+    fontSize: 10,
+    textAlign: "right",
+    paddingRight: 4,
   },
   sendBtn: {
     padding: "10px 20px",
