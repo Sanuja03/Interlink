@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import api from "../../lib/api";
+import AuthLayout from "../LoginSignup/AuthLayout";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // sent reset OTP
   const handleSendOtp = async (e) => {
@@ -56,6 +60,14 @@ const ForgotPassword = () => {
       setError("Password must be at least 8 characters");
       return;
     }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError("Password must contain at least one capital letter");
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      setError("Password must contain at least one symbol");
+      return;
+    }
     setLoading(true);
     try {
       await api.post("/otp/reset-password", {
@@ -70,19 +82,25 @@ const ForgotPassword = () => {
     setLoading(false);
   };
 
-  return (
-    <div className="page">
-      <div className="container">
-        <h1>{step === 3 ? "Set New Password" : "Forgot Password"}</h1>
+  // subtitle shown under the heading for each step
+  const subtitles = {
+    1: "Enter your email and we'll send you a reset code.",
+    2: `Enter the 6-digit code sent to ${email}`,
+    3: "Choose a new password for your account.",
+  };
 
+  return (
+    <AuthLayout
+      title={step === 3 ? "Set New Password" : "Forgot Password"}
+      subtitle={subtitles[step]}
+    >
         {error && <p className="error-text">{error}</p>}
         {/* if there is a value fro teh message show the para or nothing  */}
-        {message && <p style={{ color: "green" }}>{message}</p>}
+        {message && <p className="success-text">{message}</p>}
 
         {/* display Enter email page */}
         {step === 1 && (
           <form onSubmit={handleSendOtp}>
-            <p>Enter your email and we'll send you a reset code.</p>
             <div className="input-group">
               <label>Email address</label>
               <input type="email" className="input-field" placeholder="Enter your email"
@@ -97,7 +115,6 @@ const ForgotPassword = () => {
         {/* display Enter OTP screen */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp}>
-            <p>Enter the 6-digit code sent to {email}</p>
             <div className="input-group">
               <label>Reset Code</label>
               <input type="text" className="input-field" placeholder="Enter 6-digit code"
@@ -116,14 +133,28 @@ const ForgotPassword = () => {
 
             <div className="input-group">
               <label>New Password</label>
-              <input type="password" className="input-field" placeholder="Enter new password"
-                value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+              <div className="password-field">
+                <input type={showNewPassword ? "text" : "password"} className="input-field" placeholder="Enter new password"
+                  value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                <button type="button" className="password-toggle"
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}>
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div className="input-group">
               <label>Confirm Password</label>
-              <input type="password" className="input-field" placeholder="Confirm new password"
-                value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              <div className="password-field">
+                <input type={showConfirmPassword ? "text" : "password"} className="input-field" placeholder="Confirm new password"
+                  value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                <button type="button" className="password-toggle"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}>
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button className="login-button" type="submit" disabled={loading}>
@@ -132,9 +163,8 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        <p><Link to="/Login">Back to Login</Link></p>
-      </div>
-    </div>
+        <p className="auth-backlink"><Link to="/Login">Back to Login</Link></p>
+    </AuthLayout>
   );
 };
 

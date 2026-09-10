@@ -1,34 +1,23 @@
-
-.signup-button{
-    width: 90%;                 
-    display: block;
-    margin: 20px auto 10px;     
-    padding: 10px 0;
-  
-    background-color: #2a3d67;  
-    color: #ffffff;
-  
-    border: none;
-    border-radius: 12px;
-  
-    font-size: 15px;
-    font-weight: 600;
-   
-    cursor: pointer;
-}
+/* Signup-only extras — shared auth styling lives in Login.css */
 
 .Name-group {
     display: flex;
-    gap: 15px;          
-    width: 90%;
+    gap: 14px;
+    width: 100%;
     margin: 0 auto 10px;
 }
-  
+
 .Name-group .input-group {
-    width: 45%;         /* each takes half the row */
+    width: 50%;         /* each takes half the row */
 }
 
+@media (max-width: 480px) {
+    .Name-group {
+        flex-direction: column;
+        gap: 0;
+    }
 
-
- 
-  
+    .Name-group .input-group {
+        width: 100%;
+    }
+}

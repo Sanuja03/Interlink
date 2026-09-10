@@ -1,8 +1,6 @@
-import "./Login.css";
+import AuthLayout from "./AuthLayout";
 
-import interlink from "../../assets/interlink-logo.png";
 import signin from "../../assets/signin.png";
-import homeicon from "../../assets/homeicon.png";
 
 import api from "../../lib/api";
 import { useAuth } from "../../context/Authcontext";
@@ -11,12 +9,14 @@ import { supabase } from "../../lib/supabase";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loginError, setLoginError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isAuthenticated, role, loading, suspendedMessage, setSuspendedMessage } = useAuth();//useEffect runs only if these changes 
   
  
@@ -85,22 +85,7 @@ const Login = () => {
  
 
   return (
-    <div className="page">
-      <div className="home-button">
-        <a href="/">
-          <img src={homeicon} alt="Home" />
-        </a>
-      </div>
-
-      <div className="container">
-        <div className="header">
-          <div className="text">
-            <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
-            <h1>Welcome Back!</h1>
-            <p><i>Connecting Talent with Opportunity</i></p>
-          </div>
-        </div>
-
+    <AuthLayout title="Welcome Back!" subtitle="Connecting Talent with Opportunity">
           <form className="form" onSubmit={handleSubmit(onSubmit)}>
 
           {/* show these paras if suspendedMessage or LoginError has values */}
@@ -128,18 +113,28 @@ const Login = () => {
             <div className="input-group">
               {errors.password && <p className="error-text">{errors.password.message}</p>}
               <label>password</label>
-              <input
-                type="password"
-                placeholder="Password"
-                className={`input-field ${errors.password ? "input-error" : ""}`}
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                })}
-              />
+              <div className="password-field">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className={`input-field ${errors.password ? "input-error" : ""}`}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  })}
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div className="forgot-password">
@@ -173,15 +168,11 @@ const Login = () => {
               />
             </div>
 
-            <div>
-              <p>
-                Don't have an account? <Link to="/?section=howitworks">Signup</Link>
-              </p>
-            </div>
+            <p className="auth-alt">
+              Don't have an account? <Link to="/?section=howitworks">Signup</Link>
+            </p>
          </form>
-         
-      </div>
-    </div>
+    </AuthLayout>
   );
 };
 

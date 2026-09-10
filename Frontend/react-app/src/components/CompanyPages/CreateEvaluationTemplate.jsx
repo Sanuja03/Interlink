@@ -57,7 +57,7 @@ const CreateEvaluationTemplate = ({
   };
 
   const handleSave = () => {
-    //validations
+    //VALIDATIONS
     if (!templateName.trim()) {
       alert("Please enter a template name.");
       return;

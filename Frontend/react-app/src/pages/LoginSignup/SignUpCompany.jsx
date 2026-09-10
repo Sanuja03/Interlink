@@ -1,12 +1,18 @@
 import './SignUpCompany.css'
-import interlink from '../../assets/interlink-logo.png'
-import homeicon from '../../assets/homeicon.png'
+import AuthLayout from './AuthLayout'
 import { supabase } from "../../lib/supabase"
 import api from "../../lib/api"
 
 import { useForm } from 'react-hook-form'
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
+import { Eye, EyeOff } from "lucide-react"
+
+const companyHighlights = [
+  "Post unlimited job listings",
+  "Smart candidate filtering",
+  "Integrated interview scheduling",
+]
 
 const SignUpCompany = () => {
   const navigate = useNavigate()
@@ -16,6 +22,7 @@ const SignUpCompany = () => {
   const [otp, setOtp] = useState("")
   const [formData, setFormData] = useState(null)
   const [verifying, setVerifying] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register, handleSubmit,
@@ -102,17 +109,11 @@ const SignUpCompany = () => {
 
   if (step === 2) {
     return (
-      <div className='page'>
-        <div className='container'>
-
-          <div className='header'>
-            <div className='text'>
-              <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
-              <h1>Verify Your Email</h1>
-              <p><i>We sent a 6-digit code to {formData?.companyEmail}</i></p>
-            </div>
-          </div>
-
+      <AuthLayout
+        title="Verify Your Email"
+        subtitle={`We sent a 6-digit code to ${formData?.companyEmail ?? ""}`}
+        highlights={companyHighlights}
+      >
           <div className='form'>
             {submitError && <p className="error-text">{submitError}</p>}
 
@@ -127,33 +128,20 @@ const SignUpCompany = () => {
               {verifying ? "Creating account..." : "Verify & Create Account"}
             </button>
 
-            <p>
+            <p className="auth-alt">
               <a href="#" onClick={(e) => { e.preventDefault(); setStep(1); setOtp(""); }}>← Go back</a>
             </p>
           </div>
-
-        </div>
-      </div>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className='page'>
-
-      <div className="home-button">
-        <a href="/"><img src={homeicon} alt="Home" /></a>
-      </div>
-
-      <div className='container'>
-
-        <div className='header'>
-          <div className='text'>
-            <img src={interlink} alt="InterLink Logo" className="interlinklogo" />
-            <h1>Welcome to InterLink</h1>
-            <p><i>Find the right people for your vision</i></p>
-          </div>
-        </div>
-
+    <AuthLayout
+      title="Welcome to InterLink"
+      subtitle="Find the right people for your vision"
+      highlights={companyHighlights}
+    >
         <form className='form' onSubmit={handleSubmit(onSubmit)}>
           {submitError && <p className="error-text">{submitError}</p>}
 
@@ -205,22 +193,32 @@ const SignUpCompany = () => {
           <div className='input-group'>
             {errors.password && <p className="error-text">{errors.password.message}</p>}
             <label>password</label>
-            <input type="password" placeholder="Password"
-              className={`input-field ${errors.password ? "input-error" : ""}`}
-              {...register("password", {
-                required: "Password is required",
-                minLength: { value: 8, message: "Password must be at least 8 characters" }
-              })} />
+            <div className='password-field'>
+              <input type={showPassword ? "text" : "password"} placeholder="Password"
+                className={`input-field ${errors.password ? "input-error" : ""}`}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: { value: 8, message: "Password must be at least 8 characters" },
+                  validate: {
+                    hasUpper: (value) => /[A-Z]/.test(value) || "Password must contain at least one capital letter",
+                    hasSymbol: (value) => /[^A-Za-z0-9]/.test(value) || "Password must contain at least one symbol"
+                  }
+                })} />
+              <button type="button" className='password-toggle'
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button className='signup-button' type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Sending OTP..." : "Sign Up"}
           </button>
           
-          <p>Already have an account? <Link to="/Login">Login</Link></p>
+          <p className="auth-alt">Already have an account? <Link to="/Login">Login</Link></p>
         </form>
-      </div>
-    </div>
+    </AuthLayout>
   )
 }
 

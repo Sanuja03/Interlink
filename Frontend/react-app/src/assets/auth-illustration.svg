@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 300" fill="none" role="img" aria-label="Talent matching illustration">
+  <defs>
+    <linearGradient id="ilCard" x1="132" y1="40" x2="308" y2="262" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="1" stop-color="#e2eff6" />
+    </linearGradient>
+    <linearGradient id="ilAvatar" x1="190" y1="62" x2="250" y2="122" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a6a82" />
+      <stop offset="1" stop-color="#0C3E56" />
+    </linearGradient>
+    <linearGradient id="ilBar" x1="160" y1="214" x2="252" y2="222" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a6a82" />
+      <stop offset="1" stop-color="#1d6fa5" />
+    </linearGradient>
+  </defs>
+
+  <!-- soft glows -->
+  <circle cx="70" cy="48" r="46" fill="#ffffff" opacity="0.07" />
+  <circle cx="392" cy="248" r="56" fill="#ffffff" opacity="0.06" />
+
+  <!-- side card: left -->
+  <g>
+    <rect x="8" y="96" width="104" height="118" rx="16" fill="#ffffff" fill-opacity="0.10" stroke="#ffffff" stroke-opacity="0.26" />
+    <circle cx="60" cy="130" r="16" fill="#ffffff" fill-opacity="0.26" />
+    <rect x="30" y="158" width="60" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.24" />
+    <rect x="40" y="172" width="40" height="6" rx="3" fill="#ffffff" fill-opacity="0.16" />
+    <rect x="34" y="190" width="52" height="12" rx="6" fill="#ffffff" fill-opacity="0.14" />
+  </g>
+
+  <!-- side card: right -->
+  <g>
+    <rect x="328" y="76" width="104" height="118" rx="16" fill="#ffffff" fill-opacity="0.10" stroke="#ffffff" stroke-opacity="0.26" />
+    <rect x="352" y="102" width="56" height="38" rx="8" fill="#ffffff" fill-opacity="0.24" />
+    <path d="M370 102v-6a6 6 0 0 1 6-6h8a6 6 0 0 1 6 6v6" stroke="#ffffff" stroke-opacity="0.4" stroke-width="3" stroke-linecap="round" />
+    <rect x="350" y="154" width="60" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.24" />
+    <rect x="360" y="168" width="40" height="6" rx="3" fill="#ffffff" fill-opacity="0.16" />
+  </g>
+
+  <!-- connectors -->
+  <path d="M112 148h20" stroke="#ffffff" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 6" />
+  <path d="M308 134h20" stroke="#ffffff" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 6" />
+  <circle cx="120" cy="148" r="3" fill="#ffffff" fill-opacity="0.55" />
+  <circle cx="320" cy="134" r="3" fill="#ffffff" fill-opacity="0.55" />
+
+  <!-- main profile card -->
+  <rect x="132" y="40" width="176" height="222" rx="22" fill="url(#ilCard)" />
+
+  <circle cx="220" cy="92" r="30" fill="url(#ilAvatar)" />
+  <circle cx="220" cy="84" r="10" fill="#ffffff" />
+  <path d="M206 108c0-7.7 6.3-14 14-14s14 6.3 14 14z" fill="#ffffff" />
+
+  <rect x="176" y="136" width="88" height="10" rx="5" fill="#0C3E56" fill-opacity="0.85" />
+  <rect x="190" y="154" width="60" height="8" rx="4" fill="#4a6b7c" fill-opacity="0.45" />
+
+  <rect x="160" y="180" width="44" height="18" rx="9" fill="#1a6a82" fill-opacity="0.14" />
+  <rect x="212" y="180" width="32" height="18" rx="9" fill="#1a6a82" fill-opacity="0.14" />
+  <rect x="252" y="180" width="28" height="18" rx="9" fill="#1a6a82" fill-opacity="0.14" />
+
+  <rect x="160" y="214" width="120" height="8" rx="4" fill="#0C3E56" fill-opacity="0.10" />
+  <rect x="160" y="214" width="92" height="8" rx="4" fill="url(#ilBar)" />
+  <rect x="160" y="232" width="54" height="6" rx="3" fill="#4a6b7c" fill-opacity="0.3" />
+
+  <!-- match badge -->
+  <circle cx="300" cy="56" r="22" fill="#ffffff" />
+  <path d="M290 56.5l7 7 13.5-14" stroke="#1a6a82" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

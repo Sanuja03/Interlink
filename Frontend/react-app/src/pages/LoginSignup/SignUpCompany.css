@@ -1,23 +1,26 @@
+/* Company signup extras — shared auth styling lives in Login.css */
 
-  .select-group {
-    display: flex;
-    align-items: center;     /* vertical alignment */
-    width: 90%;
-    margin: 0 auto 10px;
-  }
-  
-  .select-group label {
-    font-size: 15px;
-    color: #213547;
-    text-align: left;        
-  }
-  
-  .select-group .input-field {
-    width: 60%;
-    margin-left: auto;       /* pushes field to the right */
-    padding: 6px;
-    font-size: 13px;
-    border-radius: 10px;
-  }
+.select-group {
+  display: flex;
+  align-items: center;     /* vertical alignment */
+  flex-wrap: wrap;         /* keeps the error message on its own line */
+  width: 100%;
+  margin: 0 auto 14px;
+}
 
+.select-group .error-text {
+  width: 100%;
+}
 
+.select-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0C3E56;
+  text-transform: capitalize;
+  text-align: left;
+}
+
+.select-group .input-field {
+  width: 62%;
+  margin-left: auto;       /* pushes field to the right */
+}
