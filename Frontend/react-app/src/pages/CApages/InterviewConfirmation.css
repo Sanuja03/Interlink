@@ -253,3 +253,48 @@
     max-width: 320px;
   }
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  .ic-page {
+    padding: 22px 20px 26px;
+  }
+
+  .ic-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .ic-title {
+    font-size: 20px;
+  }
+
+  /* the "full" row kept two columns and squeezed its labels */
+  .ic-rowFull {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ic-companyLogo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ic-input {
+    height: 46px;
+  }
+
+  .ic-btn {
+    height: 50px;
+    min-width: 0;
+  }
+
+  .ic-editIconBtn {
+    width: 40px;
+    height: 40px;
+  }
+}

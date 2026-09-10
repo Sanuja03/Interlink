@@ -63,7 +63,17 @@ const styles = `
   .apply-success__title { font-size: 1.5rem; font-weight: 800; color: #0C3E56; margin: 0 0 10px; }
   .apply-success__sub { font-size: 0.95rem; color: #5a7a8a; line-height: 1.6; margin: 0 0 28px; }
   .apply-success__btn { padding: 12px 36px; border-radius: 50px; border: none; background: linear-gradient(135deg, #1a6a82, #0C3E56); color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; outline: none; }
-  @media (max-width: 900px) { .apply-grid { grid-template-columns: 1fr; } .apply-main { padding: 20px 16px; } .apply-frow { grid-template-columns: 1fr; } .apply-hero { flex-direction: column; align-items: flex-start; } }
+  @media (max-width: 1023px) { .apply-grid { grid-template-columns: 1fr; } .apply-main { padding: 20px 16px; } .apply-frow { grid-template-columns: 1fr; } .apply-hero { flex-direction: column; align-items: flex-start; } }
+  @media (max-width: 767px) {
+    .apply-main { padding: 16px 12px; }
+    .apply-hero { padding: 20px 18px; border-radius: 16px; gap: 14px; }
+    .apply-hero__title { font-size: 1.2rem; }
+    .apply-hero__badge { width: 100%; }
+    .apply-card { padding: 20px 16px; border-radius: 14px; }
+    .apply-upload { padding: 22px 16px; }
+    .apply-steps { padding: 18px 16px; }
+    .apply-success__box { padding: 32px 22px; border-radius: 18px; max-width: 100%; }
+  }
 `;
 
 const IconPerson = () => (

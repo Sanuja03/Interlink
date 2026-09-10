@@ -188,3 +188,9 @@
   @media (max-width: 1024px) {
     .schedule-card { padding: 18px; }
   }
+
+@media (max-width: 767px) {
+  .schedule-card {
+    padding: 12px;
+  }
+}

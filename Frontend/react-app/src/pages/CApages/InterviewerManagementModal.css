@@ -552,3 +552,49 @@
     width: 100%;
   }
 }
+
+/* ==================================================================
+   RESPONSIVE (phone refinements on top of the 920/560 breakpoints)
+   ================================================================== */
+
+@media (max-width: 767px) {
+  .interviewer-modal-overlay {
+    padding: 10px;
+    align-items: start;
+  }
+
+  .interviewer-modal {
+    padding: 16px 12px;
+    border-radius: 18px;
+    width: 100%;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .interviewer-stat-card strong {
+    font-size: 24px;
+  }
+
+  .interviewer-card {
+    padding: 14px;
+  }
+
+  .interviewer-card-top h3 {
+    font-size: 18px;
+  }
+
+  .field input,
+  .generate-btn {
+    height: 46px;
+  }
+
+  .footer-close-btn {
+    height: 48px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .created-details-grid {
+    grid-template-columns: 1fr;
+  }
+}

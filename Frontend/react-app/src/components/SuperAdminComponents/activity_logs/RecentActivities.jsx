@@ -22,7 +22,7 @@ export default function RecentActivities({ onViewAll }) {
 return (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
     {/* Header */}
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
       <h1 className="text-xl text-blue-900">
         Recent Activities
       </h1>

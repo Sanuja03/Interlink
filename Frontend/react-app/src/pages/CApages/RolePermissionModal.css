@@ -171,3 +171,44 @@
   .rpm-actions{ flex-direction: column; gap: 14px; }
   .rpm-cancel, .rpm-save{ width: 100%; }
 }
+
+/* Keep the dialog inside the viewport and scroll its own body. */
+.rpm-modal {
+  max-height: calc(100vh - 56px);
+  max-height: calc(100dvh - 56px);
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .rpm-overlay {
+    padding: 14px 10px;
+    align-items: start;
+  }
+
+  .rpm-modal {
+    padding: 20px 14px 24px;
+    border-radius: 20px;
+    max-height: calc(100vh - 28px);
+    max-height: calc(100dvh - 28px);
+  }
+
+  .rpm-title {
+    font-size: 22px;
+  }
+
+  .rpm-input {
+    height: 46px;
+  }
+
+  .rpm-squareBtn {
+    width: 46px;
+    height: 46px;
+    font-size: 26px;
+  }
+
+  .rpm-cancel,
+  .rpm-save {
+    width: 100%;
+    height: 50px;
+  }
+}

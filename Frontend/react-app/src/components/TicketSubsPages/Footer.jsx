@@ -7,7 +7,7 @@ import linkedin from "../../assets/footer/linkedin.png";
 export default function Footer() {
   return (
     <footer className="bg-[#0C3E56] text-white/85 py-6">
-      <div className="max-w-[1150px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-[1150px] mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
         {/* Address */}
         <div>
           <p className="text-[14px] leading-[20px]">

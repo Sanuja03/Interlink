@@ -365,3 +365,49 @@
 
   .ch-companyName { font-size: 16px; }
 }
+
+/* ==================================================================
+   RESPONSIVE (tablet + phone refinements)
+   ================================================================== */
+
+/* keep the columns readable while the wrapper scrolls */
+.ch-tableWrap .ch-table {
+  min-width: 620px;
+}
+
+@media (max-width: 1023px) {
+  .ch-page {
+    padding: 22px 20px 40px;
+  }
+
+  .ch-pageTitle {
+    font-size: 34px;
+  }
+
+  .ch-profileCard {
+    padding: 22px 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .ch-pageTitle {
+    font-size: 26px;
+  }
+
+  .ch-name {
+    font-size: 24px;
+  }
+
+  .ch-statValue {
+    font-size: 24px;
+  }
+
+  .ch-historyTitle {
+    font-size: 18px;
+  }
+
+  .ch-companyLogo {
+    width: 40px;
+    height: 40px;
+  }
+}

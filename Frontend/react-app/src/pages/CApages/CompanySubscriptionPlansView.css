@@ -186,3 +186,50 @@
       transform: translateY(-4px);
     }
   }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  .csp-container {
+    padding: 22px 18px 48px;
+  }
+
+  .csp-heading {
+    font-size: 26px;
+  }
+
+  .csp-card {
+    padding: 26px 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .csp-container {
+    padding: 16px 12px 40px;
+  }
+
+  .csp-heading {
+    font-size: 22px;
+  }
+
+  /* single column below the phone breakpoint so a card never has to
+     shrink past its 260px minimum */
+  .csp-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .csp-card {
+    padding: 22px 16px;
+  }
+
+  .csp-icon {
+    font-size: 32px;
+  }
+
+  .csp-priceNum {
+    font-size: 25px;
+  }
+}

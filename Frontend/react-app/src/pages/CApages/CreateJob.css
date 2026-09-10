@@ -172,14 +172,63 @@ textarea.cj-input {
   margin-top: 3px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1023px) {
+  .cj-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .cj-container {
+    padding: 8px 0 32px;
+  }
+
+  .cj-top {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cj-company {
+    font-size: 17px;
+  }
+
+  .cj-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .cj-card {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+
   .cj-actions {
     flex-direction: column;
     gap: 10px;
   }
+
   .cj-post,
   .cj-cancel {
     width: 100%;
+    height: 46px;
+  }
+
+  .cj-input,
+  .cj-select {
+    height: 44px;
+  }
+
+  .cj-reqInput {
+    height: 40px;
+  }
+
+  .cj-reqRow {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .cj-reqBtn {
+    width: 40px;
+    height: 40px;
   }
 }
 

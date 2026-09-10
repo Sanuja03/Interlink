@@ -85,7 +85,7 @@ const EditIcon = ({ onClick }) => (
 );
 
 const SectionCard = ({ title, onEdit, children }) => (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-4" style={{ border: '2px solid #1a6a82' }}>
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4" style={{ border: '2px solid #1a6a82' }}>
         <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">{title}</h2>
             <EditIcon onClick={onEdit} />
@@ -399,12 +399,12 @@ const Profile = () => {
     const getFullName = () => `${personal.firstName} ${personal.lastName}`.trim() || 'Your Name';
 
     return (
-        <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
+        <div className="min-h-screen flex bg-gray-50 gap-3 sm:gap-6 lg:gap-10">
             <Sidebar />
-            <main className="flex-1 w-full px-6 py-6 overflow-y-auto">
+            <main className="flex-1 min-w-0 w-full px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto">
 
                 {/* Profile Header */}
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-4" style={{ border: '2px solid #1a6a82' }}>
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4" style={{ border: '2px solid #1a6a82' }}>
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-4">
                             <div className="relative">
@@ -450,7 +450,7 @@ const Profile = () => {
 
                 {/* ── Personal Information ──────────────────────────────────── */}
                 {editingPersonal ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Personal Information" />
 
                         {validationErrs.global && (
@@ -542,7 +542,7 @@ const Profile = () => {
 
                 {/* ── Education ─────────────────────────────────────────────── */}
                 {editingEdu ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Education Details" />
                         {eduError && (
                             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{eduError}</div>
@@ -598,7 +598,7 @@ const Profile = () => {
 
                 {/* ── Experience ────────────────────────────────────────────── */}
                 {editingExp ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Work Experience" />
                         {expError && (
                             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{expError}</div>
@@ -660,7 +660,7 @@ const Profile = () => {
 
                 {/* ── Skills & Technologies ───────────────────────────── */}
                 {editingSkills ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Skills and Technology" />
                         {skillError && (
                             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{skillError}</div>
@@ -693,7 +693,7 @@ const Profile = () => {
 
                 {/* ── Resume / CV ───────────────────────────────────────── */}
                 {editingCV ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Upload CV" />
                         {cvError && (
                             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{cvError}</div>
@@ -722,13 +722,13 @@ const Profile = () => {
                         ) : (
                             <div className="flex flex-col gap-3">
                                 {resumes.map(r => (
-                                    <div key={r.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                                    <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 rounded-lg px-3 sm:px-4 py-3 border border-gray-100">
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-gray-700">{r.fileName}</p>
+                                                <p className="text-sm font-medium text-gray-700 break-all">{r.fileName}</p>
                                                 <p className="text-xs text-gray-400">{r.uploadedAt ? new Date(r.uploadedAt).toLocaleDateString() : ''}</p>
                                             </div>
                                         </div>
@@ -745,7 +745,7 @@ const Profile = () => {
 
                 {/* ── Job Preferences ───────────────────────────────────────── */}
                 {editingJobPref ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4">
                         <CardTitle label="Job preference" />
                         <p style={{ fontSize: '13px', fontWeight: '700', color: '#222', marginBottom: '10px' }}>Job Roles</p>
                         {jobRoles.map((role, i) => (

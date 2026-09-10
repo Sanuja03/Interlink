@@ -142,3 +142,15 @@
     padding: 8px 14px 28px;
   }
 }
+
+@media (max-width: 1023px) {
+  .singleview-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .singleview-page {
+    padding: 8px 12px 24px;
+  }
+}

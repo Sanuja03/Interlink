@@ -43,12 +43,15 @@ export default function NotificationBell() {
 
     if (next && wrapRef.current) {
       const rect = wrapRef.current.getBoundingClientRect();
-      const dropdownWidth = 320;
-      // keep dropdown inside the viewport horizontally
+      // The dropdown is 320px wide but caps at the viewport width on small
+      // screens (see .nb-dropdown), so clamp against the same value.
+      const dropdownWidth = Math.min(320, window.innerWidth - 24);
+      // keep dropdown inside the viewport horizontally, on both edges
       let left = rect.left;
       if (left + dropdownWidth > window.innerWidth - 12) {
         left = window.innerWidth - dropdownWidth - 12;
       }
+      if (left < 12) left = 12;
       setCoords({ top: rect.bottom + 8, left });
     }
 

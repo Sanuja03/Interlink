@@ -58,6 +58,21 @@ const atStyles = `
     border-bottom: none;
   }
 
+  /* Responsive: the section already scrolls horizontally (overflow-x on
+     .at-section + a min-width on the table), so on small screens we only
+     need to reclaim padding. */
+  @media (max-width: 767px) {
+    .at-section {
+      padding: 16px 12px 12px;
+      border-radius: 14px;
+    }
+
+    .at-table thead th,
+    .at-table tbody td {
+      padding: 8px 10px;
+    }
+  }
+
   .at-badge {
     display: inline-flex;
     align-items: center;

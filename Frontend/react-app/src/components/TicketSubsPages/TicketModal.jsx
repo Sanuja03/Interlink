@@ -184,7 +184,7 @@ const [categoryOpen, setCategoryOpen] = useState(false);
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white w-full max-w-2xl p-8 rounded-3xl shadow-2xl">
+      <div className="bg-white w-full max-w-2xl p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl mx-3 max-h-[92vh] overflow-y-auto">
 
         <h1 className="text-2xl font-semibold text-[#0C3E56] mb-6">
           {isEdit ? "Edit Ticket" : "Create Ticket"}

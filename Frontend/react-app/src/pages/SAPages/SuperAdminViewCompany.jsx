@@ -142,15 +142,15 @@ export default function SuperAdminViewCompany() {
 
       {/* PENDING VIEW */}
       {company.companyStatus === "pending" && (
-        <div className="bg-white rounded-xl shadow p-6 space-y-4">
+        <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-4">
           <h3 className="text-[#24698B] font-semibold">Review Company</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <InfoItem label="Industry"     value={company.industry} />
             <InfoItem label="Company Size" value={company.companySize} />
             <InfoItem label="Location"     value={company.companyLocation} />
             <InfoItem label="Email"        value={company.companyEmail} />
           </div>
-          <div className="flex justify-center gap-4 pt-4">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 pt-4">
             <button className="bg-green-600 text-white px-6 py-2 rounded-full">Approve</button>
             <button className="bg-red-500 text-white px-6 py-2 rounded-full">Reject</button>
           </div>
@@ -160,9 +160,9 @@ export default function SuperAdminViewCompany() {
       {/* APPROVED VIEW */}
       {company.companyStatus === "approved" && (
         <>
-          <div className="bg-white rounded-xl shadow p-6">
+          <div className="bg-white rounded-xl shadow p-4 sm:p-6">
             <h3 className="text-[#24698B] font-semibold mb-4">Company Summary</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <InfoItem label="Industry"     value={company.industry} />
               <InfoItem label="Company Size" value={company.companySize} />
               <InfoItem label="Location"     value={company.companyLocation} />

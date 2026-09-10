@@ -32,7 +32,7 @@ export default function ConfirmModal({
         onClick={onCancel}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 mx-3 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Icon */}

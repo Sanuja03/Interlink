@@ -60,3 +60,22 @@
     padding: 14px;
   }
 }
+
+/* Keep the dialog inside the viewport and scroll internally. */
+.modal-card {
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: start;
+  }
+
+  .modal-card {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+}

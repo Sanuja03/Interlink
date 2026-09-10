@@ -13,7 +13,7 @@ export default function JobCard({ job, onClick }) {
 
   return (
     <div
-      className="flex items-center justify-between p-4 rounded-xl
+      className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 rounded-xl
                  bg-[#24698B]/15 border border-[#DADEE0]"
     >
       <div className="flex items-center gap-4">

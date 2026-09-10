@@ -66,7 +66,7 @@ export default function CompanyCard({ type, company, refresh }) {
   };
 
   return (
-    <div className="tw-preflight flex items-center justify-between bg-[#24698B]/20
+    <div className="tw-preflight flex flex-wrap items-center justify-between gap-3 bg-[#24698B]/20
                     rounded-xl p-4 border-l-4 border-[#24698B] hover:shadow-md transition">
 
       {/* Company info */}

@@ -317,3 +317,23 @@
     padding: 10px 12px;
   }
 }
+
+/* Keep the popup inside the viewport and scroll its body. */
+.availability-modal {
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.availability-body {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .availability-modal {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+}

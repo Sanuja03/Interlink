@@ -528,3 +528,50 @@
     max-width: 280px;
   }
 }
+
+
+/* ==================================================================
+   RESPONSIVE (phone refinements on top of the 700/600 breakpoints)
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  .sl-page {
+    padding: 22px 18px 48px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sl-page {
+    padding: 16px 12px 40px;
+  }
+
+  .sl-page-title {
+    font-size: 22px;
+  }
+
+  .sl-box {
+    padding: 16px 14px;
+  }
+
+  .sl-avatar,
+  .sl-avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    font-size: 22px;
+  }
+
+  .sl-name {
+    font-size: 18px;
+  }
+
+  .sl-stat-box {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sl-confirm-btn,
+  .sl-reject-btn {
+    min-width: 0;
+    padding: 12px 20px;
+  }
+}

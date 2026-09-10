@@ -20,7 +20,7 @@ export default function TicketSearch({ onSearch }) {
   return (
     <div
       className={`
-        flex items-center flex-1 min-w-[220px] max-w-[480px]
+        flex items-center flex-1 basis-full sm:basis-auto min-w-0 sm:min-w-[220px] max-w-full sm:max-w-[480px]
         gap-2 px-3 h-[40px] rounded-[10px]
         border-[1.5px] transition-all duration-200
         ${query ? "bg-white border-[#14597A]" : "bg-[#F4F8FA] border-transparent"}

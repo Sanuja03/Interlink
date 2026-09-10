@@ -317,3 +317,30 @@
     font-size: 16px;
   }
 }
+
+/* Keep the details dialog inside the viewport; its body scrolls. */
+.si-modal {
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  display: flex;
+  flex-direction: column;
+}
+
+.si-modal > * {
+  min-height: 0;
+}
+
+.si-modal-body,
+.si-table-wrap {
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .si-card {
+    width: 100%;
+  }
+
+  .si-overlay {
+    padding: 10px;
+  }
+}

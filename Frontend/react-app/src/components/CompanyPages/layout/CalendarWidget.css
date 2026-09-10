@@ -238,3 +238,43 @@
   border-color: #24698B;
   color: #24698B;
 }
+
+/* ==================================================================
+   RESPONSIVE
+   The 7-column grid stays 7 columns (a calendar has to), but the cells
+   and typography shrink so a month fits a 320px screen.
+   ================================================================== */
+
+@media (max-width: 767px) {
+  .cw-card {
+    border-radius: 12px;
+  }
+
+  .cw-grid,
+  .cw-week-grid {
+    font-size: 12px;
+  }
+
+  .cw-cell {
+    min-height: 44px;
+    padding: 3px;
+  }
+
+  .today-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .cw-grid,
+  .cw-week-grid {
+    font-size: 11px;
+  }
+
+  .cw-cell {
+    min-height: 38px;
+    padding: 2px;
+  }
+}

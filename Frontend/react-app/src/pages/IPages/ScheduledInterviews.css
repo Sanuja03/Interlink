@@ -63,3 +63,13 @@
     padding: 16px;
   }
 }
+
+@media (max-width: 767px) {
+  .scheduled-page {
+    padding: 8px 12px 24px;
+  }
+
+  .scheduled-container {
+    padding: 14px 12px;
+  }
+}

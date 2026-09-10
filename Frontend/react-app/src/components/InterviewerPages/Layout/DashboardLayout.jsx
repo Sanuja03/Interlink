@@ -1,8 +1,8 @@
 //Interviewer dahboard layout
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/Authcontext";
-import { useEffect } from "react";               // ✅ add
+import { useEffect, useState } from "react";               // ✅ add
 import api from "../../../lib/api";              // ✅ add
 
 import Sidebar from "./Sidebar";
@@ -10,12 +10,25 @@ import Footer from "./Footer";
 import FloatingAvailabilityBtn from "./FloatingAvailabilityBtn";
 import notificationicon from "../../../assets/notificationicon.png";
 import NotificationBell from "../../shared/NotificationBell";
-
-const SIDEBAR_WIDTH = 240;
+import "./DashboardLayout.css";
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout} = useAuth();
+
+  // Off-canvas sidebar state, used below the lg breakpoint only. On lg+
+  // the sidebar is permanently visible and this is never read.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close the drawer on navigation instead of threading a callback through
+  // every link in Sidebar. Adjusting state during render is React's
+  // recommended pattern here and avoids an extra effect pass.
+  const [lastPathname, setLastPathname] = useState(location.pathname);
+  if (location.pathname !== lastPathname) {
+    setLastPathname(location.pathname);
+    setMobileNavOpen(false);
+  }
 
   // ✅ NEW: load correct companyId
   useEffect(() => {
@@ -52,58 +65,82 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50 idl-root">
 
-      {/* sidebar */}
+      {/* sidebar — fixed on desktop, off-canvas drawer below lg */}
       <aside
-        className="fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50"
-        style={{ width: SIDEBAR_WIDTH }}
+        className={`idl-sidebar fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 overflow-y-auto ${
+          mobileNavOpen ? "is-open" : ""
+        }`}
       >
         <Sidebar />
       </aside>
 
+      {/* backdrop — only rendered while the drawer is open on small screens */}
+      {mobileNavOpen && (
+        <div
+          className="idl-backdrop"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* main content */}
-      <div
-        className="min-h-screen flex flex-col"
-        style={{ marginLeft: SIDEBAR_WIDTH }}
-      >
+      <div className="idl-main min-h-screen flex flex-col min-w-0">
 
         {/* top bar */}
-        <div className="flex justify-end items-center gap-6 px-6 py-4 bg-gray-50 sticky top-0 z-40">
+        <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 sticky top-0 z-40">
 
-          {/* notification */}
+          {/* hamburger — small screens only */}
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="idl-hamburger p-2 -ml-2 rounded-lg text-gray-600 hover:bg-gray-100 transition shrink-0 bg-transparent border-none cursor-pointer"
+            aria-label="Open menu"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-4 sm:gap-6 ml-auto">
+            {/* notification */}
             <NotificationBell />
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
-                        bg-red-50 text-red-600 text-xs font-semibold
-                        hover:bg-red-100 transition duration-200
-                        cursor-pointer
-                        focus:outline-none focus:ring-0 active:outline-none
-                        outline-none border-none"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-3.5 h-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
+                          bg-red-50 text-red-600 text-xs font-semibold
+                          hover:bg-red-100 transition duration-200
+                          cursor-pointer whitespace-nowrap
+                          focus:outline-none focus:ring-0 active:outline-none
+                          outline-none border-none"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7"
-              />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7"
+                />
+              </svg>
 
-            Logout
-          </button>
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* page specific content */}
-        <main className="flex-1">
+        <main className="flex-1 min-w-0">
           {children}
         </main>
 

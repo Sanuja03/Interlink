@@ -279,7 +279,7 @@ const AIQuestions = () => {
         return (
             <div className="min-h-screen flex bg-slate-50 font-sans">
                 <Sidebar />
-                <div className="flex-1 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                <div className="flex-1 min-w-0 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
                     <div className="max-w-5xl w-full mx-auto px-6 py-10 flex flex-col gap-8 animate-fade-in">
                         
                         {/* Header Banner */}
@@ -403,7 +403,7 @@ const AIQuestions = () => {
         return (
             <div className="min-h-screen flex bg-slate-50">
                 <Sidebar />
-                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                <div className="flex-1 min-w-0 flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
                     <div className="relative flex items-center justify-center mb-6">
                         <div className="absolute inset-0 rounded-full bg-sky-200 blur-xl opacity-35 animate-pulse"></div>
                         <div className="relative w-20 h-20 bg-white shadow-xl rounded-2xl flex items-center justify-center border border-sky-100/80">
@@ -427,7 +427,7 @@ const AIQuestions = () => {
         return (
             <div className="min-h-screen flex bg-slate-50">
                 <Sidebar />
-                <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+                <div className="flex-1 min-w-0 flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
                     <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-red-100 text-center flex flex-col items-center">
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
                             <AlertTriangle className="w-8 h-8" />
@@ -450,7 +450,7 @@ const AIQuestions = () => {
         <div className="min-h-screen flex bg-slate-50 font-sans">
             <Sidebar />
 
-            <div className="flex-1 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
+            <div className="flex-1 min-w-0 flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50/30">
 
                 {/* Title Bar */}
                 <div className="bg-slate-800 shadow-sm border-b border-slate-700/50 px-8 py-5 flex items-center justify-between text-white">
@@ -469,7 +469,7 @@ const AIQuestions = () => {
                     </div>
                 </div>
 
-                <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
+                <main className="flex-1 min-w-0 max-w-3xl mx-auto w-full px-3 sm:px-6 py-5 sm:py-8 flex flex-col gap-4 sm:gap-6">
 
                     {/* Job Details Panel */}
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">

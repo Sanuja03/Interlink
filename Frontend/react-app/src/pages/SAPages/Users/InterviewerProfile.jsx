@@ -134,7 +134,7 @@ export default function InterviewerProfile() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard value={data.stats?.totalInterviews  ?? 0}   label="Total Interviews" />
         <StatsCard value={data.stats?.pendingRequests  ?? 0}   label="Pending Requests" />
         <StatsCard value={`${data.stats?.responseRate ?? 0}%`} label="Response Rate"    />
@@ -154,7 +154,7 @@ export default function InterviewerProfile() {
       </InfoCard>
 
       <InfoCard title="Weekly Availability">
-        <div className="grid grid-cols-7 gap-2 text-xs">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 text-xs">
           {(data.weeklyAvailability || []).map((day) => (
             <div
               key={day.dayName}

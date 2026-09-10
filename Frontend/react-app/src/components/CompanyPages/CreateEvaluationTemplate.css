@@ -258,3 +258,35 @@
 .cet-cancel-btn:hover {
   background: #e5e7eb;
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+.cet-overlay {
+  padding: 16px;
+}
+
+@media (max-width: 767px) {
+  .cet-overlay {
+    padding: 10px;
+    align-items: start;
+  }
+
+  .cet-modal {
+    padding: 18px 14px;
+    border-radius: 12px;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .cet-score-input {
+    width: 62px;
+  }
+
+  .cet-delete-btn {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+}

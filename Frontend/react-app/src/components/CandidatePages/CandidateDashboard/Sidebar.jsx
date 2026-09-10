@@ -253,6 +253,61 @@ const sidebarStyles = `
     z-index: 9999;
     pointer-events: none;
   }
+
+  /* ================================================================
+     RESPONSIVE
+
+     Desktop is unchanged (68px rail / 240px expanded, in flow).
+
+     Tablet keeps the same behaviour with a slightly narrower panel.
+
+     On phones the rail shrinks to 56px so the page still gets almost
+     the whole viewport, and the *expanded* state becomes an overlay
+     drawer instead of squeezing the content column down to nothing.
+     ================================================================ */
+
+  @media (max-width: 1023px) {
+    .sidebar.expanded {
+      width: 210px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .sidebar.collapsed {
+      width: 56px;
+    }
+
+    .sidebar.expanded {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: min(240px, 80vw);
+      height: 100vh;
+      height: 100dvh;
+      z-index: 1000;
+      overflow-y: auto;
+      box-shadow: 0 0 0 100vmax rgba(15, 23, 42, 0.4);
+    }
+
+    /* comfortable tap targets on touch screens */
+    .sidebar-nav-item,
+    .sidebar-logout,
+    .sidebar-profile-link {
+      min-height: 44px;
+      padding: 11px 12px;
+    }
+
+    .sidebar-toggle {
+      width: 32px;
+      height: 32px;
+    }
+
+    /* tooltips are hover-only affordances — useless and in the way on
+       touch devices */
+    .sidebar-nav-item[title]:hover::after {
+      display: none;
+    }
+  }
 `;
 
 const Sidebar = () => {

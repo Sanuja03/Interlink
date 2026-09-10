@@ -450,6 +450,39 @@ select.input-field {
   }
 }
 
+/* Tablet: the shell has already stacked at 900px above; just soften the
+   outer gutter so the card isn't crammed against the screen edges. */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .auth-page {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-page {
+    padding: 20px 14px;
+  }
+
+  .auth-brand {
+    padding: 38px 20px 22px;
+  }
+
+  .auth-brand__title {
+    font-size: clamp(1.35rem, 5.5vw, 1.85rem);
+  }
+
+  .auth-panel {
+    padding: 28px 20px 34px;
+  }
+
+  /* the sign-in image button must never exceed the card */
+  .google-signin img {
+    width: 100%;
+    max-width: 210px;
+    height: auto;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-page {
     padding: 0;
@@ -460,5 +493,20 @@ select.input-field {
     min-height: 100vh;
     box-shadow: none;
     border: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-brand {
+    padding: 32px 16px 18px;
+  }
+
+  .auth-panel {
+    padding: 24px 16px 30px;
+  }
+
+  .home-button {
+    top: 12px;
+    left: 12px;
   }
 }

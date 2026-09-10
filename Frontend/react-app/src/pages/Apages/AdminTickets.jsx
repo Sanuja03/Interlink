@@ -190,9 +190,9 @@ export default function AdminTickets() {
         </div>
 
         {/* STATUS COUNTERS */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
           {COUNTERS_CONFIG.map(({ label, key, accent, bg, border }) => (
-            <div key={label} className="rounded-[14px] p-6"
+            <div key={label} className="rounded-[14px] p-4 sm:p-6"
               style={{ background: bg, border: `1px solid ${border}` }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ background: accent }} />

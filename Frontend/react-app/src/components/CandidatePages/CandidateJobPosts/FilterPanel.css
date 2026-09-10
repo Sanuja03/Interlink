@@ -216,3 +216,46 @@
     cursor: pointer;
     flex-shrink: 0;
 }
+/* ── Responsive ──────────────────────────────────
+   Desktop keeps the 220px sticky rail. On tablet it
+   narrows slightly; on phones the panel drops out of
+   the sticky rail and becomes a full-width block that
+   sits above the results, so the job cards get the
+   whole viewport width.
+   ─────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+    .fp-expanded {
+        width: 190px;
+    }
+}
+
+@media (max-width: 767px) {
+    .fp-panel {
+        position: static;
+        width: 100%;
+        flex-shrink: 1;
+    }
+
+    .fp-expanded,
+    .fp-collapsed {
+        width: 100%;
+    }
+
+    /* the collapsed state keeps only the header row visible */
+    .fp-collapsed .fp-title-text {
+        opacity: 1;
+        width: auto;
+    }
+
+    .fp-pill,
+    .fp-check-row {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+    }
+
+    .fp-body {
+        white-space: normal;
+    }
+}

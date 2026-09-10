@@ -17,7 +17,7 @@ export default function UserCard({ user }) {
     : user.email?.slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-xl bg-[#24698B]/10 border border-[#DADEE0]">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-[#24698B]/10 border border-[#DADEE0]">
 
       {/* LEFT */}
       <div className="flex items-center gap-4">

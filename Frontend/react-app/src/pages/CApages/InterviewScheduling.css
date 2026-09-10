@@ -160,3 +160,20 @@
     max-width: 320px;
   }
 }
+
+/* Phone refinements on top of the existing 900/640 breakpoints. */
+@media (max-width: 767px) {
+  .is-formCard {
+    padding: 18px 14px 20px;
+    border-radius: 14px;
+  }
+
+  .is-input {
+    height: 46px;
+  }
+
+  .is-btn {
+    height: 50px;
+    min-width: 0;
+  }
+}

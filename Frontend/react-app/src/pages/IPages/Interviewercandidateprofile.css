@@ -67,3 +67,8 @@
     .ip-profile-page { padding: 8px 12px 20px; }
     .ip-profile-card { padding: 16px; }
   }
+
+@media (max-width: 767px) {
+  .ip-profile-page { padding: 8px 12px 24px; }
+  .ip-profile-card { padding: 14px 12px; }
+}

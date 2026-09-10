@@ -72,3 +72,14 @@
   }
   
   
+
+/* Responsive: keep the floating button clear of thumb reach / mobile
+   browser chrome without changing its desktop position. */
+@media (max-width: 767px) {
+  .floating-availability-btn {
+    bottom: 18px;
+    right: 18px;
+    width: 48px;
+    height: 48px;
+  }
+}

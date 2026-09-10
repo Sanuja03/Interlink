@@ -6,10 +6,10 @@ import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 
 const Home = () => {
     return (
-        <div className="min-h-screen flex bg-gray-50" style={{ gap: "2.5rem" }}>
+        <div className="min-h-screen flex bg-gray-50 gap-3 sm:gap-6 lg:gap-10">
             <Sidebar />
 
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 min-w-0 overflow-y-auto">
                 <Searchbar />
                 <HeroSection />
                 <Footer />

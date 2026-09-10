@@ -4,7 +4,7 @@ export default function CompanySection({ title, badge, type, companies = [], ref
   const safeCompanies = Array.isArray(companies) ? companies : [];
 
   return (
-    <div className="tw-preflight bg-white rounded-xl shadow p-6 space-y-4">
+    <div className="tw-preflight bg-white rounded-xl shadow p-4 sm:p-6 space-y-4 min-w-0">
       <div className="flex items-center gap-2">
         <h3 className="font-semibold text-[#24698B]">■ {title}</h3>
         <span className="text-xs bg-[#24698B]/20 px-2 py-1 rounded-full">{badge}</span>

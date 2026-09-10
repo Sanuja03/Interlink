@@ -128,6 +128,27 @@ const uiStyles = `
   .ui-badge--completed .ui-badge__dot { background: #22c55e; }
   .ui-badge--scheduled .ui-badge__dot  { background: #3b82f6; }
   .ui-badge--rescheduled .ui-badge__dot { background: #eab308; }
+
+  @media (max-width: 767px) {
+    .ui-panel {
+      padding: 16px 14px 12px;
+      border-radius: 14px;
+    }
+
+    .ui-card__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    .ui-card__role {
+      text-align: left;
+    }
+
+    .ui-card__meta {
+      gap: 10px;
+    }
+  }
 `;
 
 const statusClass = (s) => {

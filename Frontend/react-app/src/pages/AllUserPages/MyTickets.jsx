@@ -183,11 +183,11 @@ export default function MyTickets() {
     <div className="tw-preflight flex min-h-screen">
       <SidebarComponent />
 
-      <div className="flex-1 flex flex-col bg-gray-50">
-        <div className="flex-grow px-8 py-8">
+      <div className="flex-1 min-w-0 flex flex-col bg-gray-50">
+        <div className="flex-grow px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0">
 
           {/* ── TOP BAR: title left, button right ── */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-wrap gap-3 items-center justify-between mb-6 sm:mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Support Tickets</h1>
               <p className="text-sm text-gray-400 mt-0.5">

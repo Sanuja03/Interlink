@@ -109,3 +109,23 @@
     text-align: center;
   }
 }
+
+@media (max-width: 767px) {
+  .candidatecard-panel {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .candidatecard-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .candidatecard-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

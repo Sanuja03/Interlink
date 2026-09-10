@@ -112,3 +112,67 @@
 .cd-link-btn:active {
   transform: scale(0.98);
 }
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1023px) {
+  .cd-card {
+    padding: 22px;
+  }
+
+  .cd-stats-grid {
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .cd-title {
+    font-size: 20px;
+  }
+
+  .cd-card {
+    padding: 16px 12px;
+    border-radius: 14px;
+  }
+
+  /* narrower minmax so two cards no longer force a horizontal scroll on
+     a 320px screen */
+  .cd-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .cd-links-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 12px;
+  }
+
+  .cd-stat-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .cd-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .cd-stat-icon img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .cd-stat-value {
+    font-size: 22px;
+  }
+
+  .cd-link-btn {
+    padding: 14px;
+    font-size: 14px;
+    min-height: 48px;
+  }
+}

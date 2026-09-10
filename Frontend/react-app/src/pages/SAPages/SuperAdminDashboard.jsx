@@ -96,7 +96,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Navigation buttons */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {actions.map((action) => (
           <button
             key={action.name}
@@ -109,10 +109,10 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Main content */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* Insights */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-4 sm:p-6 min-w-0">
           <h3 className="font-semibold text-[#24698B] mb-4">Insights</h3>
 
           {loading ? (
@@ -131,7 +131,7 @@ export default function SuperAdminDashboard() {
                   Total companies
                 </p>
 
-                <div className="flex gap-6 mt-2 text-lg">
+                <div className="flex flex-wrap gap-3 sm:gap-6 mt-2 text-base sm:text-lg">
                   <span className="text-green-600">
                     Approved: {data?.companies?.approved || 0}
                   </span>
@@ -142,7 +142,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               {/* Jobs and applications */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InsightCard
                   title="Jobs"
                   value={data?.jobs?.total || 0}
@@ -162,7 +162,7 @@ export default function SuperAdminDashboard() {
                   {data?.users?.total || 0}
                 </p>
 
-                <div className="grid grid-cols-3 mt-3 text-sm text-gray-700">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 mt-3 text-sm text-gray-700">
                   <p>Candidates: {data?.users?.candidates || "-"}</p>
                   <p>Interviewers: {data?.users?.interviewers || "-"}</p>
                   <p>Company Admins: {data?.users?.companyAdmins || "-"}</p>
@@ -174,14 +174,14 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Recent activities */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-4 sm:p-6 min-w-0">
           <RecentActivities onViewAll={handleViewAll} />
         </div>
 
       </div>
 
       {/* Support tickets */}
-      <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-[#DADEE0] p-4 sm:p-6 min-w-0">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-semibold text-[#24698B]">Support Tickets</h3>
           <button
@@ -241,7 +241,7 @@ const PRIORITY_STYLES = {
 /* Ticket row component */
 function TicketRow({ ticket }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-blue-100 transition rounded-lg border border-[#24698B]/10">
+    <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-3 bg-gray-50 hover:bg-blue-100 transition rounded-lg border border-[#24698B]/10">
 
       <div className="min-w-0 flex-1 pr-4">
         <p className="text-sm font-medium text-gray-800 truncate">

@@ -195,3 +195,53 @@
   cursor: pointer;
   box-shadow: 0 14px 22px rgba(36,105,139,0.22);
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+@media (max-width: 767px) {
+  .cdm-overlay {
+    padding: 12px;
+    align-items: start;
+  }
+
+  .cdm-modal {
+    padding: 18px 14px;
+    border-radius: 18px;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .cdm-title {
+    font-size: 18px;
+  }
+
+  /* logo + field stack instead of sitting in a 90px rail */
+  .cdm-uploadRow {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 12px;
+  }
+
+  .cdm-previewBox {
+    width: 72px;
+    height: 72px;
+    font-size: 22px;
+  }
+
+  .cdm-input {
+    height: 46px;
+  }
+
+  .cdm-actions {
+    flex-direction: column;
+  }
+
+  .cdm-cancel,
+  .cdm-save {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+  }
+}

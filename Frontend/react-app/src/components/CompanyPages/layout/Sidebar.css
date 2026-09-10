@@ -138,18 +138,70 @@
 
 /* ==========================================
    RESPONSIVE
-   (kept from the company version so the sidebar
-   still collapses sensibly on small screens —
-   interviewer's Sidebar.css has none of its own,
-   this relies on DashboardLayout.css's breakpoints
-   for width/position; sizing tweaks here just keep
-   text/icons readable at narrower widths)
+
+   The shell (DashboardLayout.css / the interviewer
+   equivalent) owns the sidebar's width and whether
+   it is docked or an off-canvas drawer. These rules
+   only trim the internal sizing so the logo, items
+   and profile row stay comfortable at narrower
+   widths and inside the mobile drawer.
 ========================================== */
 
-@media (max-width: 768px) {
-  .sidebar {
-    min-height: auto;
+/* Scoped to the two dashboard shells (.dl-sidebar = company,
+   .idl-sidebar = interviewer) on purpose: the candidate sidebar reuses
+   the same `.sidebar-*` class names but has its own collapse behaviour,
+   so it must not be caught by these rules. */
+
+@media (max-width: 1023px) {
+  .dl-sidebar .sidebar-logo,
+  .idl-sidebar .sidebar-logo {
+    padding: 18px 14px;
+  }
+
+  .dl-sidebar .sidebar-logo img,
+  .idl-sidebar .sidebar-logo img {
+    width: 100%;
+    max-width: 140px;
+    height: auto;
+    max-height: 70px;
+  }
+
+  .dl-sidebar .sidebar-item,
+  .idl-sidebar .sidebar-item {
+    padding: 11px 12px;
+  }
+
+  .dl-sidebar .sidebar-submenu,
+  .idl-sidebar .sidebar-submenu {
+    margin-left: 20px;
+  }
+
+  .dl-sidebar .sidebar-subitem,
+  .idl-sidebar .sidebar-subitem {
+    padding: 8px 12px;
+  }
+
+  .dl-sidebar .sidebar-profile a,
+  .idl-sidebar .sidebar-profile a {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .dl-sidebar .sidebar,
+  .idl-sidebar .sidebar {
+    /* fills the drawer, which owns its own height */
+    min-height: 100%;
     border-right: none;
-    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* larger tap targets inside the drawer */
+  .dl-sidebar .sidebar-item,
+  .idl-sidebar .sidebar-item,
+  .dl-sidebar .sidebar-subitem,
+  .idl-sidebar .sidebar-subitem {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
 }

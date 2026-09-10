@@ -72,3 +72,42 @@
     flex-direction: column; /* layout becomes vertical */
   }
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  .dash-page {
+    padding: 8px 18px 28px;
+  }
+
+  .dash-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .dash-page {
+    padding: 8px 12px 24px;
+  }
+
+  .dash-title {
+    font-size: 20px;
+    margin: 12px 0;
+  }
+
+  .dash-card {
+    padding: 14px 12px;
+    border-radius: 14px;
+  }
+
+  .dash-stats-row {
+    gap: 12px;
+  }
+
+  .dash-main-row {
+    margin-top: 20px;
+    gap: 16px;
+  }
+}

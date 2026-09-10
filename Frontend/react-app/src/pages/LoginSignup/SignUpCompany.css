@@ -24,3 +24,22 @@
   width: 62%;
   margin-left: auto;       /* pushes field to the right */
 }
+
+
+/* Responsive: below the phone breakpoint the label/field pair stacks so
+   the select gets the full row instead of being squeezed to 62%. */
+@media (max-width: 480px) {
+  .select-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .select-group label {
+    margin-bottom: 6px;
+  }
+
+  .select-group .input-field {
+    width: 100%;
+    margin-left: 0;
+  }
+}

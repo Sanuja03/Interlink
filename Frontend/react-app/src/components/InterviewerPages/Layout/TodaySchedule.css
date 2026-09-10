@@ -89,3 +89,9 @@
   }
   
   
+
+@media (max-width: 767px) {
+  .schedule-empty {
+    padding: 30px 12px;
+  }
+}

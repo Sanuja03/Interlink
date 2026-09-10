@@ -123,9 +123,9 @@ const JobPosts = () => {
     const visible = filtered.slice(0, visibleCount);
 
     return (
-        <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
+        <div className="min-h-screen flex bg-gray-50 gap-3 sm:gap-6 lg:gap-10">
             <Sidebar />
-            <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
+            <main className="flex-1 min-w-0 w-full px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto">
 
                 <div className="flex items-center gap-2 mb-4">
                     <button onClick={() => setFilterExpanded(v => !v)}
@@ -139,10 +139,12 @@ const JobPosts = () => {
                     </button>
                 </div>
 
-                <div className="flex gap-5 items-start">
+                {/* Filter rail sits beside the results from md up and stacks
+                    above them on phones */}
+                <div className="flex flex-col md:flex-row gap-4 md:gap-5 items-stretch md:items-start">
                     <FilterPanel filters={filters} onChange={handleFilterChange} onReset={handleReset} expanded={filterExpanded} onToggle={() => setFilterExpanded(v => !v)} />
 
-                    <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex-1 min-w-0 flex flex-col gap-4">
                         <p className="text-xs text-gray-400 font-medium">
                             {loadingJobs ? 'Loading jobs...' : `${filtered.length} job${filtered.length !== 1 ? 's' : ''} found`}
                         </p>
@@ -150,14 +152,14 @@ const JobPosts = () => {
                         {visible.map((job) => (
                             <div
                                 key={job.id}
-                                className="flex items-center gap-5 rounded-2xl px-6 py-5 shadow-md relative group"
+                                className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 rounded-2xl px-4 sm:px-6 py-5 pr-12 sm:pr-6 shadow-md relative group"
                                 style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
                             >
-                                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
-                                    <img src={job.logo} alt={job.company} className="w-12 h-12 object-contain" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
+                                    <img src={job.logo} alt={job.company} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h2 className="text-white font-bold text-lg leading-tight">{job.title}</h2>
+                                    <h2 className="text-white font-bold text-base sm:text-lg leading-tight break-words">{job.title}</h2>
                                     <p className="text-blue-100 text-sm font-medium">{job.company}</p>
                                     <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
                                     <div className="flex gap-2 mt-2 flex-wrap">
@@ -172,7 +174,7 @@ const JobPosts = () => {
 
                                 <button
                                     onClick={() => toggleSaveJob(job.id)}
-                                    className={`absolute top-2 right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none ${savedJobIds.includes(job.id) ? 'bg-blue-100 text-[#1a3f5c]' : 'bg-blue-100/20 text-white hover:bg-blue-100/40'}`}
+                                    className={`absolute top-2 right-3 sm:right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none ${savedJobIds.includes(job.id) ? 'bg-blue-100 text-[#1a3f5c]' : 'bg-blue-100/20 text-white hover:bg-blue-100/40'}`}
                                     title={savedJobIds.includes(job.id) ? "Unsave job" : "Save job"}
                                     style={{ border: 'none', outline: 'none' }}
                                 >
@@ -181,16 +183,16 @@ const JobPosts = () => {
                                     </svg>
                                 </button>
 
-                                <div className="flex items-center gap-3 shrink-0">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                                     <button onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
-                                        className="text-white text-sm font-semibold px-5 py-2 rounded-full"
+                                        className="flex-1 sm:flex-none whitespace-nowrap text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full"
                                         style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
                                         View Details
                                     </button>
                                     <button
                                         onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
                                         disabled={appliedJobIds.includes(job.id)}
-                                        className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 ${appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
+                                        className={`flex-1 sm:flex-none whitespace-nowrap text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-200 ${appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
                                             }`}
                                         style={{
                                             background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #0C3E56, #1a6a82)',

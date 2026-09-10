@@ -212,3 +212,132 @@ body {
 
   :where(.tw-preflight) [hidden] { display: none; }
 }
+
+/* ==================================================================
+   GLOBAL RESPONSIVE FOUNDATION
+
+   Breakpoints used across the app:
+     mobile  : <= 767px
+     tablet  : 768px - 1023px
+     desktop : >= 1024px
+
+   Everything here is either low-specificity (:where(...)) or a safety
+   net for overflow, so existing component styles keep winning and the
+   design is unchanged. Nothing here alters colours, branding or
+   layout on desktop.
+   ================================================================== */
+
+/* Kill sideways page scroll at the root only.
+
+   Overflow on the root element propagates to the viewport, so `html` itself
+   stays `visible` — which means position: sticky and position: fixed inside
+   the page are unaffected. Deliberately NOT set on `body`: making body a
+   clipping/scrolling box is what breaks sticky headers and can clip fixed
+   overlays. */
+html {
+  overflow-x: hidden; /* fallback for browsers without `clip` */
+  overflow-x: clip;
+}
+
+body {
+  /* Long emails / URLs / IDs must not push the page sideways */
+  overflow-wrap: break-word;
+}
+
+/* Fluid media — never let an image blow out its container */
+:where(img, video, canvas, iframe, embed, object) {
+  max-width: 100%;
+}
+
+:where(svg) {
+  max-width: 100%;
+}
+
+/* Code blocks / preformatted text wrap instead of scrolling the page */
+:where(pre) {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Tables never exceed their (scrollable) wrapper */
+:where(table) {
+  max-width: 100%;
+}
+
+/* ------------------------------------------------------------------
+   Reusable helpers — opt-in classes used by pages/components that need
+   them. Adding a class is additive; it does not change anything that
+   doesn't use it.
+   ------------------------------------------------------------------ */
+
+/* Wrap a wide table in this to get horizontal scrolling on small
+   screens instead of a horizontally scrolling page. */
+.rs-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keeps a modal/dialog inside the viewport and scrolling internally. */
+.rs-modal-fit {
+  width: 100%;
+  max-width: min(100%, 100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Screen-reader-only (used for hamburger labels etc.) */
+.rs-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------
+   Mobile / tablet safety nets
+   ------------------------------------------------------------------ */
+
+@media (max-width: 1023px) {
+  /* Flex/grid children default to min-width:auto, which is the single
+     most common cause of horizontal overflow. Zero specificity, so any
+     component rule still wins. */
+  :where(main, section, article, form, .dl-content, .dl-main) :where(*) {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  /* iOS Safari zooms the whole page in when a focused control renders
+     under 16px, which is what makes so many forms feel broken on a
+     phone. max() keeps anything already larger untouched, and the rule
+     is mobile-only so desktop typography is unchanged. */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+
+  /* Comfortable touch targets without changing any visual styling */
+  :where(button, [role="button"], a.btn, input[type="button"],
+         input[type="submit"], input[type="reset"]) {
+    min-height: 40px;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    min-height: 40px;
+  }
+
+  /* Full-bleed form controls on phones */
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    max-width: 100%;
+  }
+}

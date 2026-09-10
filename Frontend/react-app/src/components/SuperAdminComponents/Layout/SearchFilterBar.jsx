@@ -27,7 +27,7 @@ export default function SearchFilterBar({
       <div className="flex items-center gap-2.5 flex-wrap">
 
         {/* Search */}
-        <div className="relative flex-1 min-w-[180px]">
+        <div className="relative flex-1 basis-full sm:basis-auto min-w-0 sm:min-w-[180px]">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
             width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -52,7 +52,7 @@ export default function SearchFilterBar({
         {inlineFilters.map((f) =>
           f.type === "date" ? (
             /* Date: input only, no label — placeholder-style via title attr */
-            <div key={f.key} className="relative">
+            <div key={f.key} className="relative flex-1 sm:flex-none min-w-[140px]">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ export default function SearchFilterBar({
                 title={f.label}
                 className="pl-8 pr-3 py-2.5 rounded-xl border border-[#DADEE0] bg-gray-50 text-sm
                            text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#24698B]/30
-                           focus:border-[#24698B] transition-all cursor-pointer w-[150px]"
+                           focus:border-[#24698B] transition-all cursor-pointer w-full sm:w-[150px]"
               />
               {/* Floating label above when empty */}
               {!f.value && (
@@ -81,7 +81,7 @@ export default function SearchFilterBar({
               key={f.key}
               value={f.value}
               onChange={(e) => f.onChange(e.target.value)}
-              className="px-3 py-2.5 rounded-xl border border-[#DADEE0] bg-gray-50 text-sm
+              className="flex-1 sm:flex-none min-w-[140px] px-3 py-2.5 rounded-xl border border-[#DADEE0] bg-gray-50 text-sm
                          text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#24698B]/30
                          focus:border-[#24698B] transition-all cursor-pointer"
             >
@@ -110,7 +110,7 @@ export default function SearchFilterBar({
         )}
 
         {/* Right-side slot */}
-        {actions && <div className="ml-auto">{actions}</div>}
+        {actions && <div className="w-full sm:w-auto sm:ml-auto">{actions}</div>}
       </div>
 
       {/* ROW 2 — Tab filters */}

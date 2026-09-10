@@ -154,3 +154,23 @@
     font-size: 12px;
   }
   
+
+/* Responsive: drop the fixed 360px so the card fills its column. */
+@media (max-width: 1023px) {
+  .next-card {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .next-card-header {
+    padding: 16px 14px 12px;
+  }
+
+  .candidate-avatar {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+}

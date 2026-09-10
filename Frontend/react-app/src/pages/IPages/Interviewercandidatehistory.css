@@ -71,3 +71,8 @@
     .ip-history-page { padding: 8px 12px 20px; }
     .ip-history-card { padding: 16px; }
   }
+
+@media (max-width: 767px) {
+  .ip-history-page { padding: 8px 12px 24px; }
+  .ip-history-card { padding: 14px 12px; }
+}

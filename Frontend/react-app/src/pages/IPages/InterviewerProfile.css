@@ -290,3 +290,35 @@
     width: 100%;
   }
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  /* the right column had a hard 320px floor, which overflows a phone */
+  .profile-right {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .profile-page {
+    padding: 8px 12px 24px;
+  }
+
+  .profile-card {
+    padding: 14px;
+  }
+
+  .profile-avatar-wrap {
+    width: 128px;
+    height: 128px;
+  }
+
+  .profile-loading,
+  .profile-error {
+    padding: 32px 16px;
+  }
+}

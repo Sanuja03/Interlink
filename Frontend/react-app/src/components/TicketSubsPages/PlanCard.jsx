@@ -19,10 +19,10 @@ export default function PlanCard({ plan, onChange }) {
   };
 
   return (
-    <div className="bg-[#F5F7F9] rounded-2xl shadow-md p-8 hover:shadow-lg transition">
+    <div className="bg-[#F5F7F9] rounded-2xl shadow-md p-5 sm:p-8 hover:shadow-lg transition">
       
       {/* PLAN HEADER */}
-      <div className="bg-[#0C3E56] text-white rounded-xl p-8 text-center mb-6">
+      <div className="bg-[#0C3E56] text-white rounded-xl p-5 sm:p-8 text-center mb-6">
         <div className="text-3xl mb-3">{plan.icon}</div>
 
         <h3 className="text-lg font-semibold">{plan.name} Plan</h3>

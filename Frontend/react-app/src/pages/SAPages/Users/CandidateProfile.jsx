@@ -121,7 +121,7 @@ export default function CandidateProfile() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard value={data.stats?.applications ?? 0} label="Applications" />
         <StatsCard value={data.stats?.interviews    ?? 0} label="Interviews"   />
         <StatsCard value={data.stats?.offers        ?? 0} label="Offers"       />

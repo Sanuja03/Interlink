@@ -109,6 +109,9 @@ export default function JobManagement() {
             <div className="jm-table-section">
               <h2 className="jm-cardTitle">All Job Postings</h2>
 
+              {/* wrapper lets the table scroll sideways on small screens
+                  instead of pushing the whole page wider than the viewport */}
+              <div className="jm-table-scroll">
               <table className="jm-table">
                 <thead>
                   <tr>
@@ -172,6 +175,7 @@ export default function JobManagement() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
 
             <div className="jm-createWrap">

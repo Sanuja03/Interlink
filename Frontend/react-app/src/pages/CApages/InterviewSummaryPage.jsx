@@ -4,6 +4,24 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import api from "../../lib/api";
 
 
+/* Media queries can't live in inline styles, so the responsive overrides
+   for this (inline-styled) page hang off these class hooks. */
+const summaryResponsiveStyles = `
+  @media (max-width: 1023px) {
+    .isp-card { padding: 22px !important; }
+  }
+
+  @media (max-width: 767px) {
+    .isp-card {
+      padding: 14px 12px !important;
+      border-radius: 14px !important;
+    }
+    .isp-heading { font-size: 20px !important; }
+    .isp-stats { flex-wrap: wrap; gap: 8px !important; }
+    .isp-stats > div { flex: 1 1 88px; min-width: 0 !important; }
+  }
+`;
+
 const brand = {
   primary:       "#24698B",
   primaryLight:  "rgba(36,105,139,0.10)",
@@ -219,7 +237,8 @@ export default function InterviewSummaryPage() {
   if (loading) return (
     <DashboardLayout>
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
+        <style>{summaryResponsiveStyles}</style>
+        <h1 className="isp-heading" style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
           Interview Summary
         </h1>
         <div style={{
@@ -227,7 +246,7 @@ export default function InterviewSummaryPage() {
           border: "1px solid #e5e7eb",
           borderRadius: 16,
           padding: 30,
-        }}>
+        }} className="isp-card">
           <div style={{ display: "flex", alignItems: "center", gap: 12, color: brand.textMuted }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={brand.primary} strokeWidth="2">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -243,7 +262,8 @@ export default function InterviewSummaryPage() {
   if (error) return (
     <DashboardLayout>
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
+        <style>{summaryResponsiveStyles}</style>
+        <h1 className="isp-heading" style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 20px" }}>
           Interview Summary
         </h1>
         <div style={{
@@ -251,7 +271,7 @@ export default function InterviewSummaryPage() {
           border: "1px solid #e5e7eb",
           borderRadius: 16,
           padding: 30,
-        }}>
+        }} className="isp-card">
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 10,
             background: brand.dangerBg, border: `1px solid ${brand.dangerBorder}`,
@@ -309,9 +329,10 @@ export default function InterviewSummaryPage() {
       </div>
 
       <div style={{ padding: "8px 0 32px", fontFamily: brand.font }}>
+        <style>{summaryResponsiveStyles}</style>
 
 
-        <h1 style={{
+        <h1 className="isp-heading" style={{
           fontSize: 24,
           fontWeight: 700,
           color: "#111827",
@@ -330,10 +351,10 @@ export default function InterviewSummaryPage() {
           borderRadius: 16,
           padding: 30,
           boxSizing: "border-box",
-        }}>
+        }} className="isp-card">
 
           {rows.length > 0 && (
-            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+            <div className="isp-stats" style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 24 }}>
               {[
                 { label: "Total",   value: rows.length,                                color: brand.primary  },
                 { label: "Decided", value: rows.filter(r => !!r.currentStatus).length, color: brand.dark     },

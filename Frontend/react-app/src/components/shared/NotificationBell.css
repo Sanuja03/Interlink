@@ -121,3 +121,23 @@
 .nb-showmore:hover {
   background: #e3edfb;
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+.nb-dropdown {
+  /* never wider than the viewport; the JS clamp uses the same value */
+  max-width: calc(100vw - 24px);
+  max-height: min(400px, calc(100vh - 96px));
+}
+
+.nb-list {
+  max-height: min(340px, calc(100vh - 156px));
+}
+
+@media (max-width: 767px) {
+  .nb-dropdown {
+    width: calc(100vw - 24px);
+  }
+}

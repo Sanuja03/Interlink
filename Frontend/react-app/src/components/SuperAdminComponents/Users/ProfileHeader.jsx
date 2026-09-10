@@ -11,7 +11,7 @@ const ProfileHeader = ({ user }) => {
       : "bg-green-500";
 
   return (
-    <div className="bg-[#0F4C5C] text-white p-6 rounded-xl shadow-md flex items-center gap-4">
+    <div className="bg-[#0F4C5C] text-white p-4 sm:p-6 rounded-xl shadow-md flex flex-wrap items-center gap-4 min-w-0">
       {/* Avatar: use photoUrl if available, else initials */}
       {user?.photoUrl ? (
         <img

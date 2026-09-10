@@ -14,7 +14,7 @@ export function PlanBaseModal({ children, onClose }) {
         onClick={onClose}
       >
         <div
-          className="bg-white p-8 rounded-2xl w-full max-w-[420px] mx-4 shadow-2xl"
+          className="bg-white p-5 sm:p-8 rounded-2xl w-full max-w-[420px] mx-3 sm:mx-4 shadow-2xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {children}

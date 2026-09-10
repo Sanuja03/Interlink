@@ -435,3 +435,84 @@
     height: 62px;
   }
 }
+
+/* ==================================================================
+   RESPONSIVE (tablet + phone refinements)
+   ================================================================== */
+
+@media (max-width: 1023px) {
+  .cp-page {
+    padding: 22px 20px 32px;
+  }
+
+  .cp-name {
+    font-size: 40px;
+  }
+
+  .cp-sectionTitle {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  .cp-hero {
+    padding: 22px 16px 18px;
+  }
+
+  .cp-name {
+    font-size: 28px;
+  }
+
+  .cp-companyText {
+    font-size: 18px;
+  }
+
+  .cp-profilePhoto {
+    width: 96px;
+    height: 96px;
+  }
+
+  .cp-sectionTitle {
+    font-size: 19px;
+  }
+
+  .cp-statValue {
+    font-size: 28px;
+  }
+
+  .cp-professionalValue,
+  .cp-expTitle {
+    font-size: 17px;
+  }
+
+  .cp-expLogo {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+  }
+
+  .cp-cvBtn {
+    font-size: 16px;
+    padding: 14px 18px;
+  }
+
+  .cp-cvIcon {
+    width: 26px;
+    height: 26px;
+  }
+
+  /* these were pinned at 420px / 72px and overflowed a phone screen */
+  .cp-btnRed,
+  .cp-actionBtn {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 54px;
+    font-size: 16px;
+  }
+
+  .cp-actions {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

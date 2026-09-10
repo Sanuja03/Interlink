@@ -194,10 +194,11 @@ export default function ChatBot() {
   const atCharLimit = charCount >= maxChars;
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="rag-page">
+      <style>{chatResponsiveStyles}</style>
 
       {/* Header */}
-      <div style={styles.header}>
+      <div style={styles.header} className="rag-header">
         <div style={styles.headerLeft}>
           <div style={styles.statusDot} />
           <span style={styles.headerTitle}>Interlink Bot</span>
@@ -236,7 +237,7 @@ export default function ChatBot() {
       )}
 
       {/* Message feed */}
-      <div style={styles.messageArea} ref={messageAreaRef}>
+      <div style={styles.messageArea} ref={messageAreaRef} className="rag-messages">
         {messages.length === 0 && !loading && (
           <div style={styles.emptyState}>
             <p style={styles.emptyTitle}>How can I help you today?</p>
@@ -254,7 +255,7 @@ export default function ChatBot() {
       </div>
 
       {/* Input area */}
-      <div style={styles.inputBar}>
+      <div style={styles.inputBar} className="rag-input-bar">
         <div style={styles.inputColumn}>
           <textarea
             ref={textareaRef}
@@ -338,6 +339,31 @@ function TypingIndicator() {
     </div>
   );
 }
+
+/* Inline styles can't carry media queries, so the small-screen overrides
+   hang off these class hooks. Desktop is unchanged. */
+const chatResponsiveStyles = `
+  @media (max-width: 767px) {
+    .rag-page {
+      height: calc(100vh - 150px) !important;
+      border-radius: 10px !important;
+    }
+    .rag-header {
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px !important;
+    }
+    .rag-messages {
+      padding: 14px !important;
+    }
+    .rag-input-bar {
+      padding: 12px 14px !important;
+    }
+    .rag-bubble-wrap {
+      max-width: 88% !important;
+    }
+  }
+`;
 
 const styles = {
   page: {

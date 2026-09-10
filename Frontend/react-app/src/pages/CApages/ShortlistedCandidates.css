@@ -312,3 +312,42 @@
     padding: 10px 12px;
   }
 }
+
+/* Keep the columns legible while .sc-table-wrap scrolls sideways. */
+.sc-table-wrap .sc-table {
+  min-width: 640px;
+}
+
+@media (max-width: 1023px) {
+  .sc-container {
+    padding: 8px 18px 32px;
+  }
+
+  .sc-outer-card {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sc-container {
+    padding: 8px 0 32px;
+  }
+
+  .sc-outer-card {
+    padding: 16px 12px;
+    border-radius: 14px;
+  }
+
+  .sc-job-title {
+    font-size: 17px;
+  }
+
+  .sc-job-meta-box {
+    min-width: 0;
+  }
+
+  .sc-job-picker-select,
+  .sc-template-btn {
+    height: 44px;
+  }
+}

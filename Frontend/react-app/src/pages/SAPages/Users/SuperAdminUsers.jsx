@@ -52,7 +52,7 @@ export default function SuperAdminUsers() {
     <div className="space-y-5 font-outfit">
 
       {/* Header section */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap gap-3 justify-between items-center">
         <h1 className="text-xl font-semibold text-[#24698B]">
           All Users
         </h1>

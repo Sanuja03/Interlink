@@ -107,7 +107,7 @@ export default function SystemSettings() {
       <h2 className="text-xl font-semibold text-[#24698B]">System Settings</h2>
 
       {/* CHATBOT SETTINGS */}
-      <div className="bg-white border border-[#DADEE0] rounded-2xl shadow-sm p-6 space-y-5">
+      <div className="bg-white border border-[#DADEE0] rounded-2xl shadow-sm p-4 sm:p-6 space-y-5">
         <div className="flex items-center gap-2">
           <span className="w-1 h-4 bg-[#24698B] rounded-full" />
           <h3 className="text-[#0C3E56] font-semibold text-sm uppercase tracking-wide">
@@ -201,7 +201,7 @@ export default function SystemSettings() {
       </div>
 
       {/* PLATFORM INFO — read only */}
-      <div className="bg-white border border-[#DADEE0] rounded-2xl shadow-sm p-6 space-y-1">
+      <div className="bg-white border border-[#DADEE0] rounded-2xl shadow-sm p-4 sm:p-6 space-y-1">
         <div className="flex items-center gap-2 mb-3">
           <span className="w-1 h-4 bg-[#24698B] rounded-full" />
           <h3 className="text-[#0C3E56] font-semibold text-sm uppercase tracking-wide">
@@ -219,7 +219,7 @@ export default function SystemSettings() {
         ].map(({ label, value }) => (
           <div
             key={label}
-            className="flex justify-between text-sm py-2.5 border-b border-gray-100 last:border-0"
+            className="flex flex-wrap gap-2 justify-between text-sm py-2.5 border-b border-gray-100 last:border-0"
           >
             <span className="text-gray-500">{label}</span>
             <span className="font-medium text-gray-800">{value}</span>

@@ -32,10 +32,13 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
     };
 
     return (
-        <div className="w-full py-6 px-4 flex justify-center">
-            <div className="w-full max-w-7xl flex items-center rounded-full border border-gray-300 bg-white shadow-md overflow-hidden focus-within:outline-none focus-within:ring-0">
+        <div className="w-full py-4 sm:py-6 px-3 sm:px-4 flex justify-center">
+            {/* Below sm the pill becomes a stacked card so the input, both
+                selects and the button each get a full-width touch target
+                instead of overflowing off the right edge. */}
+            <div className="w-full max-w-7xl flex flex-col sm:flex-row sm:items-center rounded-2xl sm:rounded-full border border-gray-300 bg-white shadow-md overflow-hidden focus-within:outline-none focus-within:ring-0">
                 {/* Search Icon + Input */}
-                <div className="flex items-center px-4 flex-1 border-r border-gray-200">
+                <div className="flex items-center px-4 flex-1 min-w-0 border-b sm:border-b-0 sm:border-r border-gray-200">
                     <svg className="w-5 h-5 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
@@ -46,17 +49,17 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        className="w-full py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0 border-none bg-transparent"
+                        className="w-full min-w-0 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0 border-none bg-transparent"
                         style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
                     />
                 </div>
 
                 {/* Category */}
-                <div className="border-r border-gray-200">
+                <div className="border-b sm:border-b-0 sm:border-r border-gray-200">
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="py-3 px-4 text-sm text-gray-600 bg-transparent focus:outline-none focus:ring-0 cursor-pointer"
+                        className="w-full sm:w-auto py-3 px-4 text-sm text-gray-600 bg-transparent focus:outline-none focus:ring-0 cursor-pointer"
                         style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
                     >
                         <option value="">Category</option>
@@ -67,11 +70,11 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
                 </div>
 
                 {/* Experience */}
-                <div className="border-r border-gray-200">
+                <div className="border-b sm:border-b-0 sm:border-r border-gray-200">
                     <select
                         value={experience}
                         onChange={(e) => setExperience(e.target.value)}
-                        className="py-3 px-4 text-sm text-gray-600 bg-transparent focus:outline-none focus:ring-0 cursor-pointer"
+                        className="w-full sm:w-auto py-3 px-4 text-sm text-gray-600 bg-transparent focus:outline-none focus:ring-0 cursor-pointer"
                         style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
                     >
                         <option value="">Experience</option>
@@ -85,7 +88,7 @@ const Searchbar = ({ keyword: keywordProp, onKeywordChange, onSearch }) => {
                 {/* Search Button */}
                 <button
                     onClick={handleSearch}
-                    className="text-white font-semibold text-sm px-8 py-3 transition-colors duration-200 focus:outline-none focus:ring-0"
+                    className="w-full sm:w-auto shrink-0 text-white font-semibold text-sm px-6 sm:px-8 py-3 transition-colors duration-200 focus:outline-none focus:ring-0"
                     style={{ background: '#1a3f5c', outline: 'none', border: 'none', boxShadow: 'none' }}
                     onMouseEnter={e => e.currentTarget.style.background = '#142d42'}
                     onMouseLeave={e => e.currentTarget.style.background = '#1a3f5c'}

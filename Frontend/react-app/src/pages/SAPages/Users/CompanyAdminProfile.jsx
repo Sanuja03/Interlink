@@ -110,7 +110,7 @@ export default function CompanyAdminProfile() {
   const isFlagged   = data.accountStatus === "flagged";
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen space-y-6 font-outfit">
+    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen space-y-6 font-outfit">
       <BackButton label="Back to Users" to="/admin/Users" />
       <ProfileHeader user={{ ...data, role: "company_admin" }} />
 
@@ -130,7 +130,7 @@ export default function CompanyAdminProfile() {
 
       <UserActivityLog logs={data.activityLogs || []} />
 
-      <div className="flex justify-center gap-6 pt-6">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-6">
         {isSuspended ? (
           // Restore — outlined green to visually differ from the suspend action
           <button

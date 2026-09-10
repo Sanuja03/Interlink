@@ -112,8 +112,11 @@ const handleSearchChange = (v) => { setSearch(v);     setCurrentPage(0); setTota
       />
 
       {/* ACTIVITY TABLE */}
+      {/* overflow-x lets the table scroll sideways on small screens rather
+          than widening the page */}
       <div className="bg-white rounded-2xl border border-[#DADEE0] shadow-sm overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-gray-50 border-b border-[#DADEE0]">
             <tr>
               {["User Role", "Action", "Description", "Date"].map((h) => (
@@ -167,6 +170,7 @@ const handleSearchChange = (v) => { setSearch(v);     setCurrentPage(0); setTota
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* PAGINATION — only shown when there is more than one page */}

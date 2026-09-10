@@ -196,3 +196,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 1023px) {
+  /* the two-column grid had a 260px minimum per column */
+  .evaluation-grid {
+    grid-template-columns: 1fr;
+  }
+}

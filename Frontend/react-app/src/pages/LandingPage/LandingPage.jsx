@@ -250,7 +250,7 @@ const landingPageStyles = `
 }
 
 .lp-hero__title {
-    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    font-size: clamp(1.9rem, 6.5vw, 4rem);
     font-weight: 800;
     line-height: 1.12;
     color: #0C3E56;
@@ -879,6 +879,52 @@ const landingPageStyles = `
 
     .lp-nav__hamburger {
         display: block;
+    }
+}
+
+/* Tablet — narrow the section gutters so the grids get room */
+@media (max-width: 1023px) and (min-width: 601px) {
+    .lp-section,
+    .lp-hero {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .lp-cta-banner {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+}
+
+@media (max-width: 767px) {
+    /* the decorative orbs are wider than a phone screen; shrinking them
+       keeps them from forcing a horizontal scroll */
+    .lp-hero__circle--1 {
+        width: 300px;
+        height: 300px;
+        top: -110px;
+        right: -90px;
+    }
+
+    .lp-hero__circle--2 {
+        width: 220px;
+        height: 220px;
+        bottom: -70px;
+        left: -60px;
+    }
+
+    .lp-hero__circle--3 {
+        width: 140px;
+        height: 140px;
+    }
+
+    .lp-nav__inner {
+        padding: 0 16px;
+        height: 60px;
+    }
+
+    .lp-nav__logo {
+        height: 36px;
     }
 }
 

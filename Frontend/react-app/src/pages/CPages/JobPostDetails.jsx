@@ -4,6 +4,63 @@ import Sidebar from '../../components/CandidatePages/CandidateDashboard/Sidebar'
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import api from '../../lib/api';
 
+/* Responsive tweaks for the (inline-styled) detail card. Class hooks are
+   added below so media queries can override the inline layout on small
+   screens without touching the desktop appearance. */
+const detailsResponsiveStyles = `
+  @media (max-width: 767px) {
+    .jpd-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      padding: 20px 18px !important;
+      gap: 14px !important;
+    }
+    .jpd-header-title {
+      text-align: left !important;
+      white-space: normal !important;
+      font-size: 20px !important;
+    }
+    .jpd-header-company {
+      font-size: 18px !important;
+    }
+    .jpd-logo {
+      width: 56px !important;
+      height: 56px !important;
+    }
+    .jpd-logo img {
+      width: 40px !important;
+      height: 40px !important;
+    }
+    .jpd-body {
+      padding: 22px 18px 24px !important;
+    }
+    .jpd-actions button {
+      flex: 1 1 100%;
+      padding: 12px 20px !important;
+    }
+    .jpd-pager {
+      gap: 10px;
+    }
+    .jpd-pager button {
+      flex: 1;
+      padding: 12px 16px !important;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .jpd-header {
+      padding: 22px 24px !important;
+    }
+    .jpd-header-title {
+      font-size: 22px !important;
+      white-space: normal !important;
+    }
+    .jpd-body {
+      padding: 26px 24px 24px !important;
+    }
+  }
+`;
+
 const JobPostDetails = () => {
     const formatMode = (mode) => {
         if (!mode) return '';
@@ -93,10 +150,11 @@ const JobPostDetails = () => {
 
     return (
         <div style={{ minHeight: '100vh', background: '#ececec', display: 'flex', fontFamily: 'sans-serif' }}>
+            <style>{detailsResponsiveStyles}</style>
             <Sidebar />
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                <main style={{ flex: 1, maxWidth: '860px', margin: '0 auto', width: '100%', padding: '28px 20px 40px' }}>
+                <main style={{ flex: 1, minWidth: 0, maxWidth: '860px', margin: '0 auto', width: '100%', padding: 'clamp(16px, 4vw, 28px) clamp(12px, 3vw, 20px) 40px' }}>
 
                     {/* Back to jobs button */}
                     <button
@@ -126,7 +184,7 @@ const JobPostDetails = () => {
                         marginBottom: '28px',
                     }}>
                         {/* Gradient Header */}
-                        <div style={{
+                        <div className="jpd-header" style={{
                             background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)',
                             padding: '28px 36px',
                             display: 'flex',
@@ -136,7 +194,7 @@ const JobPostDetails = () => {
                         }}>
                             {/* Left: Logo + Company */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                                <div style={{
+                                <div className="jpd-logo" style={{
                                     width: '72px',
                                     height: '72px',
                                     borderRadius: '50%',
@@ -151,18 +209,18 @@ const JobPostDetails = () => {
                                     <img src={job.logo} alt={job.company} style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
                                 </div>
                                 <div>
-                                    <div style={{ color: '#fff', fontSize: '22px', fontWeight: '400', marginBottom: '4px', lineHeight: 1.2 }}>{job.company}</div>
+                                    <div className="jpd-header-company" style={{ color: '#fff', fontSize: '22px', fontWeight: '400', marginBottom: '4px', lineHeight: 1.2 }}>{job.company}</div>
                                     <div style={{ color: '#b2d8e3', fontSize: '13px', fontWeight: '500' }}>{job.location} | {formatMode(job.employmentType)}</div>
                                 </div>
                             </div>
                             {/* Right: Job Title */}
-                            <div style={{ color: '#fff', fontSize: '26px', fontWeight: '700', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <div className="jpd-header-title" style={{ color: '#fff', fontSize: '26px', fontWeight: '700', textAlign: 'right', whiteSpace: 'nowrap' }}>
                                 {job.title}
                             </div>
                         </div>
 
                         {/* Card Body */}
-                        <div style={{ padding: '32px 36px 28px' }}>
+                        <div className="jpd-body" style={{ padding: '32px 36px 28px' }}>
 
                             {/* About the Company */}
                             <section style={{ marginBottom: '28px' }}>
@@ -201,7 +259,7 @@ const JobPostDetails = () => {
                             </section>
 
                             {/* Action Buttons */}
-                            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <div className="jpd-actions" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <button 
                                     onClick={toggleSaveJob}
                                     style={{
@@ -238,7 +296,7 @@ const JobPostDetails = () => {
                     </div>
 
                     {/* Previous / Next Navigation */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div className="jpd-pager" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
                             onClick={() => prevId && navigate(`/candidate/jobposts/${prevId}`)}
                             disabled={!prevId}

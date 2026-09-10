@@ -11,7 +11,7 @@ export default function UserActivityLog({ logs = [] }) {
   };
 
   return (
-    <div className="bg-white border border-[#DADEE0] rounded-xl p-6">
+    <div className="bg-white border border-[#DADEE0] rounded-xl p-4 sm:p-6">
       <h3 className="text-[#24698B] font-semibold mb-4">Recent Activity</h3>
 
       <div className="space-y-3">
@@ -21,7 +21,7 @@ export default function UserActivityLog({ logs = [] }) {
           logs.map((log, i) => (
             <div
               key={i}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded-lg"
+              className="flex flex-wrap gap-2 justify-between items-center bg-gray-50 p-3 rounded-lg"
             >
               <div className="flex items-center gap-3">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded ${actionColor(log.action)}`}>

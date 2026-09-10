@@ -44,13 +44,13 @@ const SavedJobs = () => {
     };
 
     return (
-        <div className="min-h-screen flex bg-gray-50" style={{ gap: '2.5rem' }}>
+        <div className="min-h-screen flex bg-gray-50 gap-3 sm:gap-6 lg:gap-10">
             <Sidebar />
 
-            <main className="flex-1 w-full px-4 py-6 overflow-y-auto">
+            <main className="flex-1 min-w-0 w-full px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto">
                 <div className="w-full">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold" style={{ color: '#1a3f5c' }}>Saved Jobs</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#1a3f5c' }}>Saved Jobs</h1>
                         <p className="text-gray-500 text-sm mt-1">Review and apply to jobs you've saved for later.</p>
                     </div>
 
@@ -66,11 +66,11 @@ const SavedJobs = () => {
                             {savedJobs.map((job) => (
                                 <div
                                     key={job.id}
-                                    className="flex items-center gap-5 rounded-2xl px-6 py-5 shadow-md relative group"
+                                    className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 rounded-2xl px-4 sm:px-6 py-5 pr-12 sm:pr-6 shadow-md relative group"
                                     style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
                                 >
                                     {/* Logo */}
-                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-xl">
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-lg sm:text-xl">
                                         {job.logo ? (
                                             <img 
                                                 src={job.logo} 
@@ -94,7 +94,7 @@ const SavedJobs = () => {
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <h2 className="text-white font-bold text-lg leading-tight pr-8">{job.title}</h2>
+                                        <h2 className="text-white font-bold text-base sm:text-lg leading-tight pr-8 break-words">{job.title}</h2>
                                         <p className="text-blue-100 text-sm font-medium">{job.company}</p>
                                         <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
                                         <div className="flex gap-2 mt-2 flex-wrap">
@@ -107,10 +107,10 @@ const SavedJobs = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 shrink-0">
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                                         <button
                                             onClick={() => navigate(`/candidate/jobposts/${job.jobId}`)}
-                                            className="text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
+                                            className="flex-1 sm:flex-none whitespace-nowrap text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90 hover:shadow-lg"
                                             style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', outline: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
                                         >
                                             View Details
@@ -118,7 +118,7 @@ const SavedJobs = () => {
                                         <button
                                             onClick={() => navigate(`/candidate/jobapply/${job.jobId}`)}
                                             disabled={appliedJobIds.includes(job.jobId)}
-                                            className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 ${
+                                            className={`flex-1 sm:flex-none whitespace-nowrap text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-200 ${
                                                 appliedJobIds.includes(job.jobId) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
                                             }`}
                                             style={{
@@ -136,7 +136,7 @@ const SavedJobs = () => {
                                     {/* Unsave button */}
                                     <button 
                                         onClick={() => removeSavedJob(job.jobId)}
-                                        className="absolute top-2 right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none bg-blue-100 text-[#1a3f5c] hover:bg-blue-200"
+                                        className="absolute top-2 right-3 sm:right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none bg-blue-100 text-[#1a3f5c] hover:bg-blue-200"
                                         title="Remove from saved jobs"
                                         style={{ border: 'none', outline: 'none' }}
                                     >

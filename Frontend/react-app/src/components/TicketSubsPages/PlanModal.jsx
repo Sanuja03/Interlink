@@ -167,7 +167,7 @@ export default function PlanModal({ plan, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-10 rounded-2xl w-full max-w-[440px] mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white p-5 sm:p-10 rounded-2xl w-full max-w-[440px] mx-3 sm:mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
 
         <h3 className="text-xl font-semibold text-[#24698B] mb-6 text-center">
           Edit {plan.name} Plan

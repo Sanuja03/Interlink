@@ -93,3 +93,22 @@
 .np-viewBtn:hover {
   background: #000;
 }
+
+/* ==================================================================
+   RESPONSIVE
+   ================================================================== */
+
+.np-card {
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .np-card {
+    top: 60px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}

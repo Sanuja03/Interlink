@@ -547,3 +547,41 @@
     justify-content: flex-end;
   }
 }
+
+/* ==================================================================
+   RESPONSIVE (phone refinements on top of the existing 600px block)
+   ================================================================== */
+
+@media (max-width: 767px) {
+  .ip-overlay {
+    padding: 10px;
+    align-items: start;
+  }
+
+  .ip-modal {
+    width: 100%;
+    padding: 16px 14px 16px;
+    border-radius: 12px;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .ip-input,
+  .ip-select,
+  .ip-dropdown-btn {
+    height: 44px;
+  }
+
+  .ip-primary-btn,
+  .ip-danger-btn {
+    height: 44px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .ip-actions,
+  .ip-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
