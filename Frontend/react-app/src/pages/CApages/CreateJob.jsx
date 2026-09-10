@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import CustomSelect from "./CustomSelect";
 import "./CreateJob.css";
 import api from "../../lib/api";
 import { createActivityLog } from "../../api/ActivityLogsApi";
@@ -11,6 +12,7 @@ export default function CreateJob() {
   const [userId,    setUserId]    = useState(null);
   const [sessionError, setSessionError] = useState(null);
   const [limitError, setLimitError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
   useEffect(() => {
     const loadCompanyId = async () => {
@@ -38,20 +40,95 @@ export default function CreateJob() {
   const [interviewStages, setInterviewStages] = useState([]);
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Replaces the native browser alert() popups with an in-app styled modal.
-  // { type: "success" | "error", title, message } | null
-  const [statusModal, setStatusModal] = useState(null);
+
+  // ── Validation rules ─────────────────────────────────────────────
+  // Each rule returns an error message string, or "" when the value is valid.
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const rules = {
+    title: (v) =>
+      !v.trim() ? "Job title is required"
+      : v.trim().length < 3 ? "Job title must be at least 3 characters"
+      : "",
+    department:       (v) => (!v.trim() ? "Department is required" : ""),
+    type:             (v) => (!v ? "Please select an employment type" : ""),
+    category:         (v) => (!v ? "Please select a category" : ""),
+    interview_rounds: (v) => (!v ? "Please select the number of interview rounds" : ""),
+    location:         (v) => (!v.trim() ? "Job location is required" : ""),
+    experience:       (v) => (!v ? "Please select an experience level" : ""),
+    vacancies:        (v) => (!v ? "Please select the number of vacancies" : ""),
+    deadline:         (v) => (v && v < todayStr ? "Deadline cannot be in the past" : ""),
+  };
+
+  // Full-form validation — used on submit and for live re-checks.
+  const buildErrors = () => {
+    const e = {};
+    Object.keys(rules).forEach((k) => {
+      const msg = rules[k](form[k] ?? "");
+      if (msg) e[k] = msg;
+    });
+    // Each interview stage must be chosen once the round count is set.
+    if (form.interview_rounds) {
+      interviewStages.forEach((s, i) => {
+        if (!s) e[`stage${i}`] = "Please select a stage";
+      });
+    }
+    // At least one non-empty key requirement.
+    if (reqs.filter((r) => r.trim()).length === 0) {
+      e.reqs = "Add at least one key requirement";
+    }
+    return e;
+  };
+
+  // Show a field's error only after the user has touched it or tried to submit.
+  const showError = (name) => errors[name] && (touched[name] || submitAttempted);
+  const inputClass  = (name) => `cj-input${showError(name) ? " cj-input--error" : ""}`;
+  const selectClass = (name) => `cj-select${showError(name) ? " cj-select--error" : ""}`;
+
+  // Re-validate a single field (on blur / on change after touch).
+  const runFieldValidation = (name, value) => {
+    if (!rules[name]) return;
+    setErrors((prev) => {
+      const next = { ...prev };
+      const msg = rules[name](value ?? "");
+      if (msg) next[name] = msg; else delete next[name];
+      return next;
+    });
+  };
+
+  // Once a submit has been attempted, keep errors live as the user edits.
+  useEffect(() => {
+    if (submitAttempted) setErrors(buildErrors());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, interviewStages, reqs, submitAttempted]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "interview_rounds") setInterviewStages(Array(Number(value)).fill(""));
     setLimitError(null);
+    setSuccessMsg(null);
+    if (touched[name] || submitAttempted) runFieldValidation(name, value);
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((t) => ({ ...t, [name]: true }));
+    runFieldValidation(name, value);
   };
 
   const handleStageChange = (index, value) => {
     const updated = [...interviewStages]; updated[index] = value; setInterviewStages(updated);
+    if (submitAttempted) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (value) delete next[`stage${index}`]; else next[`stage${index}`] = "Please select a stage";
+        return next;
+      });
+    }
   };
   const handleReqChange = (index, value) => {
     const updated = [...reqs]; updated[index] = value; setReqs(updated);
@@ -59,23 +136,37 @@ export default function CreateJob() {
   const addRequirement = () => setReqs([...reqs, ""]);
   const removeRequirement = (index) => { if (reqs.length === 1) return; setReqs(reqs.filter((_, i) => i !== index)); };
 
-  const validate = () => {
-    const newErrors = {};
-    if (!form.title.trim()) newErrors.title = "Required";
-    if (!form.department)   newErrors.department = "Required";
-    if (!form.type)         newErrors.type = "Required";
-    if (reqs.filter((r) => r.trim()).length === 0) newErrors.reqs = "At least one requirement is needed";
-    return newErrors;
+  const focusFirstError = (e) => {
+    const order = [
+      "title", "department", "type", "category", "interview_rounds",
+      ...interviewStages.map((_, i) => `stage${i}`),
+      "location", "experience", "vacancies", "deadline", "reqs",
+    ];
+    const first = order.find((k) => e[k]);
+    if (!first) return;
+    const el = document.querySelector(`[name="${first}"]`)
+            || document.querySelector(`[data-field="${first}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (typeof el.focus === "function") setTimeout(() => el.focus(), 250);
+    }
   };
 
   const handleSubmit = async () => {
-    if (sessionError) { setStatusModal({ type: "error", title: "Can't Post Job", message: sessionError }); return; }
-    if (!companyId)   { setStatusModal({ type: "error", title: "Please Wait", message: "Loading company info, please wait..." }); return; }
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
+    setSubmitAttempted(true);
+    setSuccessMsg(null);
+
+    if (sessionError) { return; }
+    if (!companyId)   { setLimitError("Loading company info, please wait..."); return; }
+
+    const validationErrors = buildErrors();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      focusFirstError(validationErrors);
+      return;
+    }
 
     setLoading(true);
-    setErrors({});
     setLimitError(null);
 
     const jobData = {
@@ -83,7 +174,7 @@ export default function CreateJob() {
       department:      form.department,
       type:            form.type,
       category:        form.category,
-      location:        form.location,
+      location:        form.location.trim(),
       experience:      form.experience,
       vacancies:       Number(form.vacancies || 0),
       interviewRounds: Number(form.interview_rounds || 0),
@@ -97,39 +188,45 @@ export default function CreateJob() {
 
     try {
       const res = await api.post("/jobs", jobData);
-      // Log job creation — non-fatal, never blocks the post flow
       try {
-      await createActivityLog({
-        userId:      userId,
-        userRole:    "company_admin",
-        action:      "CREATE",
-        entityType:  "JOB",
-        description: `Created job: ${jobData.title}`,
-      });
-    } catch (err) {
-      console.error("[CreateJob] Failed to create activity log:", err);
-    }
+        await createActivityLog({
+          userId:      userId,
+          userRole:    "company_admin",
+          action:      "CREATE",
+          entityType:  "JOB",
+          description: `Created job: ${jobData.title}`,
+        });
+      } catch (err) {
+        console.error("[CreateJob] Failed to create activity log:", err);
+      }
 
-      const skillCount = res.data.requirements?.length || 0;
-      setStatusModal({
-        type: "success",
-        title: "Job Posted!",
-        message: `AI extracted ${skillCount} skill requirement${skillCount === 1 ? "" : "s"} from your listing.`,
-      });
+      setSuccessMsg(
+        `Job posted successfully. AI extracted ${res.data.requirements?.length || 0} skill requirement(s).`
+      );
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "", education: "", benefits: "", deadline: "" });
       setInterviewStages([]); setReqs([""]);
+      setErrors({}); setTouched({}); setSubmitAttempted(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       const msg = error.response?.data;
       if (typeof msg === "string" && msg.includes("limit reached")) {
         setLimitError(msg);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        setStatusModal({ type: "error", title: "Couldn't Post Job", message: msg || "Error saving job." });
+        setLimitError(typeof msg === "string" ? msg : "Something went wrong while saving the job. Please try again.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } finally {
       setLoading(false);
     }
   };
+
+  // Small helper: label with a red asterisk for required fields.
+  const Label = ({ children, required }) => (
+    <label className="cj-label">
+      {children}{required && <span className="cj-req" aria-hidden="true"> *</span>}
+    </label>
+  );
 
   return (
     <DashboardLayout>
@@ -140,6 +237,19 @@ export default function CreateJob() {
           {sessionError && (
             <div style={{ background: "#fee", color: "#c00", padding: 12, borderRadius: 8, marginBottom: 16, textAlign: "center" }}>
               ⚠️ {sessionError}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="cj-success" role="status">
+              <span style={{ marginRight: 8 }}>✅</span>{successMsg}
+            </div>
+          )}
+
+          {submitAttempted && Object.keys(errors).length > 0 && (
+            <div className="cj-formError" role="alert">
+              <span style={{ marginRight: 8 }}>⚠️</span>
+              Please fix the highlighted fields before posting.
             </div>
           )}
 
@@ -164,93 +274,125 @@ export default function CreateJob() {
           <div className="cj-card">
 
             <div className="cj-field">
-              <label className="cj-label">Job Title</label>
-              <input name="title" value={form.title} className="cj-input" onChange={handleChange} placeholder="e.g. Frontend Developer" />
-              {errors.title && <p className="cj-error">{errors.title}</p>}
+              <Label required>Job Title</Label>
+              <input name="title" value={form.title} className={inputClass("title")} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. Frontend Developer" />
+              {showError("title") && <p className="cj-error">{errors.title}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Department</label>
-              <select name="department" value={form.department} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                <option>Engineering</option>
-                <option>Design</option>
-                <option>QA</option>
-                <option>HR</option>
-              </select>
-              {errors.department && <p className="cj-error">{errors.department}</p>}
+              <Label required>Department</Label>
+              <input
+                name="department"
+                value={form.department}
+                className={inputClass("department")}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="e.g. Engineering, Marketing, Finance"
+              />
+              {showError("department") && <p className="cj-error">{errors.department}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Employment Type</label>
-              <select name="type" value={form.type} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                <option value="REMOTE">Remote</option>
-                <option value="ONSITE">Onsite</option>
-                <option value="HYBRID">Hybrid</option>
-              </select>
-              {errors.type && <p className="cj-error">{errors.type}</p>}
+              <Label required>Employment Type</Label>
+              <CustomSelect
+                name="type"
+                value={form.type}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("type")}
+                options={[
+                  { value: "REMOTE", label: "Remote" },
+                  { value: "ONSITE", label: "Onsite" },
+                  { value: "HYBRID", label: "Hybrid" },
+                ]}
+              />
+              {showError("type") && <p className="cj-error">{errors.type}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Category</label>
-              <select name="category" value={form.category} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Design">Design</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="IT">IT</option>
-              </select>
+              <Label required>Category</Label>
+              <CustomSelect
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("category")}
+                options={["Engineering", "Design", "Marketing", "Finance", "Healthcare", "IT"]}
+              />
+              {showError("category") && <p className="cj-error">{errors.category}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Number of Interview Rounds</label>
-              <select name="interview_rounds" value={form.interview_rounds} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                {[1,2,3,4,5].map((n) => <option key={n}>{n}</option>)}
-              </select>
+              <Label required>Number of Interview Rounds</Label>
+              <CustomSelect
+                name="interview_rounds"
+                value={form.interview_rounds}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("interview_rounds")}
+                options={[1, 2, 3, 4, 5]}
+              />
+              {showError("interview_rounds") && <p className="cj-error">{errors.interview_rounds}</p>}
             </div>
 
             {interviewStages.map((stage, index) => (
               <div className="cj-field" key={index}>
-                <label className="cj-label">Stage {index + 1}</label>
-                <select className="cj-select" value={stage} onChange={(e) => handleStageChange(index, e.target.value)}>
-                  <option value="">Select Stage</option>
-                  <option>HR</option><option>Technical</option>
-                  <option>Managerial</option><option>Final</option>
-                </select>
+                <Label required>Stage {index + 1}</Label>
+                <CustomSelect
+                  name={`stage${index}`}
+                  value={stage}
+                  onChange={(e) => handleStageChange(index, e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, [`stage${index}`]: true }))}
+                  error={errors[`stage${index}`] && (touched[`stage${index}`] || submitAttempted)}
+                  placeholder="Select Stage"
+                  options={["HR", "Technical", "Managerial", "Final"]}
+                />
+                {errors[`stage${index}`] && (touched[`stage${index}`] || submitAttempted) && (
+                  <p className="cj-error">{errors[`stage${index}`]}</p>
+                )}
               </div>
             ))}
 
             <div className="cj-field">
-              <label className="cj-label">Job Location</label>
-              <input name="location" value={form.location} className="cj-input" onChange={handleChange} placeholder="e.g. Colombo, Remote" />
+              <Label required>Job Location</Label>
+              <input name="location" value={form.location} className={inputClass("location")} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. Colombo, Remote" />
+              {showError("location") && <p className="cj-error">{errors.location}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Experience Level</label>
-              <select name="experience" value={form.experience} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                <option value="ENTRY_LEVEL">Entry Level</option>
-                <option value="MID_LEVEL">Mid Level</option>
-                <option value="SENIOR_LEVEL">Senior Level</option>
-                <option value="DIRECTOR">Director</option>
-                <option value="EXECUTIVE">Executive</option>
-              </select>
+              <Label required>Experience Level</Label>
+              <CustomSelect
+                name="experience"
+                value={form.experience}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("experience")}
+                options={[
+                  { value: "ENTRY_LEVEL", label: "Entry Level" },
+                  { value: "MID_LEVEL", label: "Mid Level" },
+                  { value: "SENIOR_LEVEL", label: "Senior Level" },
+                  { value: "DIRECTOR", label: "Director" },
+                  { value: "EXECUTIVE", label: "Executive" },
+                ]}
+              />
+              {showError("experience") && <p className="cj-error">{errors.experience}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Vacancies</label>
-              <select name="vacancies" value={form.vacancies} className="cj-select" onChange={handleChange}>
-                <option value="">Select</option>
-                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => <option key={n}>{n}</option>)}
-              </select>
+              <Label required>Vacancies</Label>
+              <CustomSelect
+                name="vacancies"
+                value={form.vacancies}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("vacancies")}
+                options={Array.from({ length: 100 }, (_, i) => i + 1)}
+              />
+              {showError("vacancies") && <p className="cj-error">{errors.vacancies}</p>}
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Education Requirements</label>
+              <Label>Education Requirements</Label>
               <input
                 name="education"
                 value={form.education}
@@ -261,7 +403,7 @@ export default function CreateJob() {
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Job Benefits</label>
+              <Label>Job Benefits</Label>
               <textarea
                 name="benefits"
                 value={form.benefits}
@@ -273,18 +415,21 @@ export default function CreateJob() {
             </div>
 
             <div className="cj-field">
-              <label className="cj-label">Application Deadline</label>
+              <Label>Application Deadline</Label>
               <input
                 type="date"
                 name="deadline"
+                min={todayStr}
                 value={form.deadline}
-                className="cj-input"
+                className={inputClass("deadline")}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
+              {showError("deadline") && <p className="cj-error">{errors.deadline}</p>}
             </div>
 
-            <div className="cj-field">
-              <label className="cj-label">Key Requirements</label>
+            <div className="cj-field" data-field="reqs">
+              <Label required>Key Requirements</Label>
               <p style={{ fontSize: 13, color: "#666", marginBottom: 8 }}>
                 Add each requirement separately. AI will extract skills from these.
               </p>
@@ -297,7 +442,7 @@ export default function CreateJob() {
                   <button type="button" onClick={addRequirement} className="cj-reqBtn">+</button>
                 </div>
               ))}
-              {errors.reqs && <p className="cj-error">{errors.reqs}</p>}
+              {errors.reqs && submitAttempted && <p className="cj-error">{errors.reqs}</p>}
             </div>
 
           </div>
@@ -312,52 +457,6 @@ export default function CreateJob() {
           </div>
         </div>
       </div>
-
-      {statusModal && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4"
-          onClick={() => setStatusModal(null)}
-        >
-          <div
-            className="cj-statusModal bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7 text-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center ${
-                statusModal.type === "success" ? "bg-emerald-50" : "bg-red-50"
-              }`}
-            >
-              {statusModal.type === "success" ? (
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <line x1="12" y1="8" x2="12" y2="13" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              )}
-            </div>
-
-            <h3 className="text-lg font-semibold text-[#0C3E56] mb-1.5">
-              {statusModal.title}
-            </h3>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              {statusModal.message}
-            </p>
-
-            <button
-              onClick={() => setStatusModal(null)}
-              className="w-full h-11 rounded-xl font-semibold text-white transition hover:opacity-90"
-              style={{ background: "var(--heading)", boxShadow: "0 8px 18px rgba(36, 105, 139, 0.28)" }}
-              autoFocus
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
     </DashboardLayout>
   );
 }

@@ -195,53 +195,46 @@
   cursor: pointer;
   box-shadow: 0 14px 22px rgba(36,105,139,0.22);
 }
+/* ── Professional validation styles ─────────────────────────────── */
+.cdm-req {
+  color: #dc2626;
+  font-weight: 700;
+}
 
-/* ==================================================================
-   RESPONSIVE
-   ================================================================== */
+.cdm-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+}
 
-@media (max-width: 767px) {
-  .cdm-overlay {
-    padding: 12px;
-    align-items: start;
-  }
+.cdm-input--error {
+  border-color: #dc2626 !important;
+  background: #fff7f7;
+}
 
-  .cdm-modal {
-    padding: 18px 14px;
-    border-radius: 18px;
-    max-height: calc(100vh - 24px);
-    max-height: calc(100dvh - 24px);
-  }
+.cdm-input--error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
 
-  .cdm-title {
-    font-size: 18px;
-  }
+.cdm-success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 11px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 500;
+}
 
-  /* logo + field stack instead of sitting in a 90px rail */
-  .cdm-uploadRow {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    gap: 12px;
-  }
-
-  .cdm-previewBox {
-    width: 72px;
-    height: 72px;
-    font-size: 22px;
-  }
-
-  .cdm-input {
-    height: 46px;
-  }
-
-  .cdm-actions {
-    flex-direction: column;
-  }
-
-  .cdm-cancel,
-  .cdm-save {
-    width: 100%;
-    min-width: 0;
-    height: 48px;
-  }
+.cdm-formError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 11px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 500;
 }

@@ -105,6 +105,11 @@ export default function ShortlistPage() {
   };
 
   const aiScore = application?.score || candidate?.aiScore || 0;
+  // Show at most 2 decimal places (e.g. 83.33), but keep whole numbers clean.
+  const fmtPct = (n) => {
+    const num = Number(n) || 0;
+    return Number.isInteger(num) ? num : Number(num.toFixed(2));
+  };
   const aiSuggestion = aiScore >= 70 ? "Recommended" : "Not Recommended";
   const skillBreakdown = getSkillBreakdown();
 
@@ -241,7 +246,7 @@ export default function ShortlistPage() {
             {[
               { value: candidate?.yearsOfExperience ? `${candidate.yearsOfExperience}+` : "—", label: "Years Exp" },
               { value: candidate?.skills?.length || 0, label: "Skills" },
-              { value: `${aiScore}%`, label: "AI Score" },
+              { value: `${fmtPct(aiScore)}%`, label: "AI Score" },
               { value: candidate?.education?.length || 0, label: "Degrees" },
             ].map((stat, i) => (
               <div key={i} className="sl-stat-box">
@@ -260,7 +265,7 @@ export default function ShortlistPage() {
 
             <div className="sl-score-bar">
               <span className="sl-score-label">AI Score</span>
-              <span className="sl-score-value">{aiScore}%</span>
+              <span className="sl-score-value">{fmtPct(aiScore)}%</span>
               <span
                 className={`sl-score-dot ${aiScore >= 70 ? "sl-dot-green" : "sl-dot-red"}`}
               />
@@ -363,7 +368,7 @@ export default function ShortlistPage() {
                     <span className="sl-score-label">
                       AI Question Score{session.savedAt ? ` — ${session.savedAt}` : ""}
                     </span>
-                    <span className="sl-score-value">{sessionScore}%</span>
+                    <span className="sl-score-value">{fmtPct(sessionScore)}%</span>
                     <span
                       className={`sl-score-dot ${
                         sessionRecommended ? "sl-dot-green" : "sl-dot-red"

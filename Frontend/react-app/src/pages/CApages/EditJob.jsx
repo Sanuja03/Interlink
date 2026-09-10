@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
+import CustomSelect from "./CustomSelect";
 import "./EditJob.css";
 import axios from "axios";
 import { createActivityLog } from "../../api/ActivityLogsApi";
@@ -193,81 +194,59 @@ export default function EditJob() {
 
             <div className="ej-field">
               <label className="ej-label">Department</label>
-              <select
+              <input
                 name="department"
                 value={form.department}
-                className="ej-select"
+                className="ej-input"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                <option>Engineering</option>
-                <option>Design</option>
-                <option>QA</option>
-                <option>HR</option>
-              </select>
+                placeholder="e.g. Engineering, Marketing, Finance"
+              />
             </div>
 
             <div className="ej-field">
               <label className="ej-label">Employment Type</label>
-              <select
+              <CustomSelect
                 name="type"
                 value={form.type}
-                className="ej-select"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                <option value="REMOTE">Remote</option>
-                <option value="ONSITE">Onsite</option>
-                <option value="HYBRID">Hybrid</option>
-              </select>
+                options={[
+                  { value: "REMOTE", label: "Remote" },
+                  { value: "ONSITE", label: "Onsite" },
+                  { value: "HYBRID", label: "Hybrid" },
+                ]}
+              />
             </div>
 
             <div className="ej-field">
               <label className="ej-label">Category</label>
-              <select
+              <CustomSelect
                 name="category"
                 value={form.category}
-                className="ej-select"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Design">Design</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-              </select>
+                options={["Engineering", "Design", "Marketing", "Finance", "Healthcare"]}
+              />
             </div>
 
             <div className="ej-field">
               <label className="ej-label">Number of Interview Rounds</label>
-              <select
+              <CustomSelect
                 name="interviewRounds"
                 value={form.interviewRounds}
-                className="ej-select"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n}>{n}</option>
-                ))}
-              </select>
+                options={[1, 2, 3, 4, 5]}
+              />
             </div>
 
             {interviewStages.map((stage, index) => (
               <div className="ej-field" key={index}>
                 <label className="ej-label">Stage {index + 1}</label>
-                <select
-                  className="ej-select"
+                <CustomSelect
+                  name={`stage${index}`}
                   value={stage}
                   onChange={(e) => handleStageChange(index, e.target.value)}
-                >
-                  <option value="">Select Stage</option>
-                  <option>HR</option>
-                  <option>Technical</option>
-                  <option>Managerial</option>
-                  <option>Final</option>
-                </select>
+                  placeholder="Select Stage"
+                  options={["HR", "Technical", "Managerial", "Final"]}
+                />
               </div>
             ))}
 
@@ -284,34 +263,28 @@ export default function EditJob() {
 
             <div className="ej-field">
               <label className="ej-label">Experience Level</label>
-              <select
+              <CustomSelect
                 name="experience"
                 value={form.experience}
-                className="ej-select"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                <option value="ENTRY_LEVEL">Entry Level</option>
-                <option value="MID_LEVEL">Mid Level</option>
-                <option value="SENIOR_LEVEL">Senior Level</option>
-                <option value="DIRECTOR">Director</option>
-                <option value="EXECUTIVE">Executive</option>
-              </select>
+                options={[
+                  { value: "ENTRY_LEVEL", label: "Entry Level" },
+                  { value: "MID_LEVEL", label: "Mid Level" },
+                  { value: "SENIOR_LEVEL", label: "Senior Level" },
+                  { value: "DIRECTOR", label: "Director" },
+                  { value: "EXECUTIVE", label: "Executive" },
+                ]}
+              />
             </div>
 
             <div className="ej-field">
               <label className="ej-label">Vacancies</label>
-              <select
+              <CustomSelect
                 name="vacancies"
                 value={form.vacancies}
-                className="ej-select"
                 onChange={handleChange}
-              >
-                <option value="">Select</option>
-                {Array.from({ length: 100 }, (_, i) => i + 1).map((n) => (
-                  <option key={n}>{n}</option>
-                ))}
-              </select>
+                options={Array.from({ length: 100 }, (_, i) => i + 1)}
+              />
             </div>
 
             <div className="ej-field">

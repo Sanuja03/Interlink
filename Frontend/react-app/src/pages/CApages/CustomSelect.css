@@ -1,0 +1,133 @@
+.cs-root {
+  position: relative;
+  width: 100%;
+  font-family: inherit;
+  outline: none;
+}
+
+.cs-control {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #111;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cs-root:focus .cs-control,
+.cs-control:hover {
+  border-color: #24698b;
+}
+
+.cs-root:focus .cs-control {
+  box-shadow: 0 0 0 3px rgba(36, 105, 139, 0.15);
+}
+
+.cs-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cs-placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.cs-arrow {
+  font-size: 12px;
+  color: #24698b;
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+.cs-arrow--open {
+  transform: rotate(180deg);
+}
+
+/* Error state */
+.cs-error .cs-control {
+  border-color: #dc2626;
+  background: #fff7f7;
+}
+.cs-error:focus .cs-control {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+/* Disabled */
+.cs-disabled .cs-control {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Dropdown panel */
+.cs-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid rgba(36, 105, 139, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(12, 62, 86, 0.18);
+  max-height: 260px;
+  overflow-y: auto;
+  animation: cs-pop 0.12s ease;
+}
+
+@keyframes cs-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cs-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1f2b34;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cs-option--active {
+  background: #eaf3f8;
+}
+
+.cs-option--selected {
+  color: #1f4e63;
+  font-weight: 600;
+}
+
+.cs-check {
+  color: #24698b;
+  font-size: 13px;
+}
+
+.cs-empty {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Slim scrollbar for the panel */
+.cs-panel::-webkit-scrollbar { width: 8px; }
+.cs-panel::-webkit-scrollbar-thumb {
+  background: rgba(36, 105, 139, 0.3);
+  border-radius: 8px;
+}
