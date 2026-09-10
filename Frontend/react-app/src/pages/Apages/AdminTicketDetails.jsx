@@ -239,8 +239,10 @@ export default function AdminTicketDetails() {
             Admin Controls
           </p>
 
-          {/* Three dropdowns in a row + Save button */}
-          <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 items-end">
+          {/* Three dropdowns in a row + Save button — collapses to a single
+              column on narrow screens instead of squeezing all four into
+              unusably thin slots */}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-3 items-end">
             <div>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">
                 Status

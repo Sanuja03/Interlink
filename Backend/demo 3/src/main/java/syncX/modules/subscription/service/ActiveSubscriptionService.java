@@ -9,6 +9,7 @@ import syncX.modules.subscription.entity.SubscriptionPlan;
 import syncX.modules.subscription.repository.ActiveSubscriptionRepository;
 import syncX.modules.subscription.repository.SubscriptionPlanRepository;
 import syncX.modules.job.repository.JobRepository;
+import syncX.modules.SuperAdmin.Admin_activities.service.ActivityLogService;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ public class ActiveSubscriptionService {
     private final ActiveSubscriptionRepository repository;
     private final SubscriptionPlanRepository planRepository;
     private final JobRepository jobRepository;
+    private final ActivityLogService activityLogService; // ADDED — for the billing activity log tab
 
     // ─────────────────────────────────────────────
     //  GET ALL  (auto-creates Free rows for new companies)
@@ -76,14 +78,13 @@ public class ActiveSubscriptionService {
         }
 
         return repository.findAll().stream().map(sub -> {
-            // Sync status to DB: mark as Expired if end date has passed and still showing Active
-            if (sub.getEndDate() != null
-                    && sub.getEndDate().isBefore(LocalDate.now())  //check expiry date is before current date
-                    && !"Free".equalsIgnoreCase(sub.getPlan().getName())   //not a freeplan caz they dont have end dates
-                    && "Active".equals(sub.getStatus())) {
-                sub.setStatus("Expired");
-                repository.save(sub);
-            }
+            // ADDED — resolveIfDue() replaces the old "just relabel as Expired"
+            // check. It actually renews or downgrades the subscription right
+            // here if it's overdue, instead of only flipping the status label
+            // and leaving the real renewal/downgrade to wait for the nightly
+            // cron (which could be up to a day, or longer if the server isn't
+            // always running).
+            resolveIfDue(sub, companyNameMap.get(sub.getCompanyId()));
             return toDTO(sub, companyNameMap);
         }).toList();
     }
@@ -92,14 +93,9 @@ public class ActiveSubscriptionService {
         ActiveSubscription sub = repository.findByCompanyId(companyId)
                 .orElseThrow(() -> new RuntimeException("No subscription found for this company"));
 
-        // Sync status if expired
-        if (sub.getEndDate() != null
-                && sub.getEndDate().isBefore(LocalDate.now())
-                && !"Free".equalsIgnoreCase(sub.getPlan().getName())
-                && "Active".equals(sub.getStatus())) {
-            sub.setStatus("Expired");
-            repository.save(sub);
-        }
+        // ADDED — see resolveIfDue() for why this now does the actual
+        // renewal/downgrade instead of only relabeling the status.
+        resolveIfDue(sub, null);
 
         ActiveSubscriptionDTO dto = new ActiveSubscriptionDTO();
         dto.setId(sub.getId());
@@ -302,6 +298,61 @@ public class ActiveSubscriptionService {
         sub.setStatus("Active");
         sub.setPaymentConfirmed(false); // reset — needs re-confirmation for next cycle
         sub.setAiCvUsed(0);            // reset usage on each renewal
+    }
+
+    // ─────────────────────────────────────────────
+    //  ADDED — RESOLVE IF OVERDUE
+    //  Shared by getAll()/getByCompanyId() above so the table (and a
+    //  company's own subscription view) is never showing a stale "Expired"
+    //  label while the plan itself is still the old paid plan underneath.
+    //  Mirrors exactly what processScheduledRenewals() below does for a
+    //  single subscription, just triggered by a read instead of by the
+    //  nightly cron, so whatever's displayed is always already correct.
+    // ─────────────────────────────────────────────
+    private void resolveIfDue(ActiveSubscription sub, String companyName) {
+        if ("Free".equalsIgnoreCase(sub.getPlan().getName())) return;
+        if (sub.getEndDate() == null) return;
+
+        boolean isDue = !sub.getEndDate().isAfter(LocalDate.now());
+        String label = (companyName != null && !companyName.isBlank())
+                ? companyName
+                : ("company " + sub.getCompanyId());
+
+        if (!isDue) {
+            // Not overdue. If it was left marked Expired from an earlier check
+            // but the end date is now in the future (e.g. after a plan/date
+            // correction), put it back to Active.
+            if ("Expired".equals(sub.getStatus())) {
+                sub.setStatus("Active");
+                repository.save(sub);
+            }
+            return;
+        }
+
+        if (Boolean.TRUE.equals(sub.getPaymentConfirmed())) {
+            renewSubscription(sub);
+            logSubscriptionEvent(sub, "AUTO_RENEW",
+                    label + "'s " + sub.getPlan().getName() + " plan auto-renewed for another month");
+        } else {
+            String previousPlanName = sub.getPlan().getName(); // captured before downgradeToFree() overwrites it
+            sub.setStatus("Expired");
+            downgradeToFree(sub);
+            logSubscriptionEvent(sub, "AUTO_DOWNGRADE",
+                    label + "'s " + previousPlanName + " plan expired unpaid — downgraded to Free");
+        }
+        repository.save(sub);
+    }
+
+    // ADDED — writes to the shared activity log so admins can see, in the new
+    // billing activity tab, exactly when and why a subscription changed on
+    // its own (vs. an explicit admin action like Confirm Pay / Change Plan).
+    // Logging failure must never break the actual renew/downgrade.
+    private void logSubscriptionEvent(ActiveSubscription sub, String action, String description) {
+        try {
+            activityLogService.log(null, "SYSTEM", action, "SUBSCRIPTION", sub.getId(), description);
+        } catch (Exception e) {
+            log.warn("Failed to write subscription activity log for id={}: {}", sub.getId(), e.getMessage());
+        }
     }
 
     private void downgradeToFree(ActiveSubscription sub) {

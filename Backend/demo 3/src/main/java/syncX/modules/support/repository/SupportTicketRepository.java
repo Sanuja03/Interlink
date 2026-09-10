@@ -12,10 +12,17 @@ import java.util.UUID;
 public interface SupportTicketRepository extends JpaRepository<SupportTicket, Long> {
 
     // ── jpql - for entities ──────────────────────────────────────────────────
+    // NOTE: "delete" on a ticket is a soft delete (see SupportTicket.deleted) —
+    // every normal read path below excludes deleted=true rows so they behave
+    // exactly as if the row were gone, without actually removing it.
 
-    List<SupportTicket> findByUserId(UUID userId);
+    List<SupportTicket> findByUserIdAndDeletedFalse(UUID userId);
 
-    @Query("SELECT t FROM SupportTicket t LEFT JOIN FETCH t.responses WHERE t.id = :id")
+    List<SupportTicket> findByDeletedFalse();
+
+    Optional<SupportTicket> findByIdAndDeletedFalse(Long id);
+
+    @Query("SELECT t FROM SupportTicket t LEFT JOIN FETCH t.responses WHERE t.id = :id AND t.deleted = false")
     Optional<SupportTicket> findByIdWithResponses(@Param("id") Long id);
 
     // ── look up the role for a given user directly from public.users ─

@@ -74,6 +74,11 @@ public class JobController {
     public ResponseEntity<?> toggleJobStatus(@PathVariable Long jobId) { //  FIXED
         try {
             return ResponseEntity.ok(jobService.toggleJobStatus(String.valueOf(jobId)));
+        } catch (RuntimeException e) {
+            // ADDED — surface the plan-limit message (and any other business
+            // rule failure) as a 400 instead of a generic 500, so the frontend
+            // can show the real reason instead of a blank/opaque server error.
+            return ResponseEntity.status(400).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.getMessage());
         }

@@ -3,6 +3,7 @@ import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayou
 import "./JobManagement.css";
 import api from "../../lib/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 export default function JobManagement() {
   const [search, setSearch] = useState("");
@@ -47,7 +48,11 @@ export default function JobManagement() {
       await api.put(`/jobs/${id}/toggle`);
       fetchJobs();
     } catch (err) {
+      // ADDED — show the real reason (e.g. plan job-post limit reached) to the
+      // company admin instead of only logging it, so a reopen that gets
+      // blocked by the plan limit doesn't look like a silent no-op.
       console.error("TOGGLE ERROR:", err.response?.data || err.message);
+      toast.error(err.response?.data || "Could not update job status");
     }
   };
 

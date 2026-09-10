@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
+import api from "../../lib/api";
 
 export default function CvAnalysisPopup({ application, companyId, onClose, onScoreSaved }) {
     const [stage, setStage] = useState("idle");
@@ -39,25 +40,17 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
         const filename = application.resumeUrl.split("/").pop();
         const file = new File([blob], filename, { type: blob.type });
   
-        const { data: sessionData } = await supabase.auth.getSession();
-        const session = sessionData?.session;
-  
         const formData = new FormData();
         formData.append("file", file);
         formData.append("jobId", String(application.jobId));
         formData.append("companyId", companyId);
   
-        const res = await fetch("http://localhost:8080/api/score/analyze", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session?.access_token}` },
-          body: formData,
+        // Goes through the shared api.js client — auth token is attached
+        // automatically by its request interceptor. Content-Type is unset
+        // so the browser can set the correct multipart boundary for FormData.
+        const { data: scoreData } = await api.post("/score/analyze", formData, {
+          headers: { "Content-Type": undefined },
         });
-  
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText);
-        }
-        const scoreData = await res.json();
   
         await supabase
           .from("job_applications")
@@ -69,7 +62,8 @@ export default function CvAnalysisPopup({ application, companyId, onClose, onSco
         onScoreSaved(application.id, scoreData.score, scoreData);
   
       } catch (err) {
-        setErrorMsg(err.message);
+        const serverMsg = err?.response?.data?.message;
+        setErrorMsg(typeof serverMsg === "string" ? serverMsg : err.message);
         setStage("error");
       }
     };

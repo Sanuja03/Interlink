@@ -241,6 +241,30 @@ public class JobService {
         if ("Open".equalsIgnoreCase(job.getStatus())) {
             job.setStatus("Closed");
         } else {
+            // ADDED — enforce the plan's active-jobs limit here, on the
+            // Closed -> Open transition. createJob() only checked the limit
+            // at creation time, so a company could previously close a job and
+            // reopen it (or reopen an old closed job) with no cap enforcement
+            // at all. The create-time check is left in place too, since new
+            // jobs are created directly as "Open" — removing it there would
+            // just move the loophole instead of closing it.
+            if (job.getCompanyId() != null) {
+                ActiveSubscription activeSub = activeSubscriptionRepository
+                        .findByCompanyId(job.getCompanyId())
+                        .orElseThrow(() -> new RuntimeException("No active subscription found for this company"));
+
+                SubscriptionPlan plan = activeSub.getPlan();
+                Integer jobLimit = plan.getActiveJobs();
+
+                if (jobLimit != null) {
+                    long openJobCount = jobRepo.countByCompanyIdAndStatus(job.getCompanyId(), "Open");
+                    if (openJobCount >= jobLimit) {
+                        throw new RuntimeException(
+                                "Job post limit reached. Your " + plan.getName() +
+                                        " plan allows " + jobLimit + " active job posts. Close another job before reopening this one.");
+                    }
+                }
+            }
             job.setStatus("Open");
         }
 

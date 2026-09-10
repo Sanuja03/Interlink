@@ -182,3 +182,19 @@ textarea.cj-input {
     width: 100%;
   }
 }
+
+/* Success/error popup after posting a job — replaces the native browser alert() */
+.cj-statusModal {
+  animation: cj-modal-pop 0.18s ease-out;
+}
+
+@keyframes cj-modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

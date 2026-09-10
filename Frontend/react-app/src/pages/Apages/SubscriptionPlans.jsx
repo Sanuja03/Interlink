@@ -42,14 +42,17 @@ export default function SubscriptionPlans() {
 
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Subscription Plans</h1>
         <p className="text-sm text-gray-500 mt-1">Manage and update your platform's subscription tiers</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-10">
-        <div className="grid md:grid-cols-3 gap-10">
+      <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-10">
+        {/* 3 columns only kick in once there's actually room for them (lg,
+            1024px+) — jumping straight from 1 to 3 columns at md (768px)
+            squeezed each pricing card down to an unreadable ~250px */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
           {plans.map((plan) => ( //display each plan in a card
             <PlanCard key={plan.name} plan={plan} onChange={() => setSelectedPlan(plan)} />
           ))}

@@ -66,6 +66,17 @@
   margin: 0 0 30px;
 }
 
+@media (max-width: 640px) {
+  .am-stats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .am-statCard {
+    padding: 20px;
+  }
+}
+
 .am-statCard {
   background: white;
   border-radius: 18px;
@@ -100,8 +111,16 @@
   margin-bottom: 16px;
 }
 
+/* Wraps the table so it scrolls horizontally on narrow screens instead of
+   squashing the columns unreadable. */
+.am-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .am-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
 }
 
