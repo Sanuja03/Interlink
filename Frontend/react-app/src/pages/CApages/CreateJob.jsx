@@ -39,6 +39,9 @@ export default function CreateJob() {
   const [reqs, setReqs] = useState([""]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  // Replaces the native browser alert() popups with an in-app styled modal.
+  // { type: "success" | "error", title, message } | null
+  const [statusModal, setStatusModal] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,8 +69,8 @@ export default function CreateJob() {
   };
 
   const handleSubmit = async () => {
-    if (sessionError) { alert(sessionError); return; }
-    if (!companyId)   { alert("Loading company info, please wait..."); return; }
+    if (sessionError) { setStatusModal({ type: "error", title: "Can't Post Job", message: sessionError }); return; }
+    if (!companyId)   { setStatusModal({ type: "error", title: "Please Wait", message: "Loading company info, please wait..." }); return; }
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
 
@@ -107,7 +110,12 @@ export default function CreateJob() {
       console.error("[CreateJob] Failed to create activity log:", err);
     }
 
-      alert(`Job Posted! AI extracted ${res.data.requirements?.length || 0} skill requirements.`);
+      const skillCount = res.data.requirements?.length || 0;
+      setStatusModal({
+        type: "success",
+        title: "Job Posted!",
+        message: `AI extracted ${skillCount} skill requirement${skillCount === 1 ? "" : "s"} from your listing.`,
+      });
       setForm({ title: "", department: "", type: "", category: "", location: "", experience: "", vacancies: "", interview_rounds: "", education: "", benefits: "", deadline: "" });
       setInterviewStages([]); setReqs([""]);
     } catch (error) {
@@ -116,7 +124,7 @@ export default function CreateJob() {
         setLimitError(msg);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        alert(msg || "Error saving job.");
+        setStatusModal({ type: "error", title: "Couldn't Post Job", message: msg || "Error saving job." });
       }
     } finally {
       setLoading(false);
@@ -304,6 +312,52 @@ export default function CreateJob() {
           </div>
         </div>
       </div>
+
+      {statusModal && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4"
+          onClick={() => setStatusModal(null)}
+        >
+          <div
+            className="cj-statusModal bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center ${
+                statusModal.type === "success" ? "bg-emerald-50" : "bg-red-50"
+              }`}
+            >
+              {statusModal.type === "success" ? (
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <line x1="12" y1="8" x2="12" y2="13" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              )}
+            </div>
+
+            <h3 className="text-lg font-semibold text-[#0C3E56] mb-1.5">
+              {statusModal.title}
+            </h3>
+            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              {statusModal.message}
+            </p>
+
+            <button
+              onClick={() => setStatusModal(null)}
+              className="w-full h-11 rounded-xl font-semibold text-white transition hover:opacity-90"
+              style={{ background: "var(--heading)", boxShadow: "0 8px 18px rgba(36, 105, 139, 0.28)" }}
+              autoFocus
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

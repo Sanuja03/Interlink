@@ -70,6 +70,14 @@ public class SupportTicket {
     private Boolean adminRead = false;
     // END ADDED
 
+    // ADDED — soft delete. A "deleted" ticket stays in the DB (keeps the
+    // audit trail / activity log intact and avoids orphaning its replies)
+    // but is filtered out of every normal read query, so it behaves like it
+    // was removed. Defaults to false so existing rows read as not-deleted.
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
+    // END ADDED
+
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Response> responses;  //List is used here instead of arrays here because of lists flexible size
@@ -117,5 +125,10 @@ public class SupportTicket {
 
     public Boolean getAdminRead() { return adminRead; }
     public void setAdminRead(Boolean adminRead) { this.adminRead = adminRead; }
+    // END ADDED
+
+    // ADDED
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     // END ADDED
 }

@@ -1,9 +1,20 @@
 // ─── Security & Validation Helpers ──────────────────────────────────────────
 
-/** Regex patterns used to detect malicious input */
+/**
+ * Regex patterns used to detect malicious input.
+ *
+ * NOTE: there used to be a SQL-keyword blocklist here (DROP/SELECT/UPDATE/etc).
+ * It was removed — it rejected ordinary sentences containing words like
+ * "select" or "update", and it wasn't actually protecting against SQL
+ * injection: the backend only ever talks to the database through
+ * parameterized queries (JPA derived queries / :param bind variables), so
+ * the *value* of a field can never change the SQL that runs. What still
+ * matters here is stopping HTML/script content from being stored and later
+ * rendered (XSS) — the backend independently strips HTML tags too, see
+ * SupportTicketService.
+ */
 const HTML_TAGS_PATTERN   = /<[^>]*>/;
 const SCRIPT_PATTERN      = /javascript:|on\w+\s*=/i;
-const SQL_PATTERN         = /('|--|;|\b(DROP|SELECT|INSERT|DELETE|UPDATE|ALTER|EXEC)\b)/i;
 
 /**
  * Strips all HTML tags from a string.
@@ -18,7 +29,7 @@ export function sanitizeInput(str) {
 
 /**
  * Returns an error message if the string contains potentially
- * malicious patterns (HTML tags, script injection, SQL keywords).
+ * malicious patterns (HTML tags, script injection).
  * Returns null if input is safe.
  *
  * @param {string} value     - the input value to check
@@ -27,8 +38,6 @@ export function sanitizeInput(str) {
  */
 export function detectMaliciousInput(value, fieldName) {
   if (HTML_TAGS_PATTERN.test(value) || SCRIPT_PATTERN.test(value))
-    return `${fieldName} contains invalid characters.`;
-  if (SQL_PATTERN.test(value))
     return `${fieldName} contains invalid characters.`;
   return null;
 }

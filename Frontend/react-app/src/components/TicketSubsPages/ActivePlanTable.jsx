@@ -1,30 +1,30 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "../../lib/api";
+import { createActivityLog } from "../../api/ActivityLogsApi";
+import { useAuth } from "../../context/Authcontext";
 import { isExpired, isFree, displayStatus, statusStyle, fmt } from "../../utils/subscriptionUtils";
 import UsageCell from "./UsageCell";
 import ConfirmPaymentModal from "./ConfirmPaymentModal";
-import RenewModal from "./RenewModal";
 import ChangePlanModal from "./ChangePlanModal";
 
 // Column layout: Company | Plan | Jobs | AI CV | Interviewers | Start | End | Status | Actions
-const COLS = "grid-cols-[1.3fr_1.2fr_0.6fr_0.6fr_0.7fr_0.85fr_0.85fr_0.85fr_1.6fr]";
+const COLS = "grid-cols-[1.3fr_1.2fr_0.6fr_0.6fr_0.7fr_0.85fr_0.85fr_0.85fr_1.6fr] gap-x-3";
 
 /**
  * ActivePlanTable
  * Renders the subscriptions data grid with inline plan-change dropdown
- * and action buttons (Confirm Pay, Renew, Undo). Modals are delegated
- * to separate focused components.
+ * and the Confirm Pay action button. Modals are delegated to separate
+ * focused components.
  *
  * Props:
  *  - data    {array}     list of active subscription objects from the API
  *  - refresh {function}  re-fetches the subscription list
- *  - onUndo  {function}  triggers the undo-renewal API call for a given id
  */
-export default function ActivePlanTable({ data, refresh, onUndo }) {
+export default function ActivePlanTable({ data, refresh }) {
+  const { appUser } = useAuth();
   const [plans,           setPlans]           = useState([]);
   const [openDropdown,    setOpenDropdown]     = useState(null);
-  const [renewModal,      setRenewModal]       = useState(null);
   const [paymentModal,    setPaymentModal]     = useState(null);
   const [changePlanModal, setChangePlanModal]  = useState(null);
   const [customStartDate, setCustomStartDate]  = useState("");
@@ -44,21 +44,20 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
           ? `Renewed immediately for ${paymentModal.companyName}`
           : `Payment confirmed — renews on ${fmt(paymentModal.endDate)}`
       );
+      createActivityLog({
+        userId:      appUser?.userId ?? null,
+        userRole:    appUser?.role   ?? "UNKNOWN",
+        action:      "CONFIRM_PAYMENT",
+        entityType:  "SUBSCRIPTION",
+        entityId:    paymentModal.id,
+        description: isExpired(paymentModal)
+          ? `Confirmed payment and renewed ${paymentModal.companyName}'s ${paymentModal.planName} plan immediately`
+          : `Confirmed payment for ${paymentModal.companyName}'s ${paymentModal.planName} plan`,
+      }).catch(() => {}); // logging is best-effort, never blocks the actual action
       setPaymentModal(null);
       refresh();
     } catch (err) {
       toast.error(err.response?.data || "Failed to confirm payment");
-    }
-  };
-
-  const handleRenew = async () => {
-    try {
-      await api.put(`/active-subscriptions/${renewModal.id}/extend`);
-      toast.success(`${renewModal.companyName}'s plan renewed for 1 month`);
-      setRenewModal(null);
-      refresh();
-    } catch (err) {
-      toast.error(err.response?.data || "Renewal failed");
     }
   };
 
@@ -69,6 +68,14 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
         { startDate: customStartDate || null }
       );
       toast.success(`Plan changed to ${changePlanModal.plan.name}`);
+      createActivityLog({
+        userId:      appUser?.userId ?? null,
+        userRole:    appUser?.role   ?? "UNKNOWN",
+        action:      "CHANGE_PLAN",
+        entityType:  "SUBSCRIPTION",
+        entityId:    changePlanModal.row.id,
+        description: `Changed ${changePlanModal.row.companyName} from ${changePlanModal.row.planName} to ${changePlanModal.plan.name}`,
+      }).catch(() => {});
       setChangePlanModal(null);
       setCustomStartDate("");
       refresh();
@@ -84,7 +91,14 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
 
   return (
     <div onClick={() => setOpenDropdown(null)}>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible">
+      {/* Horizontal scroll on narrow screens instead of squashing the 9-column
+          grid unreadable — the fixed min-width below keeps every column at a
+          usable size and the card just gains a scrollbar under that width. */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto
+        [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-gray-100
+        [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full
+        [scrollbar-width:thin]">
+        <div className="min-w-[940px]">
 
         {/* TABLE HEADER */}
         <div className={`grid ${COLS} bg-[#0C3E56] text-white px-5 py-4
@@ -145,7 +159,12 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
                           onClick={() => {
                             setOpenDropdown(null);   //close dropdown on plan select
                             if (p.name === row.planName) return;
-                            setChangePlanModal({ row, plan: p });
+                            // Compare against the current plan's price (from the
+                            // already-loaded plans list) so the modal can tell the
+                            // admin whether this is an upgrade or a downgrade.
+                            const currentPlan = plans.find((pl) => pl.name === row.planName);
+                            const isUpgrade = currentPlan ? p.price > currentPlan.price : null;
+                            setChangePlanModal({ row, plan: p, isUpgrade });
                             setCustomStartDate("");
                           }}
                           className={`px-4 py-2 text-xs cursor-pointer
@@ -201,32 +220,13 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
                       {expired ? "Pay & Renew" : "Confirm Pay"}
                     </button>
                   )}
-                  {!free && (
-                    <button
-                      onClick={() => setRenewModal(row)}
-                      className="px-2 py-1.5 text-[10px] font-semibold rounded-md
-                        bg-[#24698B] text-white hover:bg-[#1e5a76]
-                        transition whitespace-nowrap shrink-0"
-                    >
-                      Renew
-                    </button>
-                  )}
-                  {!free && row.endDate && (
-                    <button
-                      onClick={() => onUndo(row.id)}
-                      className="px-2 py-1.5 text-[10px] font-semibold rounded-md
-                        bg-gray-200 text-gray-600 hover:bg-gray-300
-                        transition whitespace-nowrap shrink-0"
-                    >
-                      Undo
-                    </button>
-                  )}
                 </div>
 
               </div>
             );
           })
         )}
+        </div>
       </div>
 
       {/* MODALS — rendered outside the table so z-index is never clipped */}
@@ -238,18 +238,11 @@ export default function ActivePlanTable({ data, refresh, onUndo }) {
         />
       )}
 
-      {renewModal && (
-        <RenewModal
-          row={renewModal}
-          onCancel={() => setRenewModal(null)}
-          onConfirm={handleRenew}
-        />
-      )}
-
       {changePlanModal && (
         <ChangePlanModal
           row={changePlanModal.row}
           plan={changePlanModal.plan}
+          isUpgrade={changePlanModal.isUpgrade}
           customStartDate={customStartDate}
           onStartDateChange={setCustomStartDate}
           onCancel={closeChangePlan}

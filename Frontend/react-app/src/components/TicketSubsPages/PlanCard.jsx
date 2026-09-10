@@ -43,9 +43,9 @@ export default function PlanCard({ plan, onChange }) {
         {/* AI VALUES */}
         <p>✔ AI CV Screening: {formatAI(plan.aiCvLimit, plan.isUnlimited)}</p>
         
-        <p className="whitespace-nowrap">
-  ✔ AI Question Generation: {formatAI(plan.aiQuestionLimit, plan.isUnlimited)}
-</p>
+        <p>
+          ✔ AI Question Generation: {formatAI(plan.aiQuestionLimit, plan.isUnlimited)}
+        </p>
       </div>
 
       {/* BUTTON */}

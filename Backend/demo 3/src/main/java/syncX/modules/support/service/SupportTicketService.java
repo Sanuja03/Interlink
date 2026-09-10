@@ -73,8 +73,8 @@ public class SupportTicketService {
         validateTicketRequest(request);
 
         SupportTicket ticket = new SupportTicket();
-        ticket.setTitle(request.getTitle().trim());
-        ticket.setDescription(request.getDescription().trim());
+        ticket.setTitle(sanitizeHtml(request.getTitle().trim()));
+        ticket.setDescription(sanitizeHtml(request.getDescription().trim()));
         ticket.setCategory(request.getCategory());
 
         // Server-controlled fields — never taken from the request body
@@ -92,7 +92,7 @@ public class SupportTicketService {
     // ─── READ ─────────────────────────────────────────────────────────────────
 
     public List<SupportTicket> getAll() {   //returns all tickets only for SAs
-        return repository.findAll();
+        return repository.findByDeletedFalse();
     }
 
     public List<SupportTicket> getByUser(UUID userId) {
@@ -100,7 +100,7 @@ public class SupportTicketService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "User ID must not be null");
         }
-        return repository.findByUserId(userId);
+        return repository.findByUserIdAndDeletedFalse(userId);
     }
 
     public SupportTicketDTO getTicketDTO(Long id) { //db query to get the tickets
@@ -135,7 +135,7 @@ public class SupportTicketService {
     // ADDED — marks the ticket as read for whichever side is viewing it.
     // Called from the controller right after the permission check passes.
     public void markRead(Long id, UUID requestingUserId) {
-        SupportTicket ticket = repository.findById(id)
+        SupportTicket ticket = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
@@ -163,7 +163,7 @@ public class SupportTicketService {
      * before this method is called — no additional whitelist check needed here.
      */
     public SupportTicket update(Long id, SupportTicket updated, UUID requestingUserId) {
-        SupportTicket ticket = repository.findById(id)
+        SupportTicket ticket = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
@@ -185,11 +185,11 @@ public class SupportTicketService {
             // Validate user-supplied text fields
             if (updated.getTitle() != null) {
                 validateLength("Title", updated.getTitle(), TITLE_MIN_LENGTH, TITLE_MAX_LENGTH);
-                ticket.setTitle(updated.getTitle().trim());
+                ticket.setTitle(sanitizeHtml(updated.getTitle().trim()));
             }
             if (updated.getDescription() != null) {
                 validateLength("Description", updated.getDescription(), DESC_MIN_LENGTH, DESC_MAX_LENGTH);
-                ticket.setDescription(updated.getDescription().trim());
+                ticket.setDescription(sanitizeHtml(updated.getDescription().trim()));
             }
             if (updated.getCategory() != null) {
                 ticket.setCategory(updated.getCategory());
@@ -202,7 +202,7 @@ public class SupportTicketService {
     // ─── DELETE ───────────────────────────────────────────────────────────────
 
     public void delete(Long id, UUID requestingUserId) {
-        SupportTicket ticket = repository.findById(id)
+        SupportTicket ticket = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
@@ -212,7 +212,11 @@ public class SupportTicketService {
                     "You do not have permission to delete this ticket");
         }
 
-        repository.deleteById(id);
+        // Soft delete — row stays in the DB (audit trail, avoids orphaning
+        // ticket_responses) but every normal read path filters deleted=true out,
+        // so it disappears from lists and can no longer be opened or replied to.
+        ticket.setDeleted(true);
+        repository.save(ticket);
     }
 
     // ─── REPLY ────────────────────────────────────────────────────────────────
@@ -224,7 +228,7 @@ public class SupportTicketService {
      */
     public ResponseDTO addReply(Long ticketId, Response response,
                                 UUID requestingUserId) {
-        SupportTicket ticket = repository.findById(ticketId)
+        SupportTicket ticket = repository.findByIdAndDeletedFalse(ticketId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Ticket not found with id: " + ticketId));
 
@@ -244,6 +248,7 @@ public class SupportTicketService {
         }
 
         // Sender set from DB role — never from request body
+        response.setMessage(sanitizeHtml(response.getMessage()));
         response.setSender(isSuperAdmin(requestingUserId) ? "ADMIN" : "REQUESTER");
         response.setTicket(ticket);
         response.setSentAt(LocalDateTime.now());
@@ -289,6 +294,25 @@ public class SupportTicketService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Category is required");
         }
+    }
+
+    /**
+     * Strips HTML tags from user-supplied text before it is stored.
+     * The frontend already does this, but the backend is the authoritative
+     * boundary — this endpoint can be called directly (e.g. via curl/Postman)
+     * bypassing the frontend entirely, so sanitizing again here is what
+     * actually stops stored HTML/script content (XSS) from reaching the
+     * database, independent of anything the client does.
+     *
+     * Note: this is about XSS, not SQL injection — every query here goes
+     * through JPA derived queries or @Query with bound parameters, which are
+     * already immune to SQL injection regardless of the text they carry.
+     *
+     * @param value raw text
+     * @return the same text with any "<...>" tags removed
+     */
+    private String sanitizeHtml(String value) {
+        return value == null ? null : value.replaceAll("<[^>]*>", "").trim();
     }
 
     /**

@@ -123,6 +123,7 @@ export default function ApplicationManagement() {
                 <p style={{ textAlign: "center", color: "#888", padding: "20px" }}>No applications yet for your jobs.</p>
               ) : (
                 <>
+                  <div className="am-table-wrap">
                   <table className="am-table">
                     <thead>
                       <tr>
@@ -184,6 +185,7 @@ export default function ApplicationManagement() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
 
                   {applications.length > 4 && (
                     <div className="am-see-more">
