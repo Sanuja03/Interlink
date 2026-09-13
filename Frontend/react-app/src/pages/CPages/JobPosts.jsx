@@ -157,74 +157,94 @@ const JobPosts = () => {
                             >
                                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
                                     <img src={job.logo} alt={job.company} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h2 className="text-white font-bold text-base sm:text-lg leading-tight break-words">{job.title}</h2>
-                                    <p className="text-blue-100 text-sm font-medium">{job.company}</p>
-                                    <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
-                                    <div className="flex gap-2 mt-2 flex-wrap">
-                                        <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
-                                            {formatEnum(job.category)}
-                                        </span>
-                                        <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
-                                            {formatEnum(job.experienceLevel)}
-                                        </span>
+                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-xl">
+                                        {job.logo ? (
+                                            <img
+                                                src={job.logo}
+                                                alt={job.company}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    if (e.target.nextSibling) {
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }
+                                                }}
+                                            />
+                                        ) : null}
+                                        <div
+                                            style={{ display: job.logo ? 'none' : 'flex' }}
+                                            className="w-full h-full items-center justify-center"
+                                        >
+                                            {job.company ? job.company.charAt(0).toUpperCase() : 'C'}
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h2 className="text-white font-bold text-base sm:text-lg leading-tight break-words">{job.title}</h2>
+                                        <p className="text-blue-100 text-sm font-medium">{job.company}</p>
+                                        <p className="text-blue-200 text-xs mt-0.5">{job.location} | {formatEnum(job.employmentType)}</p>
+                                        <div className="flex gap-2 mt-2 flex-wrap">
+                                            <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
+                                                {formatEnum(job.category)}
+                                            </span>
+                                            <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '999px', padding: '2px 10px', fontSize: '11px', color: '#e0f2f7', fontWeight: 600 }}>
+                                                {formatEnum(job.experienceLevel)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => toggleSaveJob(job.id)}
+                                        className={`absolute top-2 right-3 sm:right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none ${savedJobIds.includes(job.id) ? 'bg-blue-100 text-[#1a3f5c]' : 'bg-blue-100/20 text-white hover:bg-blue-100/40'}`}
+                                        title={savedJobIds.includes(job.id) ? "Unsave job" : "Save job"}
+                                        style={{ border: 'none', outline: 'none' }}
+                                    >
+                                        <svg className="w-5 h-5" fill={savedJobIds.includes(job.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="box" strokeLinejoin="round" strokeWidth={1} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                        </svg>
+                                    </button>
+
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+                                        <button onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
+                                            className="flex-1 sm:flex-none whitespace-nowrap text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full"
+                                            style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
+                                            View Details
+                                        </button>
+                                        <button
+                                            onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
+                                            disabled={appliedJobIds.includes(job.id)}
+                                            className={`flex-1 sm:flex-none whitespace-nowrap text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-200 ${appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
+                                                }`}
+                                            style={{
+                                                background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #0C3E56, #1a6a82)',
+                                                outline: 'none',
+                                                border: 'none',
+                                                boxShadow: appliedJobIds.includes(job.id) ? 'none' : '0 2px 8px rgba(0,0,0,0.18)',
+                                                cursor: appliedJobIds.includes(job.id) ? 'not-allowed' : 'pointer'
+                                            }}
+                                        >
+                                            {appliedJobIds.includes(job.id) ? 'Already Applied' : 'Apply Now'}
+                                        </button>
                                     </div>
                                 </div>
-
-                                <button
-                                    onClick={() => toggleSaveJob(job.id)}
-                                    className={`absolute top-2 right-3 sm:right-5 p-2 rounded-full transition-colors border-none outline-none focus:outline-none ${savedJobIds.includes(job.id) ? 'bg-blue-100 text-[#1a3f5c]' : 'bg-blue-100/20 text-white hover:bg-blue-100/40'}`}
-                                    title={savedJobIds.includes(job.id) ? "Unsave job" : "Save job"}
-                                    style={{ border: 'none', outline: 'none' }}
-                                >
-                                    <svg className="w-5 h-5" fill={savedJobIds.includes(job.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="box" strokeLinejoin="round" strokeWidth={1} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                    </svg>
-                                </button>
-
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
-                                    <button onClick={() => navigate(`/candidate/jobposts/${job.id}`)}
-                                        className="flex-1 sm:flex-none whitespace-nowrap text-white text-sm font-semibold px-4 sm:px-5 py-2 rounded-full"
-                                        style={{ background: 'linear-gradient(135deg, #1d6fa5, #1a6a82)', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
-                                        View Details
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/candidate/jobapply/${job.id}`)}
-                                        disabled={appliedJobIds.includes(job.id)}
-                                        className={`flex-1 sm:flex-none whitespace-nowrap text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition-all duration-200 ${appliedJobIds.includes(job.id) ? 'text-gray-200 opacity-70' : 'text-white hover:opacity-90 hover:shadow-lg'
-                                            }`}
-                                        style={{
-                                            background: appliedJobIds.includes(job.id) ? '#718096' : 'linear-gradient(135deg, #0C3E56, #1a6a82)',
-                                            outline: 'none',
-                                            border: 'none',
-                                            boxShadow: appliedJobIds.includes(job.id) ? 'none' : '0 2px 8px rgba(0,0,0,0.18)',
-                                            cursor: appliedJobIds.includes(job.id) ? 'not-allowed' : 'pointer'
-                                        }}
-                                    >
-                                        {appliedJobIds.includes(job.id) ? 'Already Applied' : 'Apply Now'}
-                                    </button>
-                                </div>
-                            </div>
                         ))}
 
-                        {visibleCount < filtered.length && (
-                            <div className="flex justify-center mt-4">
-                                <button onClick={() => setVisibleCount(v => v + 5)}
-                                    className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md"
-                                    style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', border: 'none' }}>
-                                    Load more..
-                                </button>
-                            </div>
-                        )}
+                                {visibleCount < filtered.length && (
+                                    <div className="flex justify-center mt-4">
+                                        <button onClick={() => setVisibleCount(v => v + 5)}
+                                            className="px-10 py-2.5 rounded-full text-white text-sm font-semibold shadow-md"
+                                            style={{ background: 'linear-gradient(to right, #1a6a82, #1a3f5c)', border: 'none' }}>
+                                            Load more..
+                                        </button>
+                                    </div>
+                                )}
 
-                        {!loadingJobs && filtered.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                                <p className="text-gray-400 text-sm font-medium">No jobs found matching your filters.</p>
-                                <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">Clear all filters</button>
+                                {!loadingJobs && filtered.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                                        <p className="text-gray-400 text-sm font-medium">No jobs found matching your filters.</p>
+                                        <button onClick={handleReset} className="mt-3 text-blue-700 text-xs font-semibold underline">Clear all filters</button>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
                 </div>
             </main>
         </div>

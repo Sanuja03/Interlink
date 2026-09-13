@@ -74,6 +74,58 @@ const styles = `
     .apply-steps { padding: 18px 16px; }
     .apply-success__box { padding: 32px 22px; border-radius: 18px; max-width: 100%; }
   }
+  .apply-input.has-error, .apply-select.has-error, .apply-textarea.has-error {
+    border-color: #e53e3e !important;
+    background: #fffafa;
+  }
+  .apply-input.has-error:focus, .apply-select.has-error:focus, .apply-textarea.has-error:focus {
+    box-shadow: 0 0 0 3px rgba(229,62,62,0.12) !important;
+  }
+  .apply-upload.has-error {
+    border-color: #e53e3e !important;
+    background: #fff5f5 !important;
+  }
+  .apply-field-error {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: #e53e3e;
+    font-weight: 500;
+    margin-top: 4px;
+    line-height: 1.3;
+    animation: fadeIn 0.2s ease;
+  }
+  .apply-char-counter {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #7a9aaa;
+    margin-top: 5px;
+  }
+  .apply-char-counter.is-limit {
+    color: #e53e3e;
+    font-weight: 600;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-2px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .apply-resume-btn-remove {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e53e3e;
+    background: #fff;
+    color: #e53e3e;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .apply-resume-btn-remove:hover {
+    background: #fff5f5;
+  }
+  @media (max-width: 900px) { .apply-grid { grid-template-columns: 1fr; } .apply-main { padding: 20px 16px; } .apply-frow { grid-template-columns: 1fr; } .apply-hero { flex-direction: column; align-items: flex-start; } }
 `;
 
 const IconPerson = () => (
@@ -193,18 +245,168 @@ const JobApply = () => {
 
 
 
-  const set = field => e => setForm(p => ({ ...p, [field]: e.target.value }));
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const set = field => e => {
+    const val = e.target.value;
+    setForm(p => ({ ...p, [field]: val }));
+    if (errors[field]) {
+      setErrors(p => {
+        const next = { ...p };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleFileChange = (file) => {
+    if (!file) return;
+
+    const validExtensions = ['.pdf', '.doc', '.docx'];
+    const fileName = file.name.toLowerCase();
+    const isValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!isValidExtension) {
+      setErrors(p => ({
+        ...p,
+        resume: 'Invalid file format. Only PDF, DOC, and DOCX files are allowed.'
+      }));
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setErrors(p => ({
+        ...p,
+        resume: 'File size exceeds 5MB limit. Please upload a smaller document.'
+      }));
+      return;
+    }
+
+    setResumeFile(file);
+    setErrors(p => {
+      const next = { ...p };
+      delete next.resume;
+      return next;
+    });
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    if (!autofilledResume) {
+      setErrors(p => ({ ...p, resume: 'Please upload your resume / CV.' }));
+    } else {
+      setErrors(p => {
+        const next = { ...p };
+        delete next.resume;
+        return next;
+      });
+    }
+  };
 
   const validate = () => {
     const e = {};
-    if (!form.firstName.trim()) e.firstName = true;
-    if (!form.lastName.trim()) e.lastName = true;
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = true;
-    if (!form.phone.trim()) e.phone = true;
-    if (!resumeFile && !autofilledResume) e.resume = true;
-    if (!form.coverLetter.trim()) e.coverLetter = true;
+
+    // First Name
+    if (!form.firstName.trim()) {
+      e.firstName = 'First name is required.';
+    } else if (!/^[A-Za-z\s'-]{2,50}$/.test(form.firstName.trim())) {
+      e.firstName = 'First name must be 2–50 characters and contain letters only.';
+    }
+
+    // Last Name
+    if (!form.lastName.trim()) {
+      e.lastName = 'Last name is required.';
+    } else if (!/^[A-Za-z\s'-]{1,50}$/.test(form.lastName.trim())) {
+      e.lastName = 'Last name must be 1–50 characters and contain letters only.';
+    }
+
+    // Email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!form.email.trim()) {
+      e.email = 'Email address is required.';
+    } else if (!emailRegex.test(form.email.trim())) {
+      e.email = 'Please enter a valid email address (e.g. name@domain.com).';
+    }
+
+    // Phone
+    const phoneClean = form.phone.replace(/[\s\-()]/g, '');
+    const phoneRegex = /^(\+?[0-9]{9,15})$/;
+    if (!form.phone.trim()) {
+      e.phone = 'Phone number is required.';
+    } else if (!phoneRegex.test(phoneClean)) {
+      e.phone = 'Please enter a valid phone number (9–15 digits, e.g. +94 77 123 4567).';
+    }
+
+    // Resume
+    if (!resumeFile && !autofilledResume) {
+      e.resume = 'Please upload your resume / CV (PDF, DOC, or DOCX up to 5MB).';
+    }
+
+    // Cover Letter
+    if (!form.coverLetter.trim()) {
+      e.coverLetter = 'Cover letter is required.';
+    } else if (form.coverLetter.trim().length < 50) {
+      e.coverLetter = `Cover letter is too short (${form.coverLetter.trim().length}/50 characters minimum).`;
+    } else if (form.coverLetter.length > 3000) {
+      e.coverLetter = 'Cover letter cannot exceed 3000 characters.';
+    }
+
+    // LinkedIn (optional)
+    if (form.linkedin && form.linkedin.trim()) {
+      const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/.+/i;
+      if (!linkedinRegex.test(form.linkedin.trim())) {
+        e.linkedin = 'Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).';
+      }
+    }
+
+    // GitHub (optional)
+    if (form.github && form.github.trim()) {
+      const githubRegex = /^https?:\/\/(www\.)?github\.com\/.+/i;
+      if (!githubRegex.test(form.github.trim())) {
+        e.github = 'Please enter a valid GitHub URL (e.g. https://github.com/username).';
+      }
+    }
+
+    // Portfolio (optional)
+    if (form.portfolio && form.portfolio.trim()) {
+      const urlRegex = /^https?:\/\/.+\..+/i;
+      if (!urlRegex.test(form.portfolio.trim())) {
+        e.portfolio = 'Please enter a valid portfolio or website URL (e.g. https://myportfolio.com).';
+      }
+    }
+
+    // Available Start Date (optional)
+    if (form.availability) {
+      const selectedDate = new Date(form.availability);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        e.availability = 'Available start date cannot be in the past.';
+      }
+    }
+
+    // Expected Salary (optional)
+    if (form.salary && form.salary.trim()) {
+      const cleanSalary = form.salary.replace(/,/g, '').trim();
+      const numSalary = parseFloat(cleanSalary);
+      if (isNaN(numSalary) || numSalary <= 0) {
+        e.salary = 'Please enter a valid positive salary amount.';
+      }
+    }
+
     setErrors(e);
-    return Object.keys(e).length === 0;
+
+    if (Object.keys(e).length > 0) {
+      const firstErrorKey = Object.keys(e)[0];
+      const errorElement = document.querySelector(`[data-error-key="${firstErrorKey}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -275,8 +477,22 @@ const JobApply = () => {
 
         {/* Job Hero */}
         <div className="apply-hero">
-          <div className="apply-hero__logo">
-            <img src={job.logo} alt={job.company} />
+          <div className="apply-hero__logo" style={{ color: '#0C3E56', fontWeight: 'bold', fontSize: '22px' }}>
+            {job.logo ? (
+              <img
+                src={job.logo}
+                alt={job.company}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  if (e.target.nextSibling) {
+                    e.target.nextSibling.style.display = 'flex';
+                  }
+                }}
+              />
+            ) : null}
+            <div style={{ display: job.logo ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              {job.company ? job.company.charAt(0).toUpperCase() : 'C'}
+            </div>
           </div>
           <div className="apply-hero__info">
             <h1 className="apply-hero__title">{job.title}</h1>
@@ -306,99 +522,222 @@ const JobApply = () => {
               <div className="apply-card">
                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconPerson /></span>Personal Information</h2>
                 <div className="apply-frow">
-                  <div className="apply-field"><label className="apply-label">First Name <span>*</span></label><input className="apply-input" style={errors.firstName ? { borderColor: '#e53e3e' } : {}} value={form.firstName} onChange={set('firstName')} placeholder="Kamal" /></div>
-                  <div className="apply-field"><label className="apply-label">Last Name <span>*</span></label><input className="apply-input" style={errors.lastName ? { borderColor: '#e53e3e' } : {}} value={form.lastName} onChange={set('lastName')} placeholder="Perera" /></div>
+                  <div className="apply-field" data-error-key="firstName">
+                    <label className="apply-label">First Name <span>*</span></label>
+                    <input
+                      className={`apply-input ${errors.firstName ? 'has-error' : ''}`}
+                      value={form.firstName}
+                      onChange={set('firstName')}
+                      placeholder="Kamal"
+                    />
+                    {errors.firstName && <span className="apply-field-error">⚠️ {errors.firstName}</span>}
+                  </div>
+                  <div className="apply-field" data-error-key="lastName">
+                    <label className="apply-label">Last Name <span>*</span></label>
+                    <input
+                      className={`apply-input ${errors.lastName ? 'has-error' : ''}`}
+                      value={form.lastName}
+                      onChange={set('lastName')}
+                      placeholder="Perera"
+                    />
+                    {errors.lastName && <span className="apply-field-error">⚠️ {errors.lastName}</span>}
+                  </div>
                 </div>
                 <div className="apply-frow">
-                  <div className="apply-field"><label className="apply-label">Email Address <span>*</span></label><input className="apply-input" type="email" style={errors.email ? { borderColor: '#e53e3e' } : {}} value={form.email} onChange={set('email')} placeholder="kamal@email.com" /></div>
-                  <div className="apply-field"><label className="apply-label">Phone Number <span>*</span></label><input className="apply-input" type="tel" style={errors.phone ? { borderColor: '#e53e3e' } : {}} value={form.phone} onChange={set('phone')} placeholder="+94 77 123 4567" /></div>
+                  <div className="apply-field" data-error-key="email">
+                    <label className="apply-label">Email Address <span>*</span></label>
+                    <input
+                      className={`apply-input ${errors.email ? 'has-error' : ''}`}
+                      type="email"
+                      value={form.email}
+                      onChange={set('email')}
+                      placeholder="kamal@email.com"
+                    />
+                    {errors.email && <span className="apply-field-error">⚠️ {errors.email}</span>}
+                  </div>
+                  <div className="apply-field" data-error-key="phone">
+                    <label className="apply-label">Phone Number <span>*</span></label>
+                    <input
+                      className={`apply-input ${errors.phone ? 'has-error' : ''}`}
+                      type="tel"
+                      value={form.phone}
+                      onChange={set('phone')}
+                      placeholder="+94 77 123 4567"
+                    />
+                    {errors.phone && <span className="apply-field-error">⚠️ {errors.phone}</span>}
+                  </div>
                 </div>
                 <div className="apply-frow">
-                  <div className="apply-field"><label className="apply-label">Address</label><input className="apply-input" value={form.address} onChange={set('address')} placeholder="123, Main Street" /></div>
-                  <div className="apply-field"><label className="apply-label">City</label><input className="apply-input" value={form.city} onChange={set('city')} placeholder="Colombo" /></div>
+                  <div className="apply-field">
+                    <label className="apply-label">Address</label>
+                    <input className="apply-input" value={form.address} onChange={set('address')} placeholder="123, Main Street" />
+                  </div>
+                  <div className="apply-field">
+                    <label className="apply-label">City</label>
+                    <input className="apply-input" value={form.city} onChange={set('city')} placeholder="Colombo" />
+                  </div>
                 </div>
               </div>
 
               {/* Resume Upload */}
-              <div className="apply-card">
+              <div className="apply-card" data-error-key="resume">
                 <h2 className="apply-card__title">
                   <span className="apply-card__title-icon"><IconFile /></span>
-                  Resume / CV
+                  Resume / CV <span>*</span>
                 </h2>
                 {(resumeFile || autofilledResume) ? (
-                  <div
-                    className="apply-upload has-file"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '20px 24px',
-                      border: '2.5px solid #1a6a82',
-                      background: '#edf4f8',
-                      borderRadius: '14px',
-                      cursor: 'default'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', background: '#e8f4fd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <IconFile />
+                  <div>
+                    <div
+                      className={`apply-upload has-file ${errors.resume ? 'has-error' : ''}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '20px 24px',
+                        border: errors.resume ? '2.5px solid #e53e3e' : '2.5px solid #1a6a82',
+                        background: '#edf4f8',
+                        borderRadius: '14px',
+                        cursor: 'default'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '40px', height: '40px', background: '#e8f4fd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconFile />
+                        </div>
+                        <div style={{ textAlign: 'left' }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0C3E56' }}>
+                            {resumeFile ? 'New Resume Selected' : 'Autofilled Resume'}
+                          </div>
+                          <div style={{ fontSize: '0.82rem', color: '#1a6a82', fontWeight: 500, marginTop: '2px' }}>
+                            📄 {resumeFile ? resumeFile.name : autofilledResume.fileName}
+                            {resumeFile && (
+                              <span style={{ color: '#5a7a8a', marginLeft: '8px', fontSize: '0.78rem' }}>
+                                ({(resumeFile.size / (1024 * 1024)).toFixed(2)} MB)
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ textAlign: 'left' }}>
-                        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0C3E56' }}>
-                          {resumeFile ? 'New Resume Selected' : 'Autofilled Resume'}
-                        </div>
-                        <div style={{ fontSize: '0.82rem', color: '#1a6a82', fontWeight: 500, marginTop: '2px' }}>
-                          📄 {resumeFile ? resumeFile.name : autofilledResume.fileName}
-                        </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {resumeFile && (
+                          <button
+                            type="button"
+                            className="apply-resume-btn-remove"
+                            onClick={handleRemoveResume}
+                            title="Remove selected file"
+                          >
+                            Remove
+                          </button>
+                        )}
+                        <label style={{
+                          display: 'inline-block',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          border: '1.5px solid #1a6a82',
+                          background: '#fff',
+                          color: '#1a6a82',
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}>
+                          Replace
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            style={{ display: 'none' }}
+                            onChange={e => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleFileChange(e.target.files[0]);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                        </label>
                       </div>
                     </div>
-                    <div>
-                      <label style={{
-                        display: 'inline-block',
-                        padding: '8px 16px',
-                        borderRadius: '20px',
-                        border: '1.5px solid #1a6a82',
-                        background: '#fff',
-                        color: '#1a6a82',
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}>
-                        Replace
-                        <input type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) { setResumeFile(e.target.files[0]); setErrors(p => ({ ...p, resume: false })); } }} />
-                      </label>
-                    </div>
+                    {errors.resume && <span className="apply-field-error">⚠️ {errors.resume}</span>}
                   </div>
                 ) : (
-                  <label
-                    className="apply-upload"
-                    style={errors.resume ? { borderColor: '#e53e3e' } : {}}
-                  >
-                    <input type="file" accept=".pdf,.doc,.docx" onChange={e => { if (e.target.files[0]) { setResumeFile(e.target.files[0]); setErrors(p => ({ ...p, resume: false })); } }} />
-                    <div className="apply-upload__icon"><IconUpload /></div>
-                    <div className="apply-upload__label">Drag & drop your resume or click to browse</div>
-                    <div className="apply-upload__sub">Accepted: PDF, DOC, DOCX · Max 5MB</div>
-                  </label>
+                  <div>
+                    <label
+                      className={`apply-upload ${errors.resume ? 'has-error' : ''}`}
+                    >
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileChange(e.target.files[0]);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <div className="apply-upload__icon"><IconUpload /></div>
+                      <div className="apply-upload__label">Drag & drop your resume or click to browse</div>
+                      <div className="apply-upload__sub">Accepted: PDF, DOC, DOCX · Max 5MB</div>
+                    </label>
+                    {errors.resume && <span className="apply-field-error">⚠️ {errors.resume}</span>}
+                  </div>
                 )}
               </div>
 
-              {/* Cover Letter — TEMP:  to save to DB */}
-              <div className="apply-card">
+              {/* Cover Letter */}
+              <div className="apply-card" data-error-key="coverLetter">
                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconFile /></span>Cover Letter</h2>
                 <div className="apply-field">
                   <label className="apply-label">Why are you a great fit? <span>*</span></label>
-                  <textarea className="apply-textarea" style={errors.coverLetter ? { borderColor: '#e53e3e' } : {}} value={form.coverLetter} onChange={set('coverLetter')} placeholder="Tell the employer why you're interested..." />
+                  <textarea
+                    className={`apply-textarea ${errors.coverLetter ? 'has-error' : ''}`}
+                    value={form.coverLetter}
+                    onChange={set('coverLetter')}
+                    placeholder="Tell the employer why you're interested in this role and how your skills match..."
+                  />
+                  <div className="apply-char-counter">
+                    <span>{errors.coverLetter && <span className="apply-field-error" style={{ marginTop: 0 }}>⚠️ {errors.coverLetter}</span>}</span>
+                    <span className={form.coverLetter.length > 3000 ? 'is-limit' : ''}>
+                      {form.coverLetter.length} / 3000 characters (min. 50)
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Online Profiles — TEMP: to wire */}
+              {/* Online Profiles */}
               <div className="apply-card">
                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconLink /></span>Online Profiles</h2>
-                <div className="apply-frow apply-frow--full"><div className="apply-field"><label className="apply-label">LinkedIn Profile URL</label><input className="apply-input" value={form.linkedin} onChange={set('linkedin')} placeholder="https://linkedin.com/in/yourprofile" /></div></div>
+                <div className="apply-frow apply-frow--full">
+                  <div className="apply-field" data-error-key="linkedin">
+                    <label className="apply-label">LinkedIn Profile URL</label>
+                    <input
+                      className={`apply-input ${errors.linkedin ? 'has-error' : ''}`}
+                      value={form.linkedin}
+                      onChange={set('linkedin')}
+                      placeholder="https://linkedin.com/in/yourprofile"
+                    />
+                    {errors.linkedin && <span className="apply-field-error">⚠️ {errors.linkedin}</span>}
+                  </div>
+                </div>
                 <div className="apply-frow">
-                  <div className="apply-field"><label className="apply-label">Portfolio / Website</label><input className="apply-input" value={form.portfolio} onChange={set('portfolio')} placeholder="https://yourportfolio.com" /></div>
-                  <div className="apply-field"><label className="apply-label">GitHub</label><input className="apply-input" value={form.github} onChange={set('github')} placeholder="https://github.com/yourusername" /></div>
+                  <div className="apply-field" data-error-key="portfolio">
+                    <label className="apply-label">Portfolio / Website</label>
+                    <input
+                      className={`apply-input ${errors.portfolio ? 'has-error' : ''}`}
+                      value={form.portfolio}
+                      onChange={set('portfolio')}
+                      placeholder="https://yourportfolio.com"
+                    />
+                    {errors.portfolio && <span className="apply-field-error">⚠️ {errors.portfolio}</span>}
+                  </div>
+                  <div className="apply-field" data-error-key="github">
+                    <label className="apply-label">GitHub</label>
+                    <input
+                      className={`apply-input ${errors.github ? 'has-error' : ''}`}
+                      value={form.github}
+                      onChange={set('github')}
+                      placeholder="https://github.com/yourusername"
+                    />
+                    {errors.github && <span className="apply-field-error">⚠️ {errors.github}</span>}
+                  </div>
                 </div>
               </div>
 
@@ -413,11 +752,14 @@ const JobApply = () => {
                     <label className="apply-label">Years of Experience</label>
                     <select className="apply-select" value={form.yearsExp} onChange={set('yearsExp')}>
                       <option value="">Select...</option>
-                      <option>Less than 1 year</option>
-                      <option>1 – 2 years</option>
-                      <option>3 – 5 years</option>
-                      <option>5 – 8 years</option>
-                      <option>8+ years</option>
+                      <option value="0">Less than 1 year</option>
+                      <option value="1">1 – 2 years</option>
+                      <option value="3">3 – 5 years</option>
+                      <option value="5">5 – 8 years</option>
+                      <option value="8">8+ years</option>
+                      {form.yearsExp && !['0', '1', '3', '5', '8'].includes(String(form.yearsExp)) && (
+                        <option value={form.yearsExp}>{form.yearsExp} years</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -433,12 +775,31 @@ const JobApply = () => {
                 </div>
               </div>
 
-              {/* Preferences — TEMP:  to wire */}
+              {/* Preferences */}
               <div className="apply-card">
                 <h2 className="apply-card__title"><span className="apply-card__title-icon"><IconBriefcase /></span>Preferences</h2>
                 <div className="apply-frow">
-                  <div className="apply-field"><label className="apply-label">Available Start Date</label><input className="apply-input" type="date" value={form.availability} onChange={set('availability')} /></div>
-                  <div className="apply-field"><label className="apply-label">Expected Salary (LKR / month)</label><input className="apply-input" value={form.salary} onChange={set('salary')} placeholder="e.g. 150,000" /></div>
+                  <div className="apply-field" data-error-key="availability">
+                    <label className="apply-label">Available Start Date</label>
+                    <input
+                      className={`apply-input ${errors.availability ? 'has-error' : ''}`}
+                      type="date"
+                      min={todayStr}
+                      value={form.availability}
+                      onChange={set('availability')}
+                    />
+                    {errors.availability && <span className="apply-field-error">⚠️ {errors.availability}</span>}
+                  </div>
+                  <div className="apply-field" data-error-key="salary">
+                    <label className="apply-label">Expected Salary (LKR / month)</label>
+                    <input
+                      className={`apply-input ${errors.salary ? 'has-error' : ''}`}
+                      value={form.salary}
+                      onChange={set('salary')}
+                      placeholder="e.g. 150,000"
+                    />
+                    {errors.salary && <span className="apply-field-error">⚠️ {errors.salary}</span>}
+                  </div>
                 </div>
                 <div className="apply-frow apply-frow--full"><div className="apply-field"><label className="apply-label">How did you hear about this role?</label><select className="apply-select" value={form.hearAbout} onChange={set('hearAbout')}><option value="">Select...</option><option>Interlink Platform</option><option>LinkedIn</option><option>Company Website</option><option>Referral</option><option>Job Fair</option><option>Other</option></select></div></div>
               </div>

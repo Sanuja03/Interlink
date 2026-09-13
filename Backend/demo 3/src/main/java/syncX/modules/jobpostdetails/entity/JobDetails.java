@@ -10,6 +10,8 @@ import syncX.modules.enums.EmploymentTypeConverter;
 import syncX.modules.enums.ExperienceLevel;
 import syncX.modules.enums.ExperienceLevelConverter;
 
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -19,6 +21,9 @@ public class JobDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "company_id", insertable = false, updatable = false)
+    private UUID companyId;
 
     private String company;
     private String logo;

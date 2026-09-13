@@ -17,6 +17,7 @@ import syncX.modules.candidateprofile.repository.CandidateProfileRepository;
 import syncX.modules.candidateprofile.repository.CandidateResumeRepository;
 import syncX.modules.candidateprofile.repository.CandidateSkillRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -208,6 +209,12 @@ public class CandidateProfileService {
         if (education.getStartDate() == null) {
             throw new IllegalArgumentException("Start date is required");
         }
+        if (education.getStartDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the future");
+        }
+        if (education.getEndDate() != null && education.getEndDate().isBefore(education.getStartDate())) {
+            throw new IllegalArgumentException("End date cannot be before start date");
+        }
         // endDate is optional (currently studying)
         education.setCandidateId(internalId);
         return educationRepository.save(education);
@@ -237,6 +244,12 @@ public class CandidateProfileService {
         }
         if (experience.getStartDate() == null) {
             throw new IllegalArgumentException("Start date is required");
+        }
+        if (experience.getStartDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the future");
+        }
+        if (experience.getEndDate() != null && experience.getEndDate().isBefore(experience.getStartDate())) {
+            throw new IllegalArgumentException("End date cannot be before start date");
         }
         experience.setCandidateId(internalId);
         return experienceRepository.save(experience);

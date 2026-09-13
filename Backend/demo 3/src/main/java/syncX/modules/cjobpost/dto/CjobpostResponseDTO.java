@@ -7,11 +7,13 @@ import syncX.modules.enums.EmploymentType;
 import syncX.modules.enums.ExperienceLevel;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class CjobpostResponseDTO {
     private Long id;
+    private UUID companyId;
     private String company;
     private String logo;
     private String location;

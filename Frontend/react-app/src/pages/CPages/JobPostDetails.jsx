@@ -205,8 +205,26 @@ const JobPostDetails = () => {
                                     flexShrink: 0,
                                     overflow: 'hidden',
                                     border: '2px solid rgba(255,255,255,0.35)',
+                                    color: '#fff',
+                                    fontWeight: 'bold',
+                                    fontSize: '24px'
                                 }}>
-                                    <img src={job.logo} alt={job.company} style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
+                                    {job.logo ? (
+                                        <img
+                                            src={job.logo}
+                                            alt={job.company}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                if (e.target.nextSibling) {
+                                                    e.target.nextSibling.style.display = 'flex';
+                                                }
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div style={{ display: job.logo ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                                        {job.company ? job.company.charAt(0).toUpperCase() : 'C'}
+                                    </div>
                                 </div>
                                 <div>
                                     <div className="jpd-header-company" style={{ color: '#fff', fontSize: '22px', fontWeight: '400', marginBottom: '4px', lineHeight: 1.2 }}>{job.company}</div>

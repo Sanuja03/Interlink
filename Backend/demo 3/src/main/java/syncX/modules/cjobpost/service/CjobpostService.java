@@ -55,6 +55,7 @@ public class CjobpostService {
     private CjobpostResponseDTO toDto(CjobpostSummaryProjection projection) {
         CjobpostResponseDTO dto = new CjobpostResponseDTO();
         dto.setId(projection.getId());
+        dto.setCompanyId(projection.getCompanyId());
         dto.setCompany(projection.getCompany());
         dto.setLogo(projection.getLogo());
         dto.setLocation(projection.getLocation());

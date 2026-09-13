@@ -1,10 +1,12 @@
 package syncX.modules.savedjobs.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import syncX.modules.candidateprofile.entity.CandidateProfile;
 import syncX.modules.candidateprofile.repository.CandidateProfileRepository;
+import syncX.modules.CompanyAdmin.CompanyDetails.repository.CompanyDetailsRepository;
 import syncX.modules.jobpostdetails.entity.JobDetails;
 import syncX.modules.jobpostdetails.repository.JobDetailsRepository;
 import syncX.modules.savedjobs.dto.SavedJobDTO;
@@ -26,6 +28,10 @@ public class SavedJobService {
 
     @Autowired
     private JobDetailsRepository jobDetailsRepository;
+
+    @Autowired
+    @Qualifier("adminCompanyDetailsRepository")
+    private CompanyDetailsRepository companyDetailsRepository;
 
     @Transactional(readOnly = true)
     public List<SavedJobDTO> getSavedJobs(UUID userId) {
@@ -54,6 +60,19 @@ public class SavedJobService {
                 dto.setEmploymentType(job.getEmploymentType());
                 dto.setCategory(job.getCategory());
                 dto.setExperienceLevel(job.getExperienceLevel());
+
+                UUID companyId = job.getCompanyId() != null ? job.getCompanyId()
+                        : (job.getCompanyDetails() != null ? job.getCompanyDetails().getCompanyid() : null);
+                if (companyId != null) {
+                    companyDetailsRepository.findByCompanyId(companyId).ifPresent(cd -> {
+                        if (cd.getLogoUrl() != null && !cd.getLogoUrl().isBlank()) {
+                            dto.setLogo(cd.getLogoUrl());
+                        }
+                        if (cd.getCompanyName() != null && !cd.getCompanyName().isBlank()) {
+                            dto.setCompany(cd.getCompanyName());
+                        }
+                    });
+                }
             }
 
             return dto;

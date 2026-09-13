@@ -27,20 +27,23 @@ const SelectField = ({ label, value, onChange, options }) => (
     </div>
 );
 
-const DatePair = ({ startDate, endDate, onStartChange, onEndChange }) => (
-    <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-        <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>Start Date</label>
-            <input type="date" value={startDate} onChange={e => onStartChange(e.target.value)}
-                style={{ ...inputStyle, padding: '8px 12px', fontSize: '13px' }} />
+const DatePair = ({ startDate, endDate, onStartChange, onEndChange }) => {
+    const today = new Date().toLocaleDateString('en-CA');
+    return (
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+            <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>Start Date</label>
+                <input type="date" value={startDate} max={today} onChange={e => onStartChange(e.target.value)}
+                    style={{ ...inputStyle, padding: '8px 12px', fontSize: '13px' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>End Date</label>
+                <input type="date" value={endDate} min={startDate || undefined} onChange={e => onEndChange(e.target.value)}
+                    style={{ ...inputStyle, padding: '8px 12px', fontSize: '13px' }} />
+            </div>
         </div>
-        <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>End Date</label>
-            <input type="date" value={endDate} onChange={e => onEndChange(e.target.value)}
-                style={{ ...inputStyle, padding: '8px 12px', fontSize: '13px' }} />
-        </div>
-    </div>
-);
+    );
+};
 
 const CardTitle = ({ label }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
@@ -245,6 +248,7 @@ const Profile = () => {
 
     const saveEducation = async () => {
         setEduError('');
+        const today = new Date().toLocaleDateString('en-CA');
         // Delete all existing entries that were removed (those without id won't need deletion)
         // For simplicity: delete entries that have an id but were removed
         // Then POST each entry that doesn't have an id yet
@@ -254,6 +258,14 @@ const Profile = () => {
                     // New entry - POST
                     if (!entry.degree.trim() || !entry.institution.trim() || !entry.startDate) {
                         setEduError('Degree, Institution, and Start Date are required for each entry.');
+                        return;
+                    }
+                    if (entry.startDate > today) {
+                        setEduError('Start Date cannot be in the future.');
+                        return;
+                    }
+                    if (entry.endDate && entry.endDate < entry.startDate) {
+                        setEduError('End Date cannot be before Start Date.');
                         return;
                     }
                     const res = await api.post('/candidate/profile/me/education', {
@@ -294,12 +306,21 @@ const Profile = () => {
 
     const saveExperience = async () => {
         setExpError('');
+        const today = new Date().toLocaleDateString('en-CA');
         try {
             for (const entry of expEntries) {
                 if (!entry.id) {
                     // New entry - POST
                     if (!entry.company.trim() || !entry.startDate) {
                         setExpError('Company and Start Date are required for each entry.');
+                        return;
+                    }
+                    if (entry.startDate > today) {
+                        setExpError('Start Date cannot be in the future.');
+                        return;
+                    }
+                    if (entry.endDate && entry.endDate < entry.startDate) {
+                        setExpError('End Date cannot be before Start Date.');
                         return;
                     }
                     const res = await api.post('/candidate/profile/me/experience', {
