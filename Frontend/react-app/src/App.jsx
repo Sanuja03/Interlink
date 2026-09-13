@@ -54,7 +54,7 @@ import CompanyCandidateProfile from "./pages/CApages/CandidateProfile";
 import ShortlistedCandidates from "./pages/CApages/ShortlistedCandidates";
 import InterviewSummaryPage from "./pages/CApages/InterviewSummaryPage";
 import InterviewerManagementPage from "./pages/CApages/InterviewerManagementPage";
-import CompanyChatBot from "./pages/CApages/CompanyChatBot";
+import CompanyChatBot from "./pages/CApages/CompanyChatbot";
 
 
 // Super Admin pages
