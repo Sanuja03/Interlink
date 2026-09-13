@@ -270,11 +270,6 @@ public class AIChatMessageService {
      * in the user's message. Always includes name and description for grounding.
      * Falls back to the full context if no keyword match is found.
      * This reduces token usage without requiring a vector database.
-     *
-     * Updated for the new interlink.json structure: company-related queries now
-     * also pull in "core_features" (where company_management/company_registration
-     * workflows live), and notification/support/dashboard queries have their own
-     * keyword group instead of always falling back to the full KB.
      */
     private String selectRelevantContext(String userInput, String fullContext) {
         try {

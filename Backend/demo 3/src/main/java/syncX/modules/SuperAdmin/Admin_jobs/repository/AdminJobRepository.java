@@ -45,7 +45,7 @@ public interface AdminJobRepository extends JpaRepository<AdminJob, Long> {
             SELECT
                 j.id, j.job_title, j.job_location, j.employment_type,
                 j.category, j.status, j.created_at, j.company_id,
-                COALESCE(c.company_name, 'Unknown Company') AS company_name
+                COALESCE(c.company_name, 'Unknown Company') AS company_name,j.description
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.company_id
             WHERE j.id = :id

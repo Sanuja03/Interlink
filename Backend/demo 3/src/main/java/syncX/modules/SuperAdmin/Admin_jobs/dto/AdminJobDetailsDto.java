@@ -10,6 +10,7 @@ public record AdminJobDetailsDto(
         String employmentType,
         String category,
         String status,
+        String description,
         OffsetDateTime createdAt,
         UUID companyId,
         String companyName,

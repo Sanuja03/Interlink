@@ -33,6 +33,9 @@ public class AdminJob {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 

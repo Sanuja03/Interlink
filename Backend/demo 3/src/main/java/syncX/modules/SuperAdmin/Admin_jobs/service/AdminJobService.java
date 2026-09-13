@@ -76,6 +76,7 @@ public class AdminJobService {
                 (String) row[3],
                 (String) row[4],
                 (String) row[5],
+                (String) row[9],
                 createdAt,
                 companyId,
                 (String) row[8],
