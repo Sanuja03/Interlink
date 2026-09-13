@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import Footer from '../../components/CandidatePages/CandidateDashboard/Footer';
 import logo from '../../assets/logo.png';
@@ -339,48 +338,341 @@ const landingPageStyles = `
     opacity: 0.88;
 }
 
-.lp-hero__stats {
+/* ── Hero Trending Tags ────────────────────────────── */
+.lp-hero__tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.lp-hero__tags-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #5c7b8c;
+    letter-spacing: 0.02em;
+}
+
+.lp-hero__tag-btn {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(12, 62, 86, 0.12);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #0C3E56;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lp-hero__tag-btn:hover, .lp-hero__tag-btn--active {
+    background: #0C3E56;
+    color: #ffffff;
+    border-color: #0C3E56;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(12, 62, 86, 0.15);
+}
+
+/* ── Hero Interactive Showcase ─────────────────────── */
+.lp-hero__showcase {
     position: relative;
     z-index: 1;
-    display: flex;
-    gap: 0;
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 8px 40px rgba(12, 62, 86, 0.12);
-    margin-top: 52px;
-    overflow: hidden;
-    border: 1px solid rgba(12, 62, 86, 0.08);
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 46px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px;
+    border: 1px solid rgba(12, 62, 86, 0.1);
+    box-shadow: 0 16px 45px -8px rgba(12, 62, 86, 0.12);
+    padding: 24px 28px 20px;
+    text-align: left;
+    box-sizing: border-box;
+    transition: box-shadow 0.3s ease;
 }
 
-.lp-hero__stat {
-    flex: 1;
-    min-width: 140px;
+.lp-hero__showcase:hover {
+    box-shadow: 0 20px 50px -6px rgba(12, 62, 86, 0.16);
+}
+
+.lp-hero__showcase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(12, 62, 86, 0.08);
+    margin-bottom: 20px;
+}
+
+.lp-hero__showcase-live {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lp-hero__showcase-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseLive 2s infinite;
+}
+
+@keyframes pulseLive {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.lp-hero__showcase-live-text {
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: #0C3E56;
+    letter-spacing: -0.01em;
+}
+
+.lp-hero__showcase-tabs {
+    display: flex;
+    background: rgba(12, 62, 86, 0.06);
+    padding: 4px;
+    border-radius: 50px;
+    gap: 4px;
+}
+
+.lp-hero__showcase-tab {
+    background: none;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #5c7b8c;
+    padding: 6px 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lp-hero__showcase-tab--active {
+    background: #ffffff;
+    color: #0C3E56;
+    box-shadow: 0 2px 8px rgba(12, 62, 86, 0.12);
+}
+
+.lp-hero__showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.lp-hero__showcase-card {
+    background: #ffffff;
+    border: 1px solid rgba(12, 62, 86, 0.08);
+    border-radius: 16px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba(12, 62, 86, 0.04);
+}
+
+.lp-hero__showcase-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(26, 106, 130, 0.3);
+    box-shadow: 0 8px 24px rgba(26, 106, 130, 0.12);
+}
+
+.lp-hero__showcase-card-top {
+    display: flex;
     align-items: center;
-    padding: 22px 28px;
-    border-right: 1px solid rgba(12, 62, 86, 0.08);
+    justify-content: space-between;
+    margin-bottom: 14px;
 }
 
-.lp-hero__stat:last-child {
-    border-right: none;
+.lp-hero__showcase-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.lp-hero__stat-val {
-    font-size: 1.9rem;
-    font-weight: 800;
+.lp-hero__showcase-card-icon--teal {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.lp-hero__showcase-card-icon--blue {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.lp-hero__showcase-card-icon--amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.lp-hero__showcase-card-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.lp-hero__showcase-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+}
+
+.lp-hero__showcase-pill--match {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.lp-hero__showcase-pill--schedule {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.lp-hero__showcase-pill--ai {
+    background: #faf5ff;
+    color: #9333ea;
+    border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+.lp-hero__showcase-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
     color: #0C3E56;
-    line-height: 1;
+    margin: 0 0 12px;
+    line-height: 1.3;
 }
 
-.lp-hero__stat-label {
-    font-size: 0.82rem;
-    color: #6a8fa0;
-    font-weight: 500;
-    margin-top: 4px;
-    text-align: center;
+.lp-hero__showcase-preview {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border: 1px dashed rgba(12, 62, 86, 0.15);
+    font-size: 0.8rem;
 }
+
+.lp-hero__showcase-role {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.lp-hero__showcase-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.lp-hero__showcase-tags span {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 0.72rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.lp-hero__showcase-slot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.lp-hero__slot-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+.lp-hero__showcase-confirmed {
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.72rem;
+}
+
+.lp-hero__showcase-q {
+    font-style: italic;
+    color: #334155;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.lp-hero__showcase-tip {
+    font-size: 0.72rem;
+    color: #7c3aed;
+    font-weight: 600;
+}
+
+.lp-hero__showcase-card-desc {
+    font-size: 0.82rem;
+    color: #5c7b8c;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.lp-hero__showcase-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(12, 62, 86, 0.06);
+}
+
+.lp-hero__showcase-footer-text {
+    font-size: 0.84rem;
+    color: #5c7b8c;
+    font-weight: 500;
+}
+
+.lp-hero__showcase-footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a6a82;
+    text-decoration: none;
+    transition: gap 0.2s ease, color 0.2s ease;
+}
+
+.lp-hero__showcase-footer-link:hover {
+    color: #0C3E56;
+    gap: 9px;
+}
+
 
 /* ── Generic buttons ───────────────────────────────── */
 .lp-btn {
@@ -755,76 +1047,6 @@ const landingPageStyles = `
     box-shadow: 0 4px 16px rgba(12, 62, 86, 0.22);
 }
 
-/* ── Testimonials ──────────────────────────────────── */
-.lp-testimonials {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 22px;
-}
-
-.lp-testimonial {
-    background: #fff;
-    border: 1px solid rgba(12, 62, 86, 0.08);
-    border-radius: 20px;
-    padding: 30px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.lp-testimonial:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 32px rgba(12, 62, 86, 0.1);
-}
-
-.lp-testimonial__stars {
-    display: flex;
-    gap: 3px;
-}
-
-.lp-testimonial__star {
-    color: #f59e0b;
-}
-
-.lp-testimonial__text {
-    font-size: 0.97rem;
-    color: #3a5568;
-    line-height: 1.7;
-    font-style: italic;
-    margin: 0;
-    flex: 1;
-}
-
-.lp-testimonial__author {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.lp-testimonial__avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1a6a82, #0C3E56);
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-
-.lp-testimonial__name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #0C3E56;
-}
-
-.lp-testimonial__role {
-    font-size: 0.82rem;
-    color: #7a9aaa;
-}
 
 /* ── CTA Banner ────────────────────────────────────── */
 .lp-cta-banner {
@@ -938,14 +1160,30 @@ const landingPageStyles = `
         align-items: center;
     }
 
-    .lp-hero__stats {
-        margin-top: 36px;
+    .lp-hero__showcase {
+        margin-top: 32px;
+        padding: 18px 16px;
     }
 
-    .lp-hero__stat {
-        min-width: 50%;
-        padding: 16px 14px;
+    .lp-hero__showcase-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
+
+    .lp-hero__showcase-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lp-hero__showcase-tabs {
+        width: 100%;
+    }
+
+    .lp-hero__showcase-tab {
+        flex: 1;
+        text-align: center;
+    }
+
 
     .lp-section {
         padding: 60px 18px;
@@ -1062,18 +1300,6 @@ const companySteps = [
     { num: '04', title: 'Schedule & Hire', desc: 'Schedule interviews from the platform and make your best hire faster.' },
 ];
 
-const testimonials = [
-    { name: 'Priya Jayawardena', role: 'Software Engineer', company: 'WSO2', text: 'Interlink helped me land my dream job in just 3 weeks. The AI prep questions were spot-on!', stars: 5 },
-    { name: 'Ashwin Perera', role: 'HR Manager', company: 'Dialog Axiata', text: 'Posting jobs and finding the right candidates has never been this effortless. Highly recommended.', stars: 5 },
-    { name: 'Sareena Fernando', role: 'UX Designer', company: 'Axiata', text: 'The interview scheduler saved me so much back-and-forth. Everything in one place is a game changer.', stars: 4 },
-];
-
-const stats = [
-    { value: '10K+', label: 'Active Job Seekers' },
-    { value: '1.2K+', label: 'Companies Hiring' },
-    { value: '95%', label: 'Interview Success Rate' },
-    { value: '3×', label: 'Faster Hiring Process' },
-];
 
 /* ─── Landing Navbar ─── */
 const LandingNavbar = () => {
@@ -1100,7 +1326,6 @@ const LandingNavbar = () => {
                 <div className="lp-nav__links">
                     <button className="lp-nav__link" onClick={() => scrollTo('features')}>Features</button>
                     <button className="lp-nav__link" onClick={() => scrollTo('howitworks')}>How It Works</button>
-                    <button className="lp-nav__link" onClick={() => scrollTo('testimonials')}>Testimonials</button>
                     <Link to="/Login" className="lp-nav__signin">Sign In</Link>
                     <button className="lp-nav__cta"  onClick={() => scrollTo('howitworks')}>Get Started</button>
                 </div>
@@ -1116,9 +1341,8 @@ const LandingNavbar = () => {
                 <div className="lp-nav__mobile">
                     <button className="lp-nav__mlink" onClick={() => scrollTo('features')}>Features</button>
                     <button className="lp-nav__mlink" onClick={() => scrollTo('howitworks')}>How It Works</button>
-                    <button className="lp-nav__mlink" onClick={() => scrollTo('testimonials')}>Testimonials</button>
                     <Link to="/Login" className="lp-nav__mlink" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                    <Link to="/register" className="lp-nav__mcta" onClick={() => setMobileOpen(false)}>Get Started Free</Link>
+                    <Link to="/Signup?role=candidate" className="lp-nav__mcta" onClick={() => setMobileOpen(false)}>Get Started Free</Link>
                 </div>
             )}
         </nav>
@@ -1128,7 +1352,12 @@ const LandingNavbar = () => {
 /* ─── Main Landing Page ─── */
 const LandingPage = () => {
     const [activeTab, setActiveTab] = useState('candidate');
+    const [showcaseRole, setShowcaseRole] = useState('candidate');
+    const [searchQuery, setSearchQuery] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const trendingRoles = ['React & Node', 'Full-Stack', 'UI/UX Design', 'DevOps / Cloud', 'AI & Python', 'Data Science'];
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -1140,6 +1369,14 @@ const LandingPage = () => {
             }, 100);
         }
     }, [location]);
+
+    const handleSearch = () => {
+        if (searchQuery.trim()) {
+            navigate(`/Signup?role=candidate&search=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            document.getElementById('features')?.scrollIntoView({ behavior: "smooth" });
+        }
+    };
 
     return (
         <div className="lp">
@@ -1169,10 +1406,10 @@ const LandingPage = () => {
                     </p>
 
                     <div className="lp-hero__actions">
-                        <Link to="/register?role=candidate" className="lp-btn lp-btn--primary lp-btn--lg">
+                        <Link to="/Signup?role=candidate" className="lp-btn lp-btn--primary lp-btn--lg">
                             I'm Looking for a Job <IconArrow />
                         </Link>
-                        <Link to="/register?role=company" className="lp-btn lp-btn--outline lp-btn--lg">
+                        <Link to="/SignUpCompany?role=company" className="lp-btn lp-btn--outline lp-btn--lg">
                             I'm Hiring Talent <IconArrow />
                         </Link>
                     </div>
@@ -1180,20 +1417,200 @@ const LandingPage = () => {
                     <div className="lp-hero__search">
                         <div className="lp-hero__searchbox">
                             <IconSearch />
-                            <input type="text" placeholder="Search jobs, skills, or companies…" />
-                            <button className="lp-hero__search-btn">Search</button>
+                            <input 
+                                type="text" 
+                                placeholder="Search jobs, skills, or companies…" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSearch();
+                                }}
+                            />
+                            <button className="lp-hero__search-btn" onClick={handleSearch}>Search</button>
+                        </div>
+
+                        {/* Trending tags */}
+                        <div className="lp-hero__tags">
+                            <span className="lp-hero__tags-label">Trending:</span>
+                            {trendingRoles.map(tag => (
+                                <button 
+                                    key={tag} 
+                                    type="button"
+                                    className={`lp-hero__tag-btn ${searchQuery === tag ? 'lp-hero__tag-btn--active' : ''}`}
+                                    onClick={() => setSearchQuery(tag)}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Floating stats card */}
-                <div className="lp-hero__stats">
-                    {stats.map((s) => (
-                        <div key={s.label} className="lp-hero__stat">
-                            <span className="lp-hero__stat-val">{s.value}</span>
-                            <span className="lp-hero__stat-label">{s.label}</span>
+                {/* ── Interactive Live Hiring Ecosystem Showcase ── */}
+                <div className="lp-hero__showcase">
+                    <div className="lp-hero__showcase-header">
+                        <div className="lp-hero__showcase-live">
+                            <span className="lp-hero__showcase-pulse" />
+                            <span className="lp-hero__showcase-live-text">Intelligent Hiring Ecosystem</span>
                         </div>
-                    ))}
+                        <div className="lp-hero__showcase-tabs">
+                            <button 
+                                type="button"
+                                className={`lp-hero__showcase-tab ${showcaseRole === 'candidate' ? 'lp-hero__showcase-tab--active' : ''}`}
+                                onClick={() => setShowcaseRole('candidate')}
+                            >
+                                Candidate Experience
+                            </button>
+                            <button 
+                                type="button"
+                                className={`lp-hero__showcase-tab ${showcaseRole === 'company' ? 'lp-hero__showcase-tab--active' : ''}`}
+                                onClick={() => setShowcaseRole('company')}
+                            >
+                                Employer Workflow
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="lp-hero__showcase-grid">
+                        {showcaseRole === 'candidate' ? (
+                            <>
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--teal">
+                                            <IconAI />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--match">98% Fit Score</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">AI Compatibility Engine</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-role">Senior Full-Stack Engineer</div>
+                                        <div className="lp-hero__showcase-tags">
+                                            <span>React</span>
+                                            <span>Node.js</span>
+                                            <span>TypeScript</span>
+                                        </div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Tailored recommendations comparing your verified skill set directly to company requirements.
+                                    </p>
+                                </div>
+
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--blue">
+                                            <IconCalendar />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--schedule">Instant Booking</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">Seamless Interview Sync</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-slot">
+                                            <span className="lp-hero__slot-dot" />
+                                            <span>Technical Round • Thu, 2:30 PM</span>
+                                        </div>
+                                        <div className="lp-hero__showcase-confirmed">✓ Calendar Confirmed</div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Select convenient interview slots with real-time sync and automated meeting notifications.
+                                    </p>
+                                </div>
+
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--amber">
+                                            <IconChart />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--ai">Smart Prep Coach</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">AI Practice & Feedback</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-q">"Architect a resilient microservice system"</div>
+                                        <div className="lp-hero__showcase-tip">💡 AI Tip: Emphasize circuit breakers & event queues</div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Sharpen your confidence with role-specific questions and instant feedback before interviews.
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--teal">
+                                            <IconUsers />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--match">Smart Ranking</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">Automated Applicant Screening</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-role">Top 5% Matched Candidates</div>
+                                        <div className="lp-hero__showcase-tags">
+                                            <span>Verified Resume</span>
+                                            <span>Skill Scored</span>
+                                        </div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Filter hundreds of applicants effortlessly with intelligent scoring and skill alignment.
+                                    </p>
+                                </div>
+
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--blue">
+                                            <IconCalendar />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--schedule">Zero Friction</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">Coordinated Interview Rounds</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-slot">
+                                            <span className="lp-hero__slot-dot" />
+                                            <span>Interviewer Availability Synced</span>
+                                        </div>
+                                        <div className="lp-hero__showcase-confirmed">✓ Video Room Auto-Generated</div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Coordinate hiring panel schedules and issue interview invites in a single click.
+                                    </p>
+                                </div>
+
+                                <div className="lp-hero__showcase-card">
+                                    <div className="lp-hero__showcase-card-top">
+                                        <div className="lp-hero__showcase-card-icon lp-hero__showcase-card-icon--amber">
+                                            <IconShield />
+                                        </div>
+                                        <span className="lp-hero__showcase-pill lp-hero__showcase-pill--ai">Authenticated</span>
+                                    </div>
+                                    <h4 className="lp-hero__showcase-card-title">Verified Talent Network</h4>
+                                    <div className="lp-hero__showcase-preview">
+                                        <div className="lp-hero__showcase-q">Authentic profiles, credentials & portfolios</div>
+                                        <div className="lp-hero__showcase-tip">🛡️ Zero ghosting • Genuine career histories</div>
+                                    </div>
+                                    <p className="lp-hero__showcase-card-desc">
+                                        Connect with real, high-caliber professionals ready to join and make an immediate impact.
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="lp-hero__showcase-footer">
+                        <div className="lp-hero__showcase-footer-text">
+                            {showcaseRole === 'candidate' 
+                                ? "Accelerate your career with intelligent tools and direct hiring access."
+                                : "Transform your talent acquisition cycle with streamlined modern workflows."
+                            }
+                        </div>
+                        {showcaseRole === 'candidate' ? (
+                            <Link to="/Signup?role=candidate" className="lp-hero__showcase-footer-link">
+                                Get Started as Candidate <IconArrow />
+                            </Link>
+                        ) : (
+                            <Link to="/SignUpCompany?role=company" className="lp-hero__showcase-footer-link">
+                                Hire Talent Today <IconArrow />
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </section>
 
@@ -1304,45 +1721,14 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* ── TESTIMONIALS ── */}
-            <section id="testimonials" className="lp-section lp-section--light">
-                <div className="lp-container">
-                    <div className="lp-section-head">
-                        <span className="lp-section-tag">Testimonials</span>
-                        <h2 className="lp-section-title">What Our Users Say</h2>
-                        <p className="lp-section-sub">Real stories from candidates and employers who found success through Interlink.</p>
-                    </div>
-
-                    <div className="lp-testimonials">
-                        {testimonials.map((t) => (
-                            <div key={t.name} className="lp-testimonial">
-                                <div className="lp-testimonial__stars">
-                                    {Array.from({ length: t.stars }).map((_, i) => (
-                                        <span key={i} className="lp-testimonial__star"><IconStar /></span>
-                                    ))}
-                                </div>
-                                <p className="lp-testimonial__text">"{t.text}"</p>
-                                <div className="lp-testimonial__author">
-                                    <div className="lp-testimonial__avatar">{t.name[0]}</div>
-                                    <div>
-                                        <div className="lp-testimonial__name">{t.name}</div>
-                                        <div className="lp-testimonial__role">{t.role} · {t.company}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
             {/* ── BOTTOM CTA BANNER ── */}
             <section className="lp-cta-banner">
                 <div className="lp-cta-banner__inner">
                     <h2 className="lp-cta-banner__title">Ready to Take the Next Step?</h2>
                     <p className="lp-cta-banner__sub">Join thousands of candidates and companies already using Interlink to find their perfect match.</p>
                     <div className="lp-cta-banner__actions">
-                        <Link to="/register?role=candidate" className="lp-btn lp-btn--white lp-btn--lg">Find Jobs</Link>
-                        <Link to="/register?role=company" className="lp-btn lp-btn--outline-white lp-btn--lg">Post a Job</Link>
+                        <Link to="/Signup?role=candidate" className="lp-btn lp-btn--white lp-btn--lg">Find Jobs</Link>
+                        <Link to="/SignUpCompany?role=company" className="lp-btn lp-btn--outline-white lp-btn--lg">Post a Job</Link>
                     </div>
                 </div>
             </section>

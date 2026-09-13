@@ -8,6 +8,7 @@ import NotificationBell from "../../shared/NotificationBell";
 const sidebarStyles = `
   .sidebar {
     height: 100vh;
+    height: 100dvh;
     background: #ffffff;
     border-right: 1px solid #e5e7eb;
     display: flex;
@@ -55,6 +56,7 @@ const sidebarStyles = `
     justify-content: space-between;
     padding: 18px 14px 14px;
     min-height: 64px;
+    flex-shrink: 0;
   }
 
   .sidebar-logo-img {
@@ -81,6 +83,14 @@ const sidebarStyles = `
     flex-direction: column;
     gap: 2px;
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .sidebar-nav-item {
@@ -131,6 +141,11 @@ const sidebarStyles = `
     pointer-events: none;
   }
 
+  .sidebar.collapsed .sidebar-nav-item {
+    justify-content: center;
+    padding: 10px 0;
+  }
+
   /* Logout */
   .sidebar-logout {
     display: flex;
@@ -150,10 +165,18 @@ const sidebarStyles = `
     transition: background 0.15s ease;
     white-space: nowrap;
     overflow: hidden;
+    flex-shrink: 0;
   }
 
   .sidebar-logout:hover {
     background: #fef2f2;
+  }
+
+  .sidebar.collapsed .sidebar-logout {
+    justify-content: center;
+    padding: 10px 0;
+    width: calc(100% - 12px);
+    margin: 0 6px 4px;
   }
 
   .sidebar.collapsed .sidebar-logout .sidebar-label {
@@ -166,6 +189,12 @@ const sidebarStyles = `
   .sidebar-profile {
     padding: 12px 8px;
     border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+
+  .sidebar.collapsed .sidebar-profile {
+    padding: 12px 6px;
   }
 
   .sidebar-profile-link {
@@ -176,12 +205,16 @@ const sidebarStyles = `
     border-radius: 12px;
     text-decoration: none;
     transition: background 0.15s ease;
-    overflow: hidden;
     white-space: nowrap;
   }
 
   .sidebar-profile-link:hover {
     background: #f3f4f6;
+  }
+
+  .sidebar.collapsed .sidebar-profile-link {
+    justify-content: center;
+    padding: 10px 0;
   }
 
   .sidebar-avatar {
@@ -190,6 +223,7 @@ const sidebarStyles = `
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
+    aspect-ratio: 1 / 1;
   }
 
   .sidebar-avatar-fallback {
@@ -204,6 +238,7 @@ const sidebarStyles = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    aspect-ratio: 1 / 1;
   }
 
   .sidebar-profile-info {

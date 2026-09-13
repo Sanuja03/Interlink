@@ -155,9 +155,7 @@ const JobPosts = () => {
                                 className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 rounded-2xl px-4 sm:px-6 py-5 pr-12 sm:pr-6 shadow-md relative group"
                                 style={{ background: 'linear-gradient(135deg, #1a6a82 0%, #1a3f5c 100%)' }}
                             >
-                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30">
-                                    <img src={job.logo} alt={job.company} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
-                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-xl">
+                                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden border-2 border-white/30 text-white font-bold text-xl">
                                         {job.logo ? (
                                             <img
                                                 src={job.logo}
