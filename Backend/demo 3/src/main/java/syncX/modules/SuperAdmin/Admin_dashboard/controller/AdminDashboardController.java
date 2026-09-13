@@ -8,7 +8,6 @@ import syncX.modules.SuperAdmin.Admin_dashboard.service.AdminDashboardService;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class AdminDashboardController {
 

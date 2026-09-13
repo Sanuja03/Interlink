@@ -28,7 +28,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
  */
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin(origins = "http://localhost:5173")  //frontend cross origin allowance
 public class SupportTicketController {
 
     private final SupportTicketService service;

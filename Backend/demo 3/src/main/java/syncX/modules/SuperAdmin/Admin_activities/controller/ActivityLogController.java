@@ -10,7 +10,6 @@ import syncX.modules.SuperAdmin.Admin_activities.dto.CreateActivityLogDto;
 import syncX.modules.SuperAdmin.Admin_activities.service.ActivityLogService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class ActivityLogController {
 

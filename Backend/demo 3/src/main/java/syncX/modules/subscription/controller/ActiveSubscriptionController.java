@@ -14,7 +14,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/active-subscriptions")
 @RequiredArgsConstructor
-@CrossOrigin
 public class ActiveSubscriptionController {
 
     private final ActiveSubscriptionService service;

@@ -10,7 +10,6 @@ import syncX.modules.SuperAdmin.Admin_jobs.service.AdminJobService;
 
 @RestController
 @RequestMapping("/api/admin/jobs")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class AdminJobController {
 

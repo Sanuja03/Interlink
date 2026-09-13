@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/settings")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class SASettingsController {
 

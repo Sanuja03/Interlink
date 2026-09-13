@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/CompanyPages/layout/DashboardLayout";
 import CustomSelect from "./CustomSelect";
 import "./EditJob.css";
-import axios from "axios";
+import api from "../../lib/api";
 import { createActivityLog } from "../../api/ActivityLogsApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
@@ -42,8 +42,8 @@ export default function EditJob() {
   useEffect(() => {
     if (!jobId || !token) return;
 
-    axios
-      .get(`http://localhost:8080/api/jobs/${jobId}`, {
+    api
+      .get(`/jobs/${jobId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -117,7 +117,7 @@ export default function EditJob() {
         deadline: form.deadline || null,
       };
 
-      await axios.put(`http://localhost:8080/api/jobs/${jobId}`, data, {
+      await api.put(`/jobs/${jobId}`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -147,7 +147,7 @@ export default function EditJob() {
     }
     try {
       if (!token) return;
-      await axios.delete(`http://localhost:8080/api/jobs/${jobId}`, {
+      await api.delete(`/jobs/${jobId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       try {

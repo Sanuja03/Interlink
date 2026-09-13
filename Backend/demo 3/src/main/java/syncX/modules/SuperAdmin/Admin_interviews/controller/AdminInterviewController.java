@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/interviews")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class AdminInterviewController {
 

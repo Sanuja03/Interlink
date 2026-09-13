@@ -1,5 +1,6 @@
 package syncX.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,12 +12,13 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    // Reads cors.allowed-origins (application.properties), which in turn
+    // reads CORS_ALLOWED_ORIGINS so each deployed environment can set its own.
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${cors.allowed-origins}") List<String> allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173"
-        ));
+        config.setAllowedOrigins(allowedOrigins);
 
         //front end requests can be only  below methods and the request cant inlcude the authorization header including the jwt
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

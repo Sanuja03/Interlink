@@ -8,7 +8,6 @@ import syncX.modules.job.service.JobService;
 
 @RestController
 @RequestMapping("/api/jobs")
-@CrossOrigin("*")
 public class JobController {
 
     @Autowired

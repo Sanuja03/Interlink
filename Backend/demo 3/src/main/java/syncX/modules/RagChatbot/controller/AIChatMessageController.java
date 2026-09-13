@@ -23,7 +23,6 @@ import syncX.modules.RagChatbot.service.AIChatMessageService;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class AIChatMessageController {
 

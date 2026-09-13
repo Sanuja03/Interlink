@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/interview-summary")
-@CrossOrigin(origins = "*")
 public class InterviewSummaryController {
 
     private final InterviewSummaryService service;
