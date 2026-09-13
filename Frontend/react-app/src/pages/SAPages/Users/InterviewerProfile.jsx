@@ -8,7 +8,7 @@ import UserActivityLog from "../../../components/SuperAdminComponents/Users/User
 import BackButton from "../../../components/SuperAdminComponents/Layout/Back";
 import { getUserProfile, suspendUser, restoreUser, flagUser, unflagUser } from "../../../api/SAdminUsersApi";
 import { createActivityLog } from "../../../api/ActivityLogsApi";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../context/Authcontext";
 
 // Availability cell color based on boolean value
 const availabilityStyle = (isAvailable) => {

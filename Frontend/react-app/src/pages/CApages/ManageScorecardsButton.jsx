@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ScorecardManager from "../../components/CompanyPages/ScoreCardManager";
+import ScorecardManager from "../../components/CompanyPages/ScorecardManager";
 
 
 const ManageScorecardsButton = ({

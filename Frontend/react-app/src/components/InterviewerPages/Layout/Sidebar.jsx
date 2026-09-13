@@ -5,7 +5,7 @@ import dashboardIcon from "../../../assets/dashboard.png";
 import interviewIcon from "../../../assets/interviews.png";
 import calendarIcon from "../../../assets/calendar.png";
 import defaultAvatar from "../../../assets/default-avatar.png";
-import ChatBot from "../../../assets/ChatBot.png";
+import ChatBot from "../../../assets/Chatbot.png";
 
 
 import { Link, useLocation } from "react-router-dom";

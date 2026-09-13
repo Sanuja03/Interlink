@@ -10,7 +10,7 @@ import logo from "../../../assets/footer/logo.png";
 import defaultAvatar from "../../../assets/images/default-avatar.png";
 import dashboardIcon from "../../../assets/icons/dashboard.png";
 import fileIcon from "../../../assets/icons/file.png";
-import ChatBot from "../../../assets/ChatBot.png";
+import ChatBot from "../../../assets/Chatbot.png";
 import supportIcon from "../../../assets/SupportTickets.png";
 
 const Sidebar = () => {

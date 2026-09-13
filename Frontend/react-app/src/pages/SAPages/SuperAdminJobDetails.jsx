@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import BackButton from "../../components/SuperAdminComponents/Layout/Back";
 import { getJobById, flagJob, unflagJob, suspendJob, restoreJob } from "../../api/SAdminJobApi";
 import { createActivityLog } from "../../api/ActivityLogsApi";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/Authcontext";
 
 const STATUS_BADGE = {
   OPEN:      "bg-green-100 text-green-700",

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/InterviewerPages/Layout/DashboardLayout";
 import api from "../../lib/api";
 import CandidateProfileView from "../CApages/Candidateprofileview";
-import "./InterviewerCandidateProfile.css";
+import "./Interviewercandidateprofile.css";
 
 /**
  * Interviewer Candidate Profile page.

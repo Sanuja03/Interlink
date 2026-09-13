@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { approveCompany, rejectCompany } from "../../../api/SAdminCompanyApi";
 import { createActivityLog } from "../../../api/ActivityLogsApi";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../context/Authcontext";
 
 export default function CompanyCard({ type, company, refresh }) {
   const navigate = useNavigate();
