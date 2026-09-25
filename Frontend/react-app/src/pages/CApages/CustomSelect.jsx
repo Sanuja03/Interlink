@@ -3,8 +3,7 @@ import "./CustomSelect.css";
 
 /**
  * A fully styled dropdown that works as a drop-in replacement for a native
- * <select>. It fires onChange / onBlur with a synthetic { target: { name, value } }
- * event, so existing form handlers and validation keep working unchanged.
+ * <select>.
  *
  * Props:
  *   name, value, onChange, onBlur      – same contract as a native <select>
@@ -58,7 +57,7 @@ export default function CustomSelect({
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [open, current]);
 
   const onKeyDown = (e) => {

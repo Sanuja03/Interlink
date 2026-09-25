@@ -1,17 +1,3 @@
-/* ==================================================================
-   Interviewer dashboard shell — responsive behaviour only.
-
-   Desktop (>= 1024px) is byte-for-byte the old layout: a 240px fixed
-   sidebar with the main column offset by the same amount.
-
-   Below that the sidebar becomes an off-canvas drawer opened by the
-   hamburger in the top bar, so the content column gets the full width.
-   ================================================================== */
-
-/* NB: no overflow clipping on .idl-root on purpose — .idl-sidebar and
-   .idl-backdrop are position: fixed, and a clipping ancestor can swallow
-   them. The off-screen drawer is contained by the root-level rule in
-   index.css instead. */
 
 .idl-sidebar {
   width: 240px;

@@ -2,8 +2,8 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/Authcontext";
-import { useEffect, useState } from "react";               // ✅ add
-import api from "../../../lib/api";              // ✅ add
+import { useEffect, useState } from "react";               
+import api from "../../../lib/api";              
 
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
@@ -30,7 +30,7 @@ const DashboardLayout = ({ children }) => {
     setMobileNavOpen(false);
   }
 
-  // ✅ NEW: load correct companyId
+  //  load correct companyId
   useEffect(() => {
     const loadCompanyId = async () => {
       try {
@@ -54,7 +54,7 @@ const DashboardLayout = ({ children }) => {
     try {
       await logout();
 
-      // ✅ clear companyId on logout
+      // clear companyId on logout
       localStorage.removeItem("companyId");
 
       navigate("/");

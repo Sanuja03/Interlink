@@ -16,25 +16,7 @@ public class AiService {
 
     private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
-    // CHANGED — was "gpt-4o-mini". gpt-5.6-terra is OpenAI's current balanced-tier
-    // reasoning model: meaningfully stronger judgment than 4o-mini for the
-    // semantic skill-matching call, at a fraction of the flagship (Sol) tier's
-    // cost. Single constant so the model can be tuned in one place.
-    //
-    // NOTE — reasoning-model API differences from gpt-4o-mini (all three calls
-    // below were updated accordingly):
-    //  - "temperature" is rejected outright on reasoning models (400 error) —
-    //    removed. Determinism now comes from response_format / exact-copy
-    //    prompt rules instead of temperature=0.
-    //  - "max_tokens" is rejected — reasoning models require
-    //    "max_completion_tokens" instead.
-    //  - reasoning happens internally before the visible answer, and that
-    //    internal reasoning also consumes the max_completion_tokens budget,
-    //    so budgets were raised to avoid the model running out of room to
-    //    think and returning an empty completion.
-    //  - "reasoning_effort" is a new dial ("low" | "medium" | "high") — set
-    //    higher on the skill-matching call since that's the judgment-heavy
-    //    step that actually decides match/no-match for scoring.
+
     private static final String MODEL = "gpt-5.6-terra";
 
     private final RestTemplate restTemplate;
@@ -55,9 +37,7 @@ public class AiService {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", MODEL);
-        // Raised from 350 — reasoning tokens eat into this budget before the
-        // visible JSON is written, so a tight budget here risks a truncated
-        // or empty response.
+
         body.put("max_completion_tokens", 900);
         body.put("reasoning_effort", "medium");
         body.put("response_format", Map.of("type", "json_object"));
@@ -240,14 +220,9 @@ Text:
         body.put("model", MODEL);
         // Raised from 250 — same reasoning-token headroom reason as above.
         body.put("max_completion_tokens", 700);
-        // "high" here (vs "medium" for the two extraction calls above) —
-        // this is the judgment-heavy step that decides match/no-match for
-        // every required skill, which is what the final score is built on,
-        // so it gets the most reasoning budget of the three calls.
+
         body.put("reasoning_effort", "high");
-        // NOTE: no response_format here — this call must return a bare JSON
-        // array, and response_format:"json_object" only accepts a JSON
-        // object at the top level, so it can't be used for this one.
+
 
         String cvSkillsStr = String.join(", ", cvSkills);
         String reqSkillsStr = String.join(", ", requiredSkills);

@@ -10,8 +10,7 @@ const DashboardLayout = ({ children }) => {
   const location = useLocation();
   const { logout } = useAuth();
 
-  // ADDED — off-canvas sidebar state for narrow screens. On lg+ screens the
-  // sidebar stays static and this is never used (see the lg: classes below).
+  
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Close the mobile drawer whenever the route changes, instead of wiring a

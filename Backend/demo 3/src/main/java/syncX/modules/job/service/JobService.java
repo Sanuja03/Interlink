@@ -164,7 +164,7 @@ public class JobService {
         job.setJobBenefits(dto.getJobBenefits());
         job.setDeadline(parseDeadline(dto.getDeadline()));
 
-        // ADDED — re-run AI extraction so skills/experience/education stay in
+
         // sync whenever the requirement text is edited, instead of silently
         // scoring future applicants against stale, outdated requirements.
         String rawText = dto.getRequirementText();
@@ -182,7 +182,7 @@ public class JobService {
                             : aiData.getEducationRequired()
             );
 
-            // ADDED — clear out the old requirement rows before inserting the new ones
+
             List<JobRequirement> oldReqs = reqRepo.findByJobId(jobId);
             if (!oldReqs.isEmpty()) {
                 reqRepo.deleteAll(oldReqs);
@@ -200,8 +200,7 @@ public class JobService {
             }
 
         } else {
-            // ADDED — requirement text wasn't touched on this edit; still allow
-            // the education field to be updated independently if it was changed
+
             job.setEducationRequired(
                     (dto.getEducationRequired() != null && !dto.getEducationRequired().isBlank())
                             ? dto.getEducationRequired()
@@ -216,8 +215,7 @@ public class JobService {
 
         Job saved = jobRepo.save(job);
 
-        // ADDED — refresh the requirements list on the returned object so the
-        // response reflects the newly-saved skills, not the stale in-memory list
+
         List<JobRequirement> reqs = reqRepo.findByJobId(saved.getId());
         saved.setRequirements(reqs);
 
@@ -241,13 +239,8 @@ public class JobService {
         if ("Open".equalsIgnoreCase(job.getStatus())) {
             job.setStatus("Closed");
         } else {
-            // ADDED — enforce the plan's active-jobs limit here, on the
-            // Closed -> Open transition. createJob() only checked the limit
-            // at creation time, so a company could previously close a job and
-            // reopen it (or reopen an old closed job) with no cap enforcement
-            // at all. The create-time check is left in place too, since new
-            // jobs are created directly as "Open" — removing it there would
-            // just move the loophole instead of closing it.
+            //  enforce the plan's active-jobs limit here, on the
+
             if (job.getCompanyId() != null) {
                 ActiveSubscription activeSub = activeSubscriptionRepository
                         .findByCompanyId(job.getCompanyId())

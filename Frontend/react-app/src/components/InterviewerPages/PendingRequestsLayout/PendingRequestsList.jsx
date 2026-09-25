@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./PendingRequestsList.css";
 
-/* ── Display helpers (formatting only — underlying data is unchanged) ── */
 
 // Title-case each word and lowercase the rest:
 // "ui/ux design" → "Ui/Ux Design", "dewmi durga" → "Dewmi Durga"
@@ -26,11 +25,7 @@ const toAmPm = (value) => {
   return `${h}:${min} ${period}`;
 };
 
-/**
- * Location pill shown only on Physical rows. Reveals the full address in a
- * tooltip on hover / focus / tap. Fixed positioning so the table's
- * horizontal-scroll container can't clip it.
- */
+
 const LocationBadge = ({ location }) => {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });

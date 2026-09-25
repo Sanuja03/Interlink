@@ -78,23 +78,17 @@ public class ActiveSubscriptionService {
         }
 
         return repository.findAll().stream().map(sub -> {
-            // ADDED — resolveIfDue() replaces the old "just relabel as Expired"
-            // check. It actually renews or downgrades the subscription right
-            // here if it's overdue, instead of only flipping the status label
-            // and leaving the real renewal/downgrade to wait for the nightly
-            // cron (which could be up to a day, or longer if the server isn't
-            // always running).
+
             resolveIfDue(sub, companyNameMap.get(sub.getCompanyId()));
             return toDTO(sub, companyNameMap);
         }).toList();
     }
-    // ── ADDED: company admin fetches their own active subscription ──
+
     public ActiveSubscriptionDTO getByCompanyId(UUID companyId) {
         ActiveSubscription sub = repository.findByCompanyId(companyId)
                 .orElseThrow(() -> new RuntimeException("No subscription found for this company"));
 
-        // ADDED — see resolveIfDue() for why this now does the actual
-        // renewal/downgrade instead of only relabeling the status.
+
         resolveIfDue(sub, null);
 
         ActiveSubscriptionDTO dto = new ActiveSubscriptionDTO();
@@ -112,7 +106,7 @@ public class ActiveSubscriptionService {
 
         return dto;
     }
-    // ── END ADDED ──
+
 
     // ─────────────────────────────────────────────
     //  CONFIRM PAYMENT
@@ -301,7 +295,7 @@ public class ActiveSubscriptionService {
     }
 
     // ─────────────────────────────────────────────
-    //  ADDED — RESOLVE IF OVERDUE
+    //  RESOLVE IF OVERDUE
     //  Shared by getAll()/getByCompanyId() above so the table (and a
     //  company's own subscription view) is never showing a stale "Expired"
     //  label while the plan itself is still the old paid plan underneath.
@@ -343,10 +337,7 @@ public class ActiveSubscriptionService {
         repository.save(sub);
     }
 
-    // ADDED — writes to the shared activity log so admins can see, in the new
-    // billing activity tab, exactly when and why a subscription changed on
-    // its own (vs. an explicit admin action like Confirm Pay / Change Plan).
-    // Logging failure must never break the actual renew/downgrade.
+    //  writes to the shared activity log so admins can see
     private void logSubscriptionEvent(ActiveSubscription sub, String action, String description) {
         try {
             activityLogService.log(null, "SYSTEM", action, "SUBSCRIPTION", sub.getId(), description);

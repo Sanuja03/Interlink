@@ -72,11 +72,7 @@ export default function ChatBot() {
     }
   };
 
-  // NEW: explicit paste handler. Relying on onChange + maxLength alone can be
-  // unreliable for large pastes in controlled inputs (the native DOM value can
-  // briefly exceed the cap before React reconciles it). This intercepts the
-  // paste directly, merges it with the current selection, and truncates
-  // up front so overlong pastes can never slip through.
+  
   const handlePaste = (e) => {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text");
@@ -135,7 +131,7 @@ export default function ChatBot() {
       if (lim !== undefined) setLimit(lim);
       if (warn)              setWarning(warn);
       if (limited)           setLimitReached(true);
-      // NEW: keep the character cap in sync even mid-session, in case a
+     
       // Super Admin changes it while this user already has the chat open.
       if (maxLen !== undefined && maxLen > 0) {
         setMaxChars(maxLen);
@@ -157,7 +153,7 @@ export default function ChatBot() {
           },
         ]);
       } else if (err.response?.status === 400) {
-        // NEW: backend input validation errors (blank / too long)
+        // backend input validation errors (blank / too long)
         setMessages((prev) => [
           ...prev,
           {

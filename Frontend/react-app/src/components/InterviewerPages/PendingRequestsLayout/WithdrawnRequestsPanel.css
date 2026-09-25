@@ -1,9 +1,4 @@
-/* ============================================================
-   WithdrawnRequestsPanel — notice card above the pending list.
-   One row per interview the interviewer no longer holds, colour-
-   coded by outcome: removed (amber), cancelled (red),
-   rescheduled (indigo).
-   ============================================================ */
+
 
 .wrp-card {
   background: #ffffff;

@@ -132,8 +132,8 @@ public class SupportTicketService {
         );
     }
 
-    // ADDED — marks the ticket as read for whichever side is viewing it.
-    // Called from the controller right after the permission check passes.
+
+
     public void markRead(Long id, UUID requestingUserId) {
         SupportTicket ticket = repository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -151,7 +151,7 @@ public class SupportTicketService {
             }
         }
     }
-    // END ADDED
+
 
     // ─── UPDATE ───────────────────────────────────────────────────────────────
 

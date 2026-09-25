@@ -41,12 +41,7 @@ const toRelative = (iso) => {
   return days === 1 ? "yesterday" : `${days} days ago`;
 };
 
-/**
- * Copy for each outcome. `accepted` says whether this browser recorded the
- * interviewer accepting the request — the stored row can't prove it (an admin
- * removal and a self-decline both land on "rejected" server-side), so the
- * wording only claims an acceptance when we actually saw one.
- */
+
 const describe = (item, accepted) => {
   switch (item.outcome) {
     case "cancelled":
