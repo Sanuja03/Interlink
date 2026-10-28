@@ -41,10 +41,7 @@ public class InterviewerRequestController {
     }
 
     /**
-     * GET /api/interviewer/interview-requests/withdrawn
-     * Requests this interviewer was invited onto but no longer holds — removed
-     * from the panel, cancelled, or cancelled and rescheduled. Feeds the notice
-     * panel above the pending list.
+     *invited but removed,cancelled for interviewer
      */
     @GetMapping("/withdrawn")
     @PreAuthorize("hasRole('interviewer')")
@@ -63,7 +60,7 @@ public class InterviewerRequestController {
     }
 
     /**
-     * PUT /api/interviewer/interview-requests/{requestId}/respond?response=accepted
+     * ACCEPT OR REJECT AN INTERVIEW REQUEST
      */
     @PutMapping("/{requestId}/respond")
     @PreAuthorize("hasRole('interviewer')")
@@ -85,7 +82,7 @@ public class InterviewerRequestController {
     }
 
     /**
-     * GET /api/interviewer/interview-requests/{requestId}/history
+     * GET CANDIDATE APPLICATION HISTORY for that request
      * Returns the candidate's application history for this request.
      * Only interviewers on the request's panel may read it.
      */
@@ -108,7 +105,6 @@ public class InterviewerRequestController {
     }
 
     /**
-     * GET /api/interviewer/interview-requests/{requestId}/candidate-profile
      * Returns the full candidate profile for this request.
      * Only interviewers on the request's panel may read it.
      */
@@ -132,10 +128,8 @@ public class InterviewerRequestController {
     }
 
     /**
-     * GET /api/interviewer/interview-requests/{requestId}/ai-question-score
      * Returns the candidate's AI interview question/answer history for this
-     * request. Panel-gated equivalent of /api/company/ai-question-score, which
-     * is restricted to company admins.
+     * request.
      */
     @GetMapping("/{requestId}/ai-question-score")
     @PreAuthorize("hasRole('interviewer')")

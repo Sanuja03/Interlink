@@ -21,14 +21,7 @@ public class InterviewRequestController {
     private InterviewRequestService service;
 
     /**
-     * GET /api/company/interview-requests/assignable?date=&time=&durationMinutes=
-     *     [&candidateId=&jobApplicationId=]
-     * Returns three groups: available, other, unavailable (schedule conflict).
-     *
-     * candidateId + jobApplicationId are optional and identify the request this
-     * form would replace ("Cancel & Redo"); its own panel is then not counted as
-     * a conflict, so its pending and accepted interviewers stay selectable at the
-     * same date and time.
+     * GET INTERVIEWERS WHO CAN BE ASSIGNED
      */
     @GetMapping("/assignable")
     @PreAuthorize("hasRole('company_admin')")
@@ -45,7 +38,7 @@ public class InterviewRequestController {
     }
 
     /**
-     * GET /api/company/interview-requests/current?candidateId=UUID&jobApplicationId=123
+     * GET AN EXISTING INTERVIEW REQUEST
      */
     @GetMapping("/current")
     @PreAuthorize("hasRole('company_admin')")
@@ -61,9 +54,7 @@ public class InterviewRequestController {
         return ResponseEntity.ok(existing);
     }
 
-    /**
-     * POST /api/company/interview-requests
-     */
+
     @PostMapping
     @PreAuthorize("hasRole('company_admin')")
     public ResponseEntity<InterviewRequestDTO.CreateResponse> createRequest(
@@ -89,7 +80,7 @@ public class InterviewRequestController {
     }
 
     /**
-     * GET /api/company/interview-requests
+     * GET ALL INTERVIEW REQUESTS FOR THE COMPANY
      */
     @GetMapping
     @PreAuthorize("hasRole('company_admin')")

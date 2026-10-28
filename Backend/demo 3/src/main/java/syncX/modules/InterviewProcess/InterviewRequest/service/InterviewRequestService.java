@@ -51,20 +51,7 @@ public class InterviewRequestService {
     @Autowired private AiQuestionScoreService           aiQuestionScoreService;
     @Autowired private ApplicationRepository            applicationRepository;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GET /assignable?date=&time=&durationMinutes=&candidateId=&jobApplicationId=
-    // Returns three groups: available, other, unavailable (conflict).
-    // Conflict rule: an interviewer is UNAVAILABLE if they have an existing
-    // interview_request row where their response_status is 'pending' OR 'accepted'
-    // (i.e. not 'rejected') AND the time window overlaps the requested slot.
-    //
-    // candidateId + jobApplicationId are optional. When supplied they identify a
-    // "Cancel & Redo" — the still-pending request for that candidate+application
-    // is the one this form is about to replace, so it must not block its own
-    // panel. Without the skip, every interviewer already sitting at pending or
-    // accepted on that request would come back as a schedule conflict when the
-    // admin redoes the interview at the same date and time.
-    // ─────────────────────────────────────────────────────────────────────────
+
     public InterviewRequestDTO.AssignableInterviewersResponse getAssignable(
             Jwt jwt, String dateStr, String timeStr, int durationMinutes,
             UUID candidateId, Long jobApplicationId) {
@@ -160,9 +147,9 @@ public class InterviewRequestService {
         return new InterviewRequestDTO.AssignableInterviewersResponse(available, other, unavailable);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET /current — existing request for this candidate+job
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public InterviewRequestDTO.ExistingRequestResponse getExistingRequest(
             Jwt jwt, UUID candidateId, Long jobApplicationId) {
@@ -210,10 +197,10 @@ public class InterviewRequestService {
                 invited);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET /{requestId} — single request by id (used by the finalize popup to
     // inherit the stored interview location before a scheduled row exists)
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public InterviewRequestDTO.ExistingRequestResponse getRequestById(Jwt jwt, UUID requestId) {
         UUID companyId = resolveCompanyId(jwt);
@@ -224,9 +211,7 @@ public class InterviewRequestService {
         return toExistingResponse(ir);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // POST — create interview request
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional
     public InterviewRequestDTO.CreateResponse createRequest(
             Jwt jwt, InterviewRequestDTO.CreateRequest req) {
@@ -384,9 +369,9 @@ public class InterviewRequestService {
                 invited);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET /pending — for interviewer side
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public List<InterviewRequestDTO.PendingRequestForInterviewer> getPendingForInterviewer(Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -434,24 +419,9 @@ public class InterviewRequestService {
         }).collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET /withdrawn — for interviewer side.
-    //
-    // Requests this interviewer was invited onto and no longer holds, so the
-    // pending page can tell them what happened instead of silently dropping the
-    // row. Three shapes, all of which leave their row at "rejected":
-    //
-    //   removed      request still live — the admin took them off the panel
-    //   cancelled    the whole request was cancelled
-    //   rescheduled  cancelled and replaced by a newer request for the same
-    //                candidate + application ("Cancel & Redo")
-    //
-    // The stored row cannot distinguish an admin removal from the interviewer's
-    // own decline — both write "rejected" (see findWithdrawnForInterviewer).
-    // The classification here is therefore about what happened to the *request*;
-    // the page decides how confidently to word each item, filtering out the
-    // requests it remembers this interviewer declining.
-    // ─────────────────────────────────────────────────────────────────────────
+
     private static final int WITHDRAWN_WINDOW_DAYS = 30;
 
     @Transactional(readOnly = true)
@@ -548,9 +518,9 @@ public class InterviewRequestService {
                 .orElse(null);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PUT /{requestId}/respond
-    // ─────────────────────────────────────────────────────────────────────────
+
+    // PUT /{requestId}/respond by interviewer
+
     @Transactional
     public void respondToRequest(UUID requestId, UUID userId, String response) {
         if (!"accepted".equals(response) && !"rejected".equals(response))
@@ -569,13 +539,9 @@ public class InterviewRequestService {
         requestRepo.save(ir);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET /{requestId}/history — application history for an invited interviewer.
-    // The interviewer only holds a requestId, so we resolve requestId →
-    // jobApplicationId server-side, verify the caller is actually on this
-    // request's panel, then delegate to the existing CandidateHistoryService
-    // (same computed timeline the company admin sees).
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public CandidateHistoryResponseDTO getHistoryForInterviewer(Jwt jwt, UUID requestId) {
         InterviewRequest ir = requireInvitedRequest(jwt, requestId);
@@ -587,12 +553,9 @@ public class InterviewRequestService {
         return candidateHistoryService.getHistoryByApplication(jobApplicationId);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // GET /{requestId}/candidate-profile — full candidate profile for an
-    // invited interviewer. Resolves requestId → candidateId server-side,
-    // verifies panel membership, then delegates to the existing
-    // CandidateProfileService (same profile the company admin sees).
-    // ─────────────────────────────────────────────────────────────────────────
+
+    // GET /{requestId}/candidate-profile — full candidate profile for an invited interviewer
+
     @Transactional(readOnly = true)
     public CandidateProfileResponseDTO getCandidateProfileForInterviewer(Jwt jwt, UUID requestId) {
         InterviewRequest ir = requireInvitedRequest(jwt, requestId);
@@ -670,9 +633,9 @@ public class InterviewRequestService {
         return ir;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // GET / (list for company)
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public List<InterviewRequestDTO.ExistingRequestResponse> listForCompany(
             Jwt jwt, Long jobApplicationId, Long jobId) {
@@ -682,9 +645,9 @@ public class InterviewRequestService {
         return rows.stream().map(this::toExistingResponse).collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // PRIVATE helpers
-    // ─────────────────────────────────────────────────────────────────────────
+
     private InterviewRequestDTO.ExistingRequestResponse toExistingResponse(InterviewRequest ir) {
         List<UUID> userIds = ir.getInterviewers().stream()
                 .map(InterviewRequestInterviewer::getInterviewerUserId)
