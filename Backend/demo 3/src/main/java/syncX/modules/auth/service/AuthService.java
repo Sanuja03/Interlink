@@ -160,7 +160,7 @@ public class AuthService {
         Company adminCompany = companyRepository.findByUserId(adminUserId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // ── ADDED: Backend interviewer limit check ──
+        // ── ADDED: Backend interviewer limit check ── senithi
         UUID companyId = adminCompany.getCompanyId();
 
         ActiveSubscription sub = activeSubscriptionRepository

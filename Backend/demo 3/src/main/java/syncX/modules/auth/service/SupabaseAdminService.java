@@ -17,13 +17,13 @@ import java.util.Map;
 @Service
 public class SupabaseAdminService {
 
-    /** Page size used when scanning the Supabase admin user list. */
+
     private static final int PAGE_SIZE = 200;
 
-    /** Safety cap so a malformed response can never spin the pagination loop forever. */
+
     private static final int MAX_PAGES = 100;
 
-    /** Avoids the unchecked cast that raw Map/List responses forced. */
+    /** Defines the expected type of an API response */
     private static final ParameterizedTypeReference<Map<String, Object>> MAP_TYPE =
             new ParameterizedTypeReference<>() {};
 

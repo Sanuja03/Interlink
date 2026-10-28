@@ -28,9 +28,11 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
+                //Configure session management.
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                //which users can access which URLs.
                 .authorizeHttpRequests(auth -> auth
                         // ── Public: no login needed
                         .requestMatchers(

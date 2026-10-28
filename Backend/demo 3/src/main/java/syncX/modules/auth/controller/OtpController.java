@@ -71,13 +71,13 @@ public class OtpController {
             return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
         }
 
-        // Only send if user exists (but always return success message for security)
+
         if (userRepository.existsByEmail(email.trim())) {
             String otp = otpService.generateOtp(email.trim());
             new Thread(() -> InterLinkMailSender.sendPasswordResetOTP(email.trim(), otp)).start();
         }
 
-        // Always return success
+
         return ResponseEntity.ok(Map.of("message", "If this email is registered, you'll receive a reset code"));
     }
 
